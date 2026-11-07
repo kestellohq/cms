@@ -1,0 +1,35 @@
+{
+  "title": "Opening hours",
+  "description": "A heading and a table of days and times.",
+  "category": "Contact",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "oh1",
+      "props": {
+        "text": "Opening hours",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/table",
+      "id": "oh2",
+      "props": {
+        "table": {
+          "head": true,
+          "rows": [
+            ["Day", "Open"],
+            ["Monday to Friday", "7:00 to 18:00"],
+            ["Saturday", "8:00 to 16:00"],
+            ["Sunday", "Closed"]
+          ]
+        },
+        "caption": "Opening hours",
+        "striped": true,
+        "side": true
+      },
+      "children": []
+    }
+  ]
+}

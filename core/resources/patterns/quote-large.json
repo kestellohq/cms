@@ -1,0 +1,22 @@
+{
+  "title": "Large quote",
+  "description": "One quote in large type, centred.",
+  "category": "Text",
+  "blocks": [
+    {
+      "type": "core/quote",
+      "id": "ql1",
+      "props": {
+        "text": "The best work is the kind nobody notices, because it simply works.",
+        "cite": "Ana Horvat, founder",
+        "align": "center"
+      },
+      "design": {
+        "base": {
+          "font-size": "xl"
+        }
+      },
+      "children": []
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "title": "Follow us",
+  "description": "A centred heading, a line of text and social links.",
+  "category": "Contact",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "cs1",
+      "props": {
+        "text": "Follow along",
+        "level": "2",
+        "align": "center"
+      },
+      "children": []
+    },
+    {
+      "type": "core/text",
+      "id": "cs2",
+      "props": {
+        "text": "<p>Behind the scenes, new work and the occasional dog.</p>",
+        "align": "center"
+      },
+      "children": []
+    },
+    {
+      "type": "core/social",
+      "id": "cs3",
+      "props": {
+        "items": [
+          {
+            "network": "instagram",
+            "url": "https://www.instagram.com/"
+          },
+          {
+            "network": "facebook",
+            "url": "https://www.facebook.com/"
+          },
+          {
+            "network": "youtube",
+            "url": "https://www.youtube.com/"
+          },
+          {
+            "network": "email",
+            "url": "mailto:hello@example.com"
+          }
+        ],
+        "align": "center",
+        "look": "icons",
+        "size": "md"
+      },
+      "children": []
+    }
+  ]
+}

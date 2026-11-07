@@ -1,0 +1,62 @@
+{
+  "title": "Shaded box",
+  "description": "A light, shaded box with a heading, text and a button.",
+  "category": "Calls to action",
+  "blocks": [
+    {
+      "type": "core/group",
+      "id": "cm1",
+      "props": {
+        "tag": "div",
+        "width": "content",
+        "tone": "muted"
+      },
+      "design": {
+        "base": {
+          "padding-top": "lg",
+          "padding-right": "lg",
+          "padding-bottom": "lg",
+          "padding-left": "lg"
+        }
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "cm2",
+          "props": {
+            "text": "Hear about new dates first",
+            "level": "2"
+          },
+          "children": []
+        },
+        {
+          "type": "core/text",
+          "id": "cm3",
+          "props": {
+            "text": "<p>One short email a month, never more. Leave whenever you like.</p>"
+          },
+          "children": []
+        },
+        {
+          "type": "core/buttons",
+          "id": "cm4",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/button",
+              "id": "cm5",
+              "props": {
+                "text": "Sign up",
+                "link": "/newsletter",
+                "variant": "primary"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

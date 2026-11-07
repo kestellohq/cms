@@ -1,0 +1,25 @@
+{
+  "title": "Section break",
+  "description": "A line and a heading, to start a new part of a long page.",
+  "category": "Text",
+  "blocks": [
+    {
+      "type": "core/separator",
+      "id": "sh1",
+      "props": {
+        "look": "wide"
+      },
+      "children": []
+    },
+    {
+      "type": "core/heading",
+      "id": "sh2",
+      "props": {
+        "text": "Part two",
+        "level": "2",
+        "align": "center"
+      },
+      "children": []
+    }
+  ]
+}

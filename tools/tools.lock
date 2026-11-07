@@ -1,0 +1,6 @@
+# Dev-only PHP tools, fetched by tools/fetch.sh into tools/bin/ (ignored by git).
+# Kestello has no Composer: each tool is an official PHAR, pinned by version and SHA-256.
+# To upgrade: change the version, url and sha256 together (the sha256 is on the release page).
+# name           version   sha256                                                            url
+php-cs-fixer     3.95.28   44dd8aa9b83163b4913bc39d3e26ba94221ffa03957d000e9aec252f656b0f60  https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.95.28/php-cs-fixer.phar
+phpstan          2.3.5     4b3ed7850a20b092331bd1040e4f54a1d3c0559b4cf006431073997ebcb4324b  https://github.com/phpstan/phpstan/releases/download/2.3.5/phpstan.phar

@@ -1,0 +1,43 @@
+{
+  "title": "Timeline",
+  "description": "Years with what happened, as a list with dots.",
+  "category": "Lists and tables",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "t1",
+      "props": {
+        "text": "Along the way",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/icon-list",
+      "id": "t2",
+      "props": {
+        "items": [
+          {
+            "icon": "dot",
+            "text": "2009: the first shop opens on Market Street"
+          },
+          {
+            "icon": "dot",
+            "text": "2013: a second oven, and Sunday opening"
+          },
+          {
+            "icon": "dot",
+            "text": "2018: the corner shop next door becomes our café"
+          },
+          {
+            "icon": "dot",
+            "text": "2024: a new workshop for classes"
+          }
+        ],
+        "columns": "1",
+        "tone": "accent"
+      },
+      "children": []
+    }
+  ]
+}

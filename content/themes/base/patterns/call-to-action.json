@@ -1,0 +1,22 @@
+{
+  "title": "Call to action",
+  "description": "A dark panel with a heading, a line of text and a button.",
+  "category": "Calls to action",
+  "blocks": [
+    {
+      "type": "core/group",
+      "id": "cta1",
+      "props": { "tag": "section", "width": "wide", "tone": "inverse" },
+      "children": [
+        { "type": "core/heading", "id": "cta2", "props": { "text": "Order for the weekend", "level": "2" }, "children": [] },
+        {
+          "type": "core/text",
+          "id": "cta3",
+          "props": { "text": "<p>Tell us by Thursday and your loaves are waiting on Saturday morning.</p>" },
+          "children": []
+        },
+        { "type": "core/button", "id": "cta4", "props": { "text": "Get in touch", "link": "/about", "variant": "primary" }, "children": [] }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+import{createElementBlock as e,openBlock as t,unref as n}from"vue";import{usePage as r}from"@kestello/app";var i=[`value`],a={__name:`CsrfField`,setup(a){let o=r();return(r,a)=>(t(),e(`input`,{type:`hidden`,name:`_csrf_token`,value:n(o).props.csrfToken},null,8,i))}};export{a as t};

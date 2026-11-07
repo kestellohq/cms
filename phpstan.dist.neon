@@ -1,0 +1,30 @@
+# Static analysis for Kestello's PHP. Run: npm run analyse
+# Known findings from before the analyser was introduced are listed in phpstan-baseline.neon;
+# new code must not add any. Fix one, then regenerate: npm run analyse -- --generate-baseline phpstan-baseline.neon
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 6
+    phpVersion: 80400
+    tmpDir: .phpstan
+    bootstrapFiles:
+        - core/bootstrap.php
+    # tests/ is read for its classes, not analysed (the fixture plugin is analysed with core)
+    scanDirectories:
+        - tests
+    paths:
+        - core/src
+        - core/config
+        - core/database
+        - bin/cms
+        # only what the repository holds: content/ is otherwise the local site's own plugins and themes
+        - content/themes/base
+        - tests/fixtures
+    excludePaths:
+        - core/resources/assets
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # Endpoints and providers override a nullable contract method (?string capability())
+        # and return a value every time; narrowing it in each class would only add noise.
+        - identifier: return.unusedType

@@ -1,0 +1,1 @@
+import{t as e}from"../../chunks/_plugin-vue_export-helper-BDNMzG2s.js";import{createElementBlock as t,openBlock as n,renderSlot as r}from"vue";var i={class:`k-b-query-item k-b-stack`},a=e({__name:`QueryItem`,props:{url:{type:String,default:``}},setup(e){return(e,a)=>(n(),t(`li`,i,[r(e.$slots,`default`,{},void 0,!0)]))}},[[`__scopeId`,`data-v-8281fd0d`]]);export{a as default};

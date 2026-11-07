@@ -1,0 +1,81 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kestello\Tests\Package;
+
+use Kestello\Cms\Package\Update\ReleaseFeed;
+use Kestello\Framework\Testing\TestCase;
+
+/** Kestello versions read from GitHub's releases API. */
+final class ReleaseFeedTest extends TestCase
+{
+    /** @return array<string, mixed> one release as GitHub describes it */
+    public static function release(string $version, array $overrides = [], string $repo = 'kestellohq/cms'): array
+    {
+        $base = "https://github.com/{$repo}/releases/download/v{$version}/";
+
+        return $overrides + [
+            'tag_name' => "v{$version}",
+            'name' => "Kestello {$version}",
+            'body' => "### Fixed\n\n- Something.",
+            'draft' => false,
+            'prerelease' => str_contains($version, '-'),
+            'published_at' => '2026-11-06T10:00:00Z',
+            'html_url' => "https://github.com/{$repo}/releases/tag/v{$version}",
+            'assets' => [
+                ['name' => "kestello-core-{$version}.zip", 'browser_download_url' => $base . "kestello-core-{$version}.zip"],
+                ['name' => "kestello-core-{$version}.zip.sha256", 'browser_download_url' => $base . "kestello-core-{$version}.zip.sha256"],
+                ['name' => 'kestello.stub.php', 'browser_download_url' => $base . 'kestello.stub.php'],
+            ],
+        ];
+    }
+
+    public function testOnlyPublishedVersionedReleasesWithBothFilesCountNewestFirst(): void
+    {
+        $evil = self::release('9.0.0');
+        $evil['assets'][0]['browser_download_url'] = 'https://evil.example/kestello-core-9.0.0.zip';
+        $releases = ReleaseFeed::parse([
+            self::release('1.2.0'),
+            self::release('1.10.0'),
+            self::release('2.0.0', ['draft' => true]),
+            self::release('3.0.0', ['tag_name' => 'release-3']),
+            self::release('3.1.0', ['tag_name' => 'v3.1']),
+            self::release('4.0.0', ['assets' => []]),
+            $evil,
+            self::release('1.11.0-beta.1'),
+            'not a release',
+        ], 'kestellohq/cms');
+
+        $this->assertSame(['1.11.0-beta.1', '1.10.0', '1.2.0'], array_column($releases, 'version'));
+        $this->assertTrue($releases[0]['prerelease']);
+        $this->assertSame('https://github.com/kestellohq/cms/releases/download/v1.10.0/kestello-core-1.10.0.zip', $releases[1]['zip']);
+    }
+
+    public function testFilesFromAnotherRepositoryAreLeftOut(): void
+    {
+        $this->assertSame([], ReleaseFeed::parse([self::release('1.0.0', [], 'someone/fork')], 'kestellohq/cms'));
+    }
+
+    public function testAnAnswerThatIsNotAListIsAnError(): void
+    {
+        $this->assertThrows(\UnexpectedValueException::class, static fn() => ReleaseFeed::parse(['message' => 'Not Found'], 'kestellohq/cms'));
+    }
+
+    public function testTheNewestReleaseAboveTheRunningVersion(): void
+    {
+        $releases = ReleaseFeed::parse([self::release('1.3.0-rc.1'), self::release('1.2.0'), self::release('1.1.0')], 'kestellohq/cms');
+
+        $this->assertSame('1.2.0', ReleaseFeed::newest($releases, '1.1.0', false)['version'] ?? null);
+        $this->assertSame('1.3.0-rc.1', ReleaseFeed::newest($releases, '1.1.0', true)['version'] ?? null);
+        $this->assertNull(ReleaseFeed::newest($releases, '1.2.0', false), 'up to date');
+        $this->assertNull(ReleaseFeed::newest($releases, '2.0.0-dev', false), 'a development build ahead of every release');
+    }
+
+    public function testChecksumFiles(): void
+    {
+        $hash = str_repeat('ab', 32);
+        $this->assertSame($hash, ReleaseFeed::checksum(strtoupper($hash) . "  kestello-core-1.0.0.zip\n"));
+        $this->assertNull(ReleaseFeed::checksum('<html>Not found</html>'));
+    }
+}

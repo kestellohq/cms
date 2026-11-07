@@ -1,0 +1,9 @@
+# Reviewers asked for automatically. Changes to these paths need a maintainer's approval.
+*                       @kestellohq/maintainers
+
+# Security-sensitive: authentication, packages, updates, signing, and the release pipeline
+/core/src/Cms/Auth/     @kestellohq/maintainers
+/core/src/Cms/Package/  @kestellohq/maintainers
+/core/config/release.php @kestellohq/maintainers
+/.github/               @kestellohq/maintainers
+/tools/                 @kestellohq/maintainers

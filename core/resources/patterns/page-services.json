@@ -1,0 +1,227 @@
+{
+  "title": "Services page",
+  "description": "An introduction, what you offer, the steps and common questions.",
+  "category": "Pages",
+  "layout": true,
+  "blocks": [
+    {
+      "type": "core/group",
+      "id": "ps1",
+      "props": {
+        "tag": "div",
+        "width": "content",
+        "tone": "plain"
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "ps2",
+          "props": {
+            "text": "What we do",
+            "level": "2"
+          },
+          "design": {
+            "base": {
+              "font-size": "3xl"
+            }
+          },
+          "children": []
+        },
+        {
+          "type": "core/text",
+          "id": "ps3",
+          "props": {
+            "text": "<p>Repairs, renovation and upkeep for homes and small businesses.</p>"
+          },
+          "design": {
+            "base": {
+              "font-size": "lg"
+            }
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "core/icon-list",
+      "id": "ps4",
+      "props": {
+        "items": [
+          {
+            "icon": "wrench",
+            "text": "Repairs, often the same week"
+          },
+          {
+            "icon": "house",
+            "text": "Kitchens, bathrooms and whole rooms"
+          },
+          {
+            "icon": "shield",
+            "text": "Yearly checks and upkeep"
+          }
+        ],
+        "columns": "3",
+        "tone": "accent"
+      },
+      "children": []
+    },
+    {
+      "type": "core/heading",
+      "id": "ps5",
+      "props": {
+        "text": "Three steps to get started",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "ps6",
+      "props": {
+        "layout": "1-1-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "ps7",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "ps8",
+              "props": {
+                "text": "1",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "ps9",
+              "props": {
+                "text": "<p>Tell us what you need.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "psa",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "psb",
+              "props": {
+                "text": "2",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "psc",
+              "props": {
+                "text": "<p>Get a clear quote.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "psd",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pse",
+              "props": {
+                "text": "3",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "psf",
+              "props": {
+                "text": "<p>We do the work.</p>"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "core/heading",
+      "id": "ps10",
+      "props": {
+        "text": "Questions people ask",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "ps11",
+      "props": {
+        "summary": "How soon can you start?",
+        "text": "<p>Usually within two weeks. For urgent repairs we often come the same week.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "ps12",
+      "props": {
+        "summary": "Do you give fixed prices?",
+        "text": "<p>Yes. The price in your quote is the price you pay, unless you ask for changes.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "ps13",
+      "props": {
+        "summary": "What areas do you cover?",
+        "text": "<p>The city and anywhere within about twenty miles of it.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "ps14",
+      "props": {
+        "summary": "Is the work guaranteed?",
+        "text": "<p>Everything we do is guaranteed for twelve months, parts and labour.</p>"
+      },
+      "children": []
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "title": "Notice",
+  "description": "A short, shaded notice with an icon, for news visitors should not miss.",
+  "category": "Lists and tables",
+  "blocks": [
+    {
+      "type": "core/group",
+      "id": "on1",
+      "props": {
+        "tag": "div",
+        "width": "content",
+        "tone": "muted"
+      },
+      "design": {
+        "base": {
+          "padding-top": "md",
+          "padding-right": "md",
+          "padding-bottom": "md",
+          "padding-left": "md"
+        }
+      },
+      "children": [
+        {
+          "type": "core/icon-list",
+          "id": "on2",
+          "props": {
+            "items": [
+              {
+                "icon": "info",
+                "text": "Closed on 25 and 26 December. Orders for the holidays close on 20 December."
+              }
+            ],
+            "columns": "1",
+            "tone": "text"
+          },
+          "children": []
+        }
+      ]
+    }
+  ]
+}

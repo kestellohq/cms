@@ -1,0 +1,175 @@
+{
+  "title": "Our story",
+  "description": "A heading, two paragraphs and a line of numbers below.",
+  "category": "About",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "as1",
+      "props": {
+        "text": "How it started",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/text",
+      "id": "as2",
+      "props": {
+        "text": "<p>It began with one van and a borrowed toolbox. Word spread from neighbour to neighbour, and within a year we needed a second van.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/text",
+      "id": "as3",
+      "props": {
+        "text": "<p>Today we are twelve people, and most of our work still comes from someone telling a friend.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/separator",
+      "id": "as4",
+      "props": {
+        "look": "line"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "as5",
+      "props": {
+        "layout": "1-1-1-1",
+        "gap": "md",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "as6",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "as7",
+              "props": {
+                "text": "15",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "as8",
+              "props": {
+                "text": "<p>years in business</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "as9",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "asa",
+              "props": {
+                "text": "2,400",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "asb",
+              "props": {
+                "text": "<p>jobs finished</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "asc",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "asd",
+              "props": {
+                "text": "12",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "ase",
+              "props": {
+                "text": "<p>people on the team</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "asf",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "as10",
+              "props": {
+                "text": "4.9",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "as11",
+              "props": {
+                "text": "<p>average review</p>"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

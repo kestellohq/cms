@@ -1,0 +1,40 @@
+{
+  "title": "One quote in a box",
+  "description": "One longer quote in a shaded box.",
+  "category": "Testimonials",
+  "blocks": [
+    {
+      "type": "core/group",
+      "id": "ts1",
+      "props": {
+        "tag": "div",
+        "width": "content",
+        "tone": "muted"
+      },
+      "design": {
+        "base": {
+          "padding-top": "lg",
+          "padding-right": "lg",
+          "padding-bottom": "lg",
+          "padding-left": "lg"
+        }
+      },
+      "children": [
+        {
+          "type": "core/quote",
+          "id": "ts2",
+          "props": {
+            "text": "We came for the bread and stayed for the people. It is the first place we take friends who visit.",
+            "cite": "Sofia and Tom, regulars since 2014"
+          },
+          "design": {
+            "base": {
+              "font-size": "lg"
+            }
+          },
+          "children": []
+        }
+      ]
+    }
+  ]
+}

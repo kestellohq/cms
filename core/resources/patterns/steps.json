@@ -1,0 +1,147 @@
+{
+  "title": "Steps",
+  "description": "Three numbered steps with a large number above each.",
+  "category": "Features",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "s1",
+      "props": {
+        "text": "Three steps to get started",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "s2",
+      "props": {
+        "layout": "1-1-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "s3",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "s4",
+              "props": {
+                "text": "1",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/heading",
+              "id": "s5",
+              "props": {
+                "text": "Tell us what you need",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "s6",
+              "props": {
+                "text": "<p>A few lines by email or a short call is enough.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "s7",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "s8",
+              "props": {
+                "text": "2",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/heading",
+              "id": "s9",
+              "props": {
+                "text": "Get a clear quote",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "sa",
+              "props": {
+                "text": "<p>Within two working days, with a date to start.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "sb",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "sc",
+              "props": {
+                "text": "3",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/heading",
+              "id": "sd",
+              "props": {
+                "text": "We do the work",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "se",
+              "props": {
+                "text": "<p>On time, tidily, and checked with you at the end.</p>"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

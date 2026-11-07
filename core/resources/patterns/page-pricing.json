@@ -1,0 +1,397 @@
+{
+  "title": "Pricing page",
+  "description": "Plans in cards, a comparison table and questions.",
+  "category": "Pages",
+  "layout": true,
+  "blocks": [
+    {
+      "type": "core/group",
+      "id": "pp1",
+      "props": {
+        "tag": "div",
+        "width": "content",
+        "tone": "plain"
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "pp2",
+          "props": {
+            "text": "Simple plans",
+            "level": "2",
+            "align": "center"
+          },
+          "design": {
+            "base": {
+              "font-size": "3xl"
+            }
+          },
+          "children": []
+        },
+        {
+          "type": "core/text",
+          "id": "pp3",
+          "props": {
+            "text": "<p>Change or stop whenever you like.</p>",
+            "align": "center"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "type": "core/columns",
+      "id": "pp4",
+      "props": {
+        "layout": "1-1-1",
+        "gap": "md",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "pp5",
+          "props": {
+            "align": "start"
+          },
+          "design": {
+            "base": {
+              "padding-top": "lg",
+              "padding-right": "lg",
+              "padding-bottom": "lg",
+              "padding-left": "lg",
+              "border-width": "1px",
+              "radius": "md"
+            },
+            "phone": {
+              "padding-top": "md",
+              "padding-right": "md",
+              "padding-bottom": "md",
+              "padding-left": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pp6",
+              "props": {
+                "text": "Basic",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/heading",
+              "id": "pp7",
+              "props": {
+                "text": "£19 a month",
+                "level": "4"
+              },
+              "design": {
+                "base": {
+                  "font-size": "2xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/icon-list",
+              "id": "pp8",
+              "props": {
+                "items": [
+                  {
+                    "icon": "check",
+                    "text": "One visit a month"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Email support"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Yearly check"
+                  }
+                ],
+                "columns": "1",
+                "tone": "accent"
+              },
+              "children": []
+            },
+            {
+              "type": "core/buttons",
+              "id": "pp9",
+              "props": {
+                "align": "start"
+              },
+              "children": [
+                {
+                  "type": "core/button",
+                  "id": "ppa",
+                  "props": {
+                    "text": "Choose Basic",
+                    "link": "/contact",
+                    "variant": "secondary"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "ppb",
+          "props": {
+            "align": "start"
+          },
+          "design": {
+            "base": {
+              "padding-top": "lg",
+              "padding-right": "lg",
+              "padding-bottom": "lg",
+              "padding-left": "lg",
+              "border-width": "1px",
+              "radius": "md"
+            },
+            "phone": {
+              "padding-top": "md",
+              "padding-right": "md",
+              "padding-bottom": "md",
+              "padding-left": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "ppc",
+              "props": {
+                "text": "Standard",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/heading",
+              "id": "ppd",
+              "props": {
+                "text": "£39 a month",
+                "level": "4"
+              },
+              "design": {
+                "base": {
+                  "font-size": "2xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/icon-list",
+              "id": "ppe",
+              "props": {
+                "items": [
+                  {
+                    "icon": "check",
+                    "text": "Two visits a month"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Phone and email support"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Twice-yearly check"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Ten per cent off parts"
+                  }
+                ],
+                "columns": "1",
+                "tone": "accent"
+              },
+              "children": []
+            },
+            {
+              "type": "core/buttons",
+              "id": "ppf",
+              "props": {
+                "align": "start"
+              },
+              "children": [
+                {
+                  "type": "core/button",
+                  "id": "pp10",
+                  "props": {
+                    "text": "Choose Standard",
+                    "link": "/contact",
+                    "variant": "primary"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "pp11",
+          "props": {
+            "align": "start"
+          },
+          "design": {
+            "base": {
+              "padding-top": "lg",
+              "padding-right": "lg",
+              "padding-bottom": "lg",
+              "padding-left": "lg",
+              "border-width": "1px",
+              "radius": "md"
+            },
+            "phone": {
+              "padding-top": "md",
+              "padding-right": "md",
+              "padding-bottom": "md",
+              "padding-left": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pp12",
+              "props": {
+                "text": "Complete",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/heading",
+              "id": "pp13",
+              "props": {
+                "text": "£79 a month",
+                "level": "4"
+              },
+              "design": {
+                "base": {
+                  "font-size": "2xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/icon-list",
+              "id": "pp14",
+              "props": {
+                "items": [
+                  {
+                    "icon": "check",
+                    "text": "Weekly visits"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Same-day help"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Quarterly check"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Parts included"
+                  }
+                ],
+                "columns": "1",
+                "tone": "accent"
+              },
+              "children": []
+            },
+            {
+              "type": "core/buttons",
+              "id": "pp15",
+              "props": {
+                "align": "start"
+              },
+              "children": [
+                {
+                  "type": "core/button",
+                  "id": "pp16",
+                  "props": {
+                    "text": "Choose Complete",
+                    "link": "/contact",
+                    "variant": "secondary"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "core/heading",
+      "id": "pp17",
+      "props": {
+        "text": "Compare plans",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/table",
+      "id": "pp18",
+      "props": {
+        "table": {
+          "head": true,
+          "rows": [
+            ["", "Basic", "Standard", "Complete"],
+            ["Visits", "Monthly", "Twice a month", "Weekly"],
+            ["Support", "Email", "Phone and email", "Same day"],
+            ["Checks", "Yearly", "Twice a year", "Every quarter"],
+            ["Parts", "Paid", "10% off", "Included"]
+          ]
+        },
+        "caption": "What each plan includes",
+        "striped": false,
+        "side": true
+      },
+      "children": []
+    },
+    {
+      "type": "core/heading",
+      "id": "pp19",
+      "props": {
+        "text": "Questions",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "pp1a",
+      "props": {
+        "summary": "How soon can you start?",
+        "text": "<p>Usually within two weeks. For urgent repairs we often come the same week.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "pp1b",
+      "props": {
+        "summary": "Do you give fixed prices?",
+        "text": "<p>Yes. The price in your quote is the price you pay, unless you ask for changes.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "pp1c",
+      "props": {
+        "summary": "What areas do you cover?",
+        "text": "<p>The city and anywhere within about twenty miles of it.</p>"
+      },
+      "children": []
+    }
+  ]
+}

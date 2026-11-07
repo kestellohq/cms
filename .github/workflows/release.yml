@@ -1,0 +1,104 @@
+# Publishing a release, when a maintainer pushes a vX.Y.Z tag on main (CONTRIBUTING.md,
+# "How a release happens"). Nothing is published unless every check passes again here and the
+# zip is signed with the release key.
+#
+# Repository secret KESTELLO_RELEASE_KEY: the key file from
+#   php bin/cms package:keygen --out=kestello-release.key --name="Kestello releases"
+# pasted whole. Its public half is in core/config/release.php, which sites trust.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Build, sign and publish
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, sodium, zip
+          coverage: none
+          tools: none
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+
+      - name: The tag matches core/VERSION and is on main
+        id: version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(tr -d '[:space:]' < core/VERSION)
+          if [ "$TAG" != "v$version" ]; then
+            echo "::error::The tag $TAG does not match core/VERSION ($version). Tag v$version, or fix core/VERSION on a release branch."
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$TAG is not on main. Releases are tagged on main after the release branch is merged."
+            exit 1
+          fi
+          case "$version" in *-*) prerelease=true ;; *) prerelease=false ;; esac
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
+
+      - name: Release notes from CHANGELOG.md
+        run: node tools/release/notes.mjs "${{ steps.version.outputs.version }}" > "$RUNNER_TEMP/notes.md"
+
+      - name: Build and sign the core zip
+        env:
+          KESTELLO_RELEASE_KEY: ${{ secrets.KESTELLO_RELEASE_KEY }}
+        run: |
+          if [ -z "$KESTELLO_RELEASE_KEY" ]; then
+            echo "::error::The KESTELLO_RELEASE_KEY secret is not set. Releases are always signed: see the comment at the top of this workflow."
+            exit 1
+          fi
+          key="$RUNNER_TEMP/release.key"
+          umask 077
+          printf '%s' "$KESTELLO_RELEASE_KEY" > "$key"
+          php bin/cms core:release --out=dist --key="$key"
+          rm -f "$key"
+          php bin/cms core:verify "dist/kestello-core-${{ steps.version.outputs.version }}.zip"
+
+      - name: API stubs for plugin and theme developers
+        run: |
+          mkdir -p "$RUNNER_TEMP/stubs"
+          php bin/cms ide:helpers --out="$RUNNER_TEMP/stubs" --stubs
+          cp "$RUNNER_TEMP/stubs/kestello.stub.php" dist/
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.version.outputs.version }}
+          PRERELEASE: ${{ steps.version.outputs.prerelease }}
+        run: |
+          flags=""
+          [ "$PRERELEASE" = true ] && flags="--prerelease"
+          gh release create "$TAG" \
+            "dist/kestello-core-$VERSION.zip" \
+            "dist/kestello-core-$VERSION.zip.sha256" \
+            dist/kestello.stub.php \
+            --title "Kestello $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            --verify-tag $flags

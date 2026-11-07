@@ -1,0 +1,306 @@
+{
+  "title": "Three plans",
+  "description": "Three plans in cards, each with a price, what it includes and a button.",
+  "category": "Pricing",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "pt1",
+      "props": {
+        "text": "Plans",
+        "level": "2",
+        "align": "center"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "pt2",
+      "props": {
+        "layout": "1-1-1",
+        "gap": "md",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "pt3",
+          "props": {
+            "align": "start"
+          },
+          "design": {
+            "base": {
+              "padding-top": "lg",
+              "padding-right": "lg",
+              "padding-bottom": "lg",
+              "padding-left": "lg",
+              "border-width": "1px",
+              "radius": "md"
+            },
+            "phone": {
+              "padding-top": "md",
+              "padding-right": "md",
+              "padding-bottom": "md",
+              "padding-left": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pt4",
+              "props": {
+                "text": "Basic",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/heading",
+              "id": "pt5",
+              "props": {
+                "text": "£19 a month",
+                "level": "4"
+              },
+              "design": {
+                "base": {
+                  "font-size": "2xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/icon-list",
+              "id": "pt6",
+              "props": {
+                "items": [
+                  {
+                    "icon": "check",
+                    "text": "One visit a month"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Email support"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Yearly check"
+                  }
+                ],
+                "columns": "1",
+                "tone": "accent"
+              },
+              "children": []
+            },
+            {
+              "type": "core/buttons",
+              "id": "pt7",
+              "props": {
+                "align": "start"
+              },
+              "children": [
+                {
+                  "type": "core/button",
+                  "id": "pt8",
+                  "props": {
+                    "text": "Choose Basic",
+                    "link": "/contact",
+                    "variant": "secondary"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "pt9",
+          "props": {
+            "align": "start"
+          },
+          "design": {
+            "base": {
+              "padding-top": "lg",
+              "padding-right": "lg",
+              "padding-bottom": "lg",
+              "padding-left": "lg",
+              "border-width": "1px",
+              "radius": "md"
+            },
+            "phone": {
+              "padding-top": "md",
+              "padding-right": "md",
+              "padding-bottom": "md",
+              "padding-left": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pta",
+              "props": {
+                "text": "Standard",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/heading",
+              "id": "ptb",
+              "props": {
+                "text": "£39 a month",
+                "level": "4"
+              },
+              "design": {
+                "base": {
+                  "font-size": "2xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/icon-list",
+              "id": "ptc",
+              "props": {
+                "items": [
+                  {
+                    "icon": "check",
+                    "text": "Two visits a month"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Phone and email support"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Twice-yearly check"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Ten per cent off parts"
+                  }
+                ],
+                "columns": "1",
+                "tone": "accent"
+              },
+              "children": []
+            },
+            {
+              "type": "core/buttons",
+              "id": "ptd",
+              "props": {
+                "align": "start"
+              },
+              "children": [
+                {
+                  "type": "core/button",
+                  "id": "pte",
+                  "props": {
+                    "text": "Choose Standard",
+                    "link": "/contact",
+                    "variant": "primary"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "ptf",
+          "props": {
+            "align": "start"
+          },
+          "design": {
+            "base": {
+              "padding-top": "lg",
+              "padding-right": "lg",
+              "padding-bottom": "lg",
+              "padding-left": "lg",
+              "border-width": "1px",
+              "radius": "md"
+            },
+            "phone": {
+              "padding-top": "md",
+              "padding-right": "md",
+              "padding-bottom": "md",
+              "padding-left": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pt10",
+              "props": {
+                "text": "Complete",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/heading",
+              "id": "pt11",
+              "props": {
+                "text": "£79 a month",
+                "level": "4"
+              },
+              "design": {
+                "base": {
+                  "font-size": "2xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/icon-list",
+              "id": "pt12",
+              "props": {
+                "items": [
+                  {
+                    "icon": "check",
+                    "text": "Weekly visits"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Same-day help"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Quarterly check"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Parts included"
+                  }
+                ],
+                "columns": "1",
+                "tone": "accent"
+              },
+              "children": []
+            },
+            {
+              "type": "core/buttons",
+              "id": "pt13",
+              "props": {
+                "align": "start"
+              },
+              "children": [
+                {
+                  "type": "core/button",
+                  "id": "pt14",
+                  "props": {
+                    "text": "Choose Complete",
+                    "link": "/contact",
+                    "variant": "secondary"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

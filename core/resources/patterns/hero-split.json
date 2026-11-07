@@ -1,0 +1,104 @@
+{
+  "title": "Heading beside a list",
+  "description": "A heading, text and a button on one side; what you offer, as a short list, on the other.",
+  "category": "Headers",
+  "blocks": [
+    {
+      "type": "core/columns",
+      "id": "hs1",
+      "props": {
+        "layout": "1-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "hs2",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "hs3",
+              "props": {
+                "text": "Everything you need, in one place",
+                "level": "2"
+              },
+              "design": {
+                "base": {
+                  "font-size": "2xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "hs4",
+              "props": {
+                "text": "<p>One team for the whole job, from the first sketch to the last check.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/buttons",
+              "id": "hs5",
+              "props": {
+                "align": "start"
+              },
+              "children": [
+                {
+                  "type": "core/button",
+                  "id": "hs6",
+                  "props": {
+                    "text": "Book a call",
+                    "link": "/contact",
+                    "variant": "primary"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "hs7",
+          "props": {
+            "align": "center"
+          },
+          "children": [
+            {
+              "type": "core/icon-list",
+              "id": "hs8",
+              "props": {
+                "items": [
+                  {
+                    "icon": "check",
+                    "text": "A clear quote before we start"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "One person to talk to"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Finished when we say"
+                  },
+                  {
+                    "icon": "check",
+                    "text": "Help after the job is done"
+                  }
+                ],
+                "columns": "1",
+                "tone": "accent"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

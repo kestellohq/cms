@@ -1,0 +1,36 @@
+{
+  "title": "Plan comparison",
+  "description": "A table comparing plans, row by row.",
+  "category": "Pricing",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "pt1",
+      "props": {
+        "text": "Compare plans",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/table",
+      "id": "pt2",
+      "props": {
+        "table": {
+          "head": true,
+          "rows": [
+            ["", "Basic", "Standard", "Complete"],
+            ["Visits", "Monthly", "Twice a month", "Weekly"],
+            ["Support", "Email", "Phone and email", "Same day"],
+            ["Checks", "Yearly", "Twice a year", "Every quarter"],
+            ["Parts", "Paid", "10% off", "Included"]
+          ]
+        },
+        "caption": "What each plan includes",
+        "striped": false,
+        "side": true
+      },
+      "children": []
+    }
+  ]
+}

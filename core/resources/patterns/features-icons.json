@@ -1,0 +1,51 @@
+{
+  "title": "Points with icons",
+  "description": "Six points with icons, in three columns.",
+  "category": "Features",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "fi1",
+      "props": {
+        "text": "Why people choose us",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/icon-list",
+      "id": "fi2",
+      "props": {
+        "items": [
+          {
+            "icon": "lightning",
+            "text": "Quick replies, usually the same day"
+          },
+          {
+            "icon": "shield",
+            "text": "Insured and certified"
+          },
+          {
+            "icon": "leaf",
+            "text": "Materials that last"
+          },
+          {
+            "icon": "users",
+            "text": "A small, steady team"
+          },
+          {
+            "icon": "tag",
+            "text": "Fixed prices, no surprises"
+          },
+          {
+            "icon": "thumbs-up",
+            "text": "Hundreds of happy clients"
+          }
+        ],
+        "columns": "3",
+        "tone": "accent"
+      },
+      "children": []
+    }
+  ]
+}

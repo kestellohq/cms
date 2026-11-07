@@ -1,0 +1,16 @@
+# Prettier formats the JavaScript, Vue and CSS sources; everything below is generated,
+# vendored or not ours.
+node_modules/
+**/assets/build/
+**/assets/vendor/
+storage/
+tools/bin/
+dist/
+core/releases/
+package-lock.json
+*.md
+*.php
+*.neon
+# Icon drawings: one quoted name and path per line, read by tests/Content/SectionBlocksTest.php
+core/resources/js/shared/icons.js
+core/resources/js/shared/social-icons.js

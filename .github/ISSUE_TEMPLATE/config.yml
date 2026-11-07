@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security problem
+    url: https://github.com/kestellohq/cms/security/advisories/new
+    about: Privately, so it can be fixed before anyone else learns of it. Never in a public issue.
+  - name: Ask a question
+    url: https://github.com/kestellohq/cms/discussions
+    about: How do I, is it possible, which is better. Discussions are for questions; issues are for bugs and plans.
+  - name: Something in the documentation
+    url: https://github.com/kestellohq/docs/issues/new/choose
+    about: A mistake, a gap or an unclear page in the Kestello docs.

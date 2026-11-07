@@ -1,0 +1,57 @@
+{
+  "groups": {
+    "enamel": "Enamel",
+    "wall": "Wall and text",
+    "type": "Type",
+    "shape": "Shape and rhythm"
+  },
+  "tokens": {
+    "plate": {
+      "type": "color",
+      "label": "Enamel",
+      "group": "enamel",
+      "value": "#1e3a8a",
+      "help": "The colour of every plate. Darker and lighter shades follow it."
+    },
+    "enamel-white": { "type": "color", "label": "Lettering on enamel", "group": "enamel", "value": "#ffffff" },
+    "cream": { "type": "color", "label": "Cream plates", "group": "enamel", "value": "#f4f1ea" },
+    "plate-open": { "type": "color", "label": "\"Open\" plate", "group": "enamel", "value": "#155e3b" },
+    "plate-notice": { "type": "color", "label": "Notice plate", "group": "enamel", "value": "#9f1d1d" },
+    "wall": { "type": "color", "label": "Wall", "group": "wall", "value": "#e9e5dc", "help": "The page behind the plates." },
+    "wall-ink": { "type": "color", "label": "Text", "group": "wall", "value": "#23221f" },
+    "wall-ink-2": { "type": "color", "label": "Quiet text", "group": "wall", "value": "#5a564c" },
+    "wall-rule": { "type": "color", "label": "Lines", "group": "wall", "value": "#cbc4b5" },
+    "font": { "type": "font", "label": "Typeface", "group": "type", "value": "archivo" },
+    "radius": { "type": "size", "label": "Plate corners", "group": "shape", "value": 18, "unit": "px", "min": 0, "max": 40 },
+    "unit": {
+      "type": "size",
+      "label": "Grid row",
+      "group": "shape",
+      "value": 64,
+      "unit": "px",
+      "min": 48,
+      "max": 96,
+      "step": 4,
+      "help": "The height of one row of the plate wall."
+    },
+    "gap": { "type": "size", "label": "Gap between plates", "group": "shape", "value": 16, "unit": "px", "min": 4, "max": 40 }
+  },
+  "fonts": {
+    "archivo": { "label": "Archivo (the theme's)", "stack": "'Archivo', 'Helvetica Neue', Arial, sans-serif", "preload": "fonts/archivo-latin.woff2" }
+  },
+  "contrast": [
+    { "fg": "wall-ink", "bg": "wall", "label": "Text on the wall" },
+    { "fg": "wall-ink-2", "bg": "wall", "label": "Quiet text on the wall" },
+    { "fg": "enamel-white", "bg": "plate", "label": "Lettering on enamel", "large": true },
+    { "fg": "plate", "bg": "cream", "label": "Enamel on cream plates" },
+    { "fg": "enamel-white", "bg": "plate-open", "label": "Lettering on the \"open\" plate", "large": true },
+    { "fg": "enamel-white", "bg": "plate-notice", "label": "Lettering on the notice plate", "large": true }
+  ],
+  "variations": {
+    "bottle-green": { "label": "Bottle green", "values": { "plate": "#1f5130" } },
+    "oxblood": { "label": "Oxblood", "values": { "plate": "#7a1f2b" } },
+    "ochre": { "label": "Ochre", "values": { "plate": "#8a5a00", "wall": "#ece6d8" } },
+    "slate": { "label": "Slate", "values": { "plate": "#334155", "wall": "#e6e6e3", "wall-rule": "#c7c7c2" } },
+    "teal": { "label": "Teal", "values": { "plate": "#0f5e63" } }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "title": "Checklist",
+  "description": "A heading and a two-column list of what is included.",
+  "category": "Features",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "fc1",
+      "props": {
+        "text": "What every visit includes",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/icon-list",
+      "id": "fc2",
+      "props": {
+        "items": [
+          {
+            "icon": "check-circle",
+            "text": "Arrival in the agreed window"
+          },
+          {
+            "icon": "check-circle",
+            "text": "Floors and furniture covered"
+          },
+          {
+            "icon": "check-circle",
+            "text": "All materials and tools"
+          },
+          {
+            "icon": "check-circle",
+            "text": "Clearing up afterwards"
+          },
+          {
+            "icon": "check-circle",
+            "text": "A written summary of the work"
+          },
+          {
+            "icon": "check-circle",
+            "text": "Twelve months' guarantee"
+          }
+        ],
+        "columns": "2",
+        "tone": "accent"
+      },
+      "children": []
+    }
+  ]
+}

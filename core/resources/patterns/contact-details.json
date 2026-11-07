@@ -1,0 +1,108 @@
+{
+  "title": "Contact details",
+  "description": "Address, phone, email and hours with icons, beside a short note and a button.",
+  "category": "Contact",
+  "blocks": [
+    {
+      "type": "core/columns",
+      "id": "cd1",
+      "props": {
+        "layout": "1-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "cd2",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "cd3",
+              "props": {
+                "text": "Find us",
+                "level": "2"
+              },
+              "children": []
+            },
+            {
+              "type": "core/icon-list",
+              "id": "cd4",
+              "props": {
+                "items": [
+                  {
+                    "icon": "map-pin",
+                    "text": "4 Market Street, Leeds LS1 6DT"
+                  },
+                  {
+                    "icon": "phone",
+                    "text": "0113 496 0000"
+                  },
+                  {
+                    "icon": "envelope",
+                    "text": "hello@example.com"
+                  },
+                  {
+                    "icon": "clock",
+                    "text": "Monday to Friday, 9:00 to 17:30"
+                  }
+                ],
+                "columns": "1",
+                "tone": "text"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "cd5",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "cd6",
+              "props": {
+                "text": "Send us a message",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "cd7",
+              "props": {
+                "text": "<p>Tell us a little about what you need and when. We reply within one working day.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/buttons",
+              "id": "cd8",
+              "props": {
+                "align": "start"
+              },
+              "children": [
+                {
+                  "type": "core/button",
+                  "id": "cd9",
+                  "props": {
+                    "text": "Email us",
+                    "link": "mailto:hello@example.com",
+                    "variant": "primary"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

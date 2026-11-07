@@ -1,0 +1,295 @@
+{
+  "title": "Home page",
+  "description": "A banner, three points, quotes from customers and a call to action.",
+  "category": "Pages",
+  "layout": true,
+  "blocks": [
+    {
+      "type": "core/cover",
+      "id": "ph1",
+      "props": {
+        "height": "short",
+        "align": "center",
+        "valign": "center",
+        "width": "full",
+        "shade": "dark",
+        "strength": 45,
+        "tag": "section"
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "ph2",
+          "props": {
+            "text": "Good work, done properly",
+            "level": "2"
+          },
+          "design": {
+            "base": {
+              "font-size": "3xl"
+            }
+          },
+          "children": []
+        },
+        {
+          "type": "core/text",
+          "id": "ph3",
+          "props": {
+            "text": "<p>We plan, build and look after it, so you can get on with everything else.</p>"
+          },
+          "children": []
+        },
+        {
+          "type": "core/buttons",
+          "id": "ph4",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/button",
+              "id": "ph5",
+              "props": {
+                "text": "Get in touch",
+                "link": "/contact",
+                "variant": "primary"
+              },
+              "children": []
+            },
+            {
+              "type": "core/button",
+              "id": "ph6",
+              "props": {
+                "text": "See our work",
+                "link": "/work",
+                "variant": "secondary"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "core/heading",
+      "id": "ph7",
+      "props": {
+        "text": "How we work",
+        "level": "2",
+        "align": "center"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "ph8",
+      "props": {
+        "layout": "1-1-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "ph9",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pha",
+              "props": {
+                "text": "Plan",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "phb",
+              "props": {
+                "text": "<p>We listen first, then put the plan in writing, with dates and a price.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "phc",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "phd",
+              "props": {
+                "text": "Make",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "phe",
+              "props": {
+                "text": "<p>You see progress every week, and nothing changes without you knowing.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "phf",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "ph10",
+              "props": {
+                "text": "Look after",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "ph11",
+              "props": {
+                "text": "<p>When it is done we stay around, for questions and the odd repair.</p>"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "core/columns",
+      "id": "ph12",
+      "props": {
+        "layout": "1-1-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "ph13",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/quote",
+              "id": "ph14",
+              "props": {
+                "text": "Finished a day early, and spotless.",
+                "cite": "Marta"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "ph15",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/quote",
+              "id": "ph16",
+              "props": {
+                "text": "Clear prices and no surprises.",
+                "cite": "Daniel"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "ph17",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/quote",
+              "id": "ph18",
+              "props": {
+                "text": "Our third job with them.",
+                "cite": "Priya"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "core/group",
+      "id": "ph19",
+      "props": {
+        "tag": "section",
+        "width": "wide",
+        "tone": "inverse"
+      },
+      "design": {
+        "base": {
+          "padding-top": "xl",
+          "padding-right": "xl",
+          "padding-bottom": "xl",
+          "padding-left": "xl"
+        }
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "ph1a",
+          "props": {
+            "text": "Ready when you are",
+            "level": "2",
+            "align": "center"
+          },
+          "children": []
+        },
+        {
+          "type": "core/text",
+          "id": "ph1b",
+          "props": {
+            "text": "<p>Tell us what you have in mind. We reply within a working day.</p>",
+            "align": "center"
+          },
+          "children": []
+        },
+        {
+          "type": "core/buttons",
+          "id": "ph1c",
+          "props": {
+            "align": "center"
+          },
+          "children": [
+            {
+              "type": "core/button",
+              "id": "ph1d",
+              "props": {
+                "text": "Get in touch",
+                "link": "/contact",
+                "variant": "primary"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

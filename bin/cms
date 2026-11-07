@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * Kestello CLI. Same core resolution as public/index.php.
+ */
+
+$root = dirname(__DIR__);
+$core = is_file($root . '/core/current.php')
+    ? $root . '/core/releases/' . (require $root . '/core/current.php')
+    : $root . '/core';
+
+require $core . '/bootstrap.php';
+
+exit(Kestello\Kernel::create($root)->handleConsole($argv));

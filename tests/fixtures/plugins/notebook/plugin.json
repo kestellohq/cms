@@ -1,0 +1,12 @@
+{
+  "slug": "notebook",
+  "name": "Notebook",
+  "version": "1.0.0",
+  "description": "Test fixture: the smallest plugin that uses each part of the plugin lifecycle (a migration, a content type with an indexed field, a taxonomy, a capability, an endpoint and settings). Not shipped.",
+  "requires": {
+    "core": "^0.1",
+    "php": ">=8.4"
+  },
+  "namespace": "Plugins\\Notebook\\",
+  "provider": "Plugins\\Notebook\\NotebookProvider"
+}

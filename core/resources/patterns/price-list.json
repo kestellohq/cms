@@ -1,0 +1,36 @@
+{
+  "title": "Price list",
+  "description": "A heading and a striped table of items and prices.",
+  "category": "Lists and tables",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "pl1",
+      "props": {
+        "text": "Prices",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/table",
+      "id": "pl2",
+      "props": {
+        "table": {
+          "head": true,
+          "rows": [
+            ["Item", "Price"],
+            ["Haircut", "£28"],
+            ["Cut and colour", "£75"],
+            ["Beard trim", "£15"],
+            ["Children under twelve", "£18"]
+          ]
+        },
+        "caption": "",
+        "striped": true,
+        "side": false
+      },
+      "children": []
+    }
+  ]
+}

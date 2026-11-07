@@ -1,0 +1,1 @@
+function e(e,t,n){if(n<1)return null;switch(e){case`ArrowRight`:case`ArrowDown`:return(t+1)%n;case`ArrowLeft`:case`ArrowUp`:return(t-1+n)%n;case`Home`:return 0;case`End`:return n-1;default:return null}}var t=(e,t)=>`k-tab-${e}-${t}`,n=(e,t)=>`k-panel-${e}-${t}`,r=Symbol(`k-tabs`);export{t as i,n,e as r,r as t};

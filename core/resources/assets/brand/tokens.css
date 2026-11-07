@@ -1,0 +1,10 @@
+/* Kestello brand tokens */
+:root {
+    --kestello-navy: #111827;
+    --kestello-white: #ffffff;
+    --kestello-cream: #f8f7f3;
+    --kestello-ink: #101827;
+    --kestello-muted: #64748b;
+    --kestello-accent: #6676d8; /* optional UI accent */
+    --kestello-radius: 14px;
+}

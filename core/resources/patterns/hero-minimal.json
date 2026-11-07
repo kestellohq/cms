@@ -1,0 +1,51 @@
+{
+  "title": "Large heading",
+  "description": "A large heading and a short introduction, with plenty of room. For the top of a quiet page.",
+  "category": "Headers",
+  "blocks": [
+    {
+      "type": "core/group",
+      "id": "hm1",
+      "props": {
+        "tag": "div",
+        "width": "content",
+        "tone": "plain"
+      },
+      "design": {
+        "base": {
+          "padding-top": "xl",
+          "padding-bottom": "lg"
+        }
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "hm2",
+          "props": {
+            "text": "A small studio with a long memory",
+            "level": "2"
+          },
+          "design": {
+            "base": {
+              "font-size": "3xl"
+            }
+          },
+          "children": []
+        },
+        {
+          "type": "core/text",
+          "id": "hm3",
+          "props": {
+            "text": "<p>Since 2009 we have helped people make things that last. This is how we work.</p>"
+          },
+          "design": {
+            "base": {
+              "font-size": "lg"
+            }
+          },
+          "children": []
+        }
+      ]
+    }
+  ]
+}

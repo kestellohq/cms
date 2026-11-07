@@ -1,0 +1,32 @@
+{
+  "title": "Introduction",
+  "description": "A heading and two paragraphs.",
+  "category": "Text",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "it1",
+      "props": {
+        "text": "About this place",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/text",
+      "id": "it2",
+      "props": {
+        "text": "<p>We opened in a former print shop in 2009, with one oven and a lot of borrowed chairs. The chairs are ours now, and so is the corner shop next door.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/text",
+      "id": "it3",
+      "props": {
+        "text": "<p>Everything we serve is made here, in small batches, from ingredients we can name the source of.</p>"
+      },
+      "children": []
+    }
+  ]
+}

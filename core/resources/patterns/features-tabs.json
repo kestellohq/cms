@@ -1,0 +1,78 @@
+{
+  "title": "Tabs",
+  "description": "A heading and three tabs, each with its own text.",
+  "category": "Features",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "ft1",
+      "props": {
+        "text": "Choose what suits you",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/tabs",
+      "id": "ft2",
+      "props": {
+        "look": "line",
+        "align": "start",
+        "width": "content"
+      },
+      "children": [
+        {
+          "type": "core/tab",
+          "id": "ft3",
+          "props": {
+            "label": "For homes"
+          },
+          "children": [
+            {
+              "type": "core/text",
+              "id": "ft4",
+              "props": {
+                "text": "<p>Repairs and improvements for flats and houses, at times that suit you.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/tab",
+          "id": "ft5",
+          "props": {
+            "label": "For businesses"
+          },
+          "children": [
+            {
+              "type": "core/text",
+              "id": "ft6",
+              "props": {
+                "text": "<p>Work done outside opening hours, so your customers never notice.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/tab",
+          "id": "ft7",
+          "props": {
+            "label": "For landlords"
+          },
+          "children": [
+            {
+              "type": "core/text",
+              "id": "ft8",
+              "props": {
+                "text": "<p>Quick turnarounds between tenants, with photos of everything we do.</p>"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

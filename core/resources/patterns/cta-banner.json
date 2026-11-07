@@ -1,0 +1,50 @@
+{
+  "title": "Banner",
+  "description": "A short banner with a heading and a button. Add an image under its settings.",
+  "category": "Calls to action",
+  "blocks": [
+    {
+      "type": "core/cover",
+      "id": "cb1",
+      "props": {
+        "height": "auto",
+        "align": "center",
+        "valign": "center",
+        "width": "wide",
+        "shade": "dark",
+        "strength": 45,
+        "tag": "section"
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "cb2",
+          "props": {
+            "text": "Visit the shop this weekend",
+            "level": "2"
+          },
+          "children": []
+        },
+        {
+          "type": "core/buttons",
+          "id": "cb3",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/button",
+              "id": "cb4",
+              "props": {
+                "text": "Opening hours",
+                "link": "/visit",
+                "variant": "primary"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

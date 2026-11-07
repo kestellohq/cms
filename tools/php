@@ -1,0 +1,13 @@
+#!/bin/sh
+# Run PHP for the dev tools: the local php when it is 8.4 or newer, otherwise the app
+# container of docker-compose.yml (which mounts this folder at its working directory).
+# Usage: sh tools/php <script> [args...]
+set -eu
+if command -v php >/dev/null 2>&1 && php -r 'exit(PHP_VERSION_ID >= 80400 ? 0 : 1);'; then
+    exec php "$@"
+fi
+if command -v docker >/dev/null 2>&1; then
+    exec docker compose exec -T app php "$@"
+fi
+echo "error: needs PHP 8.4 or newer, or Docker with the app container running (docker compose up -d)." >&2
+exit 1

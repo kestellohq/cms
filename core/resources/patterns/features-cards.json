@@ -1,0 +1,186 @@
+{
+  "title": "Four cards",
+  "description": "Four points in bordered cards, two by two on smaller screens.",
+  "category": "Features",
+  "blocks": [
+    {
+      "type": "core/columns",
+      "id": "fc1",
+      "props": {
+        "layout": "1-1-1-1",
+        "gap": "md",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "fc2",
+          "props": {
+            "align": "start"
+          },
+          "design": {
+            "base": {
+              "padding-top": "lg",
+              "padding-right": "lg",
+              "padding-bottom": "lg",
+              "padding-left": "lg",
+              "border-width": "1px",
+              "radius": "md"
+            },
+            "phone": {
+              "padding-top": "md",
+              "padding-right": "md",
+              "padding-bottom": "md",
+              "padding-left": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "fc3",
+              "props": {
+                "text": "Repairs",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "fc4",
+              "props": {
+                "text": "<p>Small jobs, done on the day when we can.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "fc5",
+          "props": {
+            "align": "start"
+          },
+          "design": {
+            "base": {
+              "padding-top": "lg",
+              "padding-right": "lg",
+              "padding-bottom": "lg",
+              "padding-left": "lg",
+              "border-width": "1px",
+              "radius": "md"
+            },
+            "phone": {
+              "padding-top": "md",
+              "padding-right": "md",
+              "padding-bottom": "md",
+              "padding-left": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "fc6",
+              "props": {
+                "text": "Renovation",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "fc7",
+              "props": {
+                "text": "<p>Rooms, kitchens and bathrooms, start to finish.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "fc8",
+          "props": {
+            "align": "start"
+          },
+          "design": {
+            "base": {
+              "padding-top": "lg",
+              "padding-right": "lg",
+              "padding-bottom": "lg",
+              "padding-left": "lg",
+              "border-width": "1px",
+              "radius": "md"
+            },
+            "phone": {
+              "padding-top": "md",
+              "padding-right": "md",
+              "padding-bottom": "md",
+              "padding-left": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "fc9",
+              "props": {
+                "text": "Advice",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "fca",
+              "props": {
+                "text": "<p>An honest opinion before you spend anything.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "fcb",
+          "props": {
+            "align": "start"
+          },
+          "design": {
+            "base": {
+              "padding-top": "lg",
+              "padding-right": "lg",
+              "padding-bottom": "lg",
+              "padding-left": "lg",
+              "border-width": "1px",
+              "radius": "md"
+            },
+            "phone": {
+              "padding-top": "md",
+              "padding-right": "md",
+              "padding-bottom": "md",
+              "padding-left": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "fcc",
+              "props": {
+                "text": "Upkeep",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "fcd",
+              "props": {
+                "text": "<p>A yearly check, so small things stay small.</p>"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

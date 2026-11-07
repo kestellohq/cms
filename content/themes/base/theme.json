@@ -1,0 +1,12 @@
+{
+  "slug": "base",
+  "name": "Base",
+  "version": "1.1.0",
+  "description": "The default Kestello theme: enamel-sign plates on a modular wall, re-enamelled from one colour.",
+  "requires": {
+    "core": "^0.1"
+  },
+  "namespace": "Themes\\Base\\",
+  "provider": "Themes\\Base\\Theme",
+  "stylesheets": ["css/theme.css"]
+}

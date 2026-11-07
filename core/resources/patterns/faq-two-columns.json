@@ -1,0 +1,89 @@
+{
+  "title": "Questions beside an introduction",
+  "description": "A heading and short text on the left, the questions on the right.",
+  "category": "Questions",
+  "blocks": [
+    {
+      "type": "core/columns",
+      "id": "ftc1",
+      "props": {
+        "layout": "1-2",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "ftc2",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "ftc3",
+              "props": {
+                "text": "Questions",
+                "level": "2"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "ftc4",
+              "props": {
+                "text": "<p>Something else? Email us and we will add the answer here.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "ftc5",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/details",
+              "id": "ftc6",
+              "props": {
+                "summary": "How soon can you start?",
+                "text": "<p>Usually within two weeks. For urgent repairs we often come the same week.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/details",
+              "id": "ftc7",
+              "props": {
+                "summary": "Do you give fixed prices?",
+                "text": "<p>Yes. The price in your quote is the price you pay, unless you ask for changes.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/details",
+              "id": "ftc8",
+              "props": {
+                "summary": "What areas do you cover?",
+                "text": "<p>The city and anywhere within about twenty miles of it.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/details",
+              "id": "ftc9",
+              "props": {
+                "summary": "Is the work guaranteed?",
+                "text": "<p>Everything we do is guaranteed for twelve months, parts and labour.</p>"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

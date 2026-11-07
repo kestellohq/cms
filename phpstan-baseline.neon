@@ -1,0 +1,4214 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: core/src/Cms/Admin/AdminRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Admin\\AdminRegistry\:\:column\(\) has parameter \$when with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Admin/AdminRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\ApiProblem\:\:insufficientScope\(\) has parameter \$scopes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/ApiProblem.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Entry\>\:\:ofType\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/ContentEndpoint.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Revision\:\:\$author\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/DiffRevision.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Revision\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/DiffRevision.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Revision\:\:\$snapshot\.$#'
+			identifier: property.notFound
+			count: 6
+			path: core/src/Cms/Api/Endpoints/Content/DiffRevision.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\QueryBuilder\:\:with\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: core/src/Cms/Api/Endpoints/Content/DiffRevision.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Entry\>\:\:ofType\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/ListEntries.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Content\\ListEntries\:\:sort\(\) has parameter \$q with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/ListEntries.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\QueryBuilder\:\:with\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/ListRevisions.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Term\>\:\:of\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/ListTerms.php
+
+		-
+			message: '#^Cannot call method all\(\) on list\<array\<string, mixed\>\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/LookupEntries.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Entry\>\:\:ofType\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/PreviewEntryBlocks.php
+
+		-
+			message: '#^Parameter \#2 \$revision of method Kestello\\Cms\\Content\\Entries\:\:restoreRevision\(\) expects Kestello\\Cms\\Content\\Revision, array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/RestoreRevision.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Term\>\:\:of\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Content/TermEndpoint.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\ContentModels\\ContentModelEndpoint\:\:audit\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/ContentModels/ContentModelEndpoint.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Design\\DesignEndpoint\:\:hostedFonts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Design/DesignEndpoint.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Design\\DesignEndpoint\:\:overview\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Design/DesignEndpoint.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Design/ResolveThemeUpdate.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Design\\TemplateEndpoint\:\:changed\(\) has parameter \$extra with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Design/TemplateEndpoint.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Design\\TemplateEndpoint\:\:document\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Design/TemplateEndpoint.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Design\\TemplateEndpoint\:\:usedBy\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Design/TemplateEndpoint.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Design\\TemplateEndpoint\:\:withAuthors\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Design/TemplateEndpoint.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Forms\\FormEndpoint\:\:audit\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Forms/FormEndpoint.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Forms\\FormEndpoint\:\:audit\(\) has parameter \$subject with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Forms/FormEndpoint.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Forms\\GetForm\:\:meta\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Forms/GetForm.php
+
+		-
+			message: '#^Cannot call method all\(\) on list\<array\<string, mixed\>\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Media/ListMedia.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Media\\MediaEndpoint\:\:present\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Media/MediaEndpoint.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Menus\\MenuEndpoint\:\:audit\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Menus/MenuEndpoint.php
+
+		-
+			message: '#^Cannot call method all\(\) on list\<array\<string, mixed\>\>\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: core/src/Cms/Api/Endpoints/Search/FindInAdmin.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\QueryBuilder\:\:published\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Settings\\SiteSettings\:\:describe\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Settings\\SiteSettings\:\:frontPageChoices\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Settings\\SiteSettings\:\:groupsFor\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Settings\\SiteSettings\:\:permalinkFields\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Settings\\SiteSettings\:\:read\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Endpoints\\Settings\\SiteSettings\:\:syncAppConfig\(\) has parameter \$general with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\OpenApi\:\:responses\(\) should return array\<string, mixed\> but returns array\<int, array\<string, array\<string, array\<string, array\<string, array\<int\|string, array\<string, mixed\>\|string\>\|string\>\>\>\|string\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Cms/Api/OpenApi.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Resource\:\:collection\(\) has parameter \$meta with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Resource.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Resource\:\:properties\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Resource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/EntryResource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$deleted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/EntryResource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/EntryResource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$menu_order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/EntryResource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/EntryResource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/EntryResource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$template\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/EntryResource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/EntryResource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$version\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/EntryResource.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Resources\\EntryResource\:\:properties\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Resources/EntryResource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Media\\Media\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/MediaResource.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Media\\Media\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Api/Resources/MediaResource.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Resources\\MediaResource\:\:properties\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Resources/MediaResource.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Resources\\TokenResource\:\:properties\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Resources/TokenResource.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Resources\\UserResource\:\:properties\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Resources/UserResource.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 3
+			path: core/src/Cms/Api/Schema.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Schema\:\:checkList\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Schema.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Schema\:\:checkObject\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Schema.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\Schema\:\:extend\(\) has parameter \$properties with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/Schema.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\TypeScriptClient\:\:doc\(\) has parameter \$schema with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/TypeScriptClient.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\TypeScriptClient\:\:object\(\) has parameter \$schema with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/TypeScriptClient.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\TypeScriptClient\:\:operation\(\) has parameter \$op with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/TypeScriptClient.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\TypeScriptClient\:\:operations\(\) has parameter \$document with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/TypeScriptClient.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Api\\TypeScriptClient\:\:type\(\) has parameter \$schema with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Api/TypeScriptClient.php
+
+		-
+			message: '#^Property Kestello\\Cms\\Audit\\AuditLog\:\:\$listeners type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Audit/AuditLog.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\Auth\:\:login\(\) has parameter \$user with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/Auth.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\Auth\:\:refreshPassword\(\) has parameter \$user with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/Auth.php
+
+		-
+			message: '#^Property Kestello\\Cms\\Auth\\Auth\:\:\$user type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/Auth.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>container" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Auth/AuthController.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\AuthModule\:\:twoFactorRoles\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/AuthModule.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>auth" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Auth/AuthModule.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>events" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Auth/AuthModule.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>filters" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Auth/AuthModule.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\AuthRegistry\:\:authenticators\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/AuthRegistry.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>container" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Auth/External/ExternalAuthController.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\External\\IdentityResolver\:\:hasUsablePassword\(\) has parameter \$user with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/External/IdentityResolver.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\External\\OAuth2Authenticator\:\:authorizationParams\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/External/OAuth2Authenticator.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\External\\OidcAuthenticator\:\:authorizationParams\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/External/OidcAuthenticator.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\External\\OidcAuthenticator\:\:idTokenAlgorithms\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/External/OidcAuthenticator.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\LoginThrottle\:\:account\(\) has parameter \$user with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/LoginThrottle.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\Roles\:\:capabilitiesFor\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/Roles.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Auth\\Roles\:\:defaultsFor\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Auth/Roles.php
+
+		-
+			message: '#^Ternary operator condition is always false\.$#'
+			identifier: ternary.alwaysFalse
+			count: 1
+			path: core/src/Cms/Backup/DatabaseDump.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Blocks/Bindings.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Blocks/Bindings.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Blocks/Bindings.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockDesign\:\:css\(\) has parameter \$presets with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockDesign.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockDesign\:\:describe\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockDesign.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:components\(\) has parameter \$prepared with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:components\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:contains\(\) has parameter \$tree with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:describe\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:renamed\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:resolveMedia\(\) has parameter \$nodes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:visibility\(\) has parameter \$errors with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:visibility\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:visible\(\) has parameter \$v with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:walk\(\) has parameter \$allowed with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Parameter &\$errors by\-ref type of method Kestello\\Cms\\Blocks\\BlockRegistry\:\:walk\(\) expects list\<string\>, array given\.$#'
+			identifier: parameterByRef.type
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: core/src/Cms/Blocks/BlockRegistry.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Blocks/CoreBlocks.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Blocks/CoreBlocks.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Blocks/CoreBlocks.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Entry\>\:\:ofType\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Blocks/CoreBlocks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\CoreBlocks\:\:entryField\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/CoreBlocks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Blocks\\CoreBlocks\:\:query\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Blocks/CoreBlocks.php
+
+		-
+			message: '#^Parameter \#2 \$choices of static method Kestello\\Cms\\Content\\Field\:\:select\(\) expects array\<string, string\>, array\<int, string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Blocks/CoreBlocks.php
+
+		-
+			message: '#^Parameter \#2 \$choices of static method Kestello\\Cms\\Content\\Field\:\:select\(\) expects array\<string, string\>, array\<int, string\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: core/src/Cms/Blocks/CoreListBlocks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Cache\\PageTags\:\:all\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Cache/PageTags.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Cache\\TaggedPageCache\:\:versions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Cache/TaggedPageCache.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Console\\ApiClientCommand\:\:only\(\) has parameter \$paths with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Console/ApiClientCommand.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>audit" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Console/AuditPruneCommand.php
+
+		-
+			message: '#^Cannot call method all\(\) on list\<array\<string, mixed\>\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Console/Media/MediaVariantsCommand.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: core/src/Cms/Console/Package/CoreReleaseCommand.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>queue" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Console/Queue/QueueCommand.php
+
+		-
+			message: '#^Parameter \#2 \$rows of method Kestello\\Framework\\Console\\Output\:\:table\(\) expects array\<array\<string\>\>, list\<array\<int, int\|string\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Console/Queue/QueueMonitorCommand.php
+
+		-
+			message: '#^While loop condition is always true\.$#'
+			identifier: while.alwaysTrue
+			count: 1
+			path: core/src/Cms/Console/Schedule/ScheduleWorkCommand.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Conditions\:\:visible\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Conditions.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Conditions\:\:visible\(\) has parameter \$fields with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Conditions.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Conditions\:\:visibleFields\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Conditions.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Conditions\:\:visibleFields\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Conditions.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Content/ContentController.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Content/ContentController.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Content/ContentController.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Entry\>\:\:ofType\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: core/src/Cms/Content/ContentController.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Term\>\:\:of\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Content/ContentController.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\QueryBuilder\:\:published\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: core/src/Cms/Content/ContentController.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\ContentController\:\:listSeo\(\) has parameter \$feed with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/ContentController.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\ContentController\:\:onlyImage\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/ContentController.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\ContentController\:\:present\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/ContentController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Kestello\\Framework\\Settings\\Settings\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Content/ContentController.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author_id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
+			identifier: property.notFound
+			count: 2
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$menu_order\.$#'
+			identifier: property.notFound
+			count: 2
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
+			identifier: property.notFound
+			count: 4
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$template\.$#'
+			identifier: property.notFound
+			count: 2
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$version\.$#'
+			identifier: property.notFound
+			count: 2
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Revision\:\:\$entry_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Revision\:\:\$snapshot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:ofType\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Entry\>\:\:ofType\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Cannot access property \$snapshot on array\<string, mixed\>\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Cannot access property \$version on array\<string, mixed\>\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Cannot call method all\(\) on list\<array\<string, mixed\>\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Cannot call method forceFill\(\) on array\<string, mixed\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Entries\:\:autosave\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Entries\:\:data\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Entries\:\:data\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Entries\:\:schedule\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Entries\:\:slug\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Entries\:\:termInput\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Entries\:\:update\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Entries\:\:write\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Parameter \#1 \$entry of method Kestello\\Cms\\Content\\Entries\:\:published\(\) expects Kestello\\Cms\\Content\\Entry, array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Content/Entries.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: core/src/Cms/Content/Entry.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: core/src/Cms/Content/Entry.php
+
+		-
+			message: '#^Class Kestello\\Cms\\Content\\Entry has PHPDoc tag @property for property \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Entry.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: core/src/Cms/Content/Entry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Entry\:\:scopeOfType\(\) has parameter \$q with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Cms/Content/Entry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Entry\:\:scopePublished\(\) has parameter \$q with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Cms/Content/Entry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Field\:\:blocks\(\) has parameter \$allowed with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Field.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: core/src/Cms/Content/FieldFilters.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\FieldFilters\:\:apply\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Cms/Content/FieldFilters.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\FieldTypes\:\:finish\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/FieldTypes.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>blocks" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Content/Fields/BlocksField.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Entry\>\:\:ofType\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:build\(\) has parameter \$def with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:collectIds\(\) has parameter \$field with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:collectIds\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:countValues\(\) has parameter \$path with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:create\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:create\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:diff\(\) has parameter \$new with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:diff\(\) has parameter \$old with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:dotted\(\) has parameter \$path with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:exists\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:exists\(\) has parameter \$path with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:exportField\(\) has parameter \$f with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:field\(\) has parameter \$f with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:fields\(\) has parameter \$errors with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:fields\(\) has parameter \$list with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:fields\(\) has parameter \$seen with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:fields\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:find\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:flatten\(\) has parameter \$fields with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:flatten\(\) has parameter \$prefix with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:get\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:get\(\) has parameter \$path with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:has\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:has\(\) has parameter \$path with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:migrate\(\) has parameter \$changes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:move\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:move\(\) has parameter \$from with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:move\(\) has parameter \$to with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:move\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:normalize\(\) has parameter \$in with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:normalize\(\) has parameter \$previous with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:options\(\) has parameter \$errors with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:options\(\) has parameter \$in with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:options\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:present\(\) has parameter \$row with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:present\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:preview\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:preview\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:remove\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:remove\(\) has parameter \$path with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:remove\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:repeaters\(\) has parameter \$path with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:repeaters\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:set\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:set\(\) has parameter \$path with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:set\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Models\\ContentModels\:\:update\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: core/src/Cms/Content/Models/ContentModels.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Permalinks\:\:choices\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Permalinks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Permalinks\:\:looksDated\(\) has parameter \$prefix with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Permalinks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Previews\:\:entryFor\(\) has parameter \$link with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Previews.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\ReviewNotification\:\:toDatabase\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/ReviewNotification.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: core/src/Cms/Content/Reviews.php
+
+		-
+			message: '#^Parameter \#1 \$entry of method Kestello\\Cms\\Content\\Reviews\:\:editUrl\(\) expects Kestello\\Cms\\Content\\Entry, Kestello\\Framework\\Database\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Content/Reviews.php
+
+		-
+			message: '#^Parameter \#1 \$entry of method Kestello\\Cms\\Content\\Reviews\:\:record\(\) expects Kestello\\Cms\\Content\\Entry, Kestello\\Framework\\Database\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Content/Reviews.php
+
+		-
+			message: '#^Parameter \#1 \$entry of method Kestello\\Cms\\Content\\Reviews\:\:submitter\(\) expects Kestello\\Cms\\Content\\Entry, Kestello\\Framework\\Database\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Content/Reviews.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: core/src/Cms/Content/RevisionDiff.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Term\:\:onlyInUse\(\) has parameter \$q with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Cms/Content/Term.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Term\:\:onlyInUse\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Cms/Content/Term.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Term\:\:onlyInUse\(\) should return Kestello\\Framework\\Database\\Orm\\ModelQuery but returns Kestello\\Framework\\Database\\QueryBuilder\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Cms/Content/Term.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Term\:\:scopeOf\(\) has parameter \$q with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Cms/Content/Term.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Kestello\\Framework\\Database\\QueryBuilder\:\:whereExists\(\) expects Closure\(Kestello\\Framework\\Database\\QueryBuilder\)\: void, Closure\(Kestello\\Framework\\Database\\QueryBuilder\)\: Kestello\\Framework\\Database\\QueryBuilder given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Content/Term.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Terms\:\:counts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Terms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Terms\:\:update\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Terms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Content\\Terms\:\:write\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Content/Terms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\DesignBlocks\:\:entryContent\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/DesignBlocks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\DesignBlocks\:\:include\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/DesignBlocks.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Entry\>\:\:ofType\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Design/DesignCanvas.php
+
+		-
+			message: '#^Cannot access property \$status on array\<string, mixed\>\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: core/src/Cms/Design/DesignCanvas.php
+
+		-
+			message: '#^Cannot access property \$title on array\<string, mixed\>\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: core/src/Cms/Design/DesignCanvas.php
+
+		-
+			message: '#^Cannot access property \$type on array\<string, mixed\>\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: core/src/Cms/Design/DesignCanvas.php
+
+		-
+			message: '#^Cannot call method getKey\(\) on array\<string, mixed\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Design/DesignCanvas.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\DesignCanvas\:\:entry\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/DesignCanvas.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\DesignCanvas\:\:prepare\(\) has parameter \$entry with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/DesignCanvas.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\DesignCanvas\:\:prepare\(\) has parameter \$viewer with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/DesignCanvas.php
+
+		-
+			message: '#^Offset ''published'' does not exist on array\{key\: string, title\: string, source\: string, draft\: bool, info\: array\<string, mixed\>\|null, data\: array\<string, mixed\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: core/src/Cms/Design/DesignCanvas.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>title" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Design/DesignCanvas.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemeDocuments\:\:allPublished\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemeDocuments.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemeDocuments\:\:save\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemeDocuments.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemeFonts\:\:faces\(\) has parameter \$slugs with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemeFonts.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemePackages\:\:installFonts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemePackages.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemePackages\:\:json\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemePackages.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemePackages\:\:list\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemePackages.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemePackages\:\:siteStyles\(\) has parameter \$styles with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemePackages.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemePackages\:\:siteStyles\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemePackages.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemePackages\:\:usedFonts\(\) has parameter \$styles with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemePackages.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemePackages\:\:write\(\) has parameter \$fonts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemePackages.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemeStyles\:\:clean\(\) has parameter \$def with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemeStyles.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemeStyles\:\:merge\(\) has parameter \$raw with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemeStyles.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemeStyles\:\:value\(\) has parameter \$fonts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemeStyles.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemeStyles\:\:value\(\) has parameter \$token with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemeStyles.php
+
+		-
+			message: '#^Offset ''presets'' does not exist on array\{groups\: array\<string, string\>, tokens\: array\<string, array\<string, mixed\>\>, fonts\: array\<string, array\{label\: string, stack\: string\}\>, contrast\: list\<array\{fg\: string, bg\: string, label\: string\}\>, variations\: array\<string, array\{label\: string, values\: array\<string, mixed\>\}\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: core/src/Cms/Design/ThemeStyles.php
+
+		-
+			message: '#^Offset ''theme_css'' does not exist on array\{groups\: array\<string, string\>, tokens\: array\<string, array\<string, mixed\>\>, fonts\: array\<string, array\{label\: string, stack\: string\}\>, contrast\: list\<array\{fg\: string, bg\: string, label\: string\}\>, variations\: array\<string, array\{label\: string, values\: array\<string, mixed\>\}\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: core/src/Cms/Design/ThemeStyles.php
+
+		-
+			message: '#^Offset ''theme_css'' does not exist on array\{groups\: array\<string, string\>, tokens\: array\{\}, fonts\: array\<string, array\{label\: string, stack\: string\}\>, contrast\: list\<array\{fg\: string, bg\: string, label\: string\}\>, variations\: array\<string, array\{label\: string, values\: array\<string, mixed\>\}\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: core/src/Cms/Design/ThemeStyles.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$template\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Design/ThemeTemplates.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Design\\ThemeTemplates\:\:references\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Design/ThemeTemplates.php
+
+		-
+			message: '#^Offset ''published'' does not exist on array\{key\: string, title\: string, source\: string, draft\: bool, info\: array\<string, mixed\>\|null, data\: array\<string, mixed\>\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: core/src/Cms/Design/ThemeTemplates.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>active" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Extension/ExtensionManager.php
+
+		-
+			message: '#^PHPDoc tag @var with type string is not subtype of native type non\-empty\-string\|null\.$#'
+			identifier: varTag.nativeType
+			count: 3
+			path: core/src/Cms/Extension/Manifest.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: core/src/Cms/Extension/Manifest.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:cast\(\) has parameter \$f with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:checkFiles\(\) has parameter \$errors with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:checkFiles\(\) has parameter \$field with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:checkFiles\(\) has parameter \$list with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:field\(\) has parameter \$f with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:filesOf\(\) has parameter \$files with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:find\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:normalize\(\) has parameter \$in with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:options\(\) has parameter \$errors with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:options\(\) has parameter \$in with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:options\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:present\(\) has parameter \$row with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:present\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:presentSubmission\(\) has parameter \$row with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:presentSubmission\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:publicDefinition\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:save\(\) has parameter \$input with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:save\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:setStatus\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:store\(\) has parameter \$u with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:store\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\Forms\:\:submission\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Offset int on array\{\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: core/src/Cms/Forms/Forms.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\SendFormNotification\:\:body\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/SendFormNotification.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Forms\\SendFormNotification\:\:body\(\) has parameter \$form with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Forms/SendFormNotification.php
+
+		-
+			message: '#^Parameter \#2 \$details of static method Kestello\\Cms\\Health\\HealthResult\:\:recommended\(\) expects array\<string, bool\|float\|int\|string\|null\>, array\<string, list\<string\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Health/CoreHealthChecks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Health\\HealthAlertNotification\:\:toDatabase\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Health/HealthAlertNotification.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Health\\HealthResult\:\:critical\(\) has parameter \$action with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Health/HealthResult.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Health\\HealthResult\:\:recommended\(\) has parameter \$action with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Health/HealthResult.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Health\\PlatformChangedNotification\:\:toDatabase\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Health/PlatformChangedNotification.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Health\\SiteHealth\:\:runOne\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Health/SiteHealth.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Hooks\\HookRegistry\:\:deprecation\(\) has parameter \$d with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Hooks/HookRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Hooks\\HookRegistry\:\:event\(\) has parameter \$deprecated with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Hooks/HookRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Installer\\InstallerController\:\:getInstallerSession\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Installer/InstallerController.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Installer\\InstallerController\:\:runRequirementChecks\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Installer/InstallerController.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Installer\\InstallerController\:\:saveInstallerSession\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Installer/InstallerController.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Installer\\InstallerController\:\:writeConfig\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Installer/InstallerController.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Installer\\InstallerController\:\:writeConfigFile\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Installer/InstallerController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between bool and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: core/src/Cms/Media/Image/GdImageHandle.php
+
+		-
+			message: '#^Class Kestello\\Cms\\Media\\Media has PHPDoc tag @property for property \$meta with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Media/Media.php
+
+		-
+			message: '#^Offset ''mime'' on array\{0\: int\<0, max\>, 1\: int\<0, max\>, 2\: int, 3\: string, mime\: string, channels\?\: int, bits\?\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: core/src/Cms/Media/MediaLibrary.php
+
+		-
+			message: '#^Offset 0 on array\{0\: int\<0, max\>, 1\: int\<0, max\>, 2\: int, 3\: string, mime\: string, channels\?\: int, bits\?\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: core/src/Cms/Media/MediaLibrary.php
+
+		-
+			message: '#^Offset 1 on array\{0\: int\<0, max\>, 1\: int\<0, max\>, 2\: int, 3\: string, mime\: string, channels\?\: int, bits\?\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: core/src/Cms/Media/MediaLibrary.php
+
+		-
+			message: '#^Cannot call method all\(\) on list\<array\<string, mixed\>\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Media/MediaPresenter.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Media\\MediaSize\:\:cropBox\(\) has parameter \$focus with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Media/MediaSize.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Media\\MediaSize\:\:spec\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Media/MediaSize.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Media\\MediaStorage\:\:pending\(\) has parameter \$m with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Media/MediaStorage.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Media\\MediaStorage\:\:remaining\(\) has parameter \$m with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Media/MediaStorage.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Media\\MediaStorage\:\:save\(\) has parameter \$state with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Media/MediaStorage.php
+
+		-
+			message: '#^Empty array passed to foreach\.$#'
+			identifier: foreach.emptyArray
+			count: 1
+			path: core/src/Cms/Media/MediaVariants.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Media\\MediaVariants\:\:deleteRow\(\) has parameter \$row with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Media/MediaVariants.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Media\\MediaVariants\:\:plan\(\) has parameter \$only with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Media/MediaVariants.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Media\\MediaVariants\:\:planned\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Media/MediaVariants.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Media\\Optimizer\:\:use\(\) has parameter \$paths with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Media/Optimizer.php
+
+		-
+			message: '#^Cannot access property \$status on array\<string, mixed\>\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Cannot access property \$title on array\<string, mixed\>\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Cannot access property \$type on array\<string, mixed\>\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Cannot call method getKey\(\) on array\<string, mixed\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Cannot call method path\(\) on array\<string, mixed\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Cannot call method publicAncestors\(\) on array\<string, mixed\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Menus\\Menus\:\:linkFor\(\) has parameter \$item with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Menus\\Menus\:\:linkFor\(\) has parameter \$links with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Menus\\Menus\:\:present\(\) has parameter \$items with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Menus\\Menus\:\:present\(\) has parameter \$links with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Parameter \#1 \$q of static method Kestello\\Cms\\Content\\Term\:\:onlyInUse\(\) expects Kestello\\Framework\\Database\\Orm\\ModelQuery, Kestello\\Framework\\Database\\QueryBuilder given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Parameter \#1 \$trees of method Kestello\\Cms\\Menus\\Menus\:\:links\(\) expects list\<list\<array\<string, mixed\>\>\>, array\<string, list\<array\<string, mixed\>\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: core/src/Cms/Menus/Menus.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Models\\User\:\:\$password\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Models/User.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Models/User.php
+
+		-
+			message: '#^Property Kestello\\Cms\\Notifications\\MailMessage\:\:\$action type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Notifications/MailMessage.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Notifications\\Notification\:\:toDatabase\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Notifications/Notification.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Package\\Update\\CoreUpdater\:\:allowed\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Package/Update/CoreUpdater.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Package\\Update\\CoreUpdater\:\:apply\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Package/Update/CoreUpdater.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Package\\Update\\CoreUpdater\:\:problems\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Package/Update/CoreUpdater.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: core/src/Cms/Package/Update/UpdateProbe.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Package\\Update\\Updater\:\:apply\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Package/Update/Updater.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Package\\Update\\Updater\:\:check\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Package/Update/Updater.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Package\\Update\\Updater\:\:problems\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Package/Update/Updater.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>secrets" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: core/src/Cms/Platform/PlatformManager.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Contracts\\Queue\\Job\:\:handle\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Queue/JobQueue.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Redirects\\Redirects\:\:apply\(\) has parameter \$rule with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Redirects/Redirects.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Redirects\\Redirects\:\:leadsBack\(\) has parameter \$rule with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Redirects/Redirects.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Redirects\\Redirects\:\:present\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Redirects/Redirects.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Redirects\\Redirects\:\:validate\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Redirects/Redirects.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Redirects/RedirectsModule.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Search\\DatabaseEngine\:\:tagFilter\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Search/DatabaseEngine.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Search/SearchManager.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
+			identifier: property.notFound
+			count: 4
+			path: core/src/Cms/Search/SearchManager.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Search/SearchManager.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$terms\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Search/SearchManager.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\QueryBuilder\:\:with\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: core/src/Cms/Search/SearchManager.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Search\\SearchManager\:\:blockText\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Search/SearchManager.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Search\\SearchManager\:\:snippet\(\) has parameter \$terms with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Search/SearchManager.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Entry\>\:\:ofType\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: core/src/Cms/Site/Discovery.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Term\>\:\:of\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: core/src/Cms/Site/Discovery.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\QueryBuilder\:\:published\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Site/Discovery.php
+
+		-
+			message: '#^Cannot call method all\(\) on list\<array\<string, mixed\>\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Cms/Site/Discovery.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Site\\Discovery\:\:atom\(\) has parameter \$feed with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Site/Discovery.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Site\\Discovery\:\:rss\(\) has parameter \$feed with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Site/Discovery.php
+
+		-
+			message: '#^Method Kestello\\Cms\\View\\PageRegistry\:\:manifestFiles\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/View/PageRegistry.php
+
+		-
+			message: '#^Method Kestello\\Cms\\View\\PageRegistry\:\:walk\(\) has parameter \$seen with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/View/PageRegistry.php
+
+		-
+			message: '#^Property Kestello\\Cms\\View\\PageRegistry\:\:\$manifests is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: core/src/Cms/View/PageRegistry.php
+
+		-
+			message: '#^Cannot unset offset ''preload'' on array\{component\: string, props\: array\<string, mixed\>, url\: string, version\: string\}\.$#'
+			identifier: unset.offset
+			count: 1
+			path: core/src/Cms/View/PageRenderer.php
+
+		-
+			message: '#^Empty array passed to foreach\.$#'
+			identifier: foreach.emptyArray
+			count: 1
+			path: core/src/Cms/View/PageRenderer.php
+
+		-
+			message: '#^Method Kestello\\Cms\\View\\PageRenderer\:\:__construct\(\) has parameter \$body with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/View/PageRenderer.php
+
+		-
+			message: '#^Method Kestello\\Cms\\View\\PageRenderer\:\:__construct\(\) has parameter \$head with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/View/PageRenderer.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Webhooks\\WebhookDisabledNotification\:\:toDatabase\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Webhooks/WebhookDisabledNotification.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: core/src/Cms/Webhooks/Webhooks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Webhooks\\Webhooks\:\:payload\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Webhooks/Webhooks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Webhooks\\Webhooks\:\:ping\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Webhooks/Webhooks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Webhooks\\Webhooks\:\:present\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Webhooks/Webhooks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Webhooks\\Webhooks\:\:presentDelivery\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Webhooks/Webhooks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Webhooks\\Webhooks\:\:redeliver\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Webhooks/Webhooks.php
+
+		-
+			message: '#^Method Kestello\\Cms\\Webhooks\\Webhooks\:\:update\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Cms/Webhooks/Webhooks.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Framework\\Database\\Model\:\:\$author\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Webhooks/WebhooksModule.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Framework\\Database\\Model\:\:\$deleted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Webhooks/WebhooksModule.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Framework\\Database\\Model\:\:\$published_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Webhooks/WebhooksModule.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Framework\\Database\\Model\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Webhooks/WebhooksModule.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Framework\\Database\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Webhooks/WebhooksModule.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Framework\\Database\\Model\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Webhooks/WebhooksModule.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Framework\\Database\\Model\:\:\$type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Webhooks/WebhooksModule.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Framework\\Database\\Model\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Cms/Webhooks/WebhooksModule.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Model\:\:isPublished\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Webhooks/WebhooksModule.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Model\:\:path\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Cms/Webhooks/WebhooksModule.php
+
+		-
+			message: '#^Method Kestello\\Contracts\\Search\\SearchQuery\:\:terms\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Contracts/Search/SearchQuery.php
+
+		-
+			message: '#^PHPDoc tag @param has invalid value \(Closure\(string \$message, array\<string, mixed\> \$params \= \[\], string \$domain \= ''core''\)\: void \$fail\)\: Unexpected token "\(", expected variable at offset 25 on line 2$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: core/src/Contracts/Validation/Rule.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$primary$#'
+			identifier: parameter.notFound
+			count: 1
+			path: core/src/Framework/Cache/FailoverStore.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Console\\Application\:\:parseArguments\(\) has parameter \$argv with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Console/Application.php
+
+		-
+			message: '#^Property Kestello\\Framework\\Console\\Application\:\:\$basePath is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: core/src/Framework/Console/Application.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Console\\Command\:\:argument\(\) has parameter \$arguments with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Console/Command.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Console\\Command\:\:hasFlag\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Console/Command.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Console\\Command\:\:option\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Console/Command.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Console\\Commands\\MigrateCommand\:\:__construct\(\) has parameter \$migrationsPath with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Console/Commands/MigrateCommand.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Console\\Commands\\MigrateFreshCommand\:\:__construct\(\) has parameter \$migrationsPath with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Console/Commands/MigrateFreshCommand.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Console\\Commands\\MigrateResetCommand\:\:__construct\(\) has parameter \$migrationsPath with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Console/Commands/MigrateResetCommand.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Console\\Commands\\MigrateRollbackCommand\:\:__construct\(\) has parameter \$migrationsPath with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Console/Commands/MigrateRollbackCommand.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Console\\Commands\\MigrateStatusCommand\:\:__construct\(\) has parameter \$migrationsPath with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Console/Commands/MigrateStatusCommand.php
+
+		-
+			message: '#^Constant Kestello\\Framework\\Console\\Output\:\:BG_GREEN is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: core/src/Framework/Console/Output.php
+
+		-
+			message: '#^Constant Kestello\\Framework\\Console\\Output\:\:BG_RED is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: core/src/Framework/Console/Output.php
+
+		-
+			message: '#^Parameter \#1 \$callback of function spl_autoload_register expects \(callable\(string\)\: void\)\|null, array\{\$this\(Kestello\\Framework\\Core\\Autoloader\), ''loadClass''\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Framework/Core/Autoloader.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Core\\Response\:\:__construct\(\) has parameter \$headers with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Core/Response.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Core\\Router\:\:delete\(\) has parameter \$handler with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Core/Router.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Core\\Router\:\:get\(\) has parameter \$handler with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Core/Router.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Core\\Router\:\:patch\(\) has parameter \$handler with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Core/Router.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Core\\Router\:\:post\(\) has parameter \$handler with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Core/Router.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Core\\Router\:\:put\(\) has parameter \$handler with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Core/Router.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Blueprint\:\:add\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Blueprint.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 4
+			path: core/src/Framework/Database/Connection.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Connection\:\:createDatabase\(\) has parameter \$config with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Connection.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Connection\:\:execute\(\) has parameter \$bindings with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Connection.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Connection\:\:query\(\) has parameter \$bindings with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Connection.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Connection\:\:select\(\) has parameter \$bindings with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Connection.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: core/src/Framework/Database/Grammar/MySqlSchemaGrammar.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Grammar\\MySqlSchemaGrammar\:\:tableSuffix\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Grammar/MySqlSchemaGrammar.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Grammar\\PostgresGrammar\:\:compileLike\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Grammar/PostgresGrammar.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: core/src/Framework/Database/Grammar/PostgresSchemaGrammar.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Grammar\\PostgresSchemaGrammar\:\:compileCreate\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Grammar/PostgresSchemaGrammar.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Grammar\\QueryGrammar\:\:compileBasic\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Grammar/QueryGrammar.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Grammar\\QueryGrammar\:\:compileLike\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Grammar/QueryGrammar.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Grammar\\QueryGrammar\:\:placeholders\(\) has parameter \$values with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Grammar/QueryGrammar.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Grammar\\QueryGrammar\:\:wrapNested\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Grammar/QueryGrammar.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: core/src/Framework/Database/Grammar/SchemaGrammar.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Grammar\\SchemaGrammar\:\:compileCreate\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Grammar/SchemaGrammar.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Grammar\\SchemaGrammar\:\:tableSuffix\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Grammar/SchemaGrammar.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: core/src/Framework/Database/Grammar/SqliteSchemaGrammar.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\MigrationRunner\:\:getPendingMigrations\(\) has parameter \$ran with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/MigrationRunner.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:__call\(\) has parameter \$arguments with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:__callStatic\(\) has parameter \$arguments with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:__construct\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:callScope\(\) has parameter \$arguments with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:callScope\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:create\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:destroy\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:fill\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:findMany\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:forceCreate\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:forceFill\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:fresh\(\) should return static\(Kestello\\Framework\\Database\\Model\)\|null but returns Kestello\\Framework\\Database\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:load\(\) has parameter \$relations with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:loadMissing\(\) has parameter \$relations with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:newFromBuilder\(\) has parameter \$row with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:newInstance\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:update\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:where\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:where\(\) should return Kestello\\Framework\\Database\\Orm\\ModelQuery but returns Kestello\\Framework\\Database\\QueryBuilder\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:with\(\) has parameter \$relations with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Model\:\:with\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 5
+			path: core/src/Framework/Database/Model.php
+
+		-
+			message: '#^Match expression does not handle remaining values\: string\|null$#'
+			identifier: match.unhandled
+			count: 2
+			path: core/src/Framework/Database/Orm/Caster.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelCollection\:\:load\(\) has parameter \$relations with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelCollection.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelCollection\:\:loadMissing\(\) has parameter \$relations with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelCollection.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelExtension\:\:scope\(\) has parameter \$scope with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelExtension.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:__call\(\) has parameter \$arguments with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:decrement\(\) has parameter \$extra with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:doesntHave\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:findMany\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:findMany\(\) should return Kestello\\Framework\\Database\\Orm\\ModelCollection\<TModel of Kestello\\Framework\\Database\\Model\> but returns Kestello\\Framework\\Database\\Orm\\ModelCollection\<Kestello\\Framework\\Database\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:firstOrCreate\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:firstOrCreate\(\) has parameter \$values with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:firstOrNew\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:firstOrNew\(\) has parameter \$values with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:has\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:hydrate\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:increment\(\) has parameter \$extra with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:onlyTrashed\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:orWhereHas\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:update\(\) has parameter \$values with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:updateOrCreate\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:updateOrCreate\(\) has parameter \$values with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:when\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:whereAll\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:whereDoesntHave\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:whereHas\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:whereKey\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:whereKeyNot\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:with\(\) has parameter \$relations with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:with\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:withMap\(\) has parameter \$map with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:withMap\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:withTrashed\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\ModelQuery\:\:without\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/ModelQuery.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsTo\:\:__construct\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsTo.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsTo\:\:existenceQuery\(\) has parameter \$sub with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsTo.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsTo\:\:existenceQuery\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsTo.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsTo\:\:existenceQuery\(\) should return Kestello\\Framework\\Database\\Orm\\ModelQuery but returns Kestello\\Framework\\Database\\QueryBuilder\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsTo.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsTo\:\:match\(\) has parameter \$results with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsTo.php
+
+		-
+			message: '#^Access to an undefined property Kestello\\Framework\\Database\\Model\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Cannot call method setRelation\(\) on array\<string, mixed\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Cannot call method takeAttributesPrefixed\(\) on array\<string, mixed\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:__construct\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:attach\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:existenceQuery\(\) has parameter \$sub with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:existenceQuery\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:existenceQuery\(\) should return Kestello\\Framework\\Database\\Orm\\ModelQuery but returns Kestello\\Framework\\Database\\QueryBuilder\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:fetch\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:fetch\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:fetch\(\) should return Kestello\\Framework\\Database\\Orm\\ModelCollection but returns list\<array\<string, mixed\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:getResults\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:join\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:match\(\) has parameter \$results with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:pivotRow\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:pivotRow\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:syncWithoutDetaching\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\BelongsToMany\:\:updateExistingPivot\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/BelongsToMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\HasMany\:\:getResults\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/HasMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\HasMany\:\:match\(\) has parameter \$results with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/HasMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\HasOne\:\:match\(\) has parameter \$results with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/HasOne.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\HasOneOrMany\:\:__construct\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/HasOneOrMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\HasOneOrMany\:\:create\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/HasOneOrMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\HasOneOrMany\:\:createMany\(\) has parameter \$rows with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/HasOneOrMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\HasOneOrMany\:\:existenceQuery\(\) has parameter \$sub with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/HasOneOrMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\HasOneOrMany\:\:existenceQuery\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/HasOneOrMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\HasOneOrMany\:\:extraConstraints\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/HasOneOrMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\HasOneOrMany\:\:group\(\) has parameter \$results with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/HasOneOrMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\MorphMany\:\:__construct\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/MorphMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\MorphMany\:\:extraConstraints\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/MorphMany.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\MorphOne\:\:__construct\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/MorphOne.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\MorphOne\:\:extraConstraints\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/MorphOne.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Framework\\Database\\QueryBuilder\:\:withMap\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/MorphTo.php
+
+		-
+			message: '#^Cannot call method getKey\(\) on array\<string, mixed\>\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/MorphTo.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\MorphTo\:\:__construct\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/MorphTo.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\MorphTo\:\:existenceQuery\(\) has parameter \$sub with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/MorphTo.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\MorphTo\:\:existenceQuery\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/MorphTo.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\MorphTo\:\:match\(\) has parameter \$results with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/MorphTo.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\Relation\:\:__call\(\) has parameter \$arguments with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\Relation\:\:__construct\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\Relation\:\:existenceQuery\(\) has parameter \$sub with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\Relation\:\:existenceQuery\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\Relation\:\:fetch\(\) has parameter \$query with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\Relation\:\:fetch\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\Relation\:\:get\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\Relation\:\:getQuery\(\) return type with generic class Kestello\\Framework\\Database\\Orm\\ModelQuery does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\Orm\\Relations\\Relation\:\:match\(\) has parameter \$results with generic class Kestello\\Framework\\Database\\Orm\\ModelCollection but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains generic class Kestello\\Framework\\Database\\Orm\\ModelQuery but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^Parameter \#1 \$query of method Kestello\\Framework\\Database\\Orm\\Relations\\Relation\:\:fetch\(\) expects Kestello\\Framework\\Database\\Orm\\ModelQuery, Kestello\\Framework\\Database\\QueryBuilder given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Framework/Database/Orm/Relations/Relation.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\QueryBuilder\:\:decrement\(\) has parameter \$extra with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/QueryBuilder.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\QueryBuilder\:\:havingRaw\(\) has parameter \$bindings with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/QueryBuilder.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\QueryBuilder\:\:raw\(\) has parameter \$bindings with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/QueryBuilder.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\QueryBuilder\:\:selectRaw\(\) has parameter \$bindings with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/QueryBuilder.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\QueryBuilder\:\:whereAny\(\) has parameter \$columns with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/QueryBuilder.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\QueryBuilder\:\:whereIn\(\) has parameter \$values with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/QueryBuilder.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\QueryBuilder\:\:whereNotIn\(\) has parameter \$values with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/QueryBuilder.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Database\\QueryBuilder\:\:whereRaw\(\) has parameter \$bindings with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Database/QueryBuilder.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 4
+			path: core/src/Framework/Database/QueryBuilder.php
+
+		-
+			message: '#^Property Kestello\\Framework\\Http\\Client\\FakeTransport\:\:\$routes type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Http/Client/FakeTransport.php
+
+		-
+			message: '#^Offset 1 on array\{non\-falsy\-string, '''', non\-empty\-string\}\|array\{non\-falsy\-string, non\-empty\-string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: core/src/Framework/Mail/MailTemplate.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Mail\\Mailer\:\:loadSettings\(\) has parameter \$override with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Mail/Mailer.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Mail\\Mailer\:\:recipients\(\) has parameter \$to with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Mail/Mailer.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Mail\\Mailer\:\:sendViaPhpMail\(\) has parameter \$headers with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Mail/Mailer.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Mail\\Mailer\:\:sendViaPhpMail\(\) has parameter \$recipients with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Mail/Mailer.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Mail\\Mailer\:\:sendViaSmtp\(\) has parameter \$headers with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Mail/Mailer.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Mail\\Mailer\:\:sendViaSmtp\(\) has parameter \$recipients with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Mail/Mailer.php
+
+		-
+			message: '#^Method class@anonymous/core/src/Framework/Mail/Mailer\.php\:310\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Mail/Mailer.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Redis\\RedisClient\:\:eval\(\) has parameter \$args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Redis/RedisClient.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Redis\\RedisClient\:\:eval\(\) has parameter \$keys with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Redis/RedisClient.php
+
+		-
+			message: '#^Offset ''timed_out'' on array\{timed_out\: bool, blocked\: bool, eof\: bool, unread_bytes\: int, stream_type\: string, wrapper_type\: string, wrapper_data\: mixed, mode\: string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: core/src/Framework/Redis/RedisClient.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: core/src/Framework/Security/CsrfMiddleware.php
+
+		-
+			message: '#^Offset ''samesite'' on array\{lifetime\: int\<0, max\>, path\: non\-falsy\-string, domain\: string, secure\: bool, httponly\: bool, samesite\: ''Lax''\|''lax''\|''None''\|''none''\|''Strict''\|''strict''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: core/src/Framework/Session/Session.php
+
+		-
+			message: '#^Template type T of method Kestello\\Framework\\Storage\\CachedDisk\:\:remember\(\) is not referenced in a parameter\.$#'
+			identifier: method.templateTypeNotInParameter
+			count: 1
+			path: core/src/Framework/Storage/CachedDisk.php
+
+		-
+			message: '#^Call to an undefined method Kestello\\Contracts\\Storage\\Disk\:\:presignedPost\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: core/src/Framework/Storage/ScopedDisk.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Storage\\StorageManager\:\:define\(\) has parameter \$config with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Storage/StorageManager.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Storage\\StorageManager\:\:servedLocally\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Storage/StorageManager.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Testing\\TestCase\:\:assertContains\(\) has parameter \$haystack with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Testing/TestCase.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Testing\\TestCase\:\:assertCount\(\) has parameter \$value with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Testing/TestCase.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Testing\\TestCase\:\:assertNotContains\(\) has parameter \$haystack with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Testing/TestCase.php
+
+		-
+			message: '#^Parameter \$value of method Kestello\\Framework\\Testing\\TestCase\:\:assertCount\(\) has invalid type Kestello\\Framework\\Testing\\countable\.$#'
+			identifier: class.notFound
+			count: 1
+			path: core/src/Framework/Testing/TestCase.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: core/src/Framework/Testing/TestRunner.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Validation\\FormRequest\:\:flashErrorsAndInput\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Validation/FormRequest.php
+
+		-
+			message: '#^Property Kestello\\Framework\\Validation\\FormRequest\:\:\$validated is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: core/src/Framework/Validation/FormRequest.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: core/src/Framework/Validation/FormRequest.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:expand\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Validation/Validator.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:extension\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Validation/Validator.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:parse\(\) has parameter \$spec with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Validation/Validator.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:ruleExists\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Validation/Validator.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:ruleUnique\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Validation/Validator.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:validateOrFail\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Validation/Validator.php
+
+		-
+			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:validated\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Framework/Validation/Validator.php
+
+		-
+			message: '#^Parameter \#3 \$dispatch of class Kestello\\Cms\\Platform\\PlatformManager constructor expects \(Closure\(object\)\: void\)\|null, Closure\<T of object\>\(T\)\: T given\.$#'
+			identifier: argument.type
+			count: 1
+			path: core/src/Kernel.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:chunk\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:collapse\(\) has parameter \$array with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:collapse\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:dot\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:dot\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:except\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:except\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:exists\(\) has parameter \$array with generic interface ArrayAccess but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:exists\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:first\(\) has parameter \$array with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:flatten\(\) has parameter \$array with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:flatten\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:forget\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:forget\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:groupBy\(\) has parameter \$array with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:groupBy\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:has\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:isAssoc\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:isList\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:keyBy\(\) has parameter \$array with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:keyBy\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:last\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:map\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:map\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:mapWithKeys\(\) has parameter \$array with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:mapWithKeys\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:only\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:only\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:partition\(\) has parameter \$array with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:partition\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:pluck\(\) has parameter \$array with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:pluck\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:prepend\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:prepend\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:query\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:random\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:set\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:set\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:shuffle\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:shuffle\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:sortBy\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:sortBy\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:stripNulls\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:stripNulls\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:undot\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:undot\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:where\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:where\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:whereNotNull\(\) has parameter \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:whereNotNull\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Arr\:\:wrap\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Arr.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:arrayOf\(\) has parameter \$items with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:arrayOf\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:chunk\(\) should return static\(Kestello\\Support\\Collection\<int, static\(Kestello\\Support\\Collection\<TKey of \(int\|string\), TValue\>\)\>\) but returns static\(Kestello\\Support\\Collection\<int, static\(Kestello\\Support\\Collection\<\(int\|string\), mixed\>\)\>\)\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:combine\(\) has parameter \$values with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:countBy\(\) should return static\(Kestello\\Support\\Collection\<TKey of \(int\|string\), TValue\>\) but returns static\(Kestello\\Support\\Collection\<int\|string, int\<1, max\>\>\)\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:diff\(\) has parameter \$items with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:diffKeys\(\) has parameter \$items with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:flip\(\) should return static\(Kestello\\Support\\Collection\<TKey of \(int\|string\), TValue\>\) but returns static\(Kestello\\Support\\Collection\<\(int\|string\), int\|string\|TKey of \(int\|string\)\>\)\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:groupBy\(\) should return static\(Kestello\\Support\\Collection\<TKey of \(int\|string\), TValue\>\) but returns static\(Kestello\\Support\\Collection\<\(int\|string\), static\(Kestello\\Support\\Collection\<\(int\|string\), mixed\>\)\>\)\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:intersect\(\) has parameter \$items with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:intersectByKeys\(\) has parameter \$items with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:jsonSerialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:keys\(\) should return static\(Kestello\\Support\\Collection\<TKey of \(int\|string\), TValue\>\) but returns static\(Kestello\\Support\\Collection\<int, int\|string\|TKey of \(int\|string\)\>\)\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:merge\(\) has parameter \$items with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:partition\(\) should return static\(Kestello\\Support\\Collection\<int, static\(Kestello\\Support\\Collection\<TKey of \(int\|string\), TValue\>\)\>\) but returns static\(Kestello\\Support\\Collection\<int, static\(Kestello\\Support\\Collection\<\(int\|string\), mixed\>\)\>\)\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:range\(\) should return static\(Kestello\\Support\\Collection\<TKey of \(int\|string\), TValue\>\) but returns static\(Kestello\\Support\\Collection\<int, int\>\)\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:union\(\) has parameter \$items with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:whereIn\(\) has parameter \$values with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:whereNotIn\(\) has parameter \$values with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:zip\(\) has parameter \$others with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Collection\:\:zip\(\) should return static\(Kestello\\Support\\Collection\<TKey of \(int\|string\), TValue\>\) but returns static\(Kestello\\Support\\Collection\<int, static\(Kestello\\Support\\Collection\<int\|string, mixed\>\)\>\)\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Support/Collection.php
+
+		-
+			message: '#^Method Kestello\\Support\\Color\:\:palette\(\) should return array\<string, Kestello\\Support\\Color\> but returns array\<int, Kestello\\Support\\Color\>\.$#'
+			identifier: return.type
+			count: 1
+			path: core/src/Support/Color.php
+
+		-
+			message: '#^Offset 1 on ''hsl''\|''hsla''\|''oklch''\|''rgb''\|''rgba'' on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: core/src/Support/Color.php
+
+		-
+			message: '#^Method Kestello\\Support\\Csv\:\:headerKeys\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Csv.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between DateTimeImmutable and false will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 2
+			path: core/src/Support/Date.php
+
+		-
+			message: '#^Method Kestello\\Support\\Html\:\:tag\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Html.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: core/src/Support/I18n/PluralRule.php
+
+		-
+			message: '#^Offset ''msgctxt'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 2
+			path: core/src/Support/I18n/PoFile.php
+
+		-
+			message: '#^Offset ''msgid'' on array\{\} in isset\(\) does not exist\.$#'
+			identifier: isset.offset
+			count: 1
+			path: core/src/Support/I18n/PoFile.php
+
+		-
+			message: '#^Offset ''msgid_plural'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: core/src/Support/I18n/PoFile.php
+
+		-
+			message: '#^Offset ''msgstr'' on \*NEVER\* on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: core/src/Support/I18n/PoFile.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_values contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: core/src/Support/I18n/PoFile.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: core/src/Support/I18n/PoFile.php
+
+		-
+			message: '#^Return type of call to function array_values contains unresolvable type\.$#'
+			identifier: function.unresolvableReturnType
+			count: 1
+			path: core/src/Support/I18n/PoFile.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between \*NEVER\* and '''' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: core/src/Support/I18n/PoFile.php
+
+		-
+			message: '#^Anonymous function with return type void returns Generator\<int, Kestello\\Support\\Collection\<\(int\|string\), mixed\>, mixed, void\> but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: core/src/Support/LazyCollection.php
+
+		-
+			message: '#^Anonymous function with return type void returns Generator\<int, mixed, mixed, void\> but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: core/src/Support/LazyCollection.php
+
+		-
+			message: '#^Anonymous function with return type void returns Generator\<mixed, mixed, mixed, void\> but should not return anything\.$#'
+			identifier: return.void
+			count: 9
+			path: core/src/Support/LazyCollection.php
+
+		-
+			message: '#^Class Kestello\\Support\\LazyCollection implements generic interface IteratorAggregate but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Support/LazyCollection.php
+
+		-
+			message: '#^Method Kestello\\Support\\LazyCollection\:\:all\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/LazyCollection.php
+
+		-
+			message: '#^Method Kestello\\Support\\LazyCollection\:\:collect\(\) return type with generic class Kestello\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: core/src/Support/LazyCollection.php
+
+		-
+			message: '#^Offset 3 on array\{non\-empty\-string, ''''\|'' ''\|''  ''\|''   '', non\-falsy\-string, ''''\|numeric\-string, ''''\|''\)''\|''\.'', string\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 2
+			path: core/src/Support/Markdown.php
+
+		-
+			message: '#^Offset 4 on array\{non\-empty\-string, ''''\|'' ''\|''  ''\|''   '', non\-falsy\-string, ''''\|numeric\-string, ''''\|''\)''\|''\.'', string\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: core/src/Support/Markdown.php
+
+		-
+			message: '#^Property Kestello\\Support\\Markdown\:\:\$profile is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: core/src/Support/Markdown.php
+
+		-
+			message: '#^Method Kestello\\Support\\Str\:\:contains\(\) has parameter \$needles with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Str.php
+
+		-
+			message: '#^Method Kestello\\Support\\Str\:\:is\(\) has parameter \$patterns with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Str.php
+
+		-
+			message: '#^Method Kestello\\Support\\Str\:\:plural\(\) has parameter \$count with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Str.php
+
+		-
+			message: '#^Method Kestello\\Support\\Str\:\:words_\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Str.php
+
+		-
+			message: '#^Class Kestello\\Support\\Stringable has PHPDoc tag @method for method contains\(\) parameter \#1 \$needles with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Stringable.php
+
+		-
+			message: '#^Class Kestello\\Support\\Stringable has PHPDoc tag @method for method startsWith\(\) parameter \#1 \$needles with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Stringable.php
+
+		-
+			message: '#^Method Kestello\\Support\\Stringable\:\:is\(\) has parameter \$patterns with no value type specified in iterable type iterable\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Stringable.php
+
+		-
+			message: '#^Method Kestello\\Support\\Stringable\:\:replace\(\) has parameter \$replace with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Stringable.php
+
+		-
+			message: '#^Method Kestello\\Support\\Stringable\:\:replace\(\) has parameter \$search with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Stringable.php
+
+		-
+			message: '#^Empty array passed to foreach\.$#'
+			identifier: foreach.emptyArray
+			count: 2
+			path: core/src/Support/TextDiff.php
+
+		-
+			message: '#^Method Kestello\\Support\\TextDiff\:\:same\(\) has parameter \$lines with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/TextDiff.php
+
+		-
+			message: '#^Method Kestello\\Support\\Translator\:\:add\(\) has parameter \$messages with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Translator.php
+
+		-
+			message: '#^Method Kestello\\Support\\Translator\:\:choice\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Translator.php
+
+		-
+			message: '#^Method Kestello\\Support\\Translator\:\:icuParams\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Translator.php
+
+		-
+			message: '#^Method Kestello\\Support\\Url\:\:withQuery\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Url.php
+
+		-
+			message: '#^Method Kestello\\Support\\Url\:\:withoutQuery\(\) has parameter \$keys with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/Url.php
+
+		-
+			message: '#^Function Kestello\\data_set\(\) has parameter \$target with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/functions.php
+
+		-
+			message: '#^Function Kestello\\data_set\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: core/src/Support/functions.php
+
+		-
+			message: '#^Template type TKey of function Kestello\\collect\(\) is not referenced in a parameter\.$#'
+			identifier: method.templateTypeNotInParameter
+			count: 1
+			path: core/src/Support/functions.php
+
+		-
+			message: '#^Template type TValue of function Kestello\\collect\(\) is not referenced in a parameter\.$#'
+			identifier: method.templateTypeNotInParameter
+			count: 1
+			path: core/src/Support/functions.php
+

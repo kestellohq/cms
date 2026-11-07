@@ -1,0 +1,348 @@
+/*
+ * Shared rules for blocks on a page: the page's column, spacing between blocks,
+ * screen sizes a block is hidden on, and each block's own design.
+ * Used by the pages that draw blocks (content/Template, TemplateBare, Entry).
+ *
+ * Screen sizes: phone below 600px, tablet below 1024px, desktop above.
+ *
+ * Block design (shared/block-design.js): a block carries custom properties
+ * (--kd-padding-top, --kd-padding-top-tablet, ...) and data-k-d listing which
+ * are set. Each rule below applies one of them only when it is set; later
+ * rules (smaller screens) win. ":not(#k-d)" gives the rules the weight of an
+ * id, so what an editor chose beats a block's own defaults; it matches every
+ * element (there is no #k-d).
+ *
+ * The rules for each style are written out (not generated at run time) so
+ * they can be read and searched. tests/js/block-design.test.mjs checks that
+ * every style in block-design.js has its three rules here.
+ */
+
+/* the page's column: blocks sit in it with a gutter on either side; full-width ones span the page */
+.k-blocks > * {
+    box-sizing: border-box;
+    width: min(44rem, 100% - 2rem);
+    margin-inline: auto;
+}
+.k-blocks > [data-width="wide"] {
+    width: min(72rem, 100% - 2rem);
+}
+.k-blocks > [data-width="full"] {
+    width: 100%;
+}
+.k-blocks > * + *,
+.k-b-stack > * + * {
+    margin-top: 1.5rem;
+}
+/* a full-width group keeps what is inside it in the column */
+.k-blocks > .k-b-group[data-width="full"] {
+    border-radius: 0;
+}
+.k-blocks > .k-b-group[data-width="full"] > * {
+    width: min(44rem, 100% - 2rem);
+    margin-inline: auto;
+}
+
+/* hidden on some screen sizes (visibility.hide) */
+@media (max-width: 599.98px) {
+    .k-hide-phone {
+        display: none !important;
+    }
+}
+@media (min-width: 600px) and (max-width: 1023.98px) {
+    .k-hide-tablet {
+        display: none !important;
+    }
+}
+@media (min-width: 1024px) {
+    .k-hide-desktop {
+        display: none !important;
+    }
+}
+
+/* the design properties are the block's own: a child block doesn't inherit its parent's */
+@property --kd-text {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-background {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-top {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-right {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-bottom {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-left {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-margin-top {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-margin-bottom {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-font-size {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-border-width {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-border-style {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-border-color {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-radius {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-text-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-background-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-top-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-right-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-bottom-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-left-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-margin-top-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-margin-bottom-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-font-size-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-border-width-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-border-style-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-border-color-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-radius-tablet {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-text-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-background-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-top-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-right-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-bottom-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-padding-left-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-margin-top-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-margin-bottom-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-font-size-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-border-width-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-border-style-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-border-color-phone {
+    syntax: "*";
+    inherits: false;
+}
+@property --kd-radius-phone {
+    syntax: "*";
+    inherits: false;
+}
+
+/* every screen size (a width with no line style chosen draws a solid line) */
+[data-k-d~="text"]:not(#k-d) {
+    color: var(--kd-text);
+}
+[data-k-d~="background"]:not(#k-d) {
+    background-color: var(--kd-background);
+}
+[data-k-d~="padding-top"]:not(#k-d) {
+    padding-top: var(--kd-padding-top);
+}
+[data-k-d~="padding-right"]:not(#k-d) {
+    padding-right: var(--kd-padding-right);
+}
+[data-k-d~="padding-bottom"]:not(#k-d) {
+    padding-bottom: var(--kd-padding-bottom);
+}
+[data-k-d~="padding-left"]:not(#k-d) {
+    padding-left: var(--kd-padding-left);
+}
+[data-k-d~="margin-top"]:not(#k-d) {
+    margin-top: var(--kd-margin-top);
+}
+[data-k-d~="margin-bottom"]:not(#k-d) {
+    margin-bottom: var(--kd-margin-bottom);
+}
+[data-k-d~="font-size"]:not(#k-d) {
+    font-size: var(--kd-font-size);
+}
+[data-k-d~="border-width"]:not(#k-d) {
+    border-width: var(--kd-border-width);
+    border-style: var(--kd-border-style, solid);
+}
+[data-k-d~="border-style"]:not(#k-d) {
+    border-style: var(--kd-border-style);
+}
+[data-k-d~="border-color"]:not(#k-d) {
+    border-color: var(--kd-border-color);
+}
+[data-k-d~="radius"]:not(#k-d) {
+    border-radius: var(--kd-radius);
+}
+
+/* tablet and phone */
+@media (max-width: 1023.98px) {
+    [data-k-d~="text@tablet"]:not(#k-d) {
+        color: var(--kd-text-tablet);
+    }
+    [data-k-d~="background@tablet"]:not(#k-d) {
+        background-color: var(--kd-background-tablet);
+    }
+    [data-k-d~="padding-top@tablet"]:not(#k-d) {
+        padding-top: var(--kd-padding-top-tablet);
+    }
+    [data-k-d~="padding-right@tablet"]:not(#k-d) {
+        padding-right: var(--kd-padding-right-tablet);
+    }
+    [data-k-d~="padding-bottom@tablet"]:not(#k-d) {
+        padding-bottom: var(--kd-padding-bottom-tablet);
+    }
+    [data-k-d~="padding-left@tablet"]:not(#k-d) {
+        padding-left: var(--kd-padding-left-tablet);
+    }
+    [data-k-d~="margin-top@tablet"]:not(#k-d) {
+        margin-top: var(--kd-margin-top-tablet);
+    }
+    [data-k-d~="margin-bottom@tablet"]:not(#k-d) {
+        margin-bottom: var(--kd-margin-bottom-tablet);
+    }
+    [data-k-d~="font-size@tablet"]:not(#k-d) {
+        font-size: var(--kd-font-size-tablet);
+    }
+    [data-k-d~="border-width@tablet"]:not(#k-d) {
+        border-width: var(--kd-border-width-tablet);
+        border-style: var(--kd-border-style-tablet, var(--kd-border-style, solid));
+    }
+    [data-k-d~="border-style@tablet"]:not(#k-d) {
+        border-style: var(--kd-border-style-tablet);
+    }
+    [data-k-d~="border-color@tablet"]:not(#k-d) {
+        border-color: var(--kd-border-color-tablet);
+    }
+    [data-k-d~="radius@tablet"]:not(#k-d) {
+        border-radius: var(--kd-radius-tablet);
+    }
+}
+
+/* phone */
+@media (max-width: 599.98px) {
+    [data-k-d~="text@phone"]:not(#k-d) {
+        color: var(--kd-text-phone);
+    }
+    [data-k-d~="background@phone"]:not(#k-d) {
+        background-color: var(--kd-background-phone);
+    }
+    [data-k-d~="padding-top@phone"]:not(#k-d) {
+        padding-top: var(--kd-padding-top-phone);
+    }
+    [data-k-d~="padding-right@phone"]:not(#k-d) {
+        padding-right: var(--kd-padding-right-phone);
+    }
+    [data-k-d~="padding-bottom@phone"]:not(#k-d) {
+        padding-bottom: var(--kd-padding-bottom-phone);
+    }
+    [data-k-d~="padding-left@phone"]:not(#k-d) {
+        padding-left: var(--kd-padding-left-phone);
+    }
+    [data-k-d~="margin-top@phone"]:not(#k-d) {
+        margin-top: var(--kd-margin-top-phone);
+    }
+    [data-k-d~="margin-bottom@phone"]:not(#k-d) {
+        margin-bottom: var(--kd-margin-bottom-phone);
+    }
+    [data-k-d~="font-size@phone"]:not(#k-d) {
+        font-size: var(--kd-font-size-phone);
+    }
+    [data-k-d~="border-width@phone"]:not(#k-d) {
+        border-width: var(--kd-border-width-phone);
+        border-style: var(--kd-border-style-phone, var(--kd-border-style-tablet, var(--kd-border-style, solid)));
+    }
+    [data-k-d~="border-style@phone"]:not(#k-d) {
+        border-style: var(--kd-border-style-phone);
+    }
+    [data-k-d~="border-color@phone"]:not(#k-d) {
+        border-color: var(--kd-border-color-phone);
+    }
+    [data-k-d~="radius@phone"]:not(#k-d) {
+        border-radius: var(--kd-radius-phone);
+    }
+}

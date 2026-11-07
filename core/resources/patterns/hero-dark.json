@@ -1,0 +1,67 @@
+{
+  "title": "Dark banner",
+  "description": "A dark section with a heading, text and a button, in the theme's inverse colours.",
+  "category": "Headers",
+  "blocks": [
+    {
+      "type": "core/group",
+      "id": "hd1",
+      "props": {
+        "tag": "section",
+        "width": "wide",
+        "tone": "inverse"
+      },
+      "design": {
+        "base": {
+          "padding-top": "xl",
+          "padding-right": "xl",
+          "padding-bottom": "xl",
+          "padding-left": "xl"
+        }
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "hd2",
+          "props": {
+            "text": "Open late on Fridays",
+            "level": "2"
+          },
+          "design": {
+            "base": {
+              "font-size": "2xl"
+            }
+          },
+          "children": []
+        },
+        {
+          "type": "core/text",
+          "id": "hd3",
+          "props": {
+            "text": "<p>Until ten, with the kitchen open until nine.</p>"
+          },
+          "children": []
+        },
+        {
+          "type": "core/buttons",
+          "id": "hd4",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/button",
+              "id": "hd5",
+              "props": {
+                "text": "Reserve a table",
+                "link": "/reserve",
+                "variant": "primary"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

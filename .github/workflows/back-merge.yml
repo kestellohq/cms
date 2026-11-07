@@ -1,0 +1,46 @@
+# After a release or hotfix lands on main, bring it back into develop (Git Flow), through a
+# pull request so CI checks the merge. Merge that pull request with a merge commit.
+# Needs "Allow GitHub Actions to create and approve pull requests" in the repository settings.
+# GitHub doesn't run workflows for pull requests opened with the default token, so CI only
+# checks this one when the KESTELLO_BOT_TOKEN secret holds a token that may push and open pull
+# requests (a GitHub App or fine-grained token). Without it, a maintainer closes and reopens the
+# pull request to start CI.
+name: Back-merge
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  back-merge:
+    name: main into develop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.KESTELLO_BOT_TOKEN || github.token }}
+
+      - name: Open the pull request
+        env:
+          GH_TOKEN: ${{ secrets.KESTELLO_BOT_TOKEN || github.token }}
+        run: |
+          if git merge-base --is-ancestor origin/main origin/develop; then
+            echo "develop already has everything on main."
+            exit 0
+          fi
+          version=$(tr -d '[:space:]' < core/VERSION)
+          branch="chore/back-merge-v$version"
+          git push --force origin "$(git rev-parse origin/main):refs/heads/$branch"
+          if gh pr list --base develop --head "$branch" --state open --json number --jq '.[0].number' | grep -q .; then
+            echo "The back-merge pull request for $version is already open."
+            exit 0
+          fi
+          gh pr create --base develop --head "$branch" \
+            --title "chore(release): bring $version back into develop" \
+            --label "no changelog" \
+            --body "Kestello $version is on main. This brings it back into develop, as Git Flow does after every release and hotfix. Merge it with a merge commit, not a squash."

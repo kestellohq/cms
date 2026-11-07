@@ -1,0 +1,50 @@
+# The pull request rules from CONTRIBUTING.md: a Conventional Commit title, a Git Flow branch
+# aimed at the right base, and a changelog entry when core changes.
+name: Pull request
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  conventions:
+    name: Title, branch and changelog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+
+      # values reach the scripts as environment variables, never pasted into the shell
+      - name: The title is a Conventional Commit
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: node tools/release/check-pr.mjs title "$TITLE"
+
+      - name: The branch is named and aimed as Git Flow says
+        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        env:
+          HEAD: ${{ github.event.pull_request.head.ref }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: node tools/release/check-pr.mjs branch "$HEAD" "$BASE"
+
+      - name: The changelog says what changed
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'no changelog') }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          changed=$(git diff --name-only "$BASE_SHA"...HEAD)
+          # what site owners, editors and developers get: core, the base theme, bin/cms
+          if printf '%s\n' "$changed" | grep -qE '^(core/(src|config|database|resources/js|resources/assets/css)/|content/themes/base/|bin/cms$)'; then
+            if ! printf '%s\n' "$changed" | grep -qx 'CHANGELOG.md'; then
+              echo "::error file=CHANGELOG.md::Add a line under ## [Unreleased] for this change (see CONTRIBUTING.md), or ask a maintainer for the \"no changelog\" label if nobody would notice it."
+              exit 1
+            fi
+          fi

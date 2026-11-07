@@ -1,0 +1,133 @@
+# A reusable workflow for plugin and theme repositories: test a package against Kestello,
+# check it, build its zip and, on a release tag, sign it and publish a GitHub release.
+#
+#   jobs:
+#     package:
+#       uses: kestellohq/cms/.github/workflows/package.yml@main
+#       with:
+#         package: meilisearch            # the folder holding plugin.json or theme.json
+#         release: ${{ startsWith(github.ref, 'refs/tags/') }}
+#       secrets:
+#         package-key: ${{ secrets.KESTELLO_PACKAGE_KEY }}
+#
+# A release tag is <slug>-v<version> (meilisearch-v1.2.0) or v<version> in a repository
+# that holds one package; it must match the manifest's version. Release notes come from
+# the package's CHANGELOG.md section for that version.
+name: Package
+
+on:
+  workflow_call:
+    inputs:
+      package:
+        description: Folder of the plugin or theme, relative to the repository root.
+        type: string
+        required: true
+      kestello-ref:
+        description: Branch, tag or commit of kestellohq/cms to test and build with.
+        type: string
+        default: develop
+      php-version:
+        type: string
+        default: '8.5'
+      release:
+        description: Sign the zip and publish a GitHub release for the pushed tag.
+        type: boolean
+        default: false
+    secrets:
+      package-key:
+        description: The package signing key file (package:keygen), required when release is true.
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: ${{ inputs.package }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # the release; nothing else is written
+    env:
+      PKG: package/${{ inputs.package }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: package
+
+      - uses: actions/checkout@v5
+        with:
+          repository: kestellohq/cms
+          ref: ${{ inputs.kestello-ref }}
+          path: kestello
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php-version }}
+          extensions: mbstring, intl, sodium, zip, gd, fileinfo, pdo_sqlite
+          coverage: none
+          tools: none
+
+      - name: Read the manifest
+        id: manifest
+        run: |
+          if [ -f "$PKG/plugin.json" ]; then file=plugin.json; kind=plugin; elif [ -f "$PKG/theme.json" ]; then file=theme.json; kind=theme; else
+            echo "::error::$PKG holds neither plugin.json nor theme.json."; exit 1
+          fi
+          php -r '$m = json_decode(file_get_contents($argv[1]), true, 32, JSON_THROW_ON_ERROR);
+                  echo "slug=", $m["slug"] ?? "", "\nversion=", $m["version"] ?? "", "\n";' "$PKG/$file" >> "$GITHUB_OUTPUT"
+          echo "kind=$kind" >> "$GITHUB_OUTPUT"
+
+      - name: The tag matches the manifest
+        if: inputs.release
+        env:
+          TAG: ${{ github.ref_name }}
+          SLUG: ${{ steps.manifest.outputs.slug }}
+          VERSION: ${{ steps.manifest.outputs.version }}
+        run: |
+          if [ "${{ github.ref_type }}" != tag ]; then echo "::error::A release runs on a tag, not on ${{ github.ref }}."; exit 1; fi
+          if [ "$TAG" != "$SLUG-v$VERSION" ] && [ "$TAG" != "v$VERSION" ]; then
+            echo "::error::Tag $TAG does not match $SLUG $VERSION. Tag $SLUG-v$VERSION, or set the version in the manifest."; exit 1
+          fi
+
+      - name: Tests
+        run: |
+          if [ -d "$PKG/tests" ]; then php kestello/bin/cms test "$GITHUB_WORKSPACE/$PKG/tests"; else echo "No tests folder; nothing to run."; fi
+
+      - name: Static safety check
+        run: php kestello/bin/cms plugin:check "$GITHUB_WORKSPACE/$PKG" ${{ steps.manifest.outputs.kind == 'theme' && '--theme' || '' }}
+
+      - name: Build the zip
+        if: '!inputs.release'
+        run: php kestello/bin/cms package:build "$GITHUB_WORKSPACE/$PKG" --out="$GITHUB_WORKSPACE/dist"
+
+      - name: Build and sign the zip
+        if: inputs.release
+        env:
+          PACKAGE_KEY: ${{ secrets.package-key }}
+        run: |
+          if [ -z "$PACKAGE_KEY" ]; then echo "::error::A release needs the package-key secret (the file package:keygen wrote)."; exit 1; fi
+          key="$RUNNER_TEMP/package.key"
+          umask 077 && printf '%s' "$PACKAGE_KEY" > "$key"
+          php kestello/bin/cms package:build "$GITHUB_WORKSPACE/$PKG" --out="$GITHUB_WORKSPACE/dist" --key="$key"
+          rm -f "$key"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.manifest.outputs.slug }}-${{ steps.manifest.outputs.version }}
+          path: dist/
+          if-no-files-found: error
+
+      - name: Publish the release
+        if: inputs.release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.manifest.outputs.version }}
+        run: |
+          notes="$RUNNER_TEMP/notes.md"
+          if [ -f "$PKG/CHANGELOG.md" ]; then node kestello/tools/release/notes.mjs "$VERSION" "$PKG/CHANGELOG.md" > "$notes"; else
+            echo "::error::$PKG/CHANGELOG.md is missing; a release needs its notes."; exit 1
+          fi
+          flags=""
+          case "$VERSION" in *-*) flags="--prerelease";; esac
+          gh release create "$TAG" dist/*.zip dist/*.sha256 --repo "$GITHUB_REPOSITORY" --title "${{ steps.manifest.outputs.slug }} $VERSION" --notes-file "$notes" --verify-tag $flags

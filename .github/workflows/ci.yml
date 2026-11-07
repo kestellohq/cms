@@ -1,0 +1,179 @@
+# Every check, on every pull request and on the long-lived branches. The release workflow
+# runs it again on the tag before anything is published (workflow_call).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop, 'release/**', 'hotfix/**']
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  PHP_EXTENSIONS: mbstring, intl, sodium, zip, gd, fileinfo, pdo_sqlite, pdo_mysql, pdo_pgsql, apcu
+
+jobs:
+  lint:
+    name: Code style and analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+          tools: none
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - run: npm ci
+
+      - name: Cache the pinned PHP tools
+        uses: actions/cache@v4
+        with:
+          path: tools/bin
+          key: php-tools-${{ hashFiles('tools/tools.lock') }}
+
+      - name: Download the PHP tools (checksums verified)
+        run: sh tools/fetch.sh
+
+      - name: PHP syntax
+        run: git ls-files -z '*.php' bin/cms | xargs -0 -n1 -P4 php -l > /dev/null
+
+      - name: PHP code style (PER-CS 2.0)
+        run: php tools/bin/php-cs-fixer.phar fix --dry-run --diff --show-progress=none --using-cache=no
+
+      - name: PHPStan
+        run: php -d memory_limit=2G tools/bin/phpstan.phar analyse -c phpstan.dist.neon --no-progress --error-format=github
+
+      - name: ESLint
+        run: npx eslint .
+
+      - name: Prettier
+        run: npx prettier --check --log-level warn .
+
+      - name: The translation template is current
+        run: php bin/cms i18n:extract --check
+
+      - name: The editor helpers are current
+        run: php bin/cms ide:helpers --check
+
+  build:
+    name: Built assets are current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Nothing changed
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --short
+            echo "::error::The committed build is out of date. Run npm run build and commit the result."
+            exit 1
+          fi
+
+  js:
+    name: JavaScript tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+  php:
+    name: PHP ${{ matrix.php }} (${{ matrix.label }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # the oldest versions Kestello supports (see the requirements in README.md)
+          - label: oldest supported
+            php: '8.4'
+            mysql: mysql:8.0
+            postgres: postgres:13
+          - label: MariaDB
+            php: '8.4'
+            mysql: mariadb:10.6
+            postgres: postgres:16
+          # what the development containers run
+          - label: newest
+            php: '8.5'
+            mysql: mysql:9.7
+            postgres: postgres:18
+
+    services:
+      mysql:
+        image: ${{ matrix.mysql }}
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: kestello_test
+          MYSQL_USER: kestello
+          MYSQL_PASSWORD: secret
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -psecret || mariadb-admin ping -h 127.0.0.1 -uroot -psecret"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+      postgres:
+        image: ${{ matrix.postgres }}
+        env:
+          POSTGRES_DB: kestello_test
+          POSTGRES_USER: kestello
+          POSTGRES_PASSWORD: secret
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U kestello -d kestello_test"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+      redis:
+        image: valkey/valkey:9.2-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd="valkey-cli ping"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+
+    env:
+      KESTELLO_TEST_DATABASES: >-
+        [{"driver":"mysql","host":"127.0.0.1","port":3306,"database":"kestello_test","username":"kestello","password":"secret"},
+         {"driver":"pgsql","host":"127.0.0.1","port":5432,"database":"kestello_test","username":"kestello","password":"secret"}]
+      KESTELLO_TEST_REDIS: redis://127.0.0.1:6379/2
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: apc.enable_cli=1, memory_limit=1G
+          coverage: none
+          tools: none
+
+      - name: Tests (SQLite, MySQL or MariaDB, PostgreSQL, Redis)
+        run: php bin/cms test

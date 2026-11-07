@@ -1,0 +1,1 @@
+function e(e,t){let n=String(e??``),r=/Edg\//.test(n)?`Edge`:/Firefox\//.test(n)?`Firefox`:/Chrome\//.test(n)?`Chrome`:/Safari\//.test(n)?`Safari`:t(`Unknown browser`),i=/iPhone|iPad/.test(n)?`iOS`:/Android/.test(n)?`Android`:/Mac OS X/.test(n)?`macOS`:/Windows/.test(n)?`Windows`:/Linux/.test(n)?`Linux`:``;return i?t(`{browser} on {os}`,{browser:r,os:i}):r}export{e as t};

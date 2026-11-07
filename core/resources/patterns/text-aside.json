@@ -1,0 +1,92 @@
+{
+  "title": "Text with a side note",
+  "description": "Text on the left, a shaded box with a short list on the right.",
+  "category": "Text",
+  "blocks": [
+    {
+      "type": "core/columns",
+      "id": "ta1",
+      "props": {
+        "layout": "2-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "ta2",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "ta3",
+              "props": {
+                "text": "Before your first visit",
+                "level": "2"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "ta4",
+              "props": {
+                "text": "<p>Most appointments take about an hour. Bring any notes or earlier results, and a list of questions if you have them. If you need to cancel, a day's notice helps us offer the time to someone else.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "ta5",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/group",
+              "id": "ta6",
+              "props": {
+                "tag": "div",
+                "width": "content",
+                "tone": "muted"
+              },
+              "children": [
+                {
+                  "type": "core/heading",
+                  "id": "ta7",
+                  "props": {
+                    "text": "Bring with you",
+                    "level": "4"
+                  },
+                  "children": []
+                },
+                {
+                  "type": "core/list",
+                  "id": "ta8",
+                  "props": {
+                    "ordered": false,
+                    "items": [
+                      {
+                        "text": "Photo ID"
+                      },
+                      {
+                        "text": "Your insurance card"
+                      },
+                      {
+                        "text": "Earlier results"
+                      }
+                    ]
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

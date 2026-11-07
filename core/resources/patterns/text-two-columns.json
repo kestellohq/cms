@@ -1,0 +1,61 @@
+{
+  "title": "Text in two columns",
+  "description": "A heading over two columns of text.",
+  "category": "Text",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "ttc1",
+      "props": {
+        "text": "Our approach",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "ttc2",
+      "props": {
+        "layout": "1-1",
+        "gap": "lg",
+        "width": "content"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "ttc3",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/text",
+              "id": "ttc4",
+              "props": {
+                "text": "<p>We would rather do fewer things well. That means saying no to some work, and giving the work we take on our full attention.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "ttc5",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/text",
+              "id": "ttc6",
+              "props": {
+                "text": "<p>It also means being honest about time and cost from the start, and telling you early when something changes.</p>"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

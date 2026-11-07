@@ -1,0 +1,20 @@
+{
+  "resources/js/layouts/Site.vue": {
+    "file": "layouts/Site.mjs",
+    "name": "layouts/Site",
+    "src": "resources/js/layouts/Site.vue",
+    "isEntry": true
+  },
+  "resources/js/pages/About.vue": {
+    "file": "pages/About.mjs",
+    "name": "pages/About",
+    "src": "resources/js/pages/About.vue",
+    "isEntry": true
+  },
+  "resources/js/pages/Home.vue": {
+    "file": "pages/Home.mjs",
+    "name": "pages/Home",
+    "src": "resources/js/pages/Home.vue",
+    "isEntry": true
+  }
+}

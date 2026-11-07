@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@kestello/app": ["core/resources/js/app/index.js"],
+      "@kestello/sdk": ["core/resources/js/sdk/index.js"],
+      "@kestello/ui": ["core/resources/js/ui/index.js"]
+    },
+    "jsx": "preserve",
+    "checkJs": false,
+    "allowJs": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": ["core/resources/js/**/*", "core/build/**/*", "core/ssr/**/*", "content/**/resources/js/**/*", "tests/js/**/*"],
+  "exclude": ["node_modules", "**/assets/build"]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Kestello",
+  "requires": {
+    "php": ">=8.4"
+  },
+  "extensions": ["json", "mbstring", "pdo", "sodium"]
+}

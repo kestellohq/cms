@@ -1,0 +1,52 @@
+{
+  "title": "Questions and answers",
+  "description": "A heading and four questions visitors open to read the answer.",
+  "category": "Questions",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "f1",
+      "props": {
+        "text": "Questions people ask",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "f2",
+      "props": {
+        "summary": "How soon can you start?",
+        "text": "<p>Usually within two weeks. For urgent repairs we often come the same week.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "f3",
+      "props": {
+        "summary": "Do you give fixed prices?",
+        "text": "<p>Yes. The price in your quote is the price you pay, unless you ask for changes.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "f4",
+      "props": {
+        "summary": "What areas do you cover?",
+        "text": "<p>The city and anywhere within about twenty miles of it.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/details",
+      "id": "f5",
+      "props": {
+        "summary": "Is the work guaranteed?",
+        "text": "<p>Everything we do is guaranteed for twelve months, parts and labour.</p>"
+      },
+      "children": []
+    }
+  ]
+}

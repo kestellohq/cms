@@ -1,0 +1,68 @@
+name: Bug report
+description: Something in Kestello doesn't work as it should.
+title: 'fix: '
+labels: ['type: bug', 'status: needs triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting this. Please search the [existing issues](https://github.com/kestellohq/cms/issues?q=is%3Aissue) first.
+        A security problem goes to the **Security** tab instead, never here.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The shortest list of steps that shows the problem on a fresh site, if you can.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Kestello version
+      description: In the admin under Settings, or in core/VERSION.
+    validations:
+      required: true
+  - type: input
+    id: php
+    attributes:
+      label: PHP version
+    validations:
+      required: true
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database
+      options:
+        - MySQL
+        - MariaDB
+        - PostgreSQL
+        - SQLite
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: For problems in the admin or on the site.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and screenshots
+      description: The relevant lines from storage/logs, the browser console, or a screenshot. Remove passwords, tokens and personal data first.
+      render: text
+  - type: textarea
+    id: extensions
+    attributes:
+      label: Active plugins and theme
+      description: Does it still happen in safe mode (php bin/cms --safe, or ?safe=1 on the admin)? Which plugins and theme are active?

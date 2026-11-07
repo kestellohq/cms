@@ -1,0 +1,37 @@
+{
+  "title": "Text in two columns",
+  "description": "Two headed columns of text, side by side on wide screens.",
+  "category": "Text",
+  "blocks": [
+    {
+      "type": "core/columns",
+      "id": "tc1",
+      "props": { "layout": "1-1", "gap": "lg", "width": "wide" },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "tc2",
+          "props": { "align": "start" },
+          "children": [
+            { "type": "core/heading", "id": "tc3", "props": { "text": "What we bake", "level": "3" }, "children": [] },
+            {
+              "type": "core/text",
+              "id": "tc4",
+              "props": { "text": "<p>Sourdough, rye and a few pastries, made in small batches every morning.</p>" },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "tc5",
+          "props": { "align": "start" },
+          "children": [
+            { "type": "core/heading", "id": "tc6", "props": { "text": "Where to find us", "level": "3" }, "children": [] },
+            { "type": "core/text", "id": "tc7", "props": { "text": "<p>On the quay, next to the harbour office. Open from seven.</p>" }, "children": [] }
+          ]
+        }
+      ]
+    }
+  ]
+}

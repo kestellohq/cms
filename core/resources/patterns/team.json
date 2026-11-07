@@ -1,0 +1,204 @@
+{
+  "title": "Team",
+  "description": "Three people with their role, a line about them and links.",
+  "category": "About",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "t1",
+      "props": {
+        "text": "Who you will meet",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "t2",
+      "props": {
+        "layout": "1-1-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "t3",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "t4",
+              "props": {
+                "text": "Ana Horvat",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "t5",
+              "props": {
+                "text": "<p>Founder</p>"
+              },
+              "design": {
+                "base": {
+                  "font-size": "sm"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "t6",
+              "props": {
+                "text": "<p>Started the studio in 2009 and still answers the phone most mornings.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/social",
+              "id": "t7",
+              "props": {
+                "items": [
+                  {
+                    "network": "linkedin",
+                    "url": "https://www.linkedin.com/"
+                  },
+                  {
+                    "network": "email",
+                    "url": "mailto:hello@example.com"
+                  }
+                ],
+                "align": "start",
+                "look": "icons",
+                "size": "md"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "t8",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "t9",
+              "props": {
+                "text": "Luka Novak",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "ta",
+              "props": {
+                "text": "<p>Projects</p>"
+              },
+              "design": {
+                "base": {
+                  "font-size": "sm"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "tb",
+              "props": {
+                "text": "<p>Plans every job and makes sure it finishes when we said it would.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/social",
+              "id": "tc",
+              "props": {
+                "items": [
+                  {
+                    "network": "linkedin",
+                    "url": "https://www.linkedin.com/"
+                  },
+                  {
+                    "network": "email",
+                    "url": "mailto:hello@example.com"
+                  }
+                ],
+                "align": "start",
+                "look": "icons",
+                "size": "md"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "td",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "te",
+              "props": {
+                "text": "Mira Kos",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "tf",
+              "props": {
+                "text": "<p>Workshop</p>"
+              },
+              "design": {
+                "base": {
+                  "font-size": "sm"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "t10",
+              "props": {
+                "text": "<p>Leads the workshop, where most of the making happens.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/social",
+              "id": "t11",
+              "props": {
+                "items": [
+                  {
+                    "network": "linkedin",
+                    "url": "https://www.linkedin.com/"
+                  },
+                  {
+                    "network": "email",
+                    "url": "mailto:hello@example.com"
+                  }
+                ],
+                "align": "start",
+                "look": "icons",
+                "size": "md"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

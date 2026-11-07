@@ -1,0 +1,29 @@
+name	color	description
+type: bug	d73a4a	Something doesn't work as it should
+type: feature	a2eeef	Something new Kestello should do
+type: docs	0075ca	Documentation in this repository
+type: chore	cfd3d7	Tooling, dependencies, housekeeping
+type: security	b60205	A security fix or hardening
+area: admin	1d76db	Admin screens and the UI kit
+area: editor	1d76db	The visual editor and blocks
+area: api	1d76db	The REST API
+area: content	1d76db	Content types, fields, revisions
+area: media	1d76db	The media library
+area: themes	1d76db	Themes and the template builder
+area: plugins	1d76db	The plugin system and extension points
+area: i18n	1d76db	Translations and languages
+area: update	1d76db	Updates, releases and packages
+area: auth	1d76db	Sign-in, people, roles
+area: platform	1d76db	Database, cache, queue, storage, search drivers
+priority: critical	b60205	Breaks sites or loses data: fix now
+priority: high	d93f0b	Fix in the next release
+priority: normal	fbca04	Planned
+priority: low	c2e0c6	When there is time
+status: needs triage	ededed	Waiting for a maintainer to look
+status: confirmed	0e8a16	Reproduced or agreed
+status: blocked	000000	Waiting on something else
+status: needs info	fef2c0	Waiting for the reporter
+good first issue	7057ff	A good start for a new contributor
+help wanted	008672	Maintainers would welcome a pull request
+no changelog	ffffff	Internal change: no changelog entry needed
+breaking change	b60205	Breaks the public API

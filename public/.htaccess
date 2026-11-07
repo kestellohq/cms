@@ -1,0 +1,20 @@
+# Kestello on Apache, with this folder (public/) as the document root.
+
+Options -Indexes -MultiViews
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Hand the Authorization header to PHP, which some setups drop (API tokens).
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Real files are served directly; every other address goes to Kestello.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Never serve hidden files.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

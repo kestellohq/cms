@@ -1,0 +1,414 @@
+{
+  "title": "About page",
+  "description": "Your story, numbers, the team and a call to action.",
+  "category": "Pages",
+  "layout": true,
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "pa1",
+      "props": {
+        "text": "How it started",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/text",
+      "id": "pa2",
+      "props": {
+        "text": "<p>It began with one van and a borrowed toolbox. Word spread from neighbour to neighbour.</p>"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "pa3",
+      "props": {
+        "layout": "1-1-1-1",
+        "gap": "md",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "pa4",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pa5",
+              "props": {
+                "text": "15",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "pa6",
+              "props": {
+                "text": "<p>years in business</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "pa7",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pa8",
+              "props": {
+                "text": "2,400",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "pa9",
+              "props": {
+                "text": "<p>jobs finished</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "paa",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pab",
+              "props": {
+                "text": "12",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "pac",
+              "props": {
+                "text": "<p>people on the team</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "pad",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pae",
+              "props": {
+                "text": "4.9",
+                "level": "3"
+              },
+              "design": {
+                "base": {
+                  "font-size": "3xl"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "paf",
+              "props": {
+                "text": "<p>average review</p>"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "core/heading",
+      "id": "pa10",
+      "props": {
+        "text": "Who you will meet",
+        "level": "2"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "pa11",
+      "props": {
+        "layout": "1-1-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "pa12",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pa13",
+              "props": {
+                "text": "Ana Horvat",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "pa14",
+              "props": {
+                "text": "<p>Founder</p>"
+              },
+              "design": {
+                "base": {
+                  "font-size": "sm"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "pa15",
+              "props": {
+                "text": "<p>Started the studio in 2009 and still answers the phone most mornings.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/social",
+              "id": "pa16",
+              "props": {
+                "items": [
+                  {
+                    "network": "linkedin",
+                    "url": "https://www.linkedin.com/"
+                  },
+                  {
+                    "network": "email",
+                    "url": "mailto:hello@example.com"
+                  }
+                ],
+                "align": "start",
+                "look": "icons",
+                "size": "md"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "pa17",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pa18",
+              "props": {
+                "text": "Luka Novak",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "pa19",
+              "props": {
+                "text": "<p>Projects</p>"
+              },
+              "design": {
+                "base": {
+                  "font-size": "sm"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "pa1a",
+              "props": {
+                "text": "<p>Plans every job and makes sure it finishes when we said it would.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/social",
+              "id": "pa1b",
+              "props": {
+                "items": [
+                  {
+                    "network": "linkedin",
+                    "url": "https://www.linkedin.com/"
+                  },
+                  {
+                    "network": "email",
+                    "url": "mailto:hello@example.com"
+                  }
+                ],
+                "align": "start",
+                "look": "icons",
+                "size": "md"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "pa1c",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "pa1d",
+              "props": {
+                "text": "Mira Kos",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "pa1e",
+              "props": {
+                "text": "<p>Workshop</p>"
+              },
+              "design": {
+                "base": {
+                  "font-size": "sm"
+                }
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "pa1f",
+              "props": {
+                "text": "<p>Leads the workshop, where most of the making happens.</p>"
+              },
+              "children": []
+            },
+            {
+              "type": "core/social",
+              "id": "pa20",
+              "props": {
+                "items": [
+                  {
+                    "network": "linkedin",
+                    "url": "https://www.linkedin.com/"
+                  },
+                  {
+                    "network": "email",
+                    "url": "mailto:hello@example.com"
+                  }
+                ],
+                "align": "start",
+                "look": "icons",
+                "size": "md"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "core/group",
+      "id": "pa21",
+      "props": {
+        "tag": "section",
+        "width": "wide",
+        "tone": "inverse"
+      },
+      "design": {
+        "base": {
+          "padding-top": "xl",
+          "padding-right": "xl",
+          "padding-bottom": "xl",
+          "padding-left": "xl"
+        }
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "pa22",
+          "props": {
+            "text": "Ready when you are",
+            "level": "2",
+            "align": "center"
+          },
+          "children": []
+        },
+        {
+          "type": "core/text",
+          "id": "pa23",
+          "props": {
+            "text": "<p>Tell us what you have in mind. We reply within a working day.</p>",
+            "align": "center"
+          },
+          "children": []
+        },
+        {
+          "type": "core/buttons",
+          "id": "pa24",
+          "props": {
+            "align": "center"
+          },
+          "children": [
+            {
+              "type": "core/button",
+              "id": "pa25",
+              "props": {
+                "text": "Get in touch",
+                "link": "/contact",
+                "variant": "primary"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

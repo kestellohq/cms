@@ -1,0 +1,10 @@
+{
+    "vue": {
+        "version": "3.5.45",
+        "file": "vue-3.5.45.js",
+        "source": "https://registry.npmjs.org/vue/-/vue-3.5.45.tgz#package/dist/vue.runtime.esm-browser.prod.js",
+        "tarballIntegrity": "sha512-3cvsib8m9c0vB24+MDKsgcW4+Da4xaBl9Z/5Tbm2pmSIsRPxcil4cdXjXlVsmJ2g64XJo5h+IRd7rsdGT9pZaw==",
+        "integrity": "sha384-YJj7sRfqHj0o0LuMTZXUD3eUuvlE5J+b3ayWGxRbDUaRptfvYuYCDnOcXv6W25ow",
+        "license": "MIT (vue-LICENSE.txt)"
+    }
+}

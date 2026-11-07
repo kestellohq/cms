@@ -1,0 +1,228 @@
+# The project is named, so its containers, network and volumes don't depend on
+# the folder the repository is checked out in.
+name: kestello
+
+services:
+  app:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    container_name: cms_app
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - cms_network
+    environment:
+      - PHP_OPCACHE_VALIDATE_TIMESTAMPS=1
+      # Set to http://ssr:13714 after `docker compose --profile ssr up -d ssr`
+      - KESTELLO_SSR_URL=${KESTELLO_SSR_URL:-}
+      # Read only by tools/test-matrix.sh (npm run test:php:matrix): the test databases that
+      # docker/db/*/10-test-database.sh creates on a fresh volume.
+      - 'KESTELLO_MATRIX_DATABASES=[{"driver":"mysql","host":"db","database":"kestello_test","username":"${DB_USERNAME:-kestello}","password":"${DB_PASSWORD:-secret}"},{"driver":"pgsql","host":"pgsql","database":"kestello_test","username":"${PG_USERNAME:-kestello}","password":"${PG_PASSWORD:-secret}"}]'
+      - KESTELLO_MATRIX_REDIS=redis://:${REDIS_PASSWORD:-secret}@redis:6379/2
+
+  # Background jobs and cron (optional): docker compose --profile workers up -d
+  # With a worker running, set 'worker' => 'daemon' in config/queue.php.
+  worker:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    container_name: cms_worker
+    profiles: ['workers']
+    restart: unless-stopped
+    command: ['php', 'bin/cms', 'queue:work', '--max-time=3600', '--memory=192']
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - cms_network
+
+  scheduler:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    container_name: cms_scheduler
+    profiles: ['workers']
+    restart: unless-stopped
+    command: ['php', 'bin/cms', 'schedule:work']
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - cms_network
+
+  # S3-compatible storage for local testing: docker compose --profile s3 up -d minio
+  # (console on http://localhost:9001; dev-only credentials below)
+  minio:
+    image: minio/minio:latest
+    container_name: cms_minio
+    profiles: ['s3']
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      - MINIO_ROOT_USER=kestello-dev
+      - MINIO_ROOT_PASSWORD=kestello-dev-secret
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_data:/data
+    networks:
+      - cms_network
+
+  # Search engines for the Meilisearch / Typesense plugins: docker compose --profile search up -d meilisearch typesense
+  # (then activate the plugin and pick it under System > Platform > Search; dev-only keys below)
+  meilisearch:
+    image: getmeili/meilisearch:v1.56
+    container_name: cms_meilisearch
+    profiles: ['search']
+    environment:
+      - MEILI_MASTER_KEY=kestello-dev-master-key
+      - MEILI_NO_ANALYTICS=true
+    volumes:
+      - meili_data:/meili_data
+    networks:
+      - cms_network
+
+  typesense:
+    image: typesense/typesense:30.2
+    container_name: cms_typesense
+    profiles: ['search']
+    command: ['--data-dir', '/data', '--api-key', 'kestello-dev-key', '--enable-cors']
+    volumes:
+      - typesense_data:/data
+    networks:
+      - cms_network
+
+  web:
+    image: nginx:1.30-alpine # the stable line
+    container_name: cms_web
+    restart: unless-stopped
+    ports:
+      - '${APP_PORT:-8080}:80'
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - cms_network
+
+  # Optional SSR renderer: docker compose --profile ssr up -d ssr
+  # (needs `npm install && npm run build` on the host first)
+  ssr:
+    image: node:26-alpine # the current LTS
+    container_name: cms_ssr
+    profiles: ['ssr']
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: ['node', 'core/ssr/server.mjs']
+    volumes:
+      - .:/var/www/html:ro
+    environment:
+      - SSR_HOST=0.0.0.0
+      - KESTELLO_ROOT=/var/www/html
+    networks:
+      - cms_network
+
+  db:
+    image: mysql:9.7 # the current LTS (26.x is the short-lived Innovation line)
+    container_name: cms_db
+    restart: unless-stopped
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+      MYSQL_DATABASE: ${DB_DATABASE:-kestello}
+      MYSQL_USER: ${DB_USERNAME:-kestello}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - cms_db97_data:/var/lib/mysql
+      - ./docker/db/mysql:/docker-entrypoint-initdb.d:ro
+    networks:
+      - cms_network
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional PostgreSQL 18: `docker compose --profile pgsql up -d pgsql`
+  pgsql:
+    image: postgres:18-alpine
+    container_name: cms_pgsql
+    profiles: ['pgsql']
+    restart: unless-stopped
+    ports:
+      - '${PG_PORT:-5432}:5432'
+    environment:
+      POSTGRES_DB: ${PG_DATABASE:-kestello}
+      POSTGRES_USER: ${PG_USERNAME:-kestello}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-secret}
+    volumes:
+      - cms_pg18_data:/var/lib/postgresql # PostgreSQL 18 keeps its data in a versioned folder under here
+      - ./docker/db/pgsql:/docker-entrypoint-initdb.d:ro
+    networks:
+      - cms_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${PG_USERNAME:-kestello}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional Redis-compatible store: `docker compose --profile redis up -d redis`
+  redis:
+    image: valkey/valkey:9.2-alpine
+    container_name: cms_redis
+    profiles: ['redis']
+    restart: unless-stopped
+    command: ['valkey-server', '--requirepass', '${REDIS_PASSWORD:-secret}', '--save', '', '--appendonly', 'no']
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    networks:
+      - cms_network
+    healthcheck:
+      test: ['CMD-SHELL', 'valkey-cli -a ${REDIS_PASSWORD:-secret} ping | grep PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: cms_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - '${PMA_PORT:-8081}:80'
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+    depends_on:
+      - db
+    networks:
+      - cms_network
+
+volumes:
+  # MySQL 9.7 and PostgreSQL 18 can't open the data of MySQL 8.0 and
+  # PostgreSQL 16 in place, so they have volumes of their own. The old ones
+  # (php-cms-boilerplate_cms_db_data, php-cms-boilerplate_cms_pg_data) are
+  # left as they were; delete them yourself once you no longer need them.
+  cms_db97_data:
+    name: kestello_cms_db97_data
+  cms_pg18_data:
+    name: kestello_cms_pg18_data
+  minio_data:
+    name: php-cms-boilerplate_minio_data
+  meili_data:
+  typesense_data:
+
+networks:
+  cms_network:
+    driver: bridge

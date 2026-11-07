@@ -1,0 +1,73 @@
+{
+  "title": "Banner with buttons",
+  "description": "A banner across the page: a large heading, a line of text and two buttons. Add an image under its settings.",
+  "category": "Headers",
+  "blocks": [
+    {
+      "type": "core/cover",
+      "id": "hc1",
+      "props": {
+        "height": "short",
+        "align": "center",
+        "valign": "center",
+        "width": "full",
+        "shade": "dark",
+        "strength": 45,
+        "tag": "section"
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "hc2",
+          "props": {
+            "text": "Good work, done properly",
+            "level": "2"
+          },
+          "design": {
+            "base": {
+              "font-size": "3xl"
+            }
+          },
+          "children": []
+        },
+        {
+          "type": "core/text",
+          "id": "hc3",
+          "props": {
+            "text": "<p>We plan, build and look after it, so you can get on with everything else.</p>"
+          },
+          "children": []
+        },
+        {
+          "type": "core/buttons",
+          "id": "hc4",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/button",
+              "id": "hc5",
+              "props": {
+                "text": "Get in touch",
+                "link": "/contact",
+                "variant": "primary"
+              },
+              "children": []
+            },
+            {
+              "type": "core/button",
+              "id": "hc6",
+              "props": {
+                "text": "See our work",
+                "link": "/work",
+                "variant": "secondary"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

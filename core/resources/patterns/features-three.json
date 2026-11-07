@@ -1,0 +1,106 @@
+{
+  "title": "Three columns",
+  "description": "Three short points side by side, each with a heading.",
+  "category": "Features",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "ft1",
+      "props": {
+        "text": "How we work",
+        "level": "2",
+        "align": "center"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "ft2",
+      "props": {
+        "layout": "1-1-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "ft3",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "ft4",
+              "props": {
+                "text": "Plan",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "ft5",
+              "props": {
+                "text": "<p>We listen first, then put the plan in writing, with dates and a price.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "ft6",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "ft7",
+              "props": {
+                "text": "Make",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "ft8",
+              "props": {
+                "text": "<p>You see progress every week, and nothing changes without you knowing.</p>"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "ft9",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/heading",
+              "id": "fta",
+              "props": {
+                "text": "Look after",
+                "level": "3"
+              },
+              "children": []
+            },
+            {
+              "type": "core/text",
+              "id": "ftb",
+              "props": {
+                "text": "<p>When it is done we stay around, for questions and the odd repair.</p>"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

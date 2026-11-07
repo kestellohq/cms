@@ -1,0 +1,26 @@
+# Weekly updates for the development tools (nothing here ships) and the workflows' actions.
+# Pull requests target develop, as every change does. The PHP tools (tools/tools.lock) are
+# PHARs Dependabot can't see: upgrade them by hand, as CONTRIBUTING.md describes.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build(deps)
+    labels: ['type: chore', 'no changelog']
+    groups:
+      lint:
+        patterns: ['eslint*', '@eslint/*', 'globals', 'prettier']
+      build:
+        patterns: ['vite', '@vitejs/*', 'vue']
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci(deps)
+    labels: ['type: chore', 'no changelog']

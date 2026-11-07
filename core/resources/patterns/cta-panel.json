@@ -1,0 +1,64 @@
+{
+  "title": "Dark panel",
+  "description": "A dark panel with a heading, a line of text and a button, centred.",
+  "category": "Calls to action",
+  "blocks": [
+    {
+      "type": "core/group",
+      "id": "cp1",
+      "props": {
+        "tag": "section",
+        "width": "wide",
+        "tone": "inverse"
+      },
+      "design": {
+        "base": {
+          "padding-top": "xl",
+          "padding-right": "xl",
+          "padding-bottom": "xl",
+          "padding-left": "xl"
+        }
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "cp2",
+          "props": {
+            "text": "Ready when you are",
+            "level": "2",
+            "align": "center"
+          },
+          "children": []
+        },
+        {
+          "type": "core/text",
+          "id": "cp3",
+          "props": {
+            "text": "<p>Tell us what you have in mind. We reply within a working day.</p>",
+            "align": "center"
+          },
+          "children": []
+        },
+        {
+          "type": "core/buttons",
+          "id": "cp4",
+          "props": {
+            "align": "center"
+          },
+          "children": [
+            {
+              "type": "core/button",
+              "id": "cp5",
+              "props": {
+                "text": "Get in touch",
+                "link": "/contact",
+                "variant": "primary"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

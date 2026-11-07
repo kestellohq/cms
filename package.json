@@ -1,0 +1,41 @@
+{
+  "name": "kestello",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only tooling for Kestello: build, format, lint and test. Nothing here ships or runs in production: built files are committed under */assets/build/.",
+  "scripts": {
+    "build": "node core/build/build.mjs",
+    "build:core": "node core/build/build.mjs core",
+    "ssr": "node core/ssr/server.mjs",
+    "tools": "sh tools/fetch.sh",
+    "format": "npm run format:php && npm run format:js",
+    "format:php": "sh tools/fetch.sh && sh tools/php tools/bin/php-cs-fixer.phar fix --show-progress=dots",
+    "format:js": "prettier --write --log-level warn .",
+    "lint": "npm run lint:php && npm run lint:js && npm run analyse",
+    "lint:php": "sh tools/fetch.sh && sh tools/php tools/bin/php-cs-fixer.phar fix --dry-run --diff --show-progress=none --using-cache=no",
+    "lint:js": "eslint . && prettier --check --log-level warn .",
+    "analyse": "sh tools/fetch.sh && sh tools/php -d memory_limit=2G tools/bin/phpstan.phar analyse -c phpstan.dist.neon --no-progress",
+    "test": "node --test \"tests/js/*.test.mjs\"",
+    "test:php": "sh tools/php -d apc.enable_cli=1 bin/cms test",
+    "test:php:matrix": "sh tools/test-matrix.sh",
+    "i18n": "sh tools/php bin/cms i18n:extract",
+    "i18n:check": "sh tools/php bin/cms i18n:extract --check",
+    "ide": "sh tools/php bin/cms ide:helpers",
+    "release:prepare": "node tools/release/prepare.mjs",
+    "release:notes": "node tools/release/notes.mjs",
+    "check": "npm run lint && npm test && npm run test:php"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@vitejs/plugin-vue": "6.0.10",
+    "eslint": "10.14.0",
+    "eslint-plugin-vue": "10.12.0",
+    "globals": "17.14.0",
+    "prettier": "3.9.10",
+    "vite": "8.3.6",
+    "vue": "3.5.45"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "title": "Three quotes",
+  "description": "Three short quotes from customers, side by side.",
+  "category": "Testimonials",
+  "blocks": [
+    {
+      "type": "core/heading",
+      "id": "tt1",
+      "props": {
+        "text": "What people say",
+        "level": "2",
+        "align": "center"
+      },
+      "children": []
+    },
+    {
+      "type": "core/columns",
+      "id": "tt2",
+      "props": {
+        "layout": "1-1-1",
+        "gap": "lg",
+        "width": "wide"
+      },
+      "children": [
+        {
+          "type": "core/column",
+          "id": "tt3",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/quote",
+              "id": "tt4",
+              "props": {
+                "text": "They finished a day early and left the place cleaner than they found it.",
+                "cite": "Marta, Leeds"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "tt5",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/quote",
+              "id": "tt6",
+              "props": {
+                "text": "Clear prices, no surprises, and they answered every question I had.",
+                "cite": "Daniel, York"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "core/column",
+          "id": "tt7",
+          "props": {
+            "align": "start"
+          },
+          "children": [
+            {
+              "type": "core/quote",
+              "id": "tt8",
+              "props": {
+                "text": "The third time we have used them, and it will not be the last.",
+                "cite": "Priya, Hull"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

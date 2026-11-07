@@ -1,0 +1,132 @@
+{
+  "title": "What we believe",
+  "description": "Four short values in two columns on a shaded background.",
+  "category": "About",
+  "blocks": [
+    {
+      "type": "core/group",
+      "id": "v1",
+      "props": {
+        "tag": "div",
+        "width": "wide",
+        "tone": "muted"
+      },
+      "design": {
+        "base": {
+          "padding-top": "xl",
+          "padding-right": "xl",
+          "padding-bottom": "xl",
+          "padding-left": "xl"
+        }
+      },
+      "children": [
+        {
+          "type": "core/heading",
+          "id": "v2",
+          "props": {
+            "text": "What we believe",
+            "level": "2"
+          },
+          "children": []
+        },
+        {
+          "type": "core/columns",
+          "id": "v3",
+          "props": {
+            "layout": "1-1",
+            "gap": "lg",
+            "width": "content"
+          },
+          "children": [
+            {
+              "type": "core/column",
+              "id": "v4",
+              "props": {
+                "align": "start"
+              },
+              "children": [
+                {
+                  "type": "core/heading",
+                  "id": "v5",
+                  "props": {
+                    "text": "Do it once",
+                    "level": "3"
+                  },
+                  "children": []
+                },
+                {
+                  "type": "core/text",
+                  "id": "v6",
+                  "props": {
+                    "text": "<p>Taking a little longer beats coming back to fix it.</p>"
+                  },
+                  "children": []
+                },
+                {
+                  "type": "core/heading",
+                  "id": "v7",
+                  "props": {
+                    "text": "Say it early",
+                    "level": "3"
+                  },
+                  "children": []
+                },
+                {
+                  "type": "core/text",
+                  "id": "v8",
+                  "props": {
+                    "text": "<p>Bad news gets worse with time, so we share it straight away.</p>"
+                  },
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "core/column",
+              "id": "v9",
+              "props": {
+                "align": "start"
+              },
+              "children": [
+                {
+                  "type": "core/heading",
+                  "id": "va",
+                  "props": {
+                    "text": "Keep it simple",
+                    "level": "3"
+                  },
+                  "children": []
+                },
+                {
+                  "type": "core/text",
+                  "id": "vb",
+                  "props": {
+                    "text": "<p>Plain words, clear prices and no small print.</p>"
+                  },
+                  "children": []
+                },
+                {
+                  "type": "core/heading",
+                  "id": "vc",
+                  "props": {
+                    "text": "Leave it better",
+                    "level": "3"
+                  },
+                  "children": []
+                },
+                {
+                  "type": "core/text",
+                  "id": "vd",
+                  "props": {
+                    "text": "<p>Every place we work should be tidier when we leave.</p>"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
