@@ -70,7 +70,7 @@ final class WebhooksModule extends Provider
         $cms->schedule->call(static fn(): string => $cms->webhooks->prune() . ' old webhook deliveries.', 'webhooks.prune')
             ->dailyAt('03:40')->description('Deletes webhook deliveries older than 30 days.');
 
-        $cms->admin->page('system/webhooks', '@core/admin/system/webhooks/Index', 'Webhooks', 'webhooks.manage', ['label' => 'Webhooks', 'icon' => 'webhooks-logo', 'group' => 'system', 'order' => 45]);
+        $cms->admin->page('system/webhooks', '@core/admin/system/webhooks/Index', 'Webhooks', 'webhooks.manage', ['label' => 'Webhooks', 'icon' => 'webhooks-logo', 'group' => 'system', 'order' => 50]);
         $cms->admin->page('system/webhooks/{id}', '@core/admin/system/webhooks/Edit', 'Webhook', 'webhooks.manage', where: ['id' => AdminRegistry::ID]);
     }
 

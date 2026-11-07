@@ -28,7 +28,7 @@ final class RedirectsModule extends Provider
     public function boot(Cms $cms): void
     {
         $cms->auth->roles->capability('redirects.manage', 'Manage redirects and see addresses that were not found', grantTo: ['editor']);
-        $cms->admin->page('redirects', '@core/admin/redirects/Index', 'Redirects', 'redirects.manage', ['label' => 'Redirects', 'icon' => 'signpost', 'group' => 'appearance', 'order' => 30]);
+        $cms->admin->page('redirects', '@core/admin/redirects/Index', 'Redirects', 'redirects.manage', ['label' => 'Redirects', 'icon' => 'signpost', 'group' => 'site', 'order' => 50]);
         $redirects = $cms->container->make(Redirects::class);
         $cms->routes->pushGlobalMiddleware(new RedirectMiddleware($redirects));
         $cms->schedule->call(static fn() => $redirects->pruneLog(), 'redirects.prune-log')->daily();

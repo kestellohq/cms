@@ -4,6 +4,10 @@ Every change people would notice is listed here, newest first. The format follow
 
 ## [Unreleased]
 
+### Changed
+
+- The admin menu is easier to find your way in. Groups fold (your browser remembers which), **System** starts folded, the group of the page you are on always opens, and that page is scrolled into view. Every entry shows its icon. A new **Site** group holds **Settings**, **Updates**, **Backups**, **Import** and **Redirects**, so **System** keeps only the tools for whoever looks after the site. **Your profile** stays in the menu's footer and the finder.
+
 ### Added
 
 - **Settings > Search and sharing**: the pattern for page titles (such as `{title} {sep} {site}`), a separate one for the home page, the separator, and a default sharing image for pages without an image of their own. The browser tab, search results and link previews follow it; the admin keeps its own titles. The settings form shows a media picker for fields with the `media` format.

@@ -29,7 +29,7 @@ final class BackupModule extends Provider
     public function boot(Cms $cms): void
     {
         $cms->auth->roles->capability('backups.manage', 'Make and download backups (restoring needs an administrator)', sensitive: true);
-        $cms->admin->page('system/backups', '@core/admin/system/Backups', 'Backups', 'backups.manage', ['label' => 'Backups', 'icon' => 'archive', 'group' => 'system', 'order' => 15]);
+        $cms->admin->page('system/backups', '@core/admin/system/Backups', 'Backups', 'backups.manage', ['label' => 'Backups', 'icon' => 'archive', 'group' => 'site', 'order' => 30]);
 
         $cms->schedule->call(static function () use ($cms): string {
             $backups = $cms->container->make(Backups::class);
