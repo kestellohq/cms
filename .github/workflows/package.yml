@@ -50,11 +50,11 @@ jobs:
     env:
       PKG: package/${{ inputs.package }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           path: package
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           repository: kestellohq/cms
           ref: ${{ inputs.kestello-ref }}
