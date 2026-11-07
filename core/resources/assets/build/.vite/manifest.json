@@ -944,7 +944,7 @@
     ]
   },
   "resources/js/pages/errors/Error.vue": {
-    "file": "pages/errors/Error-BecnCGuS.js",
+    "file": "pages/errors/Error-DE0H_VIN.js",
     "name": "pages/errors/Error",
     "src": "resources/js/pages/errors/Error.vue",
     "isEntry": true,
@@ -952,7 +952,7 @@
       "__plugin-vue_export-helper-BDNMzG2s.js"
     ],
     "css": [
-      "assets/Error-DMb0FMod.css"
+      "assets/Error-DGHOIUbx.css"
     ]
   },
   "resources/js/pages/fields/Blocks.vue": {
