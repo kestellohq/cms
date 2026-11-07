@@ -406,6 +406,7 @@ final class Kernel
             $console->register(new PluginDeactivateCommand($extensions));
             $console->register(new \Kestello\Cms\Console\Extensions\ThemeExportCommand());
             $console->register(new \Kestello\Cms\Console\Extensions\ThemeImportCommand());
+            $console->register(new \Kestello\Cms\Console\ImportWordPressCommand());
             foreach ([\Kestello\Cms\Console\Backup\BackupCreateCommand::class, \Kestello\Cms\Console\Backup\BackupListCommand::class,
                 \Kestello\Cms\Console\Backup\BackupRestoreCommand::class, \Kestello\Cms\Console\Backup\BackupDeleteCommand::class,
                 \Kestello\Cms\Console\Package\PackageVerifyCommand::class,
@@ -556,7 +557,7 @@ final class Kernel
         );
         $container->instance(\Kestello\Framework\Storage\StorageManager::class, $cms->storage);
 
-        foreach ([new AuthModule(), new AdminModule(), new ApiModule(), new ExtensionsModule(), new \Kestello\Cms\System\SystemModule(), new \Kestello\Cms\Storage\StorageModule(), new \Kestello\Cms\Notifications\NotificationsModule(), new \Kestello\Cms\Health\HealthModule(), new \Kestello\Cms\Cache\PageCacheModule(), new \Kestello\Cms\Content\ContentModule(), new \Kestello\Cms\Media\MediaModule(), new \Kestello\Cms\Blocks\BlocksModule(), new \Kestello\Cms\Search\SearchModule(), new \Kestello\Cms\Redirects\RedirectsModule(), new \Kestello\Cms\Forms\FormsModule(), new \Kestello\Cms\Webhooks\WebhooksModule(), new \Kestello\Cms\Design\DesignModule(), new \Kestello\Cms\Backup\BackupModule(), new \Kestello\Cms\Package\PackagesModule(), new \Kestello\Cms\Site\SiteModule(), new FrontendModule()] as $module) {
+        foreach ([new AuthModule(), new AdminModule(), new ApiModule(), new ExtensionsModule(), new \Kestello\Cms\System\SystemModule(), new \Kestello\Cms\Storage\StorageModule(), new \Kestello\Cms\Notifications\NotificationsModule(), new \Kestello\Cms\Health\HealthModule(), new \Kestello\Cms\Cache\PageCacheModule(), new \Kestello\Cms\Content\ContentModule(), new \Kestello\Cms\Media\MediaModule(), new \Kestello\Cms\Blocks\BlocksModule(), new \Kestello\Cms\Search\SearchModule(), new \Kestello\Cms\Redirects\RedirectsModule(), new \Kestello\Cms\Forms\FormsModule(), new \Kestello\Cms\Webhooks\WebhooksModule(), new \Kestello\Cms\Design\DesignModule(), new \Kestello\Cms\Backup\BackupModule(), new \Kestello\Cms\Import\ImportModule(), new \Kestello\Cms\Package\PackagesModule(), new \Kestello\Cms\Site\SiteModule(), new FrontendModule()] as $module) {
             $extensions->addModule($module);
         }
 

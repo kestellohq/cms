@@ -378,6 +378,18 @@
     "src": "resources/js/pages/admin/system/Health.vue",
     "isEntry": true
   },
+  "resources/js/pages/admin/system/Import.vue": {
+    "file": "pages/admin/system/Import-B7UPR8g-.js",
+    "name": "pages/admin/system/Import",
+    "src": "resources/js/pages/admin/system/Import.vue",
+    "isEntry": true,
+    "imports": [
+      "__plugin-vue_export-helper-BDNMzG2s.js"
+    ],
+    "css": [
+      "assets/Import-DAT4LDV3.css"
+    ]
+  },
   "resources/js/pages/admin/system/Platform.vue": {
     "file": "pages/admin/system/Platform-DsuNcPiB.js",
     "name": "pages/admin/system/Platform",

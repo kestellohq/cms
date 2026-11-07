@@ -270,14 +270,23 @@ final class Redirects
 
     /**
      * "/Path/" → "/Path"; null for anything that isn't a plain absolute path.
+     *
+     * One spelling per address, the one browsers send: characters beyond
+     * ASCII percent-encoded and escapes in upper case, so "/čaj", "/%c4%8daj"
+     * and "/%C4%8Daj" are the same rule and match the same request. A "%"
+     * that starts no escape is itself escaped ("%25").
      */
     public static function normalize(string $path): ?string
     {
         $path = trim($path);
-        if ($path === '' || $path[0] !== '/' || str_starts_with($path, '//') || preg_match('/[\x00-\x1f\x7f\\\\]/', $path) === 1 || strlen($path) > 500) {
+        if ($path === '' || $path[0] !== '/' || str_starts_with($path, '//') || preg_match('/[\x00-\x1f\x7f\\\\]/', $path) === 1 || strlen($path) > 2000) {
             return null;
         }
         $path = (string) strtok($path, '?#');
+        $path = (string) preg_replace_callback('/%[0-9a-f]{2}|%|[^\x21-\x7e]/i', static fn(array $m): string => $m[0][0] === '%' && strlen($m[0]) === 3 ? strtoupper($m[0]) : rawurlencode($m[0]), $path);
+        if (strlen($path) > 500) {
+            return null;
+        }
 
         return $path === '/' ? '/' : rtrim($path, '/');
     }

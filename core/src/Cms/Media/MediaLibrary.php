@@ -105,13 +105,54 @@ final class MediaLibrary
      */
     public function start(Principal $p, string $filename, int $size): array
     {
+        $filename = $this->check($p, $filename, $size);
+        $pending = QueryBuilder::table('uploads')->where('user_id', $p->userId)->where('expires_at', '>', gmdate('Y-m-d H:i:s'))->count();
+        if ($pending >= self::MAX_PENDING) {
+            throw MediaException::conflict('Too many unfinished uploads. Finish or cancel some first.');
+        }
+        $direct = $this->directDisk();
+        $row = $this->newRow($p, $filename, $size, $direct !== null ? 'direct' : 'chunked');
+        QueryBuilder::table('uploads')->insert($row);
+
+        return $this->describeUpload($row, $direct);
+    }
+
+    /**
+     * Add a file that is already on this server (an import's download) to the
+     * library, with the same checks, processing and audit as an upload. The
+     * file at $local is moved away: it is the library's from then on.
+     *
+     * @param array{title?: ?string, alt?: ?string, caption?: ?string} $details
+     * @throws MediaException
+     */
+    public function addFile(Principal $p, string $local, string $filename, array $details = []): Media
+    {
+        clearstatcache(true, $local);
+        $size = is_file($local) ? (int) filesize($local) : 0;
+        $filename = $this->check($p, $filename, $size);
+        $row = $this->newRow($p, $filename, $size, 'chunked');
+        $row['received'] = max(1, (int) ceil($size / self::CHUNK_SIZE));
+        if (!@rename($local, $this->tempPath((string) $row['id'])) && !(@copy($local, $this->tempPath((string) $row['id'])) && @unlink($local))) {
+            throw new \RuntimeException('Could not move the file into the media library.');
+        }
+        QueryBuilder::table('uploads')->insert($row);
+
+        return $this->complete($row, $p, $details);
+    }
+
+    /**
+     * Whether $p may add a file of this name and size; the cleaned name.
+     *
+     * @throws MediaException
+     */
+    private function check(Principal $p, string $filename, int $size): string
+    {
         if (!$p->can('media.upload') || $p->userId === null) {
             throw MediaException::forbidden("You can't upload files.");
         }
         $filename = self::cleanName($filename);
-        $types = $this->types();
         $errors = [];
-        if (($e = $types->checkName($filename)) !== []) {
+        if (($e = $this->types()->checkName($filename)) !== []) {
             $errors['filename'] = $e;
         }
         if ($size < 1) {
@@ -125,33 +166,31 @@ final class MediaLibrary
         if ($errors !== []) {
             throw MediaException::invalid($errors);
         }
-        $pending = QueryBuilder::table('uploads')->where('user_id', $p->userId)->where('expires_at', '>', gmdate('Y-m-d H:i:s'))->count();
-        if ($pending >= self::MAX_PENDING) {
-            throw MediaException::conflict('Too many unfinished uploads. Finish or cancel some first.');
-        }
 
+        return $filename;
+    }
+
+    /** @return array<string, mixed> a new `uploads` row */
+    private function newRow(Principal $p, string $filename, int $size, string $mode): array
+    {
         $ext = MediaTypes::extension($filename);
-        $type = $types->forExtension($ext);
-        $direct = $this->directDisk();
-        $row = [
+
+        return [
             'id' => bin2hex(random_bytes(16)),
             'user_id' => $p->userId,
-            'mode' => $direct !== null ? 'direct' : 'chunked',
+            'mode' => $mode,
             'disk' => $this->diskName(),
             'path' => self::newKey($filename, $ext),
             'filename' => $filename,
             'ext' => $ext,
-            'mime' => $type['mime'],
+            'mime' => $this->types()->forExtension($ext)['mime'],
             'size' => $size,
             'chunk_size' => self::CHUNK_SIZE,
             'received' => 0,
-            'expires_at' => gmdate('Y-m-d H:i:s', time() + ($direct !== null ? self::DIRECT_TTL : self::CHUNKED_TTL)),
+            'expires_at' => gmdate('Y-m-d H:i:s', time() + ($mode === 'direct' ? self::DIRECT_TTL : self::CHUNKED_TTL)),
             'created_at' => gmdate('Y-m-d H:i:s'),
             'updated_at' => gmdate('Y-m-d H:i:s'),
         ];
-        QueryBuilder::table('uploads')->insert($row);
-
-        return $this->describeUpload($row, $direct);
     }
 
     /**
@@ -239,7 +278,7 @@ final class MediaLibrary
      * Check the uploaded bytes and add the file to the library.
      *
      * @param array<string, mixed> $row
-     * @param array{title?: ?string, alt?: ?string} $details
+     * @param array{title?: ?string, alt?: ?string, caption?: ?string} $details
      * @throws MediaException
      */
     public function complete(array $row, Principal $p, array $details = []): Media
@@ -261,7 +300,7 @@ final class MediaLibrary
 
     /**
      * @param array<string, mixed> $row the claimed upload
-     * @param array{title?: ?string, alt?: ?string} $details
+     * @param array{title?: ?string, alt?: ?string, caption?: ?string} $details
      * @throws MediaException
      */
     private function finish(array $row, Principal $p, array $details): Media
@@ -344,7 +383,7 @@ final class MediaLibrary
             'filename' => $row['filename'],
             'title' => self::title($details['title'] ?? null, (string) $row['filename']),
             'alt' => self::text($details['alt'] ?? null, 1000),
-            'caption' => null,
+            'caption' => self::text($details['caption'] ?? null, 2000),
             'mime' => $row['mime'],
             'ext' => $row['ext'],
             'kind' => $this->types()->forExtension((string) $row['ext'])['kind'] ?? 'document',

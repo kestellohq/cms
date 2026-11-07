@@ -52,6 +52,9 @@ final class FakeTransport implements Transport
         $result = $handler($request);
         if ($result instanceof HttpResponse) {
             if ($request->sink !== null) {
+                if (strlen($result->body) > $request->maxBytes) {
+                    throw new HttpTooLarge('FakeTransport: the response is larger than max_bytes.');
+                }
                 fwrite($request->sink, $result->body);
                 return new HttpResponse($result->status, $result->headers, '', $result->url);
             }
@@ -65,6 +68,9 @@ final class FakeTransport implements Transport
         $body = array_key_exists('json', $result) ? json_encode($result['json'], JSON_THROW_ON_ERROR) : (string) ($result['body'] ?? '');
 
         if ($request->sink !== null) {
+            if (strlen($body) > $request->maxBytes) {
+                throw new HttpTooLarge('FakeTransport: the response is larger than max_bytes.');
+            }
             fwrite($request->sink, $body);
             $body = '';
         }
