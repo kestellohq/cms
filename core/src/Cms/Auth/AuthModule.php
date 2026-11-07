@@ -8,7 +8,6 @@ use Closure;
 use Kestello\Cms\Audit\AuditSubscriber;
 use Kestello\Cms\Auth\External\AuthAttempts;
 use Kestello\Cms\Auth\External\ExternalAuthController;
-use Kestello\Cms\Auth\External\ExternalAuthPolicy;
 use Kestello\Cms\Auth\External\ExternalLogin;
 use Kestello\Cms\Auth\External\Identities;
 use Kestello\Cms\Auth\External\IdentityResolver;
@@ -30,15 +29,15 @@ use Kestello\Support\AppKey;
 use Kestello\Support\Html;
 
 /**
- * Core module: login, second factor, password reset, and the auth services
- * the API endpoints use.
+ * Core module: login, second factor, password reset, email sign-up, and the
+ * auth services the API endpoints use.
  *
  * Config (config/auth.php, returning ['password_min_length' => 12, ...]):
  *   password_min_length        12
  *   revoke_on_password_change  true   other sessions and all tokens end on a password change
  *   two_factor_roles           ['admin']  roles expected to use 2FA (reported now, enforced with the M3 enrollment screen)
  *   registration, registration_domains, default_role, link_by_verified_email, trust_provider_mfa
- *                              external sign-in policy (ExternalAuthPolicy; settings override)
+ *                              who may create an account (AccountPolicy; settings override)
  */
 final class AuthModule extends Provider
 {
@@ -74,11 +73,14 @@ final class AuthModule extends Provider
             $c->singleton('auth.mail', static fn(): Closure => static fn(string $to, string $subject, string $html): bool => (new Mailer())->send($to, $subject, $html));
         }
         $c->singleton(Identities::class, static fn(): Identities => new Identities());
+        $c->singleton(NewAccounts::class, static fn(): NewAccounts => new NewAccounts(
+            $cms()?->auth->roles ?? new Roles(),
+            static fn(): AccountPolicy => AccountPolicy::current($cms()),
+            $cms()?->filters,
+        ));
         $c->singleton(IdentityResolver::class, static fn(): IdentityResolver => new IdentityResolver(
             $c->make(Identities::class),
-            $cms()?->auth->roles ?? new Roles(),
-            static fn(): ExternalAuthPolicy => ExternalAuthPolicy::current($cms()),
-            $cms()?->filters,
+            $c->make(NewAccounts::class),
             $events(),
         ));
         $c->singleton(ExternalLogin::class, static fn(): ExternalLogin => new ExternalLogin(
@@ -88,7 +90,7 @@ final class AuthModule extends Provider
             $c->make(IdentityResolver::class),
             $c->make(LoginService::class),
             $c->make(RateLimiter::class . '@auth'),
-            static fn(): ExternalAuthPolicy => ExternalAuthPolicy::current($cms()),
+            static fn(): AccountPolicy => AccountPolicy::current($cms()),
             static fn(): string => self::site($cms())[1],
             $cms()?->filters,
             $events(),
@@ -99,6 +101,19 @@ final class AuthModule extends Provider
             return new PasswordResets(
                 $c->make(RateLimiter::class . '@auth'),
                 $c->make(AccountSecurity::class),
+                $c->make(PasswordPolicy::class),
+                $c->make('auth.mail'),
+                $url,
+                $name,
+                $events(),
+            );
+        });
+        $c->singleton(Registrations::class, static function () use ($c, $cms, $events): Registrations {
+            [$name, $url] = self::site($cms());
+
+            return new Registrations(
+                $c->make(RateLimiter::class . '@auth'),
+                $c->make(NewAccounts::class),
                 $c->make(PasswordPolicy::class),
                 $c->make('auth.mail'),
                 $url,
@@ -123,6 +138,10 @@ final class AuthModule extends Provider
         $r->post('/forgot-password', [AuthController::class, 'forgot'])->name('password.forgot.post');
         $r->get('/reset-password', [AuthController::class, 'showReset'])->name('password.reset');
         $r->post('/reset-password', [AuthController::class, 'reset'])->name('password.reset.post');
+        $r->get('/register', [RegistrationController::class, 'show'])->name('register');
+        $r->post('/register', [RegistrationController::class, 'register'])->name('register.post');
+        $r->get('/register/complete', [RegistrationController::class, 'showComplete'])->name('register.complete');
+        $r->post('/register/complete', [RegistrationController::class, 'complete'])->name('register.complete.post');
         $r->get('/auth/{provider}/redirect', [ExternalAuthController::class, 'redirect'])->where(['provider' => '[a-z0-9][a-z0-9-]{0,31}'])->name('auth.external.redirect');
         $r->get('/auth/{provider}/callback', [ExternalAuthController::class, 'callback'])->where(['provider' => '[a-z0-9][a-z0-9-]{0,31}'])->name('auth.external.callback');
     }

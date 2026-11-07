@@ -59,9 +59,13 @@ final class CoreHooks
 
         $auth = 'Accounts and sign-in';
         $hooks->filter('auth.password.errors', '0.1.0', 'list', 'Errors for a new password. Add your own rules; core\'s errors cannot be removed.', ['string $password' => 'The new password.', '?array $user' => 'The user, when known (username, email).'], $auth);
-        $hooks->filter('auth.can_register', '0.1.0', 'bool', 'Whether an external sign-in may create a new account.', ['ExternalIdentity $identity' => 'Who is signing in.'], $auth);
-        $hooks->filter('auth.default_role', '0.1.0', 'string', 'The role of an account created by an external sign-in. admin and unknown roles become user.', ['ExternalIdentity $identity' => 'Who is signing in.'], $auth);
-        $hooks->filter('auth.redirect_after_login', '0.1.0', 'string', 'Where to go after an external sign-in. The result must stay on this site.', ['array $user' => 'The user who signed in.'], $auth);
+        $who = [
+            'string $email' => 'The address the account would use. Empty when a provider shared none.',
+            '?ExternalIdentity $identity' => 'Who is signing in with a provider, or null for email sign-up.',
+        ];
+        $hooks->filter('auth.can_register', '0.1.0', 'bool', 'Whether someone may create an account, by email sign-up or by signing in with a provider.', $who, $auth);
+        $hooks->filter('auth.default_role', '0.1.0', 'string', 'The role of an account someone creates for themselves. admin and unknown roles become user.', $who, $auth);
+        $hooks->filter('auth.redirect_after_login', '0.1.0', 'string', 'Where to go after signing in with a provider or finishing email sign-up. The result must stay on this site.', ['array $user' => 'The user who signed in.'], $auth);
 
         $hooks->filter('media.scan', '0.1.0', '?string', 'Check an uploaded file, for example with a virus scanner. Return a message to reject the upload.', ['array $file' => 'filename, mime, size, path, disk and key.'], 'Media');
         $hooks->filter('backup.skip_tables', '0.1.0', 'list', 'Tables to leave out of backups, such as a large log table.', [], 'Backups');

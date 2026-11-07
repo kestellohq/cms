@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\System;
 
 use Kestello\Cms\Auth\PasswordResets;
+use Kestello\Cms\Auth\Registrations;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Queue\JobQueue;
 use Kestello\Cms\Queue\Worker;
@@ -48,8 +49,9 @@ final class CoreTasks
             $days = max(1, (int) $cms->config->get('audit.retention_days', 365));
             $entries = $cms->audit->prune($days);
             $resets = QueryBuilder::table(PasswordResets::TABLE)->where('expires_at', '<', time())->delete();
-            return "{$entries} audit entries, {$resets} expired reset tokens.";
-        }, 'audit.prune')->dailyAt('03:10')->description('Deletes audit entries past retention and expired password-reset tokens.');
+            $signups = QueryBuilder::table(Registrations::TABLE)->where('expires_at', '<', time())->delete();
+            return "{$entries} audit entries, {$resets} expired reset tokens, {$signups} expired sign-up links.";
+        }, 'audit.prune')->dailyAt('03:10')->description('Deletes audit entries past retention, and expired password-reset and sign-up links.');
 
         $s->call(static function () use ($cms): string {
             $days = max(1, (int) $cms->config->get('queue.failed_retention_days', 30));

@@ -319,6 +319,10 @@ msgstr ""
 msgid "Account switched off"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Accounts"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Actions"
 msgstr ""
@@ -666,8 +670,16 @@ msgstr ""
 msgid "Allow several files"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Allowed email domains"
+msgstr ""
+
 #: core/resources/js/pages/admin/forms/Index.vue
 msgid "Almost nothing"
+msgstr ""
+
+#: core/resources/js/pages/auth/Register.vue
+msgid "Already have an account? Sign in"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
@@ -719,6 +731,10 @@ msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
 msgid "Answers site search. Switching engines rebuilds the index in the background."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Anyone"
 msgstr ""
 
 #: core/resources/js/components/content/SharePreviews.vue
@@ -833,6 +849,7 @@ msgstr ""
 msgid "At least one address."
 msgstr ""
 
+#: core/resources/js/pages/auth/CompleteRegistration.vue
 #: core/resources/js/pages/auth/ResetPassword.vue
 msgid "At least {n} characters. A few unrelated words make a strong password you can remember."
 msgstr ""
@@ -893,6 +910,7 @@ msgstr ""
 msgid "Back soon"
 msgstr ""
 
+#: core/resources/js/pages/auth/CompleteRegistration.vue
 #: core/resources/js/pages/auth/ForgotPassword.vue
 #: core/resources/js/pages/auth/ResetPassword.vue
 #: core/resources/js/pages/auth/TwoFactorChallenge.vue
@@ -924,6 +942,7 @@ msgid "Back to {list}"
 msgstr ""
 
 #: core/resources/js/components/AuthCard.vue
+#: core/resources/js/pages/auth/Login.vue
 msgid "Back to {site}"
 msgstr ""
 
@@ -1436,6 +1455,11 @@ msgstr ""
 msgid "Choose where each kind of message reaches you."
 msgstr ""
 
+#: core/resources/js/pages/auth/CompleteRegistration.vue
+#: core/src/Cms/Auth/RegistrationController.php
+msgid "Choose your password"
+msgstr ""
+
 #: core/resources/js/components/content-types/ConditionsEditor.vue
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/fields/Select.vue
@@ -1622,6 +1646,10 @@ msgstr ""
 msgid "Confirm your password"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Connect provider sign-ins by email"
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Connect {provider}"
 msgstr ""
@@ -1780,8 +1808,18 @@ msgstr ""
 msgid "Create a content type for things like events, products or team members, with exactly the fields they need."
 msgstr ""
 
+#: core/resources/js/pages/auth/CompleteRegistration.vue
+msgid "Create account"
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Create an access token"
+msgstr ""
+
+#: core/resources/js/pages/auth/Login.vue
+#: core/resources/js/pages/auth/Register.vue
+#: core/src/Cms/Auth/RegistrationController.php
+msgid "Create an account"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
@@ -2218,7 +2256,7 @@ msgid "Deletes API tokens that expired over 30 days ago."
 msgstr ""
 
 #: core/src/Cms/System/CoreTasks.php
-msgid "Deletes audit entries past retention and expired password-reset tokens."
+msgid "Deletes audit entries past retention, and expired password-reset and sign-up links."
 msgstr ""
 
 #: core/src/Cms/System/CoreTasks.php
@@ -2535,7 +2573,9 @@ msgid "Email"
 msgstr ""
 
 #: core/resources/js/components/content-types/field-labels.js
+#: core/resources/js/pages/auth/CompleteRegistration.vue
 #: core/resources/js/pages/auth/ForgotPassword.vue
+#: core/resources/js/pages/auth/Register.vue
 msgid "Email address"
 msgstr ""
 
@@ -2546,6 +2586,10 @@ msgstr ""
 #: core/resources/js/pages/auth/Login.vue
 #: core/src/Cms/Api/Endpoints/Auth/CreateSession.php
 msgid "Email or username"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Email sign-up proves the address with a link before the account exists."
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
@@ -2598,6 +2642,10 @@ msgstr ""
 
 #: core/src/Cms/Redirects/Redirects.php
 msgid "Enter where visitors should go."
+msgstr ""
+
+#: core/resources/js/pages/auth/Register.vue
+msgid "Enter your email address. We will send you a link to choose your password."
 msgstr ""
 
 #: core/resources/js/pages/fields/Blocks.vue
@@ -3235,6 +3283,10 @@ msgstr ""
 
 #: core/src/Cms/Design/ThemeStyles.php
 msgid "Geometric sans-serif"
+msgstr ""
+
+#: core/resources/js/pages/auth/CompleteRegistration.vue
+msgid "Get a new link"
 msgstr ""
 
 #: core/src/Cms/Content/Terms.php
@@ -5166,6 +5218,10 @@ msgstr ""
 msgid "Nobody matches these filters."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Nobody: you add people yourself"
+msgstr ""
+
 #: core/resources/js/pages/fields/Select.vue
 #: core/resources/js/ui/builder/BuilderDesign.vue
 msgid "None"
@@ -5537,6 +5593,10 @@ msgstr ""
 msgid "Only packages signed by {publishers} install from here. A developer can install this one on the server: bin/cms plugin:install <zip>."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Only people with an address at the domains below"
+msgstr ""
+
 #: core/resources/js/pages/admin/content-types/Edit.vue
 msgid "Only possible when nothing uses it any more. This can't be undone."
 msgstr ""
@@ -5857,6 +5917,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/users/Index.vue
+#: core/resources/js/pages/auth/CompleteRegistration.vue
 #: core/resources/js/pages/auth/Login.vue
 #: core/resources/js/ui/KDialogs.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -6516,6 +6577,10 @@ msgstr ""
 msgid "Repeat new password"
 msgstr ""
 
+#: core/resources/js/pages/auth/CompleteRegistration.vue
+msgid "Repeat password"
+msgstr ""
+
 #: core/resources/js/components/content-types/field-labels.js
 msgid "Repeating group"
 msgstr ""
@@ -6806,6 +6871,10 @@ msgstr ""
 #: core/resources/js/pages/admin/users/Edit.vue
 #: core/resources/js/pages/admin/users/Index.vue
 msgid "Role"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Role for new accounts"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/GetSecurity.php
@@ -7181,6 +7250,10 @@ msgstr ""
 msgid "Send it back as \"version\" when saving, to detect edits made meanwhile"
 msgstr ""
 
+#: core/resources/js/pages/auth/Register.vue
+msgid "Send link"
+msgstr ""
+
 #: core/resources/js/pages/auth/ForgotPassword.vue
 msgid "Send reset link"
 msgstr ""
@@ -7245,6 +7318,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Api.vue
 msgid "Separate several with commas."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Separate them with commas, for example example.com, example.org."
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreBlocks.php
@@ -7642,6 +7719,10 @@ msgstr ""
 
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Size (%)"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Skip the two-step code when the provider says it already asked for a second factor."
 msgstr ""
 
 #: core/resources/js/layouts/Admin.vue
@@ -8854,6 +8935,10 @@ msgstr ""
 msgid "This is your own role, so you cannot change it. Ask an administrator."
 msgstr ""
 
+#: core/resources/js/pages/auth/CompleteRegistration.vue
+msgid "This link is invalid or has expired."
+msgstr ""
+
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "This menu is empty. Add pages, posts or links from the left."
 msgstr ""
@@ -9030,6 +9115,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Index.vue
 msgid "Trashed"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Trust the provider's two-step check"
 msgstr ""
 
 #: core/resources/js/pages/fields/Blocks.vue
@@ -9394,6 +9483,10 @@ msgstr ""
 msgid "Use a web address (https://…), mailto:, tel:, a path starting with / or an #anchor."
 msgstr ""
 
+#: core/resources/js/pages/auth/Register.vue
+msgid "Use an address at {domains}."
+msgstr ""
+
 #: core/resources/js/components/content-types/FieldSettings.vue
 msgid "Use for sorting and filtering"
 msgstr ""
@@ -9475,6 +9568,7 @@ msgid "Useful as a backup until you have checked the new disk. They take space u
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 #: core/src/Cms/Auth/Roles.php
 msgid "User"
 msgstr ""
@@ -9657,6 +9751,10 @@ msgid "What it may do"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "What new accounts may do. Admin is never given this way."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "What people may upload to the media library, and how images are prepared for pages. Images are always allowed; scripts and web pages never are."
 msgstr ""
 
@@ -9708,6 +9806,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "When a page moved"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "When someone signs in with a provider that confirmed their email, connect it to the account with that address. Leave off unless you trust every provider you use."
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
@@ -9770,6 +9872,10 @@ msgstr ""
 msgid "Where you are signed in"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people under Users."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/GetMe.php
 msgid "Whether the role should use it"
 msgstr ""
@@ -9793,6 +9899,10 @@ msgstr ""
 #: core/resources/js/pages/admin/system/Audit.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Who"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Who can create an account"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue

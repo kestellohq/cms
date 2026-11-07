@@ -1,6 +1,6 @@
 import { n as _sfc_main$1, t as _sfc_main$2 } from "../../chunks/FormErrors-InYWsRvI.mjs";
 import { t as _sfc_main$3 } from "../../chunks/PasswordInput-Ci59Qe3A.mjs";
-import { Fragment, createBlock, createCommentVNode, createTextVNode, createVNode, mergeProps, openBlock, renderList, toDisplayString, unref, useSSRContext, withCtx, withModifiers } from "vue";
+import { Fragment, createBlock, createCommentVNode, createSlots, createTextVNode, createVNode, mergeProps, openBlock, renderList, toDisplayString, unref, useSSRContext, withCtx, withModifiers } from "vue";
 import { ssrInterpolate, ssrRenderAttr, ssrRenderComponent, ssrRenderList } from "vue/server-renderer";
 import { Link, useForm, usePage } from "@kestello/app";
 import { __ } from "@kestello/sdk";
@@ -16,6 +16,8 @@ var _sfc_main = {
 			password: ""
 		});
 		const providers = page.props.providers ?? [];
+		const canRegister = page.props.canRegister === true;
+		const site = page.props.site?.name || "Kestello";
 		const iconPath = (icon) => typeof icon === "string" && /^\/assets\/[\w./-]+\.(svg|png)$/.test(icon) ? icon : null;
 		const iconName = (icon) => typeof icon === "string" && /^[a-z0-9-]+$/.test(icon) ? icon : null;
 		function submit() {
@@ -25,7 +27,7 @@ var _sfc_main = {
 			_push(ssrRenderComponent(_sfc_main$1, mergeProps({
 				title: unref(__)("Sign in"),
 				description: unref(__)("Use your email address or username.")
-			}, _attrs), {
+			}, _attrs), createSlots({
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) {
 						_push(ssrRenderComponent(_sfc_main$2, {
@@ -229,8 +231,47 @@ var _sfc_main = {
 						}), 128))])], 64)) : createCommentVNode("v-if", true)
 					];
 				}),
-				_: 1
-			}, _parent));
+				_: 2
+			}, [canRegister ? {
+				name: "footer",
+				fn: withCtx((_, _push, _parent, _scopeId) => {
+					if (_push) {
+						_push(ssrRenderComponent(unref(Link), {
+							href: "/",
+							class: "k-link"
+						}, {
+							default: withCtx((_, _push, _parent, _scopeId) => {
+								if (_push) _push(`${ssrInterpolate(unref(__)("Back to {site}", { site: unref(site) }))}`);
+								else return [createTextVNode(toDisplayString(unref(__)("Back to {site}", { site: unref(site) })), 1)];
+							}),
+							_: 1
+						}, _parent, _scopeId));
+						_push(ssrRenderComponent(unref(Link), {
+							href: "/register",
+							class: "k-link"
+						}, {
+							default: withCtx((_, _push, _parent, _scopeId) => {
+								if (_push) _push(`${ssrInterpolate(unref(__)("Create an account"))}`);
+								else return [createTextVNode(toDisplayString(unref(__)("Create an account")), 1)];
+							}),
+							_: 1
+						}, _parent, _scopeId));
+					} else return [createVNode(unref(Link), {
+						href: "/",
+						class: "k-link"
+					}, {
+						default: withCtx(() => [createTextVNode(toDisplayString(unref(__)("Back to {site}", { site: unref(site) })), 1)]),
+						_: 1
+					}), createVNode(unref(Link), {
+						href: "/register",
+						class: "k-link"
+					}, {
+						default: withCtx(() => [createTextVNode(toDisplayString(unref(__)("Create an account")), 1)]),
+						_: 1
+					})];
+				}),
+				key: "0"
+			} : void 0]), _parent));
 		};
 	}
 };

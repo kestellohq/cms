@@ -17,7 +17,7 @@ use RecursiveIteratorIterator;
  *   $admin->page($path, $component, '…'), ->group($id, '…'), ->link($id, '…'),
  *   ->widget($area, $component, '…'), ->column($list, $key, '…'), label: '…', title: '…', labels: […]
  *   'label' => '…', 'title' => '…', 'description' => '…', 'singular' => '…', 'plural' => '…',
- *   and every value of 'labels' => ['key' => '…']
+ *   and every value of 'labels' => ['key' => '…'] and of Schema::enum(['value' => '…'])
  * JavaScript and Vue: __('…') (also the one useI18n() returns).
  *
  * Only literal strings are found: __($text) cannot be, so pass literals.
@@ -177,6 +177,11 @@ final class Extractor
                 $indexes = self::METHODS[$t[1]] ?? null;
             } elseif (self::is($prev, T_DOUBLE_COLON)) {
                 $class = $tokens[$i - 2] ?? null;
+                // Schema::enum(['value' => 'Label', …]): the labels, never the values of a plain list.
+                if ($t[1] === 'enum' && is_array($class) && preg_match('/(^|\\\\)Schema$/', $class[1]) === 1 && ($tokens[$i + 2] ?? null) === '[') {
+                    $out = [...$out, ...self::arrayValues($tokens, $i + 2)];
+                    continue;
+                }
                 $isTranslator = is_array($class) && preg_match('/(^|\\\\)Translator$/', $class[1]) === 1;
                 $indexes = $isTranslator ? (self::STATICS[$t[1]] ?? null) : null;
             } elseif (in_array($t[0], [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true) && !self::is($prev, T_FUNCTION)) {

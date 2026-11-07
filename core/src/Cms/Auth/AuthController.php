@@ -23,7 +23,11 @@ final class AuthController
     public function showLogin(Request $request): Response
     {
         $this->session()->token();   // the form posts with a CSRF token: start the session (guests browsing get none)
-        return Page::render('@core/auth/Login', ['title' => 'Login', 'providers' => self::providers($request)]);
+        return Page::render('@core/auth/Login', [
+            'title' => 'Login',
+            'providers' => self::providers($request),
+            'canRegister' => $this->service(Registrations::class)->isOpen(),
+        ]);
     }
 
     public function login(Request $request): Response

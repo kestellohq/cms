@@ -460,6 +460,16 @@
     "src": "resources/js/pages/admin/users/Index.vue",
     "isEntry": true
   },
+  "resources/js/pages/auth/CompleteRegistration.vue": {
+    "file": "pages/auth/CompleteRegistration.mjs",
+    "name": "pages/auth/CompleteRegistration",
+    "src": "resources/js/pages/auth/CompleteRegistration.vue",
+    "isEntry": true,
+    "imports": [
+      "_FormErrors-InYWsRvI.mjs",
+      "_PasswordInput-Ci59Qe3A.mjs"
+    ]
+  },
   "resources/js/pages/auth/ForgotPassword.vue": {
     "file": "pages/auth/ForgotPassword.mjs",
     "name": "pages/auth/ForgotPassword",
@@ -477,6 +487,15 @@
     "imports": [
       "_FormErrors-InYWsRvI.mjs",
       "_PasswordInput-Ci59Qe3A.mjs"
+    ]
+  },
+  "resources/js/pages/auth/Register.vue": {
+    "file": "pages/auth/Register.mjs",
+    "name": "pages/auth/Register",
+    "src": "resources/js/pages/auth/Register.vue",
+    "isEntry": true,
+    "imports": [
+      "_FormErrors-InYWsRvI.mjs"
     ]
   },
   "resources/js/pages/auth/ResetPassword.vue": {
