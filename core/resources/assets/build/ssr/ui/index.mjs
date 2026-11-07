@@ -1227,6 +1227,9 @@ _sfc_main$35.setup = (props, ctx) => {
 *                :secrets="['password']" :secrets-set="{ password: true }" :locked="{ host: 'environment' }" />
 *
 * Secrets render as password fields; leaving one blank keeps the stored value.
+* A format the form can't draw itself ("media") can come from the page:
+*   <template #format-media="{ id, value, set, field, invalid }">…</template>
+* Without that slot the field is an ordinary input.
 */
 var _sfc_main$24 = {
 	__name: "KSchemaForm",
@@ -1301,7 +1304,16 @@ var _sfc_main$24 = {
 				}, {
 					default: withCtx(({ id, describedBy, invalid }, _push, _parent, _scopeId) => {
 						if (_push) {
-							if (field.kind === "bool") _push(ssrRenderComponent(_sfc_main$30, {
+							if (field.def.format && _ctx.$slots[`format-${field.def.format}`]) ssrRenderSlot(_ctx.$slots, `format-${field.def.format}`, {
+								id,
+								field,
+								value: model.value[field.key],
+								set: (value) => set(field.key, value),
+								invalid,
+								describedBy,
+								disabled: !!__props.locked[field.key]
+							}, null, _push, _parent, _scopeId);
+							else if (field.kind === "bool") _push(ssrRenderComponent(_sfc_main$30, {
 								id,
 								"model-value": !!(model.value[field.key] ?? field.def.default),
 								label: field.label,
@@ -1346,8 +1358,16 @@ var _sfc_main$24 = {
 								"aria-describedby": describedBy,
 								"onUpdate:modelValue": ($event) => set(field.key, $event)
 							}, null, _parent, _scopeId));
-						} else return [field.kind === "bool" ? (openBlock(), createBlock(_sfc_main$30, {
-							key: 0,
+						} else return [field.def.format && _ctx.$slots[`format-${field.def.format}`] ? renderSlot(_ctx.$slots, `format-${field.def.format}`, {
+							id,
+							field,
+							value: model.value[field.key],
+							set: (value) => set(field.key, value),
+							invalid,
+							describedBy,
+							disabled: !!__props.locked[field.key]
+						}, void 0, void 0, 0) : field.kind === "bool" ? (openBlock(), createBlock(_sfc_main$30, {
+							key: 1,
 							id,
 							"model-value": !!(model.value[field.key] ?? field.def.default),
 							label: field.label,
@@ -1361,7 +1381,7 @@ var _sfc_main$24 = {
 							"disabled",
 							"onUpdate:modelValue"
 						])) : field.kind === "enum" ? (openBlock(), createBlock(_sfc_main$25, {
-							key: 1,
+							key: 2,
 							id,
 							"model-value": model.value[field.key] ?? field.def.default ?? "",
 							options: field.def.enum.map((v) => ({
@@ -1381,7 +1401,7 @@ var _sfc_main$24 = {
 							"aria-describedby",
 							"onUpdate:modelValue"
 						])) : field.kind === "number" ? (openBlock(), createBlock(_sfc_main$15, {
-							key: 2,
+							key: 3,
 							id,
 							type: "number",
 							"model-value": model.value[field.key] ?? "",
@@ -1403,7 +1423,7 @@ var _sfc_main$24 = {
 							"aria-describedby",
 							"onUpdate:modelValue"
 						])) : field.def.format === "multiline" ? (openBlock(), createBlock("textarea", {
-							key: 3,
+							key: 4,
 							id,
 							class: "k-input k-schema-form__text",
 							rows: "8",
@@ -1423,7 +1443,7 @@ var _sfc_main$24 = {
 							"aria-describedby",
 							"onInput"
 						])) : (openBlock(), createBlock(_sfc_main$15, {
-							key: 4,
+							key: 5,
 							id,
 							type: field.secret ? "password" : "text",
 							"model-value": model.value[field.key] ?? "",

@@ -150,6 +150,34 @@ final class DiscoveryTest extends AuthTestCase
         $this->assertFalse(str_contains($this->head('/blog/rye'), 'og:image'), 'a file that is gone is not shared');
     }
 
+    public function testTheSiteChoosesItsTitlePatternAndDefaultSharingImage(): void
+    {
+        $png = (function (): string {
+            ob_start();
+            imagepng(imagecreatetruecolor(12, 8));
+            return (string) ob_get_clean();
+        })();
+        $up = $this->json($this->api('POST', '/media/uploads', ['filename' => 'logo.png', 'size' => strlen($png)]))['data'];
+        $this->api('PUT', "/media/uploads/{$up['id']}/chunks/0", raw: $png);
+        $media = $this->json($this->api('POST', "/media/uploads/{$up['id']}/complete"))['data'];
+        $this->post(['title' => 'Rye', 'slug' => 'rye']);
+        $title = fn(string $uri) => Seo::documentTitle($this->visit($uri)->payload()->props + ['site' => ['name' => 'Bakery']], $uri);
+
+        $this->assertSame('Rye - Bakery', $title('/blog/rye'), 'out of the box: as before');
+        $this->assertFalse(str_contains($this->head('/blog/rye'), 'og:image'));
+
+        $this->settings(['seo' => ['seo_title_pattern' => '{title} {sep} {site}', 'seo_home_pattern' => '{site} {sep} {tagline}', 'seo_separator' => '|', 'seo_image' => $media['id']]]);
+        $this->assertSame(['page' => '{title} {sep} {site}', 'home' => '{site} {sep} {tagline}', 'sep' => '|', 'tagline' => 'Bread, daily.'], Seo::titles(), 'what the browser gets as site.titles');
+        $this->assertSame('Rye | Bakery', $title('/blog/rye'));
+        $this->assertSame('Bakery | Bread, daily.', Seo::documentTitle(['title' => 'About', 'site' => ['name' => 'Bakery']], '/'), 'the home page');
+        $this->assertStringContainsString('<meta property="og:image:width" content="12">', $this->head('/blog/rye'), 'no image of its own: the default');
+
+        $seo = array_values(array_filter(\Kestello\Cms\Api\Endpoints\Settings\SiteSettings::describe(), static fn(array $g) => $g['id'] === 'seo'))[0];
+        $this->assertSame(['integer', 'media'], [$seo['schema']['properties']['seo_image']['type'], $seo['schema']['properties']['seo_image']['format'] ?? null], 'the settings screen shows a media picker');
+        $this->assertSame(422, $this->api('PATCH', '/settings', ['seo' => ['seo_separator' => '<b>']])->statusCode(), 'only the listed separators');
+        $this->assertSame(422, $this->api('PATCH', '/settings', ['seo' => ['seo_title_pattern' => '']])->statusCode(), 'a pattern cannot be empty');
+    }
+
     public function testFeeds(): void
     {
         $news = $this->json($this->api('POST', '/taxonomies/category/terms', ['name' => 'News']))['data'];

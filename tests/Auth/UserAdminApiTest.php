@@ -144,7 +144,7 @@ final class UserAdminApiTest extends AuthTestCase
         $this->assertSame('Harbour', $read['data']['general']['site_name']);
         $this->assertSame([465, true], [$read['data']['mail']['smtp_port'], $read['data']['mail']['smtp_password_set']]);
         $this->assertFalse(str_contains(json_encode($read), 'pw-1'), 'the password never leaves the server');
-        $this->assertSame(['general', 'reading', 'mail', 'accounts', 'media', 'performance', 'snippets'], array_column($read['meta']['groups'], 'id'));
+        $this->assertSame(['general', 'reading', 'seo', 'mail', 'accounts', 'media', 'performance', 'snippets'], array_column($read['meta']['groups'], 'id'));
         $this->assertTrue(in_array('Europe/Belgrade', $read['meta']['groups'][0]['schema']['properties']['timezone']['enum'], true));
 
         $this->api('PATCH', '/settings', ['mail' => ['smtp_password' => '']]);
@@ -202,7 +202,7 @@ final class UserAdminApiTest extends AuthTestCase
         $this->signIn();
 
         $read = $this->json($this->api('GET', '/settings'));
-        $this->assertSame(['general', 'reading', 'mail', 'accounts', 'media', 'performance', 'snippets', 'acme.api', 'acme.vault'], array_column($read['meta']['groups'], 'id'));
+        $this->assertSame(['general', 'reading', 'seo', 'mail', 'accounts', 'media', 'performance', 'snippets', 'acme.api', 'acme.vault'], array_column($read['meta']['groups'], 'id'));
         $this->assertSame(['endpoint' => 'https://api.acme.test', 'retries' => 2, 'enabled' => false, 'key_set' => false], $read['data']['acme.api'], 'defaults until saved');
 
         // A partial save: absent fields keep their values (schema defaults are not applied on PATCH).
@@ -222,7 +222,7 @@ final class UserAdminApiTest extends AuthTestCase
 
         // Someone with settings.manage but not acme.vault neither sees nor changes that tab.
         $this->signIn('ed');
-        $this->assertSame(['general', 'reading', 'media', 'performance', 'acme.api'], array_column($this->json($this->api('GET', '/settings'))['meta']['groups'], 'id'));
+        $this->assertSame(['general', 'reading', 'seo', 'media', 'performance', 'acme.api'], array_column($this->json($this->api('GET', '/settings'))['meta']['groups'], 'id'));
         $this->assertSame(403, $this->api('PATCH', '/settings', ['acme.vault' => ['pin' => '1234']])->statusCode());
 
         // Reset links travel through the mail server and are built on the site address: neither is a settings manager's to move.

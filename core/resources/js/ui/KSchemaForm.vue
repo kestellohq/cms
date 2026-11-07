@@ -14,6 +14,9 @@ import KSwitch from './KSwitch.vue';
  *                :secrets="['password']" :secrets-set="{ password: true }" :locked="{ host: 'environment' }" />
  *
  * Secrets render as password fields; leaving one blank keeps the stored value.
+ * A format the form can't draw itself ("media") can come from the page:
+ *   <template #format-media="{ id, value, set, field, invalid }">…</template>
+ * Without that slot the field is an ordinary input.
  */
 const model = defineModel({ type: Object, default: () => ({}) });
 const props = defineProps({
@@ -69,8 +72,19 @@ function help(field) {
             :help="help(field)"
             :error="errors[field.key] ?? ''"
         >
+            <slot
+                v-if="field.def.format && $slots[`format-${field.def.format}`]"
+                :name="`format-${field.def.format}`"
+                :id="id"
+                :field="field"
+                :value="model[field.key]"
+                :set="(value) => set(field.key, value)"
+                :invalid="invalid"
+                :described-by="describedBy"
+                :disabled="!!locked[field.key]"
+            />
             <KSwitch
-                v-if="field.kind === 'bool'"
+                v-else-if="field.kind === 'bool'"
                 :id="id"
                 :model-value="!!(model[field.key] ?? field.def.default)"
                 :label="field.label"

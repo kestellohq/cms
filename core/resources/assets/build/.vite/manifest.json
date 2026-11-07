@@ -103,7 +103,7 @@
     ]
   },
   "resources/js/app/index.js": {
-    "file": "app/index-DUo0cKj6.js",
+    "file": "app/index-COWKJn3N.js",
     "name": "app/index",
     "src": "resources/js/app/index.js",
     "isEntry": true,
@@ -157,10 +157,14 @@
     ]
   },
   "resources/js/pages/admin/Settings.vue": {
-    "file": "pages/admin/Settings-5HOaeTkL.js",
+    "file": "pages/admin/Settings-xMTW505q.js",
     "name": "pages/admin/Settings",
     "src": "resources/js/pages/admin/Settings.vue",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "resources/js/pages/fields/MediaPicker.vue",
+      "resources/js/pages/fields/MediaPicker.vue"
+    ]
   },
   "resources/js/pages/admin/appearance/Styles.vue": {
     "file": "pages/admin/appearance/Styles-CxSrOorU.js",
@@ -1157,7 +1161,7 @@
     "isEntry": true
   },
   "resources/js/ui/index.js": {
-    "file": "ui/index-F28bCOgb.js",
+    "file": "ui/index-DG0K7D1s.js",
     "name": "ui/index",
     "src": "resources/js/ui/index.js",
     "isEntry": true,
