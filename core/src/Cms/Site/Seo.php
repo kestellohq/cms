@@ -9,6 +9,8 @@ use Kestello\Cms\Content\ContentType;
 use Kestello\Cms\Content\Entry;
 use Kestello\Cms\Content\Field;
 use Kestello\Framework\Settings\Settings;
+use Kestello\Support\Html;
+use Kestello\Support\Translator;
 
 /**
  * Head basics for public pages: canonical link, meta description,
@@ -33,6 +35,8 @@ final class Seo
                 ->help('Shown under the title in search results and link previews. Left empty, the excerpt or the first lines are used.'),
             Field::media('image', ['image'])->label('Sharing image')
                 ->help('Shown when the page is shared on social media or in a chat. Left empty, the first image of the page is used.'),
+            Field::url('canonical')->label('Canonical address')->max(2000)
+                ->help('Only for text first published at another address, such as an article you also wrote elsewhere. Search engines then list that address instead of this page. Leave empty otherwise.'),
             Field::boolean('noindex')->label('Hide from search engines')
                 ->help('The page stays public but is left out of the sitemap, and search engines are asked not to list it.'),
         ])->label('Search and sharing')->sidebar();
@@ -55,7 +59,7 @@ final class Seo
         if ($description === '') {
             $description = trim((string) ($presented['excerpt'] ?? ''));
         }
-        $image = self::image($own['image'] ?? null);
+        $image = self::media($own['image'] ?? null);
         foreach ($type->getFields() as $field) {
             if ($field->isInternal()) {
                 continue;
@@ -76,15 +80,68 @@ final class Seo
             }
         }
 
+        // the address search engines should list: another one only when the editor chose it, and only a web address
+        $elsewhere = trim((string) ($own['canonical'] ?? ''));
+
         return [
             'title' => $title === '' ? null : $title,
             'description' => self::clip($description),
-            'canonical' => $canonical,
+            'canonical' => self::isWebAddress($elsewhere) ? $elsewhere : $canonical,
             'image' => $image,
             'type' => $type->hasArchive() ? 'article' : 'website',
+            'kind' => $type->hasArchive() ? 'article' : 'page',
             'published' => $type->hasArchive() ? ($presented['published_at'] ?? null) : null,
+            'modified' => \Kestello\Support\Date::isoUtc($entry->getAttribute('updated_at')),
+            'author' => $type->hasArchive() && is_array($presented['author'] ?? null) ? (string) $presented['author']['name'] : null,
+            'breadcrumbs' => $canonical === '/' ? [] : self::breadcrumbs($entry, $type),
             'noindex' => !empty($own['noindex']),
         ];
+    }
+
+    /**
+     * What leads to an entry, without the home page and the entry itself:
+     * its type's archive, or its parent pages (the furthest first).
+     *
+     * @return list<array{name: string, path: string}>
+     */
+    private static function breadcrumbs(Entry $entry, ContentType $type): array
+    {
+        if ($type->hasArchive() && $type->getPath() !== null && $type->getPath() !== '') {
+            return [['name' => $type->plural(), 'path' => (string) $type->getPath()]];
+        }
+        // a new entry on the editor's canvas has no parents to look up yet
+        $ids = $type->isHierarchical() && $entry->exists() ? ($entry->publicAncestors() ?? []) : [];
+        if ($ids === []) {
+            return [];
+        }
+        $parents = [];
+        foreach (Entry::query()->findMany($ids) as $parent) {
+            $path = $parent->path($type);
+            if ($path !== null) {
+                $parents[(int) $parent->getKey()] = ['name' => (string) $parent->title, 'path' => $path];
+            }
+        }
+
+        return array_values(array_filter(array_map(static fn(int $id) => $parents[$id] ?? null, array_reverse($ids))));
+    }
+
+    /**
+     * An absolute http(s) address with a host: no spaces, control characters
+     * or backslashes (which browsers read in surprising ways), and no
+     * user:password@ part (which hides the real host).
+     */
+    public static function isWebAddress(string $url): bool
+    {
+        if ($url === '' || strlen($url) > 2000 || preg_match('/[\x00-\x20\x7F\\\\]/', $url) === 1) {
+            return false;
+        }
+        $parts = parse_url($url);
+
+        return is_array($parts)
+            && in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true)
+            && ($parts['host'] ?? '') !== ''
+            && !isset($parts['user']) && !isset($parts['pass'])
+            && filter_var($url, FILTER_VALIDATE_URL) !== false;
     }
 
     /**
@@ -93,7 +150,7 @@ final class Seo
      *
      * @return array{url: string, width: mixed, height: mixed, alt: string}|null
      */
-    private static function image(mixed $id): ?array
+    public static function media(mixed $id): ?array
     {
         $id = is_array($id) ? ($id[0] ?? null) : $id;
         if (!is_numeric($id) || (int) $id < 1) {
@@ -162,6 +219,19 @@ final class Seo
         ];
     }
 
+    /**
+     * Whether an entry's canonical address is another page (it was first
+     * published elsewhere): search engines list that one, so sitemaps leave
+     * this one out.
+     */
+    public static function listedElsewhere(Entry $entry, string $address): bool
+    {
+        $own = $entry->field('seo');
+        $canonical = is_array($own) ? trim((string) ($own['canonical'] ?? '')) : '';
+
+        return self::isWebAddress($canonical) && rtrim($canonical, '/') !== rtrim($address, '/');
+    }
+
     /** Whether an entry asked to stay out of search engines. */
     public static function hidden(Entry $entry): bool
     {
@@ -228,9 +298,9 @@ final class Seo
         if ($description !== '') {
             $tags[] = ['meta', ['name' => 'description', 'content' => $description]];
         }
-        if ($error || !empty($seo['noindex']) || self::discouraged()) {
-            $tags[] = ['meta', ['name' => 'robots', 'content' => 'noindex']];
-        }
+        $hidden = $error || !empty($seo['noindex']) || self::discouraged();
+        // a page that may be listed lets search engines show its pictures large (Google Discover, image results)
+        $tags[] = ['meta', ['name' => 'robots', 'content' => $hidden ? 'noindex' : 'max-image-preview:large']];
         $tags[] = ['link', ['rel' => 'alternate', 'type' => 'application/rss+xml', 'title' => $site, 'href' => '/feed']];
         if (is_array($seo['feed'] ?? null) && ($seo['feed']['url'] ?? '/feed') !== '/feed') {
             $tags[] = ['link', ['rel' => 'alternate', 'type' => 'application/rss+xml', 'title' => trim($seo['feed']['title'] . ' - ' . $site, ' -'), 'href' => (string) $seo['feed']['url']]];
@@ -247,10 +317,13 @@ final class Seo
             if ($site !== '') {
                 $tags[] = ['meta', ['property' => 'og:site_name', 'content' => $site]];
             }
+            if (($locale = self::ogLocale(Translator::locale())) !== null) {
+                $tags[] = ['meta', ['property' => 'og:locale', 'content' => $locale]];
+            }
             if ($description !== '') {
                 $tags[] = ['meta', ['property' => 'og:description', 'content' => $description]];
             }
-            $image = is_array($seo['image'] ?? null) ? $seo['image'] : self::image(Settings::getInstance()->get('seo_image'));
+            $image = is_array($seo['image'] ?? null) ? $seo['image'] : self::media(Settings::getInstance()->get('seo_image'));
             if ($image !== null) {
                 $tags[] = ['meta', ['property' => 'og:image', 'content' => $abs((string) $image['url'])]];
                 foreach (['width', 'height'] as $dim) {
@@ -264,6 +337,14 @@ final class Seo
             }
             if (is_string($seo['published'] ?? null) && $seo['published'] !== '') {
                 $tags[] = ['meta', ['property' => 'article:published_time', 'content' => $seo['published']]];
+                if (is_string($seo['modified'] ?? null) && $seo['modified'] !== '') {
+                    $tags[] = ['meta', ['property' => 'article:modified_time', 'content' => $seo['modified']]];
+                }
+            }
+            if (!$hidden) {
+                foreach (self::alternates($cms, $data, $abs) as $alternate) {
+                    $tags[] = ['link', ['rel' => 'alternate', 'hreflang' => $alternate['hreflang'], 'href' => $alternate['href']]];
+                }
             }
             $tags[] = ['meta', ['name' => 'twitter:card', 'content' => $image !== null ? 'summary_large_image' : 'summary']];
         }
@@ -276,13 +357,65 @@ final class Seo
             }
             $html .= '<' . $tag[0];
             foreach ($tag[1] as $name => $value) {
-                if (preg_match('/^[a-z][a-z:_-]*$/', (string) $name) === 1 && $value !== null) {
-                    $html .= ' ' . $name . '="' . htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"';
+                if (preg_match('/^[a-z][a-z:_-]*$/', (string) $name) !== 1 || $value === null || is_array($value) || is_object($value)) {
+                    continue;
                 }
+                if ($name === 'href' && !Html::safeUrl((string) $value, ['http', 'https'])) {
+                    continue;       // a filter's link never points at javascript: or data:
+                }
+                $html .= ' ' . $name . '="' . htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"';
             }
             $html .= ">\n";
         }
 
-        return $html;
+        return $html . StructuredData::script($cms, $data);
+    }
+
+    /**
+     * The same page in other languages, from the "seo.alternates" filter
+     * (core has one language per site; a translation plugin adds them).
+     * Kept only with a valid language tag and a web address on this site or
+     * an absolute http(s) one; at most 50.
+     *
+     * @param array{component: string, props: array<string, mixed>, url: string} $data
+     * @param \Closure(string): string $abs
+     * @return list<array{hreflang: string, href: string}>
+     */
+    public static function alternates(Cms $cms, array $data, \Closure $abs): array
+    {
+        $out = [];
+        foreach ((array) $cms->filters->apply('seo.alternates', [], $data) as $alternate) {
+            if (!is_array($alternate) || !is_string($alternate['hreflang'] ?? null) || !is_string($alternate['href'] ?? null)) {
+                continue;
+            }
+            $lang = $alternate['hreflang'];
+            $href = trim($alternate['href']);
+            if (preg_match('/^(x-default|[a-z]{2,3}(-[a-z0-9]{2,8}){0,3})$/i', $lang) !== 1) {
+                continue;
+            }
+            if (str_starts_with($href, '/') && !str_starts_with($href, '//') && preg_match('/[\s\\\\]/', $href) !== 1) {
+                $href = $abs($href);
+            } elseif (!self::isWebAddress($href)) {
+                continue;
+            }
+            $out[strtolower($lang)] = ['hreflang' => $lang, 'href' => $href];
+        }
+
+        return array_slice(array_values($out), 0, 50);
+    }
+
+    /** "pt_BR" → "pt_BR", "sr_Latn_RS" → "sr_RS"; a language without a country ("en") has none. */
+    public static function ogLocale(string $locale): ?string
+    {
+        $parts = explode('_', str_replace('-', '_', $locale));
+        $language = strtolower($parts[0]);
+        $country = null;
+        foreach (array_slice($parts, 1) as $part) {
+            if (preg_match('/^[A-Za-z]{2}$/', $part) === 1) {
+                $country = strtoupper($part);
+            }
+        }
+
+        return preg_match('/^[a-z]{2,3}$/', $language) === 1 && $country !== null ? $language . '_' . $country : null;
     }
 }

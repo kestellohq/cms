@@ -206,6 +206,9 @@ final class Discovery
 
     // ── sitemaps ─────────────────────────────────────────────────────────
 
+    /** A sitemap file name: a type, taxonomy or plugin name and a page number. */
+    private const string FILE = '/^[a-z0-9_]+-[1-9][0-9]{0,4}$/';
+
     /** /sitemap.xml: one file per type and taxonomy, split every 2,000 addresses. */
     public static function sitemapIndex(Cms $cms): Response
     {
@@ -213,7 +216,7 @@ final class Discovery
         $w = self::writer();
         $w->startElement('sitemapindex');
         $w->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-        foreach (self::sitemapFiles($cms) as $file => $lastmod) {
+        foreach (self::listedFiles($cms) as $file => $lastmod) {
             $w->startElement('sitemap');
             $w->writeElement('loc', "{$base}/sitemaps/{$file}.xml");
             if ($lastmod !== null) {
@@ -224,6 +227,24 @@ final class Discovery
         $w->endElement();
 
         return self::xml($w->outputMemory(), 'application/xml');
+    }
+
+    /**
+     * Core's files and the ones plugins add with "sitemap.files"; names a
+     * route could not serve, and dates that aren't dates, are left out.
+     *
+     * @return array<string, ?DateTimeInterface>
+     */
+    private static function listedFiles(Cms $cms): array
+    {
+        $out = [];
+        foreach ((array) $cms->filters->apply('sitemap.files', self::sitemapFiles($cms)) as $name => $lastmod) {
+            if (is_string($name) && preg_match(self::FILE, $name) === 1) {
+                $out[$name] = $lastmod instanceof DateTimeInterface ? $lastmod : null;
+            }
+        }
+
+        return $out;
     }
 
     /** @return array<string, ?DateTimeImmutable> file name (type-1) => newest change */
@@ -264,51 +285,9 @@ final class Discovery
         if (preg_match('/^([a-z0-9_]+)-([1-9][0-9]{0,4})\.xml$/', $file, $m) !== 1) {
             return Response::notFound();
         }
-        [, $name, $page] = $m;
-        $page = (int) $page;
-        $base = Seo::siteUrl($cms);
-        $urls = [];
-        if (($type = $cms->content->get($name)) !== null && $type->getPath() !== null) {
-            if ($page === 1 && $type->hasArchive()) {
-                $urls[] = ['loc' => $base . $type->getPath(), 'lastmod' => null, 'images' => []];
-            }
-            $entries = Entry::query()->ofType($type->name)->published()->orderBy('id')
-                ->offset(($page - 1) * self::SITEMAP_CHUNK)->limit(self::SITEMAP_CHUNK)->get()->all();
-            if ($entries === [] && $urls === []) {
-                return Response::notFound();
-            }
-            $mediaFields = array_filter($type->getFields(), static fn($f) => $f->type === 'media' && !$f->isInternal());
-            $ids = [];
-            foreach ($entries as $e) {
-                foreach ($mediaFields as $f) {
-                    $ids = [...$ids, ...array_map('intval', (array) ($e->field($f->name) ?? []))];
-                }
-            }
-            $media = $ids === [] ? [] : MediaPresenter::many(array_values(array_unique($ids)));
-            foreach ($entries as $e) {
-                if (Seo::hidden($e) || ($type->isHierarchical() && $e->publicAncestors() === null)) {
-                    continue;       // under a draft, private or trashed parent: not public
-                }
-                $images = [];
-                foreach ($mediaFields as $f) {
-                    foreach ((array) ($e->field($f->name) ?? []) as $id) {
-                        $item = $media[(int) $id] ?? null;
-                        if (is_array($item) && ($item['kind'] ?? '') === 'image') {
-                            $images[] = preg_match('#^https?://#i', (string) $item['url']) === 1 ? (string) $item['url'] : $base . $item['url'];
-                        }
-                    }
-                }
-                $urls[] = ['loc' => $base . self::address($e, $type), 'lastmod' => self::date($e->updated_at), 'images' => array_slice(array_unique($images), 0, 20)];
-            }
-        } elseif (($tax = $cms->content->getTaxonomy($name)) !== null && $tax->getPath() !== null) {
-            $terms = Term::onlyInUse(Term::query()->of($tax->name))->orderBy('id')->offset(($page - 1) * self::SITEMAP_CHUNK)->limit(self::SITEMAP_CHUNK)->get()->all();
-            if ($terms === []) {
-                return Response::notFound();
-            }
-            foreach ($terms as $t) {
-                $urls[] = ['loc' => $base . $t->path($tax), 'lastmod' => null, 'images' => []];
-            }
-        } else {
+        $urls = self::coreUrls($cms, $m[1], (int) $m[2]);
+        $urls = self::siteUrls(Seo::siteUrl($cms), (array) $cms->filters->apply('sitemap.urls', $urls, $m[1] . '-' . $m[2]));
+        if ($urls === []) {
             return Response::notFound();
         }
 
@@ -332,6 +311,109 @@ final class Discovery
         $w->endElement();
 
         return self::xml($w->outputMemory(), 'application/xml');
+    }
+
+    /**
+     * What "sitemap.urls" returned, kept to what a sitemap may hold: addresses
+     * on this site only (a path, or an absolute address under the site
+     * address), real dates, http(s) images, and at most the protocol's
+     * 50,000 addresses with 1,000 images each.
+     *
+     * @param array<mixed> $urls
+     * @return list<array{loc: string, lastmod: ?DateTimeInterface, images: list<string>}>
+     */
+    public static function siteUrls(string $base, array $urls): array
+    {
+        $on = static function (mixed $url) use ($base): ?string {
+            if (!is_string($url) || $url === '') {
+                return null;
+            }
+            if (str_starts_with($url, '/') && !str_starts_with($url, '//')) {
+                $url = $base . $url;
+            }
+
+            return Seo::isWebAddress($url) && ($url === $base || str_starts_with($url, $base . '/')) ? $url : null;
+        };
+        $out = [];
+        foreach ($urls as $u) {
+            $loc = is_array($u) ? $on($u['loc'] ?? null) : null;
+            if ($loc === null) {
+                continue;
+            }
+            $images = [];
+            foreach (is_array($u['images'] ?? null) ? $u['images'] : [] as $img) {
+                if (is_string($img) && ($on($img) !== null || Seo::isWebAddress($img))) {
+                    $images[] = $on($img) ?? $img;      // images may live on a CDN or in a bucket
+                }
+            }
+            $lastmod = $u['lastmod'] ?? null;
+            $out[] = ['loc' => $loc, 'lastmod' => $lastmod instanceof DateTimeInterface ? $lastmod : null, 'images' => array_slice($images, 0, 1000)];
+            if (count($out) === 50000) {
+                break;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Core's addresses for a file name: a public type's or taxonomy's page
+     * of entries; [] for any other name (a plugin's file).
+     *
+     * @return list<array{loc: string, lastmod: ?DateTimeInterface, images: list<string>}>
+     */
+    private static function coreUrls(Cms $cms, string $name, int $page): array
+    {
+        $base = Seo::siteUrl($cms);
+        $urls = [];
+        if (($type = $cms->content->get($name)) !== null && $type->getPath() !== null) {
+            if ($page === 1 && $type->hasArchive()) {
+                $urls[] = ['loc' => $base . $type->getPath(), 'lastmod' => null, 'images' => []];
+            }
+            $entries = Entry::query()->ofType($type->name)->published()->orderBy('id')
+                ->offset(($page - 1) * self::SITEMAP_CHUNK)->limit(self::SITEMAP_CHUNK)->get()->all();
+            if ($entries === [] && $urls === []) {
+                return [];
+            }
+            $mediaFields = array_filter($type->getFields(), static fn($f) => $f->type === 'media' && !$f->isInternal());
+            $ids = [];
+            foreach ($entries as $e) {
+                foreach ($mediaFields as $f) {
+                    $ids = [...$ids, ...array_map('intval', (array) ($e->field($f->name) ?? []))];
+                }
+            }
+            $media = $ids === [] ? [] : MediaPresenter::many(array_values(array_unique($ids)));
+            foreach ($entries as $e) {
+                if (Seo::hidden($e) || ($type->isHierarchical() && $e->publicAncestors() === null)) {
+                    continue;       // under a draft, private or trashed parent: not public
+                }
+                if (Seo::listedElsewhere($e, $base . self::address($e, $type))) {
+                    continue;       // its canonical address is another one: a sitemap lists only canonical addresses
+                }
+                $images = [];
+                foreach ($mediaFields as $f) {
+                    foreach ((array) ($e->field($f->name) ?? []) as $id) {
+                        $item = $media[(int) $id] ?? null;
+                        if (is_array($item) && ($item['kind'] ?? '') === 'image') {
+                            $images[] = preg_match('#^https?://#i', (string) $item['url']) === 1 ? (string) $item['url'] : $base . $item['url'];
+                        }
+                    }
+                }
+                $urls[] = ['loc' => $base . self::address($e, $type), 'lastmod' => self::date($e->updated_at), 'images' => array_slice(array_unique($images), 0, 20)];
+            }
+        } elseif (($tax = $cms->content->getTaxonomy($name)) !== null && $tax->getPath() !== null) {
+            $terms = Term::onlyInUse(Term::query()->of($tax->name))->orderBy('id')->offset(($page - 1) * self::SITEMAP_CHUNK)->limit(self::SITEMAP_CHUNK)->get()->all();
+            if ($terms === []) {
+                return [];
+            }
+            foreach ($terms as $t) {
+                $urls[] = ['loc' => $base . $t->path($tax), 'lastmod' => null, 'images' => []];
+            }
+        } else {
+            return [];
+        }
+
+        return $urls;
     }
 
     // ── robots.txt ───────────────────────────────────────────────────────

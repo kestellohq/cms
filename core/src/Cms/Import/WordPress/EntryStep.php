@@ -123,6 +123,50 @@ final class EntryStep
     }
 
     /**
+     * What an SEO plugin kept on the post, into the entry's Search and
+     * sharing fields (only those its type has). A canonical address on the
+     * old site is left out: it would send search engines to a site that is
+     * going away, and every page here already names its own address.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $seo SeoMeta::read()
+     * @return array<string, mixed>
+     */
+    private function seo(ContentType $type, array $data, array $seo): array
+    {
+        $group = $type->getField('seo');
+        if ($group === null || $group->type !== 'group') {
+            return $data;
+        }
+        $has = array_flip(array_map(static fn(Field $f) => $f->name, $group->getChildren()));
+        $own = is_array($data['seo'] ?? null) ? $data['seo'] : [];
+        foreach (['title', 'description'] as $key) {
+            if (isset($has[$key]) && is_string($seo[$key] ?? null) && $seo[$key] !== '') {
+                $own[$key] = $seo[$key];
+            }
+        }
+        if (isset($has['noindex']) && !empty($seo['noindex'])) {
+            $own['noindex'] = true;
+        }
+        $canonical = is_string($seo['canonical'] ?? null) ? $seo['canonical'] : '';
+        if (isset($has['canonical']) && $canonical !== '' && !$this->run->links->isOld($canonical)) {
+            $own['canonical'] = $canonical;
+        }
+        if (isset($has['image']) && ((int) ($seo['image_id'] ?? 0) > 0 || is_string($seo['image_url'] ?? null))) {
+            $media = $this->run->links->media((int) ($seo['image_id'] ?? 0), (string) ($seo['image_url'] ?? ''));
+            if ($media !== null) {
+                $own['image'] = $media;
+            }
+        }
+        if ($own !== []) {
+            $data['seo'] = $own;
+            $this->run->notes->add('seo:' . $seo['source']);
+        }
+
+        return $data;
+    }
+
+    /**
      * @param array<string, mixed> $p
      * @param list<string> $messages
      * @return array<string, mixed>
@@ -158,6 +202,9 @@ final class EntryStep
             } else {
                 $messages[] = 'Its featured image was not imported.';
             }
+        }
+        if (is_array($p['seo'] ?? null)) {
+            $data = $this->seo($type, $data, $p['seo']);
         }
         $input['data'] = $data;
 

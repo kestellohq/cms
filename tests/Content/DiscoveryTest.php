@@ -178,6 +178,180 @@ final class DiscoveryTest extends AuthTestCase
         $this->assertSame(422, $this->api('PATCH', '/settings', ['seo' => ['seo_title_pattern' => '']])->statusCode(), 'a pattern cannot be empty');
     }
 
+    /** The JSON-LD @graph on the page at $uri, by @type ([] when there is none). */
+    private function graph(string $uri): array
+    {
+        $head = $this->head($uri);
+        if (preg_match('#<script type="application/ld\+json">(.*?)</script>#s', $head, $m) !== 1) {
+            return [];
+        }
+        $json = json_decode($m[1], true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame('https://schema.org', $json['@context']);
+        $out = [];
+        foreach ($json['@graph'] as $node) {
+            $out[$node['@type']] = $node;
+        }
+
+        return $out;
+    }
+
+    public function testPagesDescribeThemselvesToSearchEngines(): void
+    {
+        $this->post(['title' => 'Rye', 'slug' => 'rye', 'excerpt' => 'Three days, one loaf.', 'published_at' => '2026-03-02T09:00:00Z']);
+        $g = $this->graph('/blog/rye');
+        $this->assertSame(['WebSite', 'Organization', 'WebPage', 'Article', 'BreadcrumbList'], array_keys($g));
+        $this->assertSame(['https://bakery.test/#website', 'https://bakery.test/', 'Bakery', 'Bread, daily.', 'en'], [$g['WebSite']['@id'], $g['WebSite']['url'], $g['WebSite']['name'], $g['WebSite']['description'], $g['WebSite']['inLanguage']]);
+        $this->assertSame(['@id' => 'https://bakery.test/#publisher'], $g['WebSite']['publisher']);
+        $this->assertSame(['https://bakery.test/blog/rye#webpage', 'Rye', 'Three days, one loaf.'], [$g['WebPage']['@id'], $g['WebPage']['name'], $g['WebPage']['description']]);
+        $this->assertSame(['Rye', ['@type' => 'Person', 'name' => 'ana'], ['@id' => 'https://bakery.test/blog/rye#webpage']], [$g['Article']['headline'], $g['Article']['author'], $g['Article']['mainEntityOfPage']]);
+        $this->assertStringStartsWith('2026-03-02T09:00:00', $g['Article']['datePublished']);
+        $this->assertTrue(($g['Article']['dateModified'] ?? '') !== '', 'when it last changed');
+        $this->assertSame([
+            ['@type' => 'ListItem', 'position' => 1, 'name' => 'Bakery', 'item' => 'https://bakery.test/'],
+            ['@type' => 'ListItem', 'position' => 2, 'name' => 'Posts', 'item' => 'https://bakery.test/blog'],
+            ['@type' => 'ListItem', 'position' => 3, 'name' => 'Rye', 'item' => 'https://bakery.test/blog/rye'],
+        ], $g['BreadcrumbList']['itemListElement']);
+
+        $about = $this->json($this->api('POST', '/content/page/entries', ['title' => 'About', 'slug' => 'about', 'status' => 'published']))['data'];
+        $this->json($this->api('POST', '/content/page/entries', ['title' => 'Team', 'slug' => 'team', 'status' => 'published', 'parent_id' => $about['id']]));
+        $g = $this->graph('/about/team');
+        $this->assertArrayNotHasKey('Article', $g, 'a page is not an article');
+        $this->assertSame(['Bakery', 'About', 'Team'], array_column($g['BreadcrumbList']['itemListElement'], 'name'), 'its parent pages lead to it');
+
+        $this->assertSame('CollectionPage', array_keys($this->graph('/blog'))[2], 'a list of entries');
+
+        $this->post(['title' => 'Staff notes', 'slug' => 'staff', 'data' => ['seo' => ['noindex' => true]]]);
+        $this->assertSame([], $this->graph('/blog/staff'), 'a page that is not listed is not described either');
+        $this->assertStringNotContainsString('ld+json', Seo::head($this->cms, ['component' => '@core/errors/Error', 'props' => ['status' => 404], 'url' => '/nope']));
+        $this->settings(['reading' => ['discourage_search' => true]]);
+        $this->assertSame([], $this->graph('/blog/rye'), 'nor is anything on a hidden site');
+    }
+
+    public function testStructuredDataCannotBreakOutOfItsScript(): void
+    {
+        $this->post(['title' => '</script><script>alert(1)</script> & <!-- "x"', 'slug' => 'evil', 'excerpt' => "Ends with </SCRIPT >\u{2028}"]);
+        $this->cms->filters->add('seo.schema', static fn(array $nodes) => [
+            ...$nodes,
+            ['@type' => 'Thing', 'name' => '</script><img src=x onerror=alert(1)>'],
+            'not a node', ['name' => 'no type'], ['@type' => ''],
+        ]);
+        $head = $this->head('/blog/evil');
+        $this->assertSame(1, substr_count(strtolower($head), '</script'), 'only the closing tag of the JSON-LD itself');
+        $this->assertStringNotContainsString('<!--', $head);
+        $g = $this->graph('/blog/evil');
+        $this->assertSame('</script><script>alert(1)</script> & <!-- "x"', $g['WebPage']['name'], 'the text survives as text');
+        $this->assertSame('</script><img src=x onerror=alert(1)>', $g['Thing']['name']);
+        $this->assertSame(['WebSite', 'Organization', 'WebPage', 'Article', 'BreadcrumbList', 'Thing'], array_keys($g), 'nodes without an @type are left out');
+
+        $this->cms->filters->add('seo.schema', static fn() => []);
+        $this->assertStringNotContainsString('ld+json', $this->head('/blog/evil'), 'a plugin can remove it all');
+    }
+
+    public function testWhoIsBehindTheSite(): void
+    {
+        $png = (function (): string {
+            ob_start();
+            imagepng(imagecreatetruecolor(120, 120));
+            return (string) ob_get_clean();
+        })();
+        $up = $this->json($this->api('POST', '/media/uploads', ['filename' => 'ana.png', 'size' => strlen($png)]))['data'];
+        $this->api('PUT', "/media/uploads/{$up['id']}/chunks/0", raw: $png);
+        $media = $this->json($this->api('POST', "/media/uploads/{$up['id']}/complete"))['data'];
+        $this->settings(['seo' => [
+            'seo_publisher_type' => 'person', 'seo_publisher_name' => 'Ana Baker', 'seo_publisher_logo' => $media['id'],
+            'seo_profiles' => "https://github.com/ana\njavascript:alert(1)\n  https://mastodon.social/@ana  \nnot a url\nhttps://github.com/ana\nhttps://user:pw@evil.test/",
+        ]]);
+        $this->post(['title' => 'Rye', 'slug' => 'rye']);
+        $person = $this->graph('/blog/rye')['Person'];
+        $this->assertSame(['Ana Baker', ['https://github.com/ana', 'https://mastodon.social/@ana']], [$person['name'], $person['sameAs']], 'only web addresses, once each');
+        $this->assertSame([120, 120], [$person['image']['width'], $person['image']['height']]);
+        $this->assertArrayNotHasKey('logo', $person, 'a person has a picture, not a logo');
+        $this->assertSame(422, $this->api('PATCH', '/settings', ['seo' => ['seo_publisher_type' => 'robot']])->statusCode());
+    }
+
+    public function testAnEntryFirstPublishedElsewhere(): void
+    {
+        $this->assertSame(422, $this->api('POST', '/content/post/entries', ['title' => 'X', 'status' => 'published', 'data' => ['seo' => ['canonical' => 'javascript:alert(1)']]])->statusCode(), 'only web addresses are saved');
+        $this->post(['title' => 'Rye', 'slug' => 'rye', 'data' => ['seo' => ['canonical' => 'https://medium.com/@ana/rye']]]);
+        $this->post(['title' => 'Spelt', 'slug' => 'spelt', 'data' => ['seo' => ['canonical' => 'https://bakery.test/blog/spelt/']]]);
+        $head = $this->head('/blog/rye');
+        $this->assertStringContainsString('<link rel="canonical" href="https://medium.com/@ana/rye">', $head);
+        $this->assertStringContainsString('<meta property="og:url" content="https://medium.com/@ana/rye">', $head);
+        $this->assertSame('https://bakery.test/blog/rye#webpage', $this->graph('/blog/rye')['WebPage']['@id'], 'the graph still describes this page');
+
+        $sitemap = $this->visit('/sitemaps/post-1.xml')->content();
+        $this->assertStringNotContainsString('/blog/rye<', $sitemap, 'a sitemap lists only addresses that are their own canonical');
+        $this->assertStringContainsString('https://bakery.test/blog/spelt</loc>', $sitemap, 'naming its own address keeps it');
+
+        // stored some other way (an older import, a database edit): never written out
+        $id = $this->db->table('entries')->where('slug', 'rye')->value('id');
+        $this->db->table('entries')->where('id', $id)->update(['data' => json_encode(['seo' => ['canonical' => 'javascript:alert(1)']])]);
+        $this->assertStringContainsString('<link rel="canonical" href="https://bakery.test/blog/rye">', $this->head('/blog/rye'));
+    }
+
+    public function testOtherLanguagesAndTheSiteLanguage(): void
+    {
+        $this->post(['title' => 'Rye', 'slug' => 'rye']);
+        $this->assertStringNotContainsString('hreflang', $this->head('/blog/rye'), 'one language: no alternates');
+        $this->cms->filters->add('seo.alternates', static fn(array $list, array $data) => $data['url'] === '/blog/rye' ? [
+            ['hreflang' => 'de', 'href' => '/de/blog/roggen'],
+            ['hreflang' => 'sr-Latn', 'href' => 'https://bakery.test/sr/blog/raz'],
+            ['hreflang' => 'x-default', 'href' => '/blog/rye'],
+            ['hreflang' => 'de" onload="alert(1)', 'href' => '/x'],
+            ['hreflang' => 'fr', 'href' => 'javascript:alert(1)'],
+            ['hreflang' => 'it', 'href' => '//evil.test/x'],
+            ['hreflang' => 'es'],
+            'nonsense',
+        ] : $list);
+        $head = $this->head('/blog/rye');
+        $this->assertStringContainsString('<link rel="alternate" hreflang="de" href="https://bakery.test/de/blog/roggen">', $head);
+        $this->assertStringContainsString('<link rel="alternate" hreflang="sr-Latn" href="https://bakery.test/sr/blog/raz">', $head);
+        $this->assertStringContainsString('<link rel="alternate" hreflang="x-default" href="https://bakery.test/blog/rye">', $head);
+        $this->assertSame(3, substr_count($head, 'hreflang='), 'invalid tags and addresses are left out');
+
+        $this->assertNull(Seo::ogLocale('en'));
+        $this->assertSame(['pt_BR', 'sr_RS', 'de_AT'], [Seo::ogLocale('pt_BR'), Seo::ogLocale('sr_Latn_RS'), Seo::ogLocale('de-at')]);
+        $this->assertNull(Seo::ogLocale('"><script>'));
+        $this->assertStringContainsString('<meta name="robots" content="max-image-preview:large">', $head, 'listed pages may show large pictures');
+    }
+
+    public function testPluginsAddToTheSitemapButOnlyThisSite(): void
+    {
+        $this->cms->filters->add('sitemap.files', static fn(array $files) => $files + ['shop-1' => new \DateTimeImmutable('2026-01-02T03:04:05Z'), '../etc' => null, 'Shop-1' => null]);
+        $this->cms->filters->add('sitemap.urls', static fn(array $urls, string $file) => $file !== 'shop-1' ? $urls : [
+            ['loc' => '/shop/bread', 'lastmod' => new \DateTimeImmutable('2026-01-02'), 'images' => ['/media/bread.jpg', 'https://cdn.test/b.jpg', 'javascript:x']],
+            ['loc' => 'https://bakery.test/shop/rolls'],
+            ['loc' => 'https://evil.test/shop'],
+            ['loc' => 'https://bakery.test.evil.test/x'],
+            ['loc' => '//evil.test/x'],
+            ['loc' => 'javascript:alert(1)'],
+            ['nothing' => 1],
+        ]);
+        $index = str_replace(["\n", ' '], '', $this->visit('/sitemap.xml')->content());
+        $this->assertStringContainsString('<loc>https://bakery.test/sitemaps/shop-1.xml</loc><lastmod>2026-01-02T03:04:05+00:00</lastmod>', $index, 'a plugin\'s file is listed');
+        $this->assertStringNotContainsString('etc', $index);
+        $this->assertStringNotContainsString('Shop-1', $index);
+
+        $xml = $this->visit('/sitemaps/shop-1.xml')->content();
+        $this->assertSame(['https://bakery.test/shop/bread', 'https://bakery.test/shop/rolls'], array_map('strval', iterator_to_array((function () use ($xml) {
+            foreach (simplexml_load_string($xml)->url as $u) {
+                yield (string) $u->loc;
+            }
+        })(), false)));
+        $this->assertStringContainsString('<image:loc>https://bakery.test/media/bread.jpg</image:loc></image:image><image:image><image:loc>https://cdn.test/b.jpg</image:loc>', str_replace(["\n", ' '], '', $xml));
+        $this->assertStringNotContainsString('javascript', $xml);
+        $this->assertSame(404, $this->visit('/sitemaps/cakes-1.xml')->statusCode(), 'a file nobody fills');
+    }
+
+    public function testFiltersCannotSlipInScriptAddresses(): void
+    {
+        $this->post(['title' => 'Rye', 'slug' => 'rye']);
+        $this->cms->filters->add('seo.head', static fn(array $tags) => [...$tags, ['link', ['rel' => 'me', 'href' => 'javascript:alert(1)']], ['link', ['rel' => 'me', 'href' => 'https://mastodon.social/@ana']], ['meta', ['name' => ['x']]]]);
+        $head = $this->head('/blog/rye');
+        $this->assertStringNotContainsString('javascript', $head);
+        $this->assertStringContainsString('<link rel="me" href="https://mastodon.social/@ana">', $head);
+    }
+
     public function testFeeds(): void
     {
         $news = $this->json($this->api('POST', '/taxonomies/category/terms', ['name' => 'News']))['data'];

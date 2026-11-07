@@ -354,7 +354,7 @@ final class ContentController
     /** @return array<string, mixed> canonical keeps ?page=N past the first page */
     private static function listSeo(string $path, int $page, string $description, array $feed): array
     {
-        return ['canonical' => $path . ($page > 1 ? '?page=' . $page : ''), 'description' => \Kestello\Cms\Site\Seo::summary($description), 'feed' => $feed];
+        return ['canonical' => $path . ($page > 1 ? '?page=' . $page : ''), 'description' => \Kestello\Cms\Site\Seo::summary($description), 'feed' => $feed, 'kind' => 'collection'];
     }
 
     /** Public fields only: no internal fields, no author email. */
