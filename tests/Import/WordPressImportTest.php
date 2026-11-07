@@ -497,6 +497,52 @@ final class WordPressImportTest extends AuthTestCase
         $this->assertSame((int) $zoe['id'], (int) $this->entry(30)->getAttribute('author_id'), 'unless the import says whose they are');
     }
 
+    public function testOldPlainAddressesWorkWhenAPageIsTheHomePage(): void
+    {
+        $this->import();
+        $get = fn(string $uri) => $this->cms->routes->dispatch(new \Kestello\Framework\Core\Request('GET', $uri, (string) parse_url($uri, PHP_URL_PATH), [], [], [], [], [], ['REMOTE_ADDR' => '203.0.113.7'], ''));
+        $this->cms->routes->get('/', static fn() => new \Kestello\Framework\Core\Response('theme home'));
+        \Kestello\Framework\Settings\Settings::getInstance()?->set('front_page', (string) $this->entry(50)->getKey(), 'reading');
+
+        $this->assertSame('About', $get('/')->payload()->props['title'] ?? null, 'the chosen page answers at /');
+        $moved = $get('/?p=41');
+        $this->assertSame([301, $this->entry(41)->path()], [$moved->statusCode(), $moved->headers()['Location'] ?? null], 'the old address still goes to its post');
+    }
+
+    public function testOldPlainAddressesNeverShowWhatIsNotPublicYet(): void
+    {
+        $this->import();
+        $post = $this->entry(41);
+        $post->forceFill(['published_at' => '2099-01-01 00:00:00'])->save();
+        $this->assertNull(\Kestello\Cms\Import\WordPress\OldWordPressLinks::target('p=41'), 'scheduled');
+
+        $team = $this->entry(60);
+        $this->assertSame($team->path(), \Kestello\Cms\Import\WordPress\OldWordPressLinks::target('page_id=60'));
+        $about = $this->entry(50);
+        $about->forceFill(['status' => 'draft'])->save();
+        $this->assertNull(\Kestello\Cms\Import\WordPress\OldWordPressLinks::target('page_id=60'), 'its parent page is a draft');
+
+        // ?p= finds a file too, and a later key is tried when the first finds nothing
+        $this->assertNotNull(\Kestello\Cms\Import\WordPress\OldWordPressLinks::target('p=40'));
+        $this->assertNotNull(\Kestello\Cms\Import\WordPress\OldWordPressLinks::target('p=999&attachment_id=40'));
+    }
+
+    public function testALinkToAPostNotHereYetIsLookedAtAgainWhereverItAppears(): void
+    {
+        $map = new \Kestello\Cms\Import\WordPress\SourceMap(str_repeat('c', 40));
+        $import = $this->imports()->analyze(self::FIXTURE, $this->ana);
+        // nothing imported yet: every post is pending
+        $links = new \Kestello\Cms\Import\WordPress\ImportLinks($import['id'], new \Kestello\Cms\Import\WordPress\OldSite('https://old.example.com'), $map, $this->cms->content);
+
+        $links->reset();
+        $this->assertSame('https://old.example.com/about', $links->url('/about'));
+        $this->assertTrue($links->needsLinks());
+        $links->reset();
+        $this->assertSame('https://old.example.com/about', $links->url('https://old.example.com/about'), 'the same address in another post');
+        $this->assertTrue($links->needsLinks(), 'is flagged too, so it is relinked');
+        $this->assertTrue($links->isOld('https://old.example.com/about'));
+    }
+
     public function testOnlyAdministratorsImportAndOneAtATime(): void
     {
         $editor = $this->cms->auth->principalFor($this->createUser(['username' => 'ed', 'email' => 'ed@example.test', 'role' => 'user']), 'cli');

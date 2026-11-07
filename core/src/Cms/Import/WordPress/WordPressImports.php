@@ -281,7 +281,11 @@ final class WordPressImports
             return;
         }
         $summary = json_decode((string) $row['summary'], true);
-        $site = new OldSite((string) $row['site_url'], array_values(array_filter((array) ($summary['site']['file_hosts'] ?? []), 'is_string')));
+        $site = new OldSite(
+            (string) $row['site_url'],
+            array_values(array_filter((array) ($summary['site']['file_hosts'] ?? []), 'is_string')),
+            array_values(array_filter((array) ($summary['site']['aliases'] ?? []), 'is_string')),
+        );
         $map = new SourceMap((string) $row['site_key']);
         $links = new ImportLinks($id, $site, $map, $this->cms->content);
         $options = json_decode((string) $row['options'], true);

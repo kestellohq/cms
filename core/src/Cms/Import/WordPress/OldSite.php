@@ -18,13 +18,25 @@ final class OldSite
     /** @var array<string, true> hosts besides the site's own that hold its uploads (a CDN, files.wordpress.com) */
     private readonly array $fileHosts;
 
+    /** @var array<string, true> other names of the site itself (its install address on another host) */
+    private readonly array $aliases;
+
     /**
      * @param string       $url       where the posts live (WordPress's home address, wp:base_blog_url)
      * @param list<string> $fileHosts hosts the export's own files are on, when not the site's own
+     * @param list<string> $aliases   other hosts of the site itself, whose links are to its pages too
      */
-    public function __construct(public readonly string $url, array $fileHosts = [])
+    public function __construct(public readonly string $url, array $fileHosts = [], array $aliases = [])
     {
         $this->host = self::bareHost((string) parse_url($url, PHP_URL_HOST));
+        $names = [];
+        foreach ($aliases as $alias) {
+            $alias = self::bareHost($alias);
+            if ($alias !== '' && $alias !== $this->host && $alias !== 'wordpress.com') {     // WordPress.com itself is everyone's
+                $names[$alias] = true;
+            }
+        }
+        $this->aliases = $names;
         $hosts = [];
         foreach ($fileHosts as $host) {
             $host = self::bareHost($host);
@@ -82,7 +94,18 @@ final class OldSite
         }
         $host = parse_url(str_starts_with($url, '//') ? 'https:' . $url : $url, PHP_URL_HOST);
 
-        return is_string($host) && $this->host !== '' && self::bareHost($host) === $this->host;
+        if (!is_string($host) || $this->host === '') {
+            return false;
+        }
+        $host = self::bareHost($host);
+
+        return $host === $this->host || isset($this->aliases[$host]);
+    }
+
+    /** @return list<string> */
+    public function aliases(): array
+    {
+        return array_keys($this->aliases);
     }
 
     /**

@@ -98,7 +98,7 @@ final class Stager
 
     /**
      * @param array<string, mixed> $r
-     * @return array{title: string, url: string, file_hosts: list<string>, version: string, language: string}
+     * @return array{title: string, url: string, file_hosts: list<string>, aliases: list<string>, version: string, language: string}
      */
     private function site(array $r): array
     {
@@ -108,9 +108,11 @@ final class Stager
             throw new ImportException('This file has no WordPress site address (wp:base_site_url). Make the export again in WordPress under Tools → Export.');
         }
         $site = new OldSite($url);
-        $this->site = new OldSite($url, $site->hostsOf($this->fileHosts));
+        // the install address on another host (example.wordpress.com behind example.com): links to it are to the same pages
+        $install = (string) parse_url((string) $r['url'], PHP_URL_HOST);
+        $this->site = new OldSite($url, $site->hostsOf($this->fileHosts), $install === '' ? [] : [$install]);
 
-        return ['title' => (string) $r['title'], 'url' => $url, 'file_hosts' => $this->site->fileHosts(), 'version' => (string) $r['version'], 'language' => (string) $r['language']];
+        return ['title' => (string) $r['title'], 'url' => $url, 'file_hosts' => $this->site->fileHosts(), 'aliases' => $this->site->aliases(), 'version' => (string) $r['version'], 'language' => (string) $r['language']];
     }
 
     /**
@@ -306,7 +308,7 @@ final class Stager
         }
         foreach ($this->site->fileHosts() as $host) {
             if (stripos($content, $host) !== false) {
-                preg_match_all('~(?:https?:)?//(?:www\.)?' . preg_quote($host, '~') . '/[^\s"\'<>()\[\]?#]+\.[a-z0-9]{2,5}(?=[\s"\'<>()\[\]?#]|$)~i', $content, $m);
+                preg_match_all('~(?:https?:)?//(?:www\.)?' . preg_quote($host, '~') . '/[^\s"\'<>()\[\]?#]+\.[a-z0-9]{2,5}(?=[\s"\'<>()\[\]?#,;:!]|\.(?![a-z0-9])|$)~i', $content, $m);
                 array_push($urls, ...$m[0]);
             }
         }

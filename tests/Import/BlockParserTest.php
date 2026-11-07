@@ -115,4 +115,14 @@ final class BlockParserTest extends TestCase
         $this->assertFalse($site->owns('https://wpthemetestdata.files.wordpress.com/2008/06/canola2.jpg'), 'files there; not pages');
         $this->assertSame(['cdn.example.net'], $site->hostsOf(['https://blog.example.com/wp-content/uploads/x.jpg', 'https://cdn.example.net/x.jpg', 'https://www.cdn.example.net/y.jpg']));
     }
+
+    public function testTheInstallAddressOnAnotherHostIsTheSameSite(): void
+    {
+        $site = new OldSite('https://example.com', [], ['example.wordpress.com', 'wordpress.com']);
+
+        $this->assertTrue($site->owns('https://example.wordpress.com/2024/06/hello/'));
+        $this->assertSame('/2024/06/hello', $site->path('https://example.wordpress.com/2024/06/hello/'));
+        $this->assertFalse($site->owns('https://wordpress.com/support/'), 'WordPress.com itself is not this site');
+        $this->assertSame(['example.wordpress.com'], $site->aliases());
+    }
 }

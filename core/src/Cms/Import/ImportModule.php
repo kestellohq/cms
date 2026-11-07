@@ -24,6 +24,7 @@ final class ImportModule extends Provider
         $cms->auth->roles->capability('import.run', 'Import a site from WordPress', sensitive: true);
         $cms->admin->page('system/import', '@core/admin/system/Import', 'Import', 'import.run', ['label' => 'Import', 'icon' => 'arrow-square-in', 'group' => 'system', 'order' => 18]);
         $cms->queue->job(RunImport::class);
+        // before the chosen home page, which answers "/" itself (ContentModule::finalize adds it after every module)
         $cms->routes->pushGlobalMiddleware(new OldWordPressLinks());
     }
 }

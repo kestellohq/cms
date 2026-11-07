@@ -41,6 +41,7 @@ final class ImportLinks implements Links
     public function reset(): void
     {
         $this->unresolved = false;
+        $this->made = [];       // per post: another post's link to the same address is its own
     }
 
     /** True when the last conversion met an address of an item not imported yet. */
@@ -62,11 +63,21 @@ final class ImportLinks implements Links
             return $url;
         }
         $new = $this->resolve($url);
-        if ($new !== $url) {
-            $this->made[$new] = true;
+        if ($new !== $url && $this->onThisSite($new)) {
+            $this->made[$new] = true;      // never the old address kept for what is not here yet: that is looked at again
         }
 
         return $new;
+    }
+
+    /** True for an address resolve() made here: a path, or a file's address that is not on the old site. */
+    private function onThisSite(string $url): bool
+    {
+        if (preg_match('#^(?:https?:)?//#i', $url) !== 1) {
+            return true;
+        }
+
+        return !$this->site->owns($url) && $this->site->fileKey($url) === null;
     }
 
     private function resolve(string $url): string

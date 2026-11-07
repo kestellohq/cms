@@ -349,7 +349,7 @@ final class ContentConverter
                     $props['strength'] = max(0, min(90, (int) ($attrs['dimRatio'] ?? 50)));
                 } elseif (($attrs['backgroundType'] ?? 'image') === 'video') {
                     $notes->add('cover-video');     // a cover's background is an image here
-                } elseif ($this->links->isOld((string) ($attrs['url'] ?? ''))) {
+                } elseif ((int) ($attrs['id'] ?? 0) > 0 || $this->links->isOld((string) ($attrs['url'] ?? ''))) {
                     $notes->add('media-missing');
                 }
                 $children = self::merge($this->blocks($inner(), $el, $depth));

@@ -22,7 +22,8 @@ use Kestello\Framework\Database\QueryBuilder;
  */
 final class OldWordPressLinks implements MiddlewareInterface
 {
-    private const array KEYS = ['p' => 'entry', 'page_id' => 'entry', 'attachment_id' => 'attachment'];
+    /** WordPress answers ?p= for any post, page or file; the others name one kind. */
+    private const array KEYS = ['p' => ['entry', 'attachment'], 'page_id' => ['entry'], 'attachment_id' => ['attachment']];
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -43,24 +44,35 @@ final class OldWordPressLinks implements MiddlewareInterface
     public static function target(string $query): ?string
     {
         parse_str($query, $params);
-        foreach (self::KEYS as $key => $kind) {
+        foreach (self::KEYS as $key => $kinds) {
             $id = $params[$key] ?? null;
             if (!is_string($id) || preg_match('/^[1-9]\d{0,18}$/', $id) !== 1) {
                 continue;
             }
-            $targets = QueryBuilder::table('import_sources')->where('kind', $kind)->where('source_key', $id)->limit(2)->pluck('target_id');
-            if (count($targets) !== 1) {
-                return null;    // not imported, or ids from two imported sites: no guessing
+            foreach ($kinds as $kind) {
+                $targets = QueryBuilder::table('import_sources')->where('kind', $kind)->where('source_key', $id)->limit(2)->pluck('target_id');
+                if (count($targets) === 1) {     // none: not imported; two: ids from two imported sites, no guessing
+                    $target = self::address($kind, (int) $targets[0]);
+                    if ($target !== null) {
+                        return $target;
+                    }
+                }
             }
-            if ($kind === 'attachment') {
-                $media = Media::query()->find((int) $targets[0]);
-                return $media instanceof Media ? $media->url() : null;
-            }
-            $entry = Entry::query()->find((int) $targets[0]);
-
-            return $entry instanceof Entry && $entry->status === 'published' ? $entry->path() : null;
         }
 
         return null;
+    }
+
+    /** The public address of what an id became, or null while it is not public (a draft, scheduled, under a hidden page). */
+    private static function address(string $kind, int $id): ?string
+    {
+        if ($kind === 'attachment') {
+            $media = Media::query()->find($id);
+
+            return $media instanceof Media ? $media->url() : null;
+        }
+        $entry = Entry::query()->find($id);
+
+        return $entry instanceof Entry && $entry->isPublished() && $entry->publicAncestors() !== null ? $entry->path() : null;
     }
 }
