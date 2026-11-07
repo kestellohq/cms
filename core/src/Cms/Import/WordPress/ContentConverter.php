@@ -23,12 +23,19 @@ final class ContentConverter
     private const array DROPPED = [
         'core/more', 'core/nextpage', 'core/latest-posts', 'core/latest-comments', 'core/archives', 'core/calendar',
         'core/categories', 'core/tag-cloud', 'core/search', 'core/rss', 'core/page-list', 'core/navigation', 'core/loginout',
-        'core/query', 'core/post-template', 'core/comments', 'core/post-comments-form', 'core/social-links', 'core/site-logo',
+        'core/query', 'core/post-template', 'core/comments', 'core/post-comments-form', 'core/site-logo',
         'core/site-title', 'core/site-tagline', 'core/template-part', 'core/post-title', 'core/post-content', 'core/post-date',
         'core/post-excerpt', 'core/post-featured-image', 'core/post-author', 'core/read-more', 'core/footnotes',
     ];
     private const array SHORTCODES = ['caption', 'wp_caption', 'gallery', 'embed', 'video', 'audio', 'playlist'];
     private const int MAX_REUSABLE_DEPTH = 5;
+
+    /** Social link services whose names are not their slug with a capital. */
+    private const array SERVICES = [
+        'fivehundredpx' => '500px', 'github' => 'GitHub', 'gitlab' => 'GitLab', 'linkedin' => 'LinkedIn', 'youtube' => 'YouTube',
+        'tiktok' => 'TikTok', 'wordpress' => 'WordPress', 'x' => 'X', 'mail' => 'Email', 'feed' => 'RSS feed', 'soundcloud' => 'SoundCloud',
+        'deviantart' => 'DeviantArt', 'whatsapp' => 'WhatsApp', 'threads' => 'Threads', 'bluesky' => 'Bluesky', 'mastodon' => 'Mastodon',
+    ];
 
     /** Reusable blocks copied into one post at most: one that uses another many times must not multiply without end. */
     private const int MAX_REUSABLE = 100;
@@ -268,7 +275,7 @@ final class ContentConverter
                 if ($caption !== null && !Fragment::isPlain($caption)) {
                     // a caption with links: keep the figure as HTML so the links stay
                     $node = $el->image($img, '', '', '', (int) ($attrs['id'] ?? 0));
-                    return $node === null ? $this->missing($html, $el) : [...[$node], ...$el->text('<p>' . $caption->innerHTML . '</p>')];
+                    return $node === null ? $this->missing($html, (string) $img->getAttribute('src'), (int) ($attrs['id'] ?? 0), $el) : [...[$node], ...$el->text('<p>' . $caption->innerHTML . '</p>')];
                 }
                 $align = (string) ($attrs['align'] ?? '');
                 return $el->imageOrHtml($holder, $caption === null ? '' : Fragment::text($caption), in_array($align, ['left', 'right', 'center'], true) ? $align : '', $html, (int) ($attrs['id'] ?? 0));
@@ -340,7 +347,9 @@ final class ContentConverter
                 if ($media !== null) {
                     $props['image'] = $media;
                     $props['strength'] = max(0, min(90, (int) ($attrs['dimRatio'] ?? 50)));
-                } elseif (($attrs['url'] ?? '') !== '') {
+                } elseif (($attrs['backgroundType'] ?? 'image') === 'video') {
+                    $notes->add('cover-video');     // a cover's background is an image here
+                } elseif ($this->links->isOld((string) ($attrs['url'] ?? ''))) {
                     $notes->add('media-missing');
                 }
                 $children = self::merge($this->blocks($inner(), $el, $depth));
@@ -348,6 +357,11 @@ final class ContentConverter
 
             case 'core/media-text':
                 $children = self::merge($this->blocks($inner(), $el, $depth));
+                if (($attrs['mediaType'] ?? 'image') === 'video') {
+                    // the media side holds images only here: the video becomes a link next to the text
+                    $video = Fragment::find(Fragment::parse($html), 'video');
+                    return [...$this->video((int) ($attrs['mediaId'] ?? 0), (string) ($video?->getAttribute('src') ?? $attrs['mediaUrl'] ?? ''), $el), ...$children];
+                }
                 $media = ($attrs['mediaType'] ?? 'image') === 'image' ? $this->links->media((int) ($attrs['mediaId'] ?? 0), (string) ($attrs['mediaUrl'] ?? '')) : null;
                 if ($media === null) {
                     $notes->add('media-missing');
@@ -362,6 +376,23 @@ final class ContentConverter
                     $props['alt'] = mb_substr(trim((string) $img->getAttribute('alt')), 0, 1000);
                 }
                 return [ElementBlocks::node('core/media-text', $props, $children)];
+
+            case 'core/social-links':
+                $items = [];
+                foreach ($block['innerBlocks'] as $link) {
+                    $url = trim((string) ($link['attrs']['url'] ?? ''));
+                    if (preg_match('#^(?:https?://|mailto:)#i', $url) !== 1 || !ElementBlocks::safeLink($url)) {
+                        continue;   // empty, or a placeholder such as "#"
+                    }
+                    $service = (string) ($link['attrs']['service'] ?? '');
+                    $label = trim((string) ($link['attrs']['label'] ?? '')) ?: (self::SERVICES[$service] ?? ucfirst($service)) ?: $url;
+                    $items[] = '<li><a href="' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5, 'UTF-8') . '">' . htmlspecialchars($label, ENT_QUOTES | ENT_HTML5, 'UTF-8') . '</a></li>';
+                }
+                if ($items === []) {
+                    $notes->add('dropped:' . $name);
+                    return [];
+                }
+                return $el->fromHtml('<ul>' . implode('', $items) . '</ul>');
 
             case 'core/details':
                 $root = Fragment::parse($html);
@@ -486,7 +517,11 @@ final class ContentConverter
         $missing = 0;
         foreach (array_keys($ids + $urls) as $i) {
             $id = $this->links->media((int) ($ids[$i] ?? 0), (string) ($urls[$i] ?? ''));
-            $id === null ? $missing++ : $media[] = $id;
+            if ($id !== null) {
+                $media[] = $id;
+            } elseif ($this->links->isOld((string) ($urls[$i] ?? '')) || (int) ($ids[$i] ?? 0) > 0) {
+                $missing++;
+            }
         }
         if ($missing > 0) {
             $el->notes->add('media-missing', $missing);
@@ -541,7 +576,7 @@ final class ContentConverter
         if ($src === '' || !ElementBlocks::safeLink($src)) {
             return [];
         }
-        if ($this->links->media(0, $src) === null) {
+        if ($this->links->media(0, $src) === null && $this->links->isOld($src)) {
             $el->notes->add('media-missing');
         }
         $href = $this->links->url($src);
@@ -553,9 +588,11 @@ final class ContentConverter
     /**
      * @return list<array<string, mixed>>
      */
-    private function missing(string $html, ElementBlocks $el): array
+    private function missing(string $html, string $src, int $attachment, ElementBlocks $el): array
     {
-        $el->notes->add('media-missing');
+        if ($attachment > 0 || $this->links->isOld($src)) {
+            $el->notes->add('media-missing');
+        }
 
         return $el->text($html);
     }

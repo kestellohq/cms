@@ -69,6 +69,7 @@ return new class extends Migration {
             $t->integer('target_version')->nullable();      // entries: the version written
             $t->timestamps();
             $t->uniqueIndex('site_key', 'kind', 'source_key');
+            $t->index('kind', 'source_key');               // old /?p=123 addresses, whichever site they came from
             $t->index('target_type', 'target_id');
         });
     }

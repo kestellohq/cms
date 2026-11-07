@@ -280,7 +280,8 @@ final class WordPressImports
             $this->finish($id, 'cancelled', null);
             return;
         }
-        $site = new OldSite((string) $row['site_url']);
+        $summary = json_decode((string) $row['summary'], true);
+        $site = new OldSite((string) $row['site_url'], array_values(array_filter((array) ($summary['site']['file_hosts'] ?? []), 'is_string')));
         $map = new SourceMap((string) $row['site_key']);
         $links = new ImportLinks($id, $site, $map, $this->cms->content);
         $options = json_decode((string) $row['options'], true);

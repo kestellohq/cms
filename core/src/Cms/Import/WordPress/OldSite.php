@@ -15,9 +15,50 @@ final class OldSite
 {
     private readonly string $host;
 
-    public function __construct(public readonly string $url)
+    /** @var array<string, true> hosts besides the site's own that hold its uploads (a CDN, files.wordpress.com) */
+    private readonly array $fileHosts;
+
+    /**
+     * @param string       $url       where the posts live (WordPress's home address, wp:base_blog_url)
+     * @param list<string> $fileHosts hosts the export's own files are on, when not the site's own
+     */
+    public function __construct(public readonly string $url, array $fileHosts = [])
     {
         $this->host = self::bareHost((string) parse_url($url, PHP_URL_HOST));
+        $hosts = [];
+        foreach ($fileHosts as $host) {
+            $host = self::bareHost($host);
+            if ($host !== '' && $host !== $this->host) {
+                $hosts[$host] = true;
+            }
+        }
+        $this->fileHosts = $hosts;
+    }
+
+    /**
+     * The hosts other than the site's own that these file addresses are on,
+     * at most a few (a site keeps its uploads in one or two places).
+     *
+     * @param iterable<string> $urls
+     * @return list<string>
+     */
+    public function hostsOf(iterable $urls): array
+    {
+        $hosts = [];
+        foreach ($urls as $url) {
+            $host = self::bareHost((string) parse_url(str_starts_with($url, '//') ? 'https:' . $url : $url, PHP_URL_HOST));
+            if ($host !== '' && $host !== $this->host && count($hosts) < 5) {
+                $hosts[$host] = true;
+            }
+        }
+
+        return array_keys($hosts);
+    }
+
+    /** @return list<string> */
+    public function fileHosts(): array
+    {
+        return array_keys($this->fileHosts);
     }
 
     /** One key per site, the same for http/https, www or not, and a trailing slash. */
@@ -93,11 +134,27 @@ final class OldSite
      */
     public function fileKey(string $url): ?string
     {
-        if (!$this->owns($url)) {
+        $url = trim($url);
+        $path = (string) parse_url(str_starts_with($url, '//') ? 'https:' . $url : $url, PHP_URL_PATH);
+        if ($this->owns($url)) {
+            return self::uploadKey($path);
+        }
+        if (!$this->onFileHost($url)) {
             return null;
         }
 
-        return self::uploadKey((string) parse_url(str_starts_with($url, '//') ? 'https:' . $url : $url, PHP_URL_PATH));
+        // a file host keeps the uploads folder's layout, with or without the folder in front (files.wordpress.com: /2008/06/photo.jpg)
+        return self::uploadKey($path) ?? self::uploadKey('/wp-content/uploads' . $path);
+    }
+
+    private function onFileHost(string $url): bool
+    {
+        if ($this->fileHosts === [] || !(str_starts_with($url, '//') || preg_match('#^https?://#i', $url) === 1)) {
+            return false;
+        }
+        $host = parse_url(str_starts_with($url, '//') ? 'https:' . $url : $url, PHP_URL_HOST);
+
+        return is_string($host) && isset($this->fileHosts[self::bareHost($host)]);
     }
 
     /** The uploads-relative key of a path like /wp-content/uploads/2024/06/photo-300x200.jpg. */

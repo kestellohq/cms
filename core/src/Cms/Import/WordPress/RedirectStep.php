@@ -50,11 +50,12 @@ final class RedirectStep
             if ((string) $existing['target'] === $to) {
                 return Outcome::unchanged((int) $existing['id']);
             }
-            if ($existing['origin'] !== 'import') {
+            $mapped = $this->run->map->get('redirect', $from);
+            if ($existing['origin'] !== 'import' || $mapped === null) {
+                // made by hand, or by the import of another site: theirs
                 return Outcome::kept((int) $existing['id'], 'This site already redirects this address somewhere else.');
             }
-            $mapped = $this->run->map->get('redirect', $from);
-            if ($mapped !== null && $mapped['target_hash'] !== null && $mapped['target_hash'] !== self::hash($existing)) {
+            if ($mapped['target_hash'] !== null && $mapped['target_hash'] !== self::hash($existing)) {
                 return Outcome::kept((int) $existing['id'], 'Changed on this site since the last import; left as it is.');
             }
             $rule = $redirects->save($input, (int) $existing['id'], 'import', $entryId);

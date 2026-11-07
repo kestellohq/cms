@@ -103,4 +103,16 @@ final class BlockParserTest extends TestCase
         $this->assertTrue($blog->isHome('https://example.com/blog/'));
         $this->assertFalse($blog->isHome('https://example.com/'));
     }
+
+    public function testFilesOnAnotherHostAreTheSitesOwn(): void
+    {
+        $site = new OldSite('https://blog.example.com', ['wpthemetestdata.files.wordpress.com', 'blog.example.com']);
+
+        $this->assertSame(['wpthemetestdata.files.wordpress.com'], $site->fileHosts());
+        $this->assertSame('2008/06/canola2.jpg', $site->fileKey('https://wpthemetestdata.files.wordpress.com/2008/06/canola2-300x200.jpg'));
+        $this->assertSame('2024/01/a.png', $site->fileKey('//wpthemetestdata.files.wordpress.com/wp-content/uploads/2024/01/a.png'));
+        $this->assertNull($site->fileKey('https://elsewhere.test/2008/06/canola2.jpg'));
+        $this->assertFalse($site->owns('https://wpthemetestdata.files.wordpress.com/2008/06/canola2.jpg'), 'files there; not pages');
+        $this->assertSame(['cdn.example.net'], $site->hostsOf(['https://blog.example.com/wp-content/uploads/x.jpg', 'https://cdn.example.net/x.jpg', 'https://www.cdn.example.net/y.jpg']));
+    }
 }

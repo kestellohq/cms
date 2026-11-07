@@ -27,6 +27,8 @@ final class ImportLinks implements Links
     private array $items = [];
     /** @var array<int, ?string> */
     private array $mediaUrls = [];
+    /** @var array<string, true> addresses this import made: on this site already, never read as the old site's */
+    private array $made = [];
 
     public function __construct(
         private readonly int $importId,
@@ -47,11 +49,33 @@ final class ImportLinks implements Links
         return $this->unresolved;
     }
 
+    /**
+     * The address on this site for an address in an old post. Asking again
+     * with the answer gives the answer back: conversion may pass the same
+     * HTML through twice, and "/uploads/…" or "/about-2" must not then be
+     * read as addresses on the old site.
+     */
     public function url(string $url): string
     {
         $url = trim($url);
-        if (!$this->site->owns($url)) {
+        if (isset($this->made[$url])) {
             return $url;
+        }
+        $new = $this->resolve($url);
+        if ($new !== $url) {
+            $this->made[$new] = true;
+        }
+
+        return $new;
+    }
+
+    private function resolve(string $url): string
+    {
+        if (!$this->site->owns($url)) {
+            $fileKey = $this->site->fileKey($url);     // a file on the host the old site kept its uploads on
+            $media = $fileKey === null ? null : $this->mediaByFileKey($fileKey);
+
+            return $media === null ? $url : ($this->mediaUrl($media) ?? $url);
         }
         $absolute = str_starts_with($url, '/') && !str_starts_with($url, '//') ? rtrim($this->site->url, '/') . $url : $url;
         $fragment = (string) parse_url($url, PHP_URL_FRAGMENT);
@@ -101,6 +125,13 @@ final class ImportLinks implements Links
         $key = $this->site->fileKey($url);
 
         return $key === null ? null : $this->mediaByFileKey($key);
+    }
+
+    public function isOld(string $url): bool
+    {
+        $url = trim($url);
+
+        return $url !== '' && !isset($this->made[$url]) && ($this->site->owns($url) || $this->site->fileKey($url) !== null);
     }
 
     public function reusable(int $id): ?string

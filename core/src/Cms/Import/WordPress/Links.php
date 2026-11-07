@@ -24,6 +24,9 @@ interface Links
      */
     public function media(int $attachment, string $url): ?int;
 
+    /** Whether $url is on the old site (a page, or a file there or on the host it kept files on). */
+    public function isOld(string $url): bool;
+
     /** The saved content of a reusable block (wp_block) in the export, or null. */
     public function reusable(int $id): ?string;
 }

@@ -260,6 +260,18 @@ final class BlocksTest extends AuthTestCase
         $this->assertSame([], $this->blocks()->validate([self::node('core/heading', ['text' => ['bind' => 'entry.title']])])[1], 'data counts as text');
     }
 
+    public function testATextFieldTakesTheLengthItAsksFor(): void
+    {
+        $item = static fn(int $n) => [self::node('core/list', ['ordered' => false, 'items' => [['text' => str_repeat('a', $n)]]])];
+        $this->assertSame([], $this->blocks()->validate($item(500))[1], 'a list item asks for 500, above the 255 a text field holds by default');
+        $this->assertStringEndsWith('Must be at most 500 characters.', $this->blocks()->validate($item(501))[1][0] ?? '');
+
+        $types = new \Kestello\Cms\Content\FieldTypes();
+        $this->assertSame(255, $types->describe([Field::text('t')])[0]['options']->max, 'the default');
+        $this->assertSame(2000, $types->describe([Field::text('t')->max(50_000)])[0]['options']->max, 'a single line stays a line');
+        $this->assertSame(255, $types->describe([Field::email('e')->max(1000)])[0]['options']->max, 'an email address is never longer');
+    }
+
     public function testABrokenBlockIsDroppedNotWhatHoldsIt(): void
     {
         $tree = [self::node('core/group', [], [

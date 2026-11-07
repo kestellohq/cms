@@ -27,6 +27,11 @@ final class ContentConverterTest extends TestCase
                 return preg_match('#old\.test/wp-content/uploads/(studio|poster)(-\d+x\d+)?\.jpg$#', $url, $m) === 1 ? ($m[1] === 'studio' ? 1040 : 1042) : null;
             }
 
+            public function isOld(string $url): bool
+            {
+                return str_starts_with($url, 'https://old.test/');
+            }
+
             public function reusable(int $id): ?string
             {
                 return match ($id) {
@@ -183,5 +188,49 @@ final class ContentConverterTest extends TestCase
         $huge = "<p>Intro</p>\n<p><li>" . str_repeat('a', 1_000_000) . '</p>';
 
         $this->assertSame($huge, \Kestello\Cms\Import\WordPress\Autop::apply($huge));
+    }
+
+    public function testSocialLinksBecomeAListOfLinks(): void
+    {
+        $out = $this->convert('<!-- wp:social-links --><ul class="wp-block-social-links">'
+            . '<!-- wp:social-link {"url":"https://github.com/ana","service":"github"} /-->'
+            . '<!-- wp:social-link {"url":"#","service":"wordpress"} /-->'
+            . '<!-- wp:social-link {"url":"https://ana.example","service":"chain","label":"My site"} /-->'
+            . '<!-- wp:social-link {"url":"javascript:alert(1)","service":"x"} /--></ul><!-- /wp:social-links -->'
+            . '<!-- wp:social-links --><ul class="wp-block-social-links"><!-- wp:social-link {"url":"#","service":"x"} /--></ul><!-- /wp:social-links -->');
+
+        $this->assertSame([['type' => 'core/text', 'props' => ['text' => '<ul><li><a href="https://github.com/ana">GitHub</a></li><li><a href="https://ana.example">My site</a></li></ul>'], 'children' => []]], $out['blocks']);
+        $this->assertSame(['dropped:core/social-links' => 1], $out['notes'], 'only placeholders: nothing to keep');
+    }
+
+    public function testVideosNextToTextAndBehindCoversAreAccountedFor(): void
+    {
+        $out = $this->convert('<!-- wp:media-text {"mediaType":"video"} --><div class="wp-block-media-text"><div class="wp-block-media-text__content">'
+            . '<!-- wp:paragraph --><p>Beside</p><!-- /wp:paragraph --></div><figure class="wp-block-media-text__media"><video controls src="https://cdn.test/clip.mov"></video></figure></div><!-- /wp:media-text -->'
+            . '<!-- wp:cover {"url":"https://cdn.test/clip.mov","backgroundType":"video"} --><div class="wp-block-cover"><video class="wp-block-cover__video-background" src="https://cdn.test/clip.mov"></video>'
+            . '<div class="wp-block-cover__inner-container"><!-- wp:paragraph --><p>Over</p><!-- /wp:paragraph --></div></div><!-- /wp:cover -->');
+
+        $this->assertSame(['core/text', 'core/cover'], self::types($out['blocks']));
+        $this->assertSame("<p><a href=\"https://cdn.test/clip.mov\">clip.mov</a></p>\n<p>Beside</p>", $out['blocks'][0]['props']['text'], 'the video, as a link, then its text');
+        $this->assertSame(['cover-video' => 1], $out['notes'], 'a video on another site is not missing from the old one');
+    }
+
+    public function testImagesFromOtherSitesAreNotReportedMissing(): void
+    {
+        $out = $this->convert('<!-- wp:image --><figure class="wp-block-image"><img src="https://upload.wikimedia.org/a.jpg" alt="Elsewhere"/></figure><!-- /wp:image -->'
+            . '<!-- wp:image --><figure class="wp-block-image"><img src="https://old.test/wp-content/uploads/lost.jpg" alt="Lost"/></figure><!-- /wp:image -->');
+
+        $this->assertStringContainsString('src="https://upload.wikimedia.org/a.jpg"', $out['blocks'][0]['props']['text']);
+        $this->assertSame(['media-missing' => 1], $out['notes'], 'only the old site\'s own file counts');
+    }
+
+    public function testALongCaptionGoesUnderTheImageWhole(): void
+    {
+        $long = str_repeat('A long caption. ', 40);
+        $out = $this->convert('<!-- wp:image {"id":40} --><figure class="wp-block-image"><img src="https://old.test/wp-content/uploads/studio.jpg" alt="Windows"/><figcaption>' . $long . '</figcaption></figure><!-- /wp:image -->');
+
+        $this->assertSame(['core/image', 'core/text'], self::types($out['blocks']));
+        $this->assertArrayNotHasKey('caption', $out['blocks'][0]['props']);
+        $this->assertSame('<p>' . trim($long) . '</p>', $out['blocks'][1]['props']['text']);
     }
 }

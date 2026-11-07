@@ -56,6 +56,15 @@ final class Run
         return is_int($default) && $default > 0 ? $default : $this->principal->userId;
     }
 
+    /** Whether this import says who $login's posts belong to (a person picked for them, or for everyone without a match). */
+    public function choseAuthor(string $login): bool
+    {
+        $id = ((array) $this->option('authors', []))[$login] ?? null;
+        $default = $this->option('default_author');
+
+        return (is_int($id) && $id > 0) || (is_int($default) && $default > 0);
+    }
+
     /** A failure as a sentence for the report, with field errors spelled out. */
     public static function describe(Throwable $e): string
     {

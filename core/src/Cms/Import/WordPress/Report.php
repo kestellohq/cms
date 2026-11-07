@@ -121,11 +121,27 @@ final class Report
     private static function conversion(array $notes): array
     {
         $out = [];
+        $dropped = [];
         foreach ($notes as $key => $count) {
+            if (str_starts_with((string) $key, 'dropped:')) {
+                $dropped[substr((string) $key, 8)] = (int) $count;     // one line for them all, not one per block
+                continue;
+            }
             $out[] = ['key' => (string) $key, 'count' => (int) $count, 'text' => self::note((string) $key)];
+        }
+        if ($dropped !== []) {
+            arsort($dropped);
+            $names = array_map(static fn(string $block, int $n) => self::blockName($block) . ($n > 1 ? " ({$n})" : ''), array_keys($dropped), $dropped);
+            array_unshift($out, ['key' => 'dropped', 'count' => array_sum($dropped), 'text' => 'Blocks that showed something the old site made as the page loaded (latest posts, a search box, the site title) or a page break were left out: ' . implode(', ', $names) . '.']);
         }
 
         return $out;
+    }
+
+    /** "core/latest-posts" as "latest posts"; a plugin's block keeps its full name. */
+    private static function blockName(string $block): string
+    {
+        return str_starts_with($block, 'core/') ? str_replace('-', ' ', substr($block, 5)) : $block;
     }
 
     /** A conversion note key ("embed:twitter.com") as a sentence. */
@@ -140,6 +156,7 @@ final class Report
             'embed' => "An embed from {$what} became a link.",
             'frame' => "An embedded frame from {$what} was left out.",
             'removed' => "A <{$what}> element was left out.",
+            'cover-video' => 'A cover had a video behind its text: the text was kept, the video left out (covers take an image here).',
             'media-missing' => 'An image or file that was not imported still points at the old site.',
             'html' => 'Custom HTML was kept, without scripts, styles and frames.',
             'fallback' => 'A post was kept as text: its layout did not fit the blocks here.',

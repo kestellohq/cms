@@ -391,11 +391,15 @@ final class ElementBlocks
         if ($image === null) {
             return $this->text($fallback !== '' ? $fallback : Fragment::outer($element));
         }
-        $node = $this->image($image, $element->localName === 'a' ? (string) $element->getAttribute('href') : '', $caption, $align, $attachment);
+        // a caption longer than an image takes goes under it whole, never cut
+        $long = mb_strlen($caption) > self::CAPTION_MAX;
+        $node = $this->image($image, $element->localName === 'a' ? (string) $element->getAttribute('href') : '', $long ? '' : $caption, $align, $attachment);
         if ($node !== null) {
-            return [$node];
+            return $long ? [$node, ...$this->text('<p>' . htmlspecialchars($caption, ENT_QUOTES | ENT_HTML5, 'UTF-8') . '</p>')] : [$node];
         }
-        $this->notes->add('media-missing');
+        if ($attachment > 0 || $this->links->isOld(trim((string) $image->getAttribute('src')))) {
+            $this->notes->add('media-missing');     // an image from another site is no news: it stays where it was
+        }
 
         return $this->text($fallback !== '' ? $fallback : Fragment::outer($element));
     }
@@ -419,7 +423,7 @@ final class ElementBlocks
             $props['alt'] = mb_substr($alt, 0, 1000);
         }
         if ($caption !== '') {
-            $props['caption'] = mb_substr($caption, 0, self::CAPTION_MAX);
+            $props['caption'] = $caption;
         }
         $props['align'] = match ($align !== '' ? $align : self::alignClass((string) $img->getAttribute('class'))) {
             'left' => 'wrap-start',

@@ -206,6 +206,10 @@ final class WordPressImportTest extends AuthTestCase
         $this->assertSame(1, $report['notes']['block:jetpack/contact-form'] ?? null);
         $this->assertSame(1, $report['notes']['frame:evil.example'] ?? null);
         $this->assertContains(['key' => 'embed:twitter.com', 'count' => 1, 'text' => 'An embed from twitter.com became a link.'], $report['conversion']);
+        $dropped = array_values(array_filter($report['conversion'], static fn(array $n) => $n['key'] === 'dropped'));
+        $this->assertCount(1, $dropped, 'blocks left out are one line');
+        $this->assertStringEndsWith(': latest posts, more.', $dropped[0]['text']);
+        $this->assertSame([], array_filter(array_column($report['conversion'], 'key'), static fn(string $k) => str_starts_with($k, 'dropped:')));
         $this->assertSame(0, $this->db->table('import_items')->where('state', 'pending')->count());
         $this->assertFalse(is_dir($this->cms->storage->root() . '/imports/' . $report['id']), 'the export is removed when done');
     }
@@ -414,6 +418,83 @@ final class WordPressImportTest extends AuthTestCase
 
         $this->assertSame('admin-3', $this->entry(61)->slug);
         $this->assertSame('Its address became "admin-3": "admin" is taken by this site.', array_column($report['notices'], 'message', 'label')['Admin'] ?? null);
+    }
+
+    public function testASiteInstalledInAFolderWithFilesOnACdn(): void
+    {
+        $this->http = new FakeTransport([
+            'GET https://cdn.example.net/2024/06/studio.jpg' => ['body' => self::jpeg(), 'headers' => ['Content-Type' => 'image/jpeg']],
+            'GET https://old.example.com/wp-content/uploads/2024/06/poster-scaled.jpg' => ['body' => self::jpeg(), 'headers' => ['Content-Type' => 'image/jpeg']],
+            'GET https://old.example.com/wp-content/uploads/2023/01/not-exported.png' => ['body' => self::png(), 'headers' => ['Content-Type' => 'image/png']],
+            'GET https://old.example.com/wp-content/uploads/2024/06/song.mp3' => ['body' => "ID3\x03\x00\x00\x00\x00\x00\x00" . str_repeat("\xff\xfb\x90\x00", 64), 'headers' => ['Content-Type' => 'audio/mpeg']],
+        ]);
+        $this->cms->container->instance(HttpClient::class, new HttpClient($this->http, static fn(): array => ['93.184.216.34']));
+        // another site's import already redirects one of these addresses
+        $this->db->table('redirects')->insert(['source' => '/2024/06/hello-studio', 'target' => '/theirs', 'status' => 301, 'match' => 'exact', 'origin' => 'import', 'hits' => 0, 'created_at' => '2026-01-01 00:00:00', 'updated_at' => '2026-01-01 00:00:00']);
+
+        $report = $this->import($this->changed([
+            '<wp:base_site_url>https://old.example.com</wp:base_site_url>' => '<wp:base_site_url>https://old.example.com/wp</wp:base_site_url>',
+            'https://old.example.com/wp-content/uploads/2024/06/studio.jpg]]></wp:attachment_url>' => 'https://cdn.example.net/2024/06/studio.jpg]]></wp:attachment_url>',
+            'https://old.example.com/wp-content/uploads/2024/06/studio-1024x683.jpg' => 'https://cdn.example.net/2024/06/studio-1024x683.jpg',
+        ]));
+
+        $this->assertSame('https://old.example.com', $report['site']['url'], 'the posts live at the home address, not the install folder');
+        $this->assertSame(0, $report['counts']['attachment']['failed']);
+        $body = (string) json_encode($this->entry(41)->data['body'], JSON_UNESCAPED_SLASHES);
+        $this->assertStringNotContainsString('cdn.example.net', $body, 'the CDN copy became the imported file');
+        $this->assertContains($this->mediaFor(40), array_column(array_column($this->entry(41)->data['body'], 'props'), 'image'));
+
+        // a file link is rewritten once: its new address is not read as an old one on a second pass
+        $song = (string) json_encode(Entry::query()->where('data', 'like', '%song%')->get()->map(static fn(Entry $e) => $e->data)->all(), JSON_UNESCAPED_SLASHES);
+        $this->assertStringNotContainsString('old.example.com/uploads', $song);
+        $this->assertStringNotContainsString('old.example.com/wp-content/uploads/2024/06/song.mp3', $song);
+
+        $this->assertSame('/theirs', $this->db->table('redirects')->where('source', '/2024/06/hello-studio')->value('target'), 'another site\'s redirect is theirs');
+    }
+
+    public function testOldPlainAddressesLeadToWhatCameOver(): void
+    {
+        $this->import();
+        $links = new \Kestello\Cms\Import\WordPress\OldWordPressLinks();
+        $visit = static fn(string $uri) => $links->handle(
+            new \Kestello\Framework\Core\Request('GET', $uri, (string) parse_url($uri, PHP_URL_PATH), [], [], [], [], [], []),
+            static fn() => \Kestello\Framework\Core\Response::html('home'),
+        );
+
+        $response = $visit('/?p=41&utm_source=news');
+        $this->assertSame(301, $response->statusCode());
+        $this->assertSame($this->entry(41)->path(), $response->headers()['Location'] ?? null);
+        $this->assertSame($this->entry(50)->path(), \Kestello\Cms\Import\WordPress\OldWordPressLinks::target('page_id=50'));
+        $this->assertNotNull(\Kestello\Cms\Import\WordPress\OldWordPressLinks::target('attachment_id=40'));
+        $this->assertNull(\Kestello\Cms\Import\WordPress\OldWordPressLinks::target('p=32'), 'a draft is not public');
+        $this->assertNull(\Kestello\Cms\Import\WordPress\OldWordPressLinks::target('p=4x1'));
+        $this->assertSame(200, $visit('/?s=hello')->statusCode(), 'anything else is the home page as before');
+        $this->assertSame(200, $visit('/blog?p=41')->statusCode(), 'only the home page');
+
+        // the same id from a second imported WordPress site: no guessing
+        $this->db->table('import_sources')->insert(['site_key' => str_repeat('b', 40), 'kind' => 'entry', 'source_key' => '41', 'target_type' => 'entry', 'target_id' => 1, 'checksum' => str_repeat('0', 40), 'created_at' => '2026-01-01 00:00:00', 'updated_at' => '2026-01-01 00:00:00']);
+        $this->assertSame(200, $visit('/?p=41')->statusCode());
+    }
+
+    public function testSomeoneElseRunningItAgainDoesNotTakeOverThePosts(): void
+    {
+        $this->import();
+        $first = (int) $this->entry(30)->getAttribute('author_id');
+        $this->assertSame($this->ana->userId, $first, 'a WordPress author with no account here: credited to the person importing');
+
+        $zoe = $this->createUser(['username' => 'zoe', 'email' => 'zoe@example.test', 'role' => 'admin']);
+        $byZoe = $this->cms->auth->principalFor($zoe, 'cli');
+        $import = $this->imports()->analyze(self::FIXTURE, $byZoe);
+        $this->imports()->start($import['id'], [], $byZoe);
+        $again = $this->imports()->runToEnd($import['id']);
+
+        $this->assertSame($first, (int) $this->entry(30)->getAttribute('author_id'), 'kept');
+        $this->assertSame(0, $again['counts']['entry']['updated'], 'nothing changed in WordPress, so nothing here');
+
+        $import = $this->imports()->analyze(self::FIXTURE, $byZoe);
+        $this->imports()->start($import['id'], ['authors' => ['guest' => (int) $zoe['id']]], $byZoe);
+        $this->imports()->runToEnd($import['id']);
+        $this->assertSame((int) $zoe['id'], (int) $this->entry(30)->getAttribute('author_id'), 'unless the import says whose they are');
     }
 
     public function testOnlyAdministratorsImportAndOneAtATime(): void

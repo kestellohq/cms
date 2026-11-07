@@ -31,5 +31,6 @@ Every change people would notice is listed here, newest first. The format follow
 
 - Redirects for addresses with letters outside ASCII (`/čaj`, or a page that moved from such an address) now match: the address is stored the way browsers send it, so `/čaj`, `/%c4%8daj` and `/%C4%8Daj` are one rule.
 - Downloads to a file that follow a redirect, such as core updates from GitHub releases, now hold only the final file instead of the redirect page followed by it. `HttpClient` takes a `max_bytes` option for downloads to a file and stops with `HttpTooLarge` past it.
+- A text field that asks for more than 255 characters with `->max()` now gets it, up to 2000, in the editor and when saving. Image alt text, captions, list items and table captions were cut off at 255.
 
 [Unreleased]: https://github.com/kestellohq/cms/commits/develop

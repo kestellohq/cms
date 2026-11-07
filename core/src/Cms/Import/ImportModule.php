@@ -6,6 +6,7 @@ namespace Kestello\Cms\Import;
 
 use Kestello\Cms\Cms;
 use Kestello\Cms\Extension\Provider;
+use Kestello\Cms\Import\WordPress\OldWordPressLinks;
 use Kestello\Cms\Import\WordPress\RunImport;
 use Kestello\Cms\Import\WordPress\WordPressImports;
 use Kestello\Framework\Core\Container;
@@ -23,5 +24,6 @@ final class ImportModule extends Provider
         $cms->auth->roles->capability('import.run', 'Import a site from WordPress', sensitive: true);
         $cms->admin->page('system/import', '@core/admin/system/Import', 'Import', 'import.run', ['label' => 'Import', 'icon' => 'arrow-square-in', 'group' => 'system', 'order' => 18]);
         $cms->queue->job(RunImport::class);
+        $cms->routes->pushGlobalMiddleware(new OldWordPressLinks());
     }
 }

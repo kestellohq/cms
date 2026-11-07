@@ -35,6 +35,9 @@ final class Stager
 
     private int $importId = 0;
     private OldSite $site;
+
+    /** @var list<string> */
+    private array $fileHosts = [];
     /** @var list<array<string, mixed>> */
     private array $rows = [];
     /** @var array<string, array<string, mixed>> declared terms by taxonomy:slug */
@@ -66,6 +69,7 @@ final class Stager
     public function stage(int $importId, string $file): array
     {
         $this->importId = $importId;
+        $this->fileHosts = self::fileHosts($file);
         $siteInfo = null;
         foreach ((new WxrReader($file))->records() as $record) {
             match ($record['kind']) {
@@ -94,16 +98,38 @@ final class Stager
 
     /**
      * @param array<string, mixed> $r
-     * @return array<string, string>
+     * @return array{title: string, url: string, file_hosts: list<string>, version: string, language: string}
      */
     private function site(array $r): array
     {
-        if (preg_match('#^https?://[^/\s]+#i', (string) $r['url']) !== 1) {
+        // the posts live at the home address; the install address differs when WordPress sits in its own folder, or on WordPress.com
+        $url = preg_match('#^https?://[^/\s]+#i', (string) $r['blog_url']) === 1 ? (string) $r['blog_url'] : (string) $r['url'];
+        if (preg_match('#^https?://[^/\s]+#i', $url) !== 1) {
             throw new ImportException('This file has no WordPress site address (wp:base_site_url). Make the export again in WordPress under Tools → Export.');
         }
-        $this->site = new OldSite((string) $r['url']);
+        $site = new OldSite($url);
+        $this->site = new OldSite($url, $site->hostsOf($this->fileHosts));
 
-        return ['title' => (string) $r['title'], 'url' => (string) $r['url'], 'version' => (string) $r['version'], 'language' => (string) $r['language']];
+        return ['title' => (string) $r['title'], 'url' => $url, 'file_hosts' => $this->site->fileHosts(), 'version' => (string) $r['version'], 'language' => (string) $r['language']];
+    }
+
+    /**
+     * Where the export's own files are: a first, quick pass over it, so that
+     * files on another host (a CDN, files.wordpress.com) are known as the
+     * site's own while posts are read.
+     *
+     * @return list<string> attachment addresses, one per host
+     */
+    private static function fileHosts(string $file): array
+    {
+        $byHost = [];
+        foreach ((new WxrReader($file))->records() as $record) {
+            if ($record['kind'] === 'item' && $record['type'] === 'attachment' && $record['attachment_url'] !== '') {
+                $byHost[(string) parse_url((string) $record['attachment_url'], PHP_URL_HOST)] ??= (string) $record['attachment_url'];
+            }
+        }
+
+        return array_values($byHost);
     }
 
     /**
@@ -273,11 +299,18 @@ final class Stager
     /** Images and files from the old site's uploads folder named in content. */
     private function collectFiles(string $content, string $label): void
     {
-        if (!str_contains($content, '/wp-content/uploads/')) {
-            return;
+        $urls = [];
+        if (str_contains($content, '/wp-content/uploads/')) {
+            preg_match_all('~(?:https?:)?(?://[^\s"\'<>()\[\]]+)?/wp-content/uploads/[^\s"\'<>()\[\]?#]+~i', $content, $m);
+            $urls = $m[0];
         }
-        preg_match_all('~(?:https?:)?(?://[^\s"\'<>()\[\]]+)?/wp-content/uploads/[^\s"\'<>()\[\]?#]+~i', $content, $m);
-        foreach ($m[0] as $url) {
+        foreach ($this->site->fileHosts() as $host) {
+            if (stripos($content, $host) !== false) {
+                preg_match_all('~(?:https?:)?//(?:www\.)?' . preg_quote($host, '~') . '/[^\s"\'<>()\[\]?#]+\.[a-z0-9]{2,5}(?=[\s"\'<>()\[\]?#]|$)~i', $content, $m);
+                array_push($urls, ...$m[0]);
+            }
+        }
+        foreach (array_unique($urls) as $url) {
             $url = html_entity_decode($url, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $key = $this->site->fileKey($url);
             if ($key !== null) {

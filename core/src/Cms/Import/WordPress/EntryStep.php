@@ -25,7 +25,7 @@ use Kestello\Support\Str;
 final class EntryStep
 {
     /** Bumped when conversion improves, so a later import converts unchanged posts again. */
-    public const int CONVERSION = 1;
+    public const int CONVERSION = 2;
 
     public function __construct(private readonly Run $run, private readonly ContentConverter $converter) {}
 
@@ -40,8 +40,6 @@ final class EntryStep
             return Outcome::skipped(sprintf('This site has no content type "%s".', $p['type']));
         }
         $key = (string) $item['source_key'];
-        $author = $this->run->author((string) $p['author']);
-        $checksum = SourceMap::checksum([self::CONVERSION, $p, $author]);
         $entries = $this->run->cms->container->make(Entries::class);
 
         $mapped = $this->run->map->get('entry', $key);
@@ -51,6 +49,14 @@ final class EntryStep
             if (!$entry instanceof Entry) {
                 return Outcome::skipped('Deleted on this site after the last import; not brought back.');
             }
+        }
+        // a post that came over before keeps its author, unless this import says otherwise:
+        // someone else running it again is not a reason to credit them with every post
+        $author = $entry !== null && !$this->run->choseAuthor((string) $p['author'])
+            ? ($entry->getAttribute('author_id') === null ? null : (int) $entry->getAttribute('author_id'))
+            : $this->run->author((string) $p['author']);
+        $checksum = SourceMap::checksum([self::CONVERSION, $p, $author]);
+        if ($mapped !== null && $entry !== null) {
             if ($mapped['checksum'] === $checksum) {
                 return Outcome::unchanged((int) $entry->getKey());
             }
