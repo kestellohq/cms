@@ -3,7 +3,7 @@
 Kestello is a content management system for the people who run a website and the developers who build it. Pages are written in a visual editor that shows the real page; plugins, themes, forms, media, search, backups and updates are built in. It is written in PHP and Vue with no Composer dependencies.
 
 - **Documentation:** the [Kestello docs](https://docs.kestello.com) (guides for site owners, and pages for developers).
-- **Releases:** [GitHub releases](https://github.com/kestellohq/cms/releases). A Kestello site checks them for updates and installs signed releases itself.
+- **Releases:** [GitHub releases](https://github.com/kestellohq/cms/releases). To install, download `kestello-X.Y.Z.zip` and follow [Installing Kestello](https://docs.kestello.com/guide/installation). A Kestello site checks the releases for updates and installs signed ones itself.
 
 ## Requirements
 

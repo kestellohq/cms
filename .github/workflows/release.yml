@@ -1,6 +1,11 @@
 # Publishing a release, when a maintainer pushes a vX.Y.Z tag on main (CONTRIBUTING.md,
 # "How a release happens"). Nothing is published unless every check passes again here and the
-# zip is signed with the release key.
+# core zip is signed with the release key.
+#
+# A release carries:
+#   kestello-X.Y.Z.zip        what people download to install a new site (core:install-zip)
+#   kestello-core-X.Y.Z.zip   the signed update that installed sites apply (core:release)
+#   kestello.stub.php         API stubs for plugin and theme developers
 #
 # Repository secret KESTELLO_RELEASE_KEY: the key file from
 #   php bin/cms package:keygen --out=kestello-release.key --name="Kestello releases"
@@ -80,6 +85,9 @@ jobs:
           rm -f "$key"
           php bin/cms core:verify "dist/kestello-core-${{ steps.version.outputs.version }}.zip"
 
+      - name: Build the install zip
+        run: php bin/cms core:install-zip --out=dist
+
       - name: API stubs for plugin and theme developers
         run: |
           mkdir -p "$RUNNER_TEMP/stubs"
@@ -96,6 +104,8 @@ jobs:
           flags=""
           [ "$PRERELEASE" = true ] && flags="--prerelease"
           gh release create "$TAG" \
+            "dist/kestello-$VERSION.zip" \
+            "dist/kestello-$VERSION.zip.sha256" \
             "dist/kestello-core-$VERSION.zip" \
             "dist/kestello-core-$VERSION.zip.sha256" \
             dist/kestello.stub.php \

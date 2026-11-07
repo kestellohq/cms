@@ -380,6 +380,7 @@ final class Kernel
         $console->register(new \Kestello\Cms\Console\Package\PackageBuildCommand());
         $console->register(new \Kestello\Cms\Console\Package\PackageSignCommand());
         $console->register(new \Kestello\Cms\Console\Package\CoreReleaseCommand($this->paths));
+        $console->register(new \Kestello\Cms\Console\Package\CoreInstallZipCommand($this->paths));
         $console->register(new \Kestello\Cms\Console\Package\CoreVerifyCommand($this->paths));
         $console->register(new \Kestello\Cms\Console\I18n\I18nExtractCommand($this->paths));
         $console->register(new \Kestello\Cms\Console\Ide\IdeHelpersCommand($this->paths));
