@@ -7,8 +7,8 @@ defineProps({ step: Number, error: { type: String, default: null }, site: { type
 </script>
 
 <template>
-    <InstallerLayout :step="step" title="Your site" description="You can change all of this later under Settings.">
-        <form method="POST" action="/install" class="k-auth__form">
+    <InstallerLayout :step="step" title="Your site" description="The basics. You can change all of it later under Settings.">
+        <form method="POST" action="/install" class="k-setup__form">
             <CsrfField />
             <input type="hidden" name="step" value="3" />
             <KAlert v-if="error" tone="danger">{{ error }}</KAlert>
@@ -18,7 +18,7 @@ defineProps({ step: Number, error: { type: String, default: null }, site: { type
                 <input id="site_name" type="text" name="site_name" class="k-input" :value="site.name" required />
             </div>
             <div class="k-field">
-                <label class="k-field__label" for="site_description">Tagline</label>
+                <label class="k-field__label" for="site_description">Tagline <span class="k-muted">(optional)</span></label>
                 <input
                     id="site_description"
                     type="text"
@@ -27,21 +27,24 @@ defineProps({ step: Number, error: { type: String, default: null }, site: { type
                     :value="site.description"
                     aria-describedby="site_description_help"
                 />
-                <p id="site_description_help" class="k-field__help">One short sentence about the site. Optional.</p>
+                <p id="site_description_help" class="k-field__help">One short sentence about the site.</p>
             </div>
-            <div class="k-field">
-                <label class="k-field__label" for="site_url">Site address</label>
-                <input id="site_url" type="url" name="site_url" class="k-input" :value="site.url" required aria-describedby="site_url_help" />
-                <p id="site_url_help" class="k-field__help">The full address visitors use, starting with https://</p>
-            </div>
-            <div class="k-field">
-                <label class="k-field__label" for="timezone">Time zone</label>
-                <select id="timezone" name="timezone" class="k-input k-select">
-                    <option v-for="tz in timezones" :key="tz" :value="tz" :selected="tz === site.timezone">{{ tz }}</option>
-                </select>
+            <div class="k-setup__row">
+                <div class="k-field">
+                    <label class="k-field__label" for="site_url">Site address</label>
+                    <input id="site_url" type="url" name="site_url" class="k-input" :value="site.url" required aria-describedby="site_url_help" />
+                    <p id="site_url_help" class="k-field__help">The full address visitors use, with https://</p>
+                </div>
+                <div class="k-field">
+                    <label class="k-field__label" for="timezone">Time zone</label>
+                    <select id="timezone" name="timezone" class="k-input k-select" aria-describedby="timezone_help">
+                        <option v-for="tz in timezones" :key="tz" :value="tz" :selected="tz === site.timezone">{{ tz }}</option>
+                    </select>
+                    <p id="timezone_help" class="k-field__help">For scheduled posts and dates.</p>
+                </div>
             </div>
 
-            <div class="k-install__actions">
+            <div class="k-setup__actions">
                 <a href="/install?step=2" class="k-btn k-btn--secondary k-btn--md">Back</a>
                 <button type="submit" class="k-btn k-btn--primary k-btn--md">Continue</button>
             </div>

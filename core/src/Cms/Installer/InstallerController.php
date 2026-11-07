@@ -47,6 +47,10 @@ final class InstallerController
         }
 
         $step = (int) ($request->query['step'] ?? 1);
+        $missing = self::firstIncompleteStep($this->getInstallerSession());
+        if ($missing !== null && $step > $missing) {
+            return Response::redirect("/install?step={$missing}");
+        }
 
         return match ($step) {
             1 => $this->stepRequirements($request),
@@ -84,48 +88,83 @@ final class InstallerController
 
     private function stepRequirements(Request $request): Response
     {
-        $checks = $this->runRequirementChecks();
-        $allPassed = !in_array(false, array_column($checks, 'passed'), true);
+        $checks = self::requirementChecks($this->paths);
 
         return $this->renderStep('Requirements', [
             'checks' => $checks,
-            'allPassed' => $allPassed,
+            'allPassed' => !in_array(false, array_column($checks, 'passed'), true),
             'step' => 1,
         ]);
     }
 
-    private function runRequirementChecks(): array
+    /**
+     * What the server needs, each with what it is for, what was found and,
+     * when it fails, what to do about it in words a site owner can act on.
+     *
+     * @return list<array{group: string, name: string, purpose: string, current: string, passed: bool, fix: string}>
+     */
+    public static function requirementChecks(Paths $paths): array
     {
-        return [
+        $drivers = self::availableDrivers();
+        $checks = [
             [
-                'name' => 'PHP version',
-                'required' => '8.4 or newer',
+                'group' => 'PHP',
+                'name' => 'PHP 8.4 or newer',
+                'purpose' => 'Kestello is written for PHP 8.4.',
                 'current' => PHP_VERSION,
                 'passed' => version_compare(PHP_VERSION, '8.4.0', '>='),
+                'fix' => 'Choose PHP 8.4 or newer for this site in your control panel (often under "PHP version" or "Select PHP"), or ask your host.',
             ],
             [
-                'name' => 'PDO database driver',
-                'required' => 'MySQL, PostgreSQL or SQLite',
-                'current' => implode(', ', array_map(static fn(string $d): string => self::DRIVERS[$d], self::availableDrivers())) ?: 'None',
-                'passed' => self::availableDrivers() !== [],
+                'group' => 'PHP',
+                'name' => 'A database driver',
+                'purpose' => 'MySQL, MariaDB, PostgreSQL or SQLite.',
+                'current' => implode(', ', array_map(static fn(string $d): string => self::DRIVERS[$d], $drivers)) ?: 'None',
+                'passed' => $drivers !== [],
+                'fix' => 'Turn on pdo_mysql (or pdo_pgsql, or pdo_sqlite) in your control panel\'s PHP extensions, or ask your host.',
             ],
-            ...array_map(static fn(string $ext, string $for): array => [
-                'name' => "PHP extension: {$ext}",
-                'required' => "Required for {$for}",
-                'current' => extension_loaded($ext) ? 'Installed' : 'Missing',
-                'passed' => extension_loaded($ext),
-            ], array_keys(\Kestello\Cms\Health\CoreHealthChecks::REQUIRED), \Kestello\Cms\Health\CoreHealthChecks::REQUIRED),
-            ...array_map(static fn(string $label, string $dir): array => [
-                'name' => "Folder: {$label}",
-                'required' => 'Writable',
-                'current' => match (true) {
-                    !is_dir($dir) => 'Missing, and PHP could not create it',
-                    is_writable($dir) => 'Writable',
-                    default => 'Not writable',
-                },
-                'passed' => is_dir($dir) && is_writable($dir),
-            ], array_keys(self::writableFolders($this->paths)), self::writableFolders($this->paths)),
         ];
+        foreach (\Kestello\Cms\Health\CoreHealthChecks::REQUIRED as $extension => $for) {
+            $checks[] = [
+                'group' => 'PHP',
+                'name' => "The {$extension} extension",
+                'purpose' => 'Used for ' . $for . '.',
+                'current' => extension_loaded($extension) ? 'On' : 'Off',
+                'passed' => extension_loaded($extension),
+                'fix' => "Turn on {$extension} in your control panel's PHP extensions, or ask your host.",
+            ];
+        }
+        foreach (self::writableFolders($paths) as $label => $dir) {
+            $exists = is_dir($dir);
+            $checks[] = [
+                'group' => 'Folders',
+                'name' => $label,
+                'purpose' => 'Kestello saves files here.',
+                'current' => !$exists ? 'Missing' : (is_writable($dir) ? 'Writable' : 'Not writable'),
+                'passed' => $exists && is_writable($dir),
+                'fix' => $exists
+                    ? 'In your file manager or FTP program, set this folder\'s permissions to 755 (775 if your host asks for it).'
+                    : 'Create this folder in your file manager, inside the folder you uploaded Kestello to.',
+            ];
+        }
+
+        return $checks;
+    }
+
+    /**
+     * The first step (2 to 4) whose answers are not saved yet, or null when
+     * everything needed to install is there. Later steps send people back to it.
+     *
+     * @param array<string, mixed> $saved
+     */
+    public static function firstIncompleteStep(array $saved): ?int
+    {
+        return match (true) {
+            ($saved['db_driver'] ?? '') === '' => 2,
+            ($saved['site_name'] ?? '') === '' => 3,
+            ($saved['admin_password_hash'] ?? '') === '' => 4,
+            default => null,
+        };
     }
 
     /**
@@ -329,9 +368,13 @@ final class InstallerController
 
     private function stepAdmin(Request $request): Response
     {
+        $saved = $this->getInstallerSession();
+
         return $this->renderStep('Admin', [
             'step' => 4,
             'error' => self::error($request),
+            // Kept across a refused attempt, so only the password is typed again.
+            'admin' => ['username' => (string) ($saved['admin_username'] ?? ''), 'email' => (string) ($saved['admin_email'] ?? '')],
         ]);
     }
 
@@ -341,6 +384,12 @@ final class InstallerController
         $email = trim((string) $request->input('admin_email', ''));
         $password = (string) $request->input('admin_password', '');
         $passwordConfirm = (string) $request->input('admin_password_confirm', '');
+
+        $saved = $this->getInstallerSession();
+        $saved['admin_username'] = $username;
+        $saved['admin_email'] = $email;
+        $this->saveInstallerSession($saved);
+        unset($_SESSION['installer']['admin_password_hash']); // a refused attempt must not leave an older password behind
 
         if ($username === '' || $email === '' || $password === '') {
             return Response::redirect('/install?step=4&error=' . urlencode('All fields are required.'));
@@ -368,8 +417,6 @@ final class InstallerController
             return Response::redirect('/install?step=4&error=' . urlencode('Passwords do not match.'));
         }
 
-        $saved = $this->getInstallerSession();
-        $saved['admin_username'] = $username;
         $saved['admin_email'] = \Kestello\Cms\Auth\Emails::normalize($email);
         // Hashed now: the plain password never sits in the session.
         $saved['admin_password_hash'] = \Kestello\Support\Hash::password($password);
@@ -404,6 +451,10 @@ final class InstallerController
     private function processFinalize(Request $request): Response
     {
         $saved = $this->getInstallerSession();
+        $missing = self::firstIncompleteStep($saved);
+        if ($missing !== null) {
+            return Response::redirect("/install?step={$missing}");
+        }
         $configFiles = [];
 
         try {
@@ -458,8 +509,12 @@ final class InstallerController
      */
     public function complete(Request $request): Response
     {
+        $app = is_file($this->paths->config('app.php')) ? (array) require $this->paths->config('app.php') : [];
+
         return $this->renderStep('Complete', [
             'step' => 6,
+            'site' => ['name' => (string) ($app['name'] ?? ''), 'url' => (string) ($app['url'] ?? '')],
+            'cron' => 'php ' . $this->paths->root('bin/cms') . ' schedule:run',
         ]);
     }
 

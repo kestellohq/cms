@@ -31,8 +31,8 @@
     "file": "chunks/Icon-DNYYdoNX.mjs",
     "name": "Icon"
   },
-  "_InstallerLayout-7a6f5LEx.mjs": {
-    "file": "chunks/InstallerLayout-7a6f5LEx.mjs",
+  "_InstallerLayout-puuck5dd.mjs": {
+    "file": "chunks/InstallerLayout-puuck5dd.mjs",
     "name": "InstallerLayout"
   },
   "_PasswordInput-Ci59Qe3A.mjs": {
@@ -1069,7 +1069,7 @@
     "src": "resources/js/pages/installer/Admin.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-7a6f5LEx.mjs",
+      "_InstallerLayout-puuck5dd.mjs",
       "_CsrfField-DaiFH5aw.mjs",
       "_PasswordInput-Ci59Qe3A.mjs"
     ]
@@ -1080,7 +1080,7 @@
     "src": "resources/js/pages/installer/Complete.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-7a6f5LEx.mjs"
+      "_InstallerLayout-puuck5dd.mjs"
     ]
   },
   "resources/js/pages/installer/Database.vue": {
@@ -1089,7 +1089,7 @@
     "src": "resources/js/pages/installer/Database.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-7a6f5LEx.mjs",
+      "_InstallerLayout-puuck5dd.mjs",
       "_CsrfField-DaiFH5aw.mjs"
     ]
   },
@@ -1099,7 +1099,7 @@
     "src": "resources/js/pages/installer/Finalize.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-7a6f5LEx.mjs",
+      "_InstallerLayout-puuck5dd.mjs",
       "_CsrfField-DaiFH5aw.mjs"
     ]
   },
@@ -1109,7 +1109,7 @@
     "src": "resources/js/pages/installer/Requirements.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-7a6f5LEx.mjs"
+      "_InstallerLayout-puuck5dd.mjs"
     ]
   },
   "resources/js/pages/installer/Site.vue": {
@@ -1118,7 +1118,7 @@
     "src": "resources/js/pages/installer/Site.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-7a6f5LEx.mjs",
+      "_InstallerLayout-puuck5dd.mjs",
       "_CsrfField-DaiFH5aw.mjs"
     ]
   },

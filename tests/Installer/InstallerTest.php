@@ -124,4 +124,45 @@ final class InstallerTest extends TestCase
         }
         $this->assertSame($folders, InstallerController::prepareFolders($paths), 'a second run changes nothing');
     }
+
+    public function testARefusedAdministratorKeepsTheNameButNotAnOlderPassword(): void
+    {
+        $good = 'a-long-and-unusual-passphrase';
+        $base = ['step' => '4', 'admin_username' => 'ana', 'admin_email' => 'ana@example.test'];
+        $this->assertSame('/install?step=5', $this->post($base + ['admin_password' => $good, 'admin_password_confirm' => $good]));
+
+        $this->assertTrue(str_contains($this->post(['step' => '4', 'admin_username' => 'bo', 'admin_email' => 'bo@example.test', 'admin_password' => 'x', 'admin_password_confirm' => 'x']), 'step=4&error='));
+
+        $this->assertSame(['bo', 'bo@example.test'], [$_SESSION['installer']['admin_username'], $_SESSION['installer']['admin_email']], 'typed again only the password');
+        $this->assertArrayNotHasKey('admin_password_hash', $_SESSION['installer'], 'ana\'s password must not install bo');
+        $this->assertSame(4, InstallerController::firstIncompleteStep($_SESSION['installer'] + ['db_driver' => 'sqlite', 'site_name' => 'S']));
+    }
+
+    public function testLaterStepsSendPeopleBackToTheFirstUnfinishedOne(): void
+    {
+        $this->assertSame(2, InstallerController::firstIncompleteStep([]));
+        $this->assertSame(3, InstallerController::firstIncompleteStep(['db_driver' => 'sqlite']));
+        $this->assertSame(4, InstallerController::firstIncompleteStep(['db_driver' => 'sqlite', 'site_name' => 'S']));
+        $this->assertNull(InstallerController::firstIncompleteStep(['db_driver' => 'sqlite', 'site_name' => 'S', 'admin_password_hash' => 'h']));
+
+        $_SESSION = [];
+        $controller = new InstallerController(new Paths($this->root, dirname(__DIR__, 2) . '/core'));
+        $response = $controller->process(new Request('POST', '/install', '/install', [], [], ['step' => '5'], [], [], []));
+        $this->assertSame('/install?step=2', $response->headers()['Location'] ?? null, 'nothing is installed from an empty session');
+        $this->assertFalse(is_file($this->root . '/config/app.php'));
+    }
+
+    public function testEveryFailedCheckSaysWhatToDo(): void
+    {
+        $checks = InstallerController::requirementChecks(new Paths($this->root, dirname(__DIR__, 2) . '/core'));
+        $byName = array_column($checks, null, 'name');
+
+        $this->assertSame([false, 'Missing'], [$byName['storage/logs']['passed'], $byName['storage/logs']['current']], 'not created yet in this test');
+        $this->assertStringStartsWith('Create this folder', $byName['storage/logs']['fix']);
+        $this->assertSame([true, 'Writable'], [$byName['config']['passed'], $byName['config']['current']]);
+        foreach ($checks as $check) {
+            $this->assertNotSame('', $check['fix'], $check['name']);
+            $this->assertContains($check['group'], ['PHP', 'Folders']);
+        }
+    }
 }
