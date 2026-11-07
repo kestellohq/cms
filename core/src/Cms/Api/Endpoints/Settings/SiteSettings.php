@@ -117,6 +117,21 @@ final class SiteSettings
                 'secrets' => [],
                 'defaults' => array_combine(array_map(static fn($t) => 'permalink_' . $t->name, self::datedTypes()), array_map(static fn($t) => $t->getPermalink(), self::datedTypes())) + ['front_page' => '', 'feed_items' => 10, 'discourage_search' => false, 'robots_txt' => ''],
             ] + $core,
+            'seo' => [
+                'label' => 'Search and sharing',
+                'description' => 'How your pages appear in search results, browser tabs and link previews.',
+                'schema' => Schema::object([
+                    'seo_title_pattern' => Schema::string()->min(1)->max(150)->optional()
+                        ->description('The title of every page. {title} is the page\'s title (or its search title), {site} the site name, {tagline} the tagline and {sep} the separator.'),
+                    'seo_home_pattern' => Schema::string()->min(1)->max(150)->optional()->description('The title of the home page, with the same placeholders.'),
+                    'seo_separator' => Schema::enum(\Kestello\Cms\Site\SeoTitle::SEPARATORS)->optional()->description('What {sep} becomes.'),
+                    'seo_image' => Schema::int()->min(0)->format('media')->optional()
+                        ->description('Shown in link previews of pages that have no image of their own.'),
+                ]),
+                'labels' => ['seo_title_pattern' => 'Page titles', 'seo_home_pattern' => 'Home page title', 'seo_separator' => 'Separator', 'seo_image' => 'Default sharing image'],
+                'secrets' => [],
+                'defaults' => ['seo_title_pattern' => \Kestello\Cms\Site\SeoTitle::PAGE, 'seo_home_pattern' => \Kestello\Cms\Site\SeoTitle::HOME, 'seo_separator' => \Kestello\Cms\Site\SeoTitle::SEPARATOR, 'seo_image' => 0],
+            ] + $core,
             'mail' => [
                 'label' => 'Email',
                 'description' => 'How the site sends password resets and notifications. Without SMTP, PHP mail() is used and messages often land in spam.',

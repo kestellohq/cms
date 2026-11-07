@@ -25,7 +25,7 @@ use Kestello\Support\Translator;
  */
 final class Schema
 {
-    private const array FORMATS = ['email', 'uri', 'date-time', 'date', 'uuid', 'slug', 'multiline'];   // multiline: forms show a text area
+    private const array FORMATS = ['email', 'uri', 'date-time', 'date', 'uuid', 'slug', 'multiline', 'media'];   // multiline: forms show a text area; media: an image from the library, by id
 
     /** @var array<string, Schema> */
     private array $properties = [];
@@ -483,6 +483,7 @@ final class Schema
             'uuid' => preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $value) === 1,
             'slug' => preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $value) === 1,
             'multiline' => true,
+            'media' => ctype_digit($value),
         };
     }
 
@@ -553,6 +554,9 @@ final class Schema
         } elseif ($this->type === 'integer' || $this->type === 'number') {
             if ($this->min !== null) {
                 $out['minimum'] = $this->min;
+            }
+            if ($this->format === 'media') {
+                $out['format'] = 'media';
             }
             if ($this->max !== null) {
                 $out['maximum'] = $this->max;

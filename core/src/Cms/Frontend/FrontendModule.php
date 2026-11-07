@@ -116,6 +116,7 @@ final class FrontendModule extends Provider
             'site' => [
                 'name' => (string) ($settings->get('site_name') ?? $cms->config->get('app.name', 'Kestello')),
                 'url' => (string) ($settings->get('site_url') ?? $cms->config->get('app.url', '')),
+                'titles' => \Kestello\Cms\Site\Seo::titles(),
             ],
             // UI hints only: the server enforces every permission.
             'auth' => ['user' => $user === null ? null : [

@@ -123,6 +123,45 @@ final class Seo
         return is_string($props['title'] ?? null) ? $props['title'] : '';
     }
 
+    /**
+     * The text of the page's <title>: the site's title pattern, or its home
+     * pattern on the home page and on a page without a title. The admin
+     * keeps "Title - Site".
+     *
+     * @param array<string, mixed> $props
+     */
+    public static function documentTitle(array $props, string $url): string
+    {
+        $site = (string) ($props['site']['name'] ?? '');
+        $title = self::title($props);
+        if (isset($props['admin']) || $site === '') {
+            return $title !== '' ? ($site !== '' ? "{$title} - {$site}" : $title) : $site;
+        }
+        $titles = self::titles();
+        $home = (parse_url($url, PHP_URL_PATH) ?: '/') === '/' || $title === '';
+
+        return SeoTitle::format($home ? $titles['home'] : $titles['page'], $title, $site, $titles['sep'], $titles['tagline']);
+    }
+
+    /**
+     * The title patterns from Settings → Search and sharing, shared with
+     * every page as site.titles so the browser writes the same title.
+     *
+     * @return array{page: string, home: string, sep: string, tagline: string}
+     */
+    public static function titles(): array
+    {
+        $s = Settings::getInstance();
+        $sep = (string) $s->get('seo_separator', SeoTitle::SEPARATOR);
+
+        return [
+            'page' => (string) ($s->get('seo_title_pattern') ?: SeoTitle::PAGE),
+            'home' => (string) ($s->get('seo_home_pattern') ?: SeoTitle::HOME),
+            'sep' => isset(SeoTitle::SEPARATORS[$sep]) ? $sep : SeoTitle::SEPARATOR,
+            'tagline' => (string) $s->get('site_description', ''),
+        ];
+    }
+
     /** Whether an entry asked to stay out of search engines. */
     public static function hidden(Entry $entry): bool
     {
@@ -211,7 +250,7 @@ final class Seo
             if ($description !== '') {
                 $tags[] = ['meta', ['property' => 'og:description', 'content' => $description]];
             }
-            $image = is_array($seo['image'] ?? null) ? $seo['image'] : null;
+            $image = is_array($seo['image'] ?? null) ? $seo['image'] : self::image(Settings::getInstance()->get('seo_image'));
             if ($image !== null) {
                 $tags[] = ['meta', ['property' => 'og:image', 'content' => $abs((string) $image['url'])]];
                 foreach (['width', 'height'] as $dim) {

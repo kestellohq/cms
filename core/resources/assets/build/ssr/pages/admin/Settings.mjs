@@ -1,3 +1,4 @@
+import _sfc_main$1 from "../fields/MediaPicker.mjs";
 import { computed, createBlock, createCommentVNode, createTextVNode, createVNode, openBlock, ref, toDisplayString, unref, useSSRContext, watch, withCtx, withModifiers } from "vue";
 import { ssrInterpolate, ssrRenderAttr, ssrRenderComponent } from "vue/server-renderer";
 import { Head } from "@kestello/app";
@@ -96,6 +97,15 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 			}
 		}
 		const unsavedText = (n) => __("{n, plural, one {# unsaved change} other {# unsaved changes}}", { n });
+		const whereItShows = computed(() => ({
+			general: __("The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks."),
+			reading: __("Addresses, the home page and feeds change what visitors and feed readers get. Old addresses keep working."),
+			seo: __("Page titles show in the browser tab and as the headline in search results. The sharing image shows when someone posts a link to the site. Each entry can set its own under Search and sharing."),
+			accounts: __("Applies to the sign-up page and to every sign-in provider. People you add under People are not affected."),
+			media: __("Applies to new uploads. Files already in the library stay as they are."),
+			performance: __("Visitors who are signed in always get fresh pages. Saving content refreshes the pages it appears on."),
+			snippets: __("Added to every public page, never to the admin or the sign-in pages.")
+		}));
 		return (_ctx, _push, _parent, _attrs) => {
 			_push(`<!--[-->`);
 			_push(ssrRenderComponent(unref(Head), { title: unref(__)("Settings") }, null, _parent));
@@ -224,7 +234,40 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 									secrets: group.value.secrets,
 									"secrets-set": secretsSet.value,
 									errors: errors.value
-								}, null, _parent, _scopeId));
+								}, {
+									"format-media": withCtx(({ id, field, value, set, invalid, disabled }, _push, _parent, _scopeId) => {
+										if (_push) _push(ssrRenderComponent(_sfc_main$1, {
+											id,
+											"model-value": value > 0 ? value : null,
+											field: {
+												label: field.label,
+												options: { kinds: ["image"] }
+											},
+											invalid,
+											disabled,
+											"onUpdate:modelValue": ($event) => set($event ?? 0)
+										}, null, _parent, _scopeId));
+										else return [createVNode(_sfc_main$1, {
+											id,
+											"model-value": value > 0 ? value : null,
+											field: {
+												label: field.label,
+												options: { kinds: ["image"] }
+											},
+											invalid,
+											disabled,
+											"onUpdate:modelValue": ($event) => set($event ?? 0)
+										}, null, 8, [
+											"id",
+											"model-value",
+											"field",
+											"invalid",
+											"disabled",
+											"onUpdate:modelValue"
+										])];
+									}),
+									_: 1
+								}, _parent, _scopeId));
 								else _push(`<!---->`);
 								_push(`</form>`);
 							} else return [createVNode("form", {
@@ -240,7 +283,27 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 								secrets: group.value.secrets,
 								"secrets-set": secretsSet.value,
 								errors: errors.value
-							}, null, 8, [
+							}, {
+								"format-media": withCtx(({ id, field, value, set, invalid, disabled }) => [createVNode(_sfc_main$1, {
+									id,
+									"model-value": value > 0 ? value : null,
+									field: {
+										label: field.label,
+										options: { kinds: ["image"] }
+									},
+									invalid,
+									disabled,
+									"onUpdate:modelValue": ($event) => set($event ?? 0)
+								}, null, 8, [
+									"id",
+									"model-value",
+									"field",
+									"invalid",
+									"disabled",
+									"onUpdate:modelValue"
+								])]),
+								_: 1
+							}, 8, [
 								"modelValue",
 								"onUpdate:modelValue",
 								"schema",
@@ -382,16 +445,17 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						}),
 						_: 1
 					}, _parent));
-					else _push(ssrRenderComponent(unref(KCard), {
+					else if (whereItShows.value[group.value.id]) _push(ssrRenderComponent(unref(KCard), {
 						coord: "C1",
 						title: unref(__)("Where this shows")
 					}, {
 						default: withCtx((_, _push, _parent, _scopeId) => {
-							if (_push) _push(`<p class="k-muted"${_scopeId}>${ssrInterpolate(unref(__)("The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks."))}</p>`);
-							else return [createVNode("p", { class: "k-muted" }, toDisplayString(unref(__)("The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks.")), 1)];
+							if (_push) _push(`<p class="k-muted"${_scopeId}>${ssrInterpolate(whereItShows.value[group.value.id])}</p>`);
+							else return [createVNode("p", { class: "k-muted" }, toDisplayString(whereItShows.value[group.value.id]), 1)];
 						}),
 						_: 1
 					}, _parent));
+					else _push(`<!---->`);
 					_push(`<!--]-->`);
 				}
 				_push(`</div><!--]-->`);
