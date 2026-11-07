@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { Head } from '@kestello/app';
 import { ApiError, notify, useApi, useResource, useUser, __ } from '@kestello/sdk';
 import { KAlert, KButton, KCard, KExtension, KField, KInput, KPageHeader, KSchemaForm, KTabs } from '@kestello/ui';
+import MediaPicker from '../fields/MediaPicker.vue';
 
 defineOptions({ layout: 'Admin' });
 
@@ -111,6 +112,21 @@ async function sendTest() {
 }
 // (an ICU plural's closing braces would end a {{ }} in the template)
 const unsavedText = (n) => __('{n, plural, one {# unsaved change} other {# unsaved changes}}', { n });
+
+// The side card of each core tab: what the settings change, in plain words.
+const whereItShows = computed(() => ({
+    general: __(
+        'The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks.',
+    ),
+    reading: __('Addresses, the home page and feeds change what visitors and feed readers get. Old addresses keep working.'),
+    seo: __(
+        'Page titles show in the browser tab and as the headline in search results. The sharing image shows when someone posts a link to the site. Each entry can set its own under Search and sharing.',
+    ),
+    accounts: __('Applies to the sign-up page and to every sign-in provider. People you add under People are not affected.'),
+    media: __('Applies to new uploads. Files already in the library stay as they are.'),
+    performance: __('Visitors who are signed in always get fresh pages. Saving content refreshes the pages it appears on.'),
+    snippets: __('Added to every public page, never to the admin or the sign-in pages.'),
+}));
 </script>
 
 <template>
@@ -138,7 +154,19 @@ const unsavedText = (n) => __('{n, plural, one {# unsaved change} other {# unsav
                             :secrets="group.secrets"
                             :secrets-set="secretsSet"
                             :errors="errors"
-                        />
+                        >
+                            <!-- an image from the library, stored as its id (0: none) -->
+                            <template #format-media="{ id, field, value, set, invalid, disabled }">
+                                <MediaPicker
+                                    :id="id"
+                                    :model-value="value > 0 ? value : null"
+                                    :field="{ label: field.label, options: { kinds: ['image'] } }"
+                                    :invalid="invalid"
+                                    :disabled="disabled"
+                                    @update:model-value="set($event ?? 0)"
+                                />
+                            </template>
+                        </KSchemaForm>
                     </form>
                     <template #footer>
                         <div class="k-form__actions">
@@ -185,14 +213,8 @@ const unsavedText = (n) => __('{n, plural, one {# unsaved change} other {# unsav
                         :context="{ group: group.id, values: stored }"
                     />
                 </KCard>
-                <KCard v-else coord="C1" :title="__('Where this shows')">
-                    <p class="k-muted">
-                        {{
-                            __(
-                                'The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks.',
-                            )
-                        }}
-                    </p>
+                <KCard v-else-if="whereItShows[group.id]" coord="C1" :title="__('Where this shows')">
+                    <p class="k-muted">{{ whereItShows[group.id] }}</p>
                 </KCard>
             </template>
         </div>

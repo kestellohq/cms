@@ -144,7 +144,11 @@
     "file": "pages/admin/Settings.mjs",
     "name": "pages/admin/Settings",
     "src": "resources/js/pages/admin/Settings.vue",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "resources/js/pages/fields/MediaPicker.vue",
+      "resources/js/pages/fields/MediaPicker.vue"
+    ]
   },
   "resources/js/pages/admin/appearance/Styles.vue": {
     "file": "pages/admin/appearance/Styles.mjs",

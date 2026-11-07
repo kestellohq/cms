@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- **Settings > Search and sharing**: the pattern for page titles (such as `{title} {sep} {site}`), a separate one for the home page, the separator, and a default sharing image for pages without an image of their own. The browser tab, search results and link previews follow it; the admin keeps its own titles. The settings form shows a media picker for fields with the `media` format.
 - A search title and a sharing image for every entry, under **Search and sharing** in the editor. The search title replaces the entry's title in the browser tab, search results and link previews; the page itself still shows its title. The sharing image is used for link previews instead of the first image on the page.
 - The first public version of Kestello: structured content with revisions and scheduling, the visual page editor with blocks, patterns and per-screen styles, the template builder, media library, forms, menus, redirects, search, webhooks, a REST API with an explorer, people, roles and two-factor sign-in, backups, Site Health, background jobs and scheduled tasks, themes and plugins with signed packages, and signed core updates.
 - A site language in **Settings > General**. The admin, emails and theme text follow it, and the admin formats plurals, numbers and dates for it. Validation messages from the API, the reasons a save is refused, and the problems visitors see when sending a form (a missing answer, an expired page, a file that is too large) are translated.
