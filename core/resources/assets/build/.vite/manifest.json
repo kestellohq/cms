@@ -39,8 +39,8 @@
     "file": "chunks/Icon-CzhF9ZGH.js",
     "name": "Icon"
   },
-  "_InstallerLayout-LzejIdAu.js": {
-    "file": "chunks/InstallerLayout-LzejIdAu.js",
+  "_InstallerLayout-BwS4jTHn.js": {
+    "file": "chunks/InstallerLayout-BwS4jTHn.js",
     "name": "InstallerLayout"
   },
   "_PasswordInput-UJArOPqb.js": {
@@ -1080,61 +1080,61 @@
     "isEntry": true
   },
   "resources/js/pages/installer/Admin.vue": {
-    "file": "pages/installer/Admin-D7zDddys.js",
+    "file": "pages/installer/Admin-CjuH2TWs.js",
     "name": "pages/installer/Admin",
     "src": "resources/js/pages/installer/Admin.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-LzejIdAu.js",
+      "_InstallerLayout-BwS4jTHn.js",
       "_CsrfField-CbsjluJC.js",
       "_PasswordInput-UJArOPqb.js"
     ]
   },
   "resources/js/pages/installer/Complete.vue": {
-    "file": "pages/installer/Complete-DZIQE_p3.js",
+    "file": "pages/installer/Complete-BGhX8jOM.js",
     "name": "pages/installer/Complete",
     "src": "resources/js/pages/installer/Complete.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-LzejIdAu.js"
+      "_InstallerLayout-BwS4jTHn.js"
     ]
   },
   "resources/js/pages/installer/Database.vue": {
-    "file": "pages/installer/Database-CQMJkXfq.js",
+    "file": "pages/installer/Database-DfRpmZPL.js",
     "name": "pages/installer/Database",
     "src": "resources/js/pages/installer/Database.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-LzejIdAu.js",
+      "_InstallerLayout-BwS4jTHn.js",
       "_CsrfField-CbsjluJC.js"
     ]
   },
   "resources/js/pages/installer/Finalize.vue": {
-    "file": "pages/installer/Finalize-D4wAj-vz.js",
+    "file": "pages/installer/Finalize-BJoKYkAB.js",
     "name": "pages/installer/Finalize",
     "src": "resources/js/pages/installer/Finalize.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-LzejIdAu.js",
+      "_InstallerLayout-BwS4jTHn.js",
       "_CsrfField-CbsjluJC.js"
     ]
   },
   "resources/js/pages/installer/Requirements.vue": {
-    "file": "pages/installer/Requirements-D7F6APr5.js",
+    "file": "pages/installer/Requirements-Dxbem1Bq.js",
     "name": "pages/installer/Requirements",
     "src": "resources/js/pages/installer/Requirements.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-LzejIdAu.js"
+      "_InstallerLayout-BwS4jTHn.js"
     ]
   },
   "resources/js/pages/installer/Site.vue": {
-    "file": "pages/installer/Site-DQmqlWsA.js",
+    "file": "pages/installer/Site-xGoPWPJH.js",
     "name": "pages/installer/Site",
     "src": "resources/js/pages/installer/Site.vue",
     "isEntry": true,
     "imports": [
-      "_InstallerLayout-LzejIdAu.js",
+      "_InstallerLayout-BwS4jTHn.js",
       "_CsrfField-CbsjluJC.js"
     ]
   },

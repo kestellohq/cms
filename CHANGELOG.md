@@ -22,5 +22,6 @@ Every change people would notice is listed here, newest first. The format follow
 - Leaving an editor with unsaved work asks first, also from the menu, a link or Back: entries, the visual editor, menus, templates, styles and forms. Plugins get the same with `useLeaveGuard()` from `@kestello/sdk`.
 - Entry addresses stay unique, also when two people save entries with the same title at the same moment.
 - Editor helpers: `.phpstorm.meta.php`, `jsconfig.json`, and `bin/cms ide:helpers --stubs` for plugins and themes developed in their own repositories.
+- An installer that works on shared hosting as uploaded: it creates the folders it writes to when a file manager left them out, serves its own scripts before the site exists, and lists server problems first with what to do about each. The last page shows the cron command for the server, and the steps cannot be skipped.
 
 [Unreleased]: https://github.com/kestellohq/cms/commits/develop
