@@ -142,8 +142,8 @@ final class PageRenderer
         $siteName = (string) ($data['props']['site']['name'] ?? 'Kestello');
         $title = $ssr['title'] ?? '';
         if ($title === '') {
-            $pageTitle = $data['props']['title'] ?? null;
-            $title = is_string($pageTitle) && $pageTitle !== '' ? "{$pageTitle} - {$siteName}" : $siteName;
+            $pageTitle = \Kestello\Cms\Site\Seo::title($data['props']);
+            $title = $pageTitle !== '' ? "{$pageTitle} - {$siteName}" : $siteName;
         }
 
         $map = json_encode(['imports' => $imports, 'integrity' => $integrity], self::JSON_FLAGS);

@@ -28,6 +28,7 @@ import {
 } from 'vue';
 import { designAttrs } from '../shared/block-design.js';
 import { createLeaveGuards, leavesPage } from './leave-guards.js';
+import { documentTitle } from './document-title.js';
 
 const ROUTER = Symbol('kestello.router');
 const PAGE = Symbol('kestello.page');
@@ -583,11 +584,7 @@ export const Head = defineComponent({
     setup(props) {
         const head = inject(HEAD, null);
         const page = inject(PAGE, null);
-        const full = () => {
-            const site = page?.props?.site?.name ?? '';
-            if (props.raw || !site) return props.title || site;
-            return props.title ? `${props.title} - ${site}` : site;
-        };
+        const full = () => documentTitle(props.title, page, props.raw);
         if (head) head.title = full();
         if (isBrowser) {
             onMounted(() => {

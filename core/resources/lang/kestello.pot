@@ -7323,6 +7323,10 @@ msgstr ""
 msgid "Search the media library"
 msgstr ""
 
+#: core/src/Cms/Site/Seo.php
+msgid "Search title"
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Index.vue
 msgid "Search titles"
 msgstr ""
@@ -7601,6 +7605,10 @@ msgstr ""
 msgid "Shared memory of this server's PHP workers. Fastest; not shared with cron or other servers."
 msgstr ""
 
+#: core/src/Cms/Site/Seo.php
+msgid "Sharing image"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreListBlocks.php
 msgid "Short points, each with an icon, such as what is included."
 msgstr ""
@@ -7665,6 +7673,10 @@ msgstr ""
 msgid "Shown as"
 msgstr ""
 
+#: core/src/Cms/Site/Seo.php
+msgid "Shown as the title in search results and link previews, instead of the title on the page. Left empty, the title is used."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Terms.vue
 msgid "Shown at {path}/{slug}. Leave empty to make one from the name."
 msgstr ""
@@ -7703,6 +7715,10 @@ msgstr ""
 
 #: core/src/Cms/Site/Seo.php
 msgid "Shown under the title in search results and link previews. Left empty, the excerpt or the first lines are used."
+msgstr ""
+
+#: core/src/Cms/Site/Seo.php
+msgid "Shown when the page is shared on social media or in a chat. Left empty, the first image of the page is used."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php

@@ -75,6 +75,11 @@ final class PagesTest extends TestCase
 
         $nonce = $this->csp->nonce();
         $this->assertContains('<title>&lt;/title&gt;&lt;script&gt;x&lt;/script&gt; - A&amp;B</title>', $html);
+
+        $seo = $this->renderer(['site' => ['name' => 'Bakery']])
+            ->render($this->request(), new PageResponse('@core/content/Entry', ['title' => 'Rye', 'seo' => ['title' => 'Rye bread in three days']]), new Response())
+            ->content();
+        $this->assertContains('<title>Rye bread in three days - Bakery</title>', $seo, 'a search title replaces the page title');
         $this->assertNotContains('</script><img', $html, 'props cannot break out of the JSON script');
         $this->assertContains(substr(json_encode('</script><img', JSON_HEX_TAG | JSON_UNESCAPED_SLASHES), 1, -1), $html);
         $this->assertContains("<script type=\"importmap\" nonce=\"{$nonce}\">", $html);
