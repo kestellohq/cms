@@ -108,4 +108,20 @@ final class InstallerTest extends TestCase
             $this->assertSame(404, $get($private)->statusCode(), $private);
         }
     }
+
+    public function testMissingFoldersAreCreatedForAnUploadThatDroppedThem(): void
+    {
+        // Some hosts' unzip drops empty folders and ones holding only .gitkeep.
+        $root = $this->root . '/uploaded';
+        mkdir($root);
+        $paths = new Paths($root, dirname(__DIR__, 2) . '/core');
+
+        $folders = InstallerController::prepareFolders($paths);
+
+        $this->assertSame(['config', 'storage', 'storage/cache', 'storage/compiled', 'storage/logs', 'storage/sessions', 'content/plugins', 'content/uploads'], array_keys($folders));
+        foreach ($folders as $label => $dir) {
+            $this->assertTrue(is_dir($dir) && is_writable($dir), $label);
+        }
+        $this->assertSame($folders, InstallerController::prepareFolders($paths), 'a second run changes nothing');
+    }
 }

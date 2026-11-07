@@ -28,8 +28,8 @@ var _sfc_main = {
 							_push(`<li class="k-list__item"${_scopeId}><div class="k-list__main"${_scopeId}><strong${_scopeId}>${ssrInterpolate(check.name)}</strong><p class="k-muted k-small"${_scopeId}>Required: ${ssrInterpolate(check.required)} · Current: ${ssrInterpolate(check.current)}</p></div>`);
 							_push(ssrRenderComponent(unref(KBadge), { tone: check.passed ? "success" : "danger" }, {
 								default: withCtx((_, _push, _parent, _scopeId) => {
-									if (_push) _push(`${ssrInterpolate(check.passed ? "OK" : "Missing")}`);
-									else return [createTextVNode(toDisplayString(check.passed ? "OK" : "Missing"), 1)];
+									if (_push) _push(`${ssrInterpolate(check.passed ? "OK" : "Fix this")}`);
+									else return [createTextVNode(toDisplayString(check.passed ? "OK" : "Fix this"), 1)];
 								}),
 								_: 2
 							}, _parent, _scopeId));
@@ -52,7 +52,7 @@ var _sfc_main = {
 							key: check.name,
 							class: "k-list__item"
 						}, [createVNode("div", { class: "k-list__main" }, [createVNode("strong", null, toDisplayString(check.name), 1), createVNode("p", { class: "k-muted k-small" }, "Required: " + toDisplayString(check.required) + " · Current: " + toDisplayString(check.current), 1)]), createVNode(unref(KBadge), { tone: check.passed ? "success" : "danger" }, {
-							default: withCtx(() => [createTextVNode(toDisplayString(check.passed ? "OK" : "Missing"), 1)]),
+							default: withCtx(() => [createTextVNode(toDisplayString(check.passed ? "OK" : "Fix this"), 1)]),
 							_: 2
 						}, 1032, ["tone"])]);
 					}), 128))]), createVNode("div", { class: "k-install__actions" }, [!__props.allPassed ? (openBlock(), createBlock("span", {

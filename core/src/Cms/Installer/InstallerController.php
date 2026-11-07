@@ -115,13 +115,55 @@ final class InstallerController
                 'current' => extension_loaded($ext) ? 'Installed' : 'Missing',
                 'passed' => extension_loaded($ext),
             ], array_keys(\Kestello\Cms\Health\CoreHealthChecks::REQUIRED), \Kestello\Cms\Health\CoreHealthChecks::REQUIRED),
-            ...array_map(fn(string $label, string $dir): array => [
+            ...array_map(static fn(string $label, string $dir): array => [
                 'name' => "Folder: {$label}",
                 'required' => 'Writable',
-                'current' => is_writable($dir) ? 'Writable' : 'Not writable',
-                'passed' => is_writable($dir),
-            ], ['config', 'storage', 'storage/cache'], [$this->paths->config(), $this->paths->storage(), $this->paths->cache()]),
+                'current' => match (true) {
+                    !is_dir($dir) => 'Missing, and PHP could not create it',
+                    is_writable($dir) => 'Writable',
+                    default => 'Not writable',
+                },
+                'passed' => is_dir($dir) && is_writable($dir),
+            ], array_keys(self::writableFolders($this->paths)), self::writableFolders($this->paths)),
         ];
+    }
+
+    /**
+     * The folders Kestello writes to, by the name the installer shows.
+     *
+     * @return array<string, string>
+     */
+    public static function writableFolders(Paths $paths): array
+    {
+        return [
+            'config' => $paths->config(),
+            'storage' => $paths->storage(),
+            'storage/cache' => $paths->cache(),
+            'storage/compiled' => $paths->compiled(),
+            'storage/logs' => $paths->logs(),
+            'storage/sessions' => $paths->sessions(),
+            'content/plugins' => $paths->plugins(),
+            'content/uploads' => $paths->uploads(),
+        ];
+    }
+
+    /**
+     * Create the writable folders that are missing. Some hosts' file managers
+     * drop empty folders (and ones holding only hidden files) when they unzip,
+     * so a fresh upload can arrive without config/ or storage/.
+     *
+     * @return array<string, string> writableFolders()
+     */
+    public static function prepareFolders(Paths $paths): array
+    {
+        $folders = self::writableFolders($paths);
+        foreach ($folders as $dir) {
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0755, true);
+            }
+        }
+
+        return $folders;
     }
 
     // -------------------------------------------------------------------------

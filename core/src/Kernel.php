@@ -219,6 +219,10 @@ final class Kernel
             return;
         }
 
+        if (!$installed) {
+            InstallerController::prepareFolders($this->paths); // before anything writes a log or a session
+        }
+
         $app->bootstrap();
         if (str_starts_with($uri, '/assets/core/')) {
             InstallerRoutes::assets($app->router(), $this->paths);

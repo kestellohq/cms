@@ -13,7 +13,7 @@ defineProps({ checks: { type: Array, default: () => [] }, allPassed: Boolean, st
                     <strong>{{ check.name }}</strong>
                     <p class="k-muted k-small">Required: {{ check.required }} · Current: {{ check.current }}</p>
                 </div>
-                <KBadge :tone="check.passed ? 'success' : 'danger'">{{ check.passed ? 'OK' : 'Missing' }}</KBadge>
+                <KBadge :tone="check.passed ? 'success' : 'danger'">{{ check.passed ? 'OK' : 'Fix this' }}</KBadge>
             </li>
         </ul>
         <div class="k-install__actions">
