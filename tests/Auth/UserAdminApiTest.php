@@ -144,7 +144,7 @@ final class UserAdminApiTest extends AuthTestCase
         $this->assertSame('Harbour', $read['data']['general']['site_name']);
         $this->assertSame([465, true], [$read['data']['mail']['smtp_port'], $read['data']['mail']['smtp_password_set']]);
         $this->assertFalse(str_contains(json_encode($read), 'pw-1'), 'the password never leaves the server');
-        $this->assertSame(['general', 'reading', 'mail', 'media', 'performance', 'snippets'], array_column($read['meta']['groups'], 'id'));
+        $this->assertSame(['general', 'reading', 'mail', 'accounts', 'media', 'performance', 'snippets'], array_column($read['meta']['groups'], 'id'));
         $this->assertTrue(in_array('Europe/Belgrade', $read['meta']['groups'][0]['schema']['properties']['timezone']['enum'], true));
 
         $this->api('PATCH', '/settings', ['mail' => ['smtp_password' => '']]);
@@ -172,6 +172,19 @@ final class UserAdminApiTest extends AuthTestCase
         $this->assertSame(['ana.new@example.test', 'Runs the place.'], [$ok['email'], $ok['bio']]);
     }
 
+    public function testAccountsSettingsAreWhatSignUpReads(): void
+    {
+        $this->createUser();
+        $this->signIn();
+        $this->assertSame('closed', $this->json($this->api('GET', '/settings'))['data']['accounts']['registration']);
+
+        $this->assertSame(200, $this->api('PATCH', '/settings', ['accounts' => ['registration' => 'domains', 'registration_domains' => 'Example.org, example.net']])->statusCode());
+
+        $policy = \Kestello\Cms\Auth\AccountPolicy::current($this->cms);
+        $this->assertSame(['domains', ['example.org', 'example.net']], [$policy->registration, $policy->domains]);
+        $this->assertSame(422, $this->api('PATCH', '/settings', ['accounts' => ['default_role' => 'admin']])->statusCode(), 'admin is never a choice');
+    }
+
     public function testPluginSettingsTabs(): void
     {
         \Kestello\Framework\Core\ExecutionContext::run('plugin:acme', function (): void {
@@ -189,7 +202,7 @@ final class UserAdminApiTest extends AuthTestCase
         $this->signIn();
 
         $read = $this->json($this->api('GET', '/settings'));
-        $this->assertSame(['general', 'reading', 'mail', 'media', 'performance', 'snippets', 'acme.api', 'acme.vault'], array_column($read['meta']['groups'], 'id'));
+        $this->assertSame(['general', 'reading', 'mail', 'accounts', 'media', 'performance', 'snippets', 'acme.api', 'acme.vault'], array_column($read['meta']['groups'], 'id'));
         $this->assertSame(['endpoint' => 'https://api.acme.test', 'retries' => 2, 'enabled' => false, 'key_set' => false], $read['data']['acme.api'], 'defaults until saved');
 
         // A partial save: absent fields keep their values (schema defaults are not applied on PATCH).

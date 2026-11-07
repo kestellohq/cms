@@ -30,7 +30,7 @@ use Kestello\Framework\Settings\Settings;
  */
 final class PageCacheMiddleware implements MiddlewareInterface
 {
-    public const array SKIP = ['/admin', '/api/', '/login', '/logout', '/install', '/system/', '/auth/', '/forgot-password', '/reset-password', '/uploads/', '/assets/', '/storage/', '/search'];
+    public const array SKIP = ['/admin', '/api/', '/login', '/logout', '/install', '/system/', '/auth/', '/forgot-password', '/reset-password', '/register/', '/uploads/', '/assets/', '/storage/', '/search'];
 
     /** Campaign and click ids: the page is the same with or without them. */
     public const array IGNORED_QUERY = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id', 'gclid', 'fbclid', 'msclkid', 'mc_cid', 'mc_eid', '_ga', '_gl'];

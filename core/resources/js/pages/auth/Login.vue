@@ -9,6 +9,8 @@ import PasswordInput from '../../components/PasswordInput.vue';
 const page = usePage();
 const form = useForm({ email: page.props.old?.email ?? '', password: '' });
 const providers = page.props.providers ?? [];
+const canRegister = page.props.canRegister === true;
+const site = page.props.site?.name || 'Kestello';
 // A provider icon is a Phosphor icon name ("google-logo") or a local asset path.
 const iconPath = (icon) => (typeof icon === 'string' && /^\/assets\/[\w./-]+\.(svg|png)$/.test(icon) ? icon : null);
 const iconName = (icon) => (typeof icon === 'string' && /^[a-z0-9-]+$/.test(icon) ? icon : null);
@@ -55,6 +57,11 @@ function submit() {
                     <span>{{ __('Continue with {provider}', { provider: p.label }) }}</span>
                 </a>
             </div>
+        </template>
+
+        <template v-if="canRegister" #footer>
+            <Link href="/" class="k-link">{{ __('Back to {site}', { site }) }}</Link>
+            <Link href="/register" class="k-link">{{ __('Create an account') }}</Link>
         </template>
     </AuthCard>
 </template>

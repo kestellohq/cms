@@ -135,6 +135,41 @@ final class SiteSettings
                 // Password reset links travel through this server: whoever sets it can read them.
                 'capability' => 'system.manage',
             ] + $core,
+            'accounts' => [
+                'label' => 'Accounts',
+                'description' => 'Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people under Users.',
+                'schema' => Schema::object([
+                    'registration' => Schema::enum([
+                        'closed' => 'Nobody: you add people yourself',
+                        'open' => 'Anyone',
+                        'domains' => 'Only people with an address at the domains below',
+                    ])->optional()->description('Email sign-up proves the address with a link before the account exists.'),
+                    'registration_domains' => Schema::string()->max(1000)->optional()->description('Separate them with commas, for example example.com, example.org.'),
+                    'default_role' => Schema::enum(self::selfServiceRoles())->optional()->description('What new accounts may do. Admin is never given this way.'),
+                    'link_by_verified_email' => Schema::bool()->optional()
+                        ->description('When someone signs in with a provider that confirmed their email, connect it to the account with that address. Leave off unless you trust every provider you use.'),
+                    'trust_provider_mfa' => Schema::bool()->optional()
+                        ->description('Skip the two-step code when the provider says it already asked for a second factor.'),
+                ]),
+                'labels' => [
+                    'registration' => 'Who can create an account',
+                    'registration_domains' => 'Allowed email domains',
+                    'default_role' => 'Role for new accounts',
+                    'link_by_verified_email' => 'Connect provider sign-ins by email',
+                    'trust_provider_mfa' => 'Trust the provider\'s two-step check',
+                ],
+                'secrets' => [],
+                'defaults' => [
+                    'registration' => (string) $config?->get('auth.registration', 'closed'),
+                    'registration_domains' => implode(', ', (array) $config?->get('auth.registration_domains', [])),
+                    'default_role' => (string) $config?->get('auth.default_role', 'user'),
+                    'link_by_verified_email' => (bool) $config?->get('auth.link_by_verified_email', false),
+                    'trust_provider_mfa' => (bool) $config?->get('auth.trust_provider_mfa', false),
+                ],
+                // Read by AccountPolicy as auth.<key>. Opening sign-up hands out accounts: user managers decide.
+                'prefix' => 'auth.',
+                'capability' => 'users.manage',
+            ] + $core,
             'media' => [
                 'label' => 'Media',
                 'description' => 'What people may upload to the media library, and how images are prepared for pages. Images are always allowed; scripts and web pages never are.',
@@ -183,6 +218,23 @@ final class SiteSettings
                 'defaults' => ['snippet_head' => '', 'snippet_body' => '', 'snippet_footer' => ''],
             ] + ['capability' => 'snippets.manage'] + $core,
         ];
+    }
+
+    /**
+     * Roles people may get by creating their own account: every role but admin.
+     *
+     * @return array<string, string>
+     */
+    private static function selfServiceRoles(): array
+    {
+        $roles = [];
+        foreach (Cms::instance()?->auth->roles->roles() ?? ['user' => ['label' => 'User']] as $name => $role) {
+            if ($name !== 'admin') {
+                $roles[$name] = $role['label'];
+            }
+        }
+
+        return $roles !== [] ? $roles : ['user' => 'User'];
     }
 
     /** One "Post addresses" choice per dated type. @return array<string, Schema> */
@@ -278,8 +330,8 @@ final class SiteSettings
         }
         if ($rows !== []) {
             // Plugin keys share the group plugin:config lists ("plugin.<slug>").
-            $storeGroup = $group['prefix'] === '' ? null : implode('.', array_slice(explode('.', $group['prefix']), 0, 2));
-            Settings::getInstance()->setMany($rows, $storeGroup ?? $id);
+            $storeGroup = $group['owner'] === 'core' ? $id : implode('.', array_slice(explode('.', $group['prefix']), 0, 2));
+            Settings::getInstance()->setMany($rows, $storeGroup);
         }
 
         return array_keys($values);

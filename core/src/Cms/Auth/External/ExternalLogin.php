@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Auth\External;
 
 use Closure;
+use Kestello\Cms\Auth\AccountPolicy;
 use Kestello\Cms\Auth\Auth;
 use Kestello\Cms\Auth\AuthRegistry;
 use Kestello\Cms\Auth\LoginResult;
@@ -38,7 +39,7 @@ final class ExternalLogin
 
     /**
      * @param Closure(): ?Auth              $auth
-     * @param Closure(): ExternalAuthPolicy  $policy
+     * @param Closure(): AccountPolicy     $policy
      * @param Closure(): string              $baseUrl  site URL for redirect URIs
      */
     public function __construct(

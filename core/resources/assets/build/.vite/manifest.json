@@ -476,6 +476,16 @@
     "src": "resources/js/pages/admin/users/Index.vue",
     "isEntry": true
   },
+  "resources/js/pages/auth/CompleteRegistration.vue": {
+    "file": "pages/auth/CompleteRegistration-BYWT0Uol.js",
+    "name": "pages/auth/CompleteRegistration",
+    "src": "resources/js/pages/auth/CompleteRegistration.vue",
+    "isEntry": true,
+    "imports": [
+      "_FormErrors-CHo5cI9B.js",
+      "_PasswordInput-UJArOPqb.js"
+    ]
+  },
   "resources/js/pages/auth/ForgotPassword.vue": {
     "file": "pages/auth/ForgotPassword-DxgTgkBf.js",
     "name": "pages/auth/ForgotPassword",
@@ -486,13 +496,22 @@
     ]
   },
   "resources/js/pages/auth/Login.vue": {
-    "file": "pages/auth/Login-C9tHCBLI.js",
+    "file": "pages/auth/Login-BMSH5BmK.js",
     "name": "pages/auth/Login",
     "src": "resources/js/pages/auth/Login.vue",
     "isEntry": true,
     "imports": [
       "_FormErrors-CHo5cI9B.js",
       "_PasswordInput-UJArOPqb.js"
+    ]
+  },
+  "resources/js/pages/auth/Register.vue": {
+    "file": "pages/auth/Register-CMH8pKId.js",
+    "name": "pages/auth/Register",
+    "src": "resources/js/pages/auth/Register.vue",
+    "isEntry": true,
+    "imports": [
+      "_FormErrors-CHo5cI9B.js"
     ]
   },
   "resources/js/pages/auth/ResetPassword.vue": {
