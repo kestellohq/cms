@@ -15,10 +15,6 @@ var _sfc_main$1 = {
 		description: {
 			type: String,
 			default: ""
-		},
-		code: {
-			type: String,
-			default: ""
 		}
 	},
 	setup(__props) {

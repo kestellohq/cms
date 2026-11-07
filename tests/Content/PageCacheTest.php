@@ -104,7 +104,7 @@ final class PageCacheTest extends AuthTestCase
 
         $this->assertSame('HIT', $this->state('/_one?utm_source=news&fbclid=x'), 'campaign parameters are the same page');
         $this->assertNull($this->state('/_one?sort=new'), 'unknown parameters are never stored');
-        $this->assertNull($this->state('/_one', cookies: ['cms_session' => 'abc']), 'signed-in visitors get their own pages');
+        $this->assertNull($this->state('/_one', cookies: ['kestello_session' => 'abc']), 'signed-in visitors get their own pages');
         $this->assertNull($this->state('/_one', ['Authorization' => 'Bearer x']));
         foreach (['/_cookie', '/_private', '/_download', '/nothing-here'] as $uncacheable) {
             $this->visit($uncacheable);

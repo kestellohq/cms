@@ -131,6 +131,11 @@ final class PasswordTest extends AuthTestCase
         $_SESSION = $stolen;
         $this->assertNull($this->nextRequest()->user(), 'the old session no longer works');
 
+        // Only login() signs a session in, and it always records the password fingerprint.
+        $_SESSION = $stolen;
+        unset($_SESSION['_auth_pw']);
+        $this->assertNull($this->nextRequest()->user(), 'a session without the fingerprint signs nobody in');
+
         // The user's own session survives their change.
         $this->assertTrue($login->attempt('ana', 'a brand new passphrase', '203.0.113.1')->ok());
         $accounts->changePassword((int) $user['id'], 'yet another passphrase', 'profile');

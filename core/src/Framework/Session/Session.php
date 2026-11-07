@@ -15,6 +15,9 @@ use Kestello\Contracts\Session\SessionStore;
 final class Session
 {
     /** Session key used to store flash data. */
+    /** The session cookie's name, unless the options give another. */
+    public const string NAME = 'kestello_session';
+
     private const string FLASH_KEY = '_flash';
 
     /** Session key used to store the CSRF token. */
@@ -89,7 +92,7 @@ final class Session
     /** The session cookie name. */
     public function name(): string
     {
-        return $this->options['name'] ?? 'cms_session';
+        return $this->options['name'] ?? self::NAME;
     }
 
     /**
@@ -105,7 +108,7 @@ final class Session
             return;
         }
 
-        $name     = $this->options['name']     ?? 'cms_session';
+        $name     = $this->name();
         $lifetime = $this->options['lifetime']  ?? 7200;
         $path     = $this->options['path']      ?? '/';
         $domain   = $this->options['domain']    ?? '';
@@ -204,7 +207,7 @@ final class Session
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
             setcookie(
-                session_name() ?: 'cms_session',
+                session_name() ?: $this->name(),
                 '',
                 [
                     'expires'  => time() - 42000,

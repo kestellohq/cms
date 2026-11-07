@@ -4011,38 +4011,6 @@ function errorFromMessage(tree, message) {
 		rest
 	};
 }
-/** Props saved under an older name, as the server renames them (BlockRegistry::RENAMED). */
-var RENAMED = { "core/separator": { style: "look" } };
-/** The tree with old prop names brought up to date; the same tree when nothing changed. */
-function upgradeTree(nodes) {
-	let changed = false;
-	const out = nodes.map((n) => {
-		const map = RENAMED[n?.type];
-		let next = n;
-		if (map && n.props) {
-			for (const [old, now] of Object.entries(map)) if (old in next.props) {
-				const { [old]: value, ...rest } = next.props;
-				next = {
-					...next,
-					props: {
-						[now]: value,
-						...rest
-					}
-				};
-			}
-		}
-		if (Array.isArray(n?.children) && n.children.length) {
-			const kids = upgradeTree(n.children);
-			if (kids !== n.children) next = {
-				...next,
-				children: kids
-			};
-		}
-		if (next !== n) changed = true;
-		return next;
-	});
-	return changed ? out : nodes;
-}
 // core/resources/js/ui/builder/checks.js
 /**
 * Accessibility checks on what the canvas shows: the page as visitors get it,
@@ -5163,7 +5131,7 @@ var TURN = () => [
 	]
 ];
 function useDocument(b, { tree, props, root }) {
-	const asList = (t) => Array.isArray(t) ? upgradeTree(t) : [];
+	const asList = (t) => Array.isArray(t) ? t : [];
 	const current = shallowRef(asList(tree.value));
 	const list = computed(() => current.value);
 	const placement = createPlacement({

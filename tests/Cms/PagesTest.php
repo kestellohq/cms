@@ -41,7 +41,7 @@ final class PagesTest extends TestCase
         }
         $loginCss = implode(' ', $registry->get('@core/auth/Login')['css']);
         $this->assertTrue(str_contains($loginCss, '/css/admin-ui.css?h=') && str_contains($loginCss, '/css/phosphor.css?h='), 'sign-in wears the UI kit and its icons');
-        $this->assertFalse(str_contains($loginCss, 'bootstrap'), 'Bootstrap is gone');
+        $this->assertFalse(str_contains($loginCss, 'bootstrap'), 'no CSS framework besides the UI kit');
         $templateCss = $registry->get('@core/admin/appearance/TemplateEdit')['css'];
         $this->assertTrue((bool) array_filter($templateCss, static fn($u) => preg_match('#/build/assets/index-[^/]+\.css$#', $u) === 1), 'admin pages load the UI kit components\' own styles (the builder\'s layout lives there)');
         foreach (['@core/content/Entry', '@core/content/Search', '@core/blocks/Heading', '@core/errors/Error'] as $site) {

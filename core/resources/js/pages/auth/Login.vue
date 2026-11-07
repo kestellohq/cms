@@ -19,7 +19,7 @@ function submit() {
 </script>
 
 <template>
-    <AuthCard :title="__('Sign in')" :description="__('Use your email address or username.')" code="K-01">
+    <AuthCard :title="__('Sign in')" :description="__('Use your email address or username.')">
         <FormErrors :errors="form.errors" :fields="['email', 'password']" />
 
         <form class="k-auth__form" novalidate @submit.prevent="submit">

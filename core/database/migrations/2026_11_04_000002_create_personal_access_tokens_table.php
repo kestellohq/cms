@@ -6,8 +6,7 @@ use Kestello\Framework\Database\Blueprint;
 use Kestello\Framework\Database\Migration;
 
 /**
- * Personal access tokens (hashed, scoped, expiring). Replaces the plaintext
- * users.api_token column, which is dropped: old tokens stop working.
+ * Personal access tokens: hashed, scoped and expiring.
  */
 return new class extends Migration {
     public function up(): void
@@ -25,23 +24,10 @@ return new class extends Migration {
             $table->index('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
         });
-
-        if ($this->schema()->hasColumn('users', 'api_token')) {
-            $this->schema()->table('users', function (Blueprint $table): void {
-                $table->dropUnique('api_token');
-                $table->dropColumn('api_token');
-            });
-        }
     }
 
     public function down(): void
     {
         $this->schema()->dropIfExists('personal_access_tokens');
-
-        if (!$this->schema()->hasColumn('users', 'api_token')) {
-            $this->schema()->table('users', function (Blueprint $table): void {
-                $table->string('api_token', 64)->nullable()->unique();
-            });
-        }
     }
 };

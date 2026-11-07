@@ -11,7 +11,7 @@ var _sfc_main = {
 	} },
 	setup(__props) {
 		return (_ctx, _push, _parent, _attrs) => {
-			_push(`<hr${ssrRenderAttrs(mergeProps({ class: ["k-b-separator", `k-b-separator--${__props.look}`] }, _attrs))} data-v-dd2e9dc1>`);
+			_push(`<hr${ssrRenderAttrs(mergeProps({ class: ["k-b-separator", `k-b-separator--${__props.look}`] }, _attrs))} data-v-0546aff8>`);
 		};
 	}
 };
@@ -21,5 +21,5 @@ _sfc_main.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/blocks/Separator.vue");
 	return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-var Separator_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-dd2e9dc1"]]);
+var Separator_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-0546aff8"]]);
 export { Separator_default as default };

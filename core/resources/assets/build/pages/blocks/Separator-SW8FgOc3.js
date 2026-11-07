@@ -1,0 +1,1 @@
+import{t as e}from"../../chunks/_plugin-vue_export-helper-BDNMzG2s.js";import{createElementBlock as t,normalizeClass as n,openBlock as r}from"vue";var i=e({__name:`Separator`,props:{look:{type:String,default:`line`}},setup(e){return(i,a)=>(r(),t(`hr`,{class:n([`k-b-separator`,`k-b-separator--${e.look}`])},null,2))}},[[`__scopeId`,`data-v-0546aff8`]]);export{i as default};

@@ -1,4 +1,4 @@
-import { n as _sfc_main$1, t as _sfc_main$2 } from "../../chunks/FormErrors-BKXF8p1e.mjs";
+import { n as _sfc_main$1, t as _sfc_main$2 } from "../../chunks/FormErrors-InYWsRvI.mjs";
 import { t as _sfc_main$3 } from "../../chunks/PasswordInput-Ci59Qe3A.mjs";
 import { Fragment, createBlock, createCommentVNode, createTextVNode, createVNode, mergeProps, openBlock, renderList, toDisplayString, unref, useSSRContext, withCtx, withModifiers } from "vue";
 import { ssrInterpolate, ssrRenderAttr, ssrRenderComponent, ssrRenderList } from "vue/server-renderer";
@@ -24,8 +24,7 @@ var _sfc_main = {
 		return (_ctx, _push, _parent, _attrs) => {
 			_push(ssrRenderComponent(_sfc_main$1, mergeProps({
 				title: unref(__)("Sign in"),
-				description: unref(__)("Use your email address or username."),
-				code: "K-01"
+				description: unref(__)("Use your email address or username.")
 			}, _attrs), {
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) {

@@ -148,7 +148,7 @@ final class SearchManager
     private function blockText(mixed $tree): array
     {
         if (is_string($tree)) {
-            return [Html::toText($tree)];        // a rich-text body from before the field became blocks
+            return [Html::toText($tree)];        // HTML in a field changed from rich text to blocks
         }
         $out = [];
         foreach (is_array($tree) ? array_slice($tree, 0, 1000) : [] as $node) {

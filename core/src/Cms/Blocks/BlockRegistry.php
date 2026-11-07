@@ -152,7 +152,6 @@ final class BlockRegistry
                 continue;
             }
             $label .= " ({$def->getLabel()})";
-            $node = self::renamed($type, $node);
             $placementOk = $parent === null
                 ? ($allowed === null ? $def->getParents() === null : in_array($type, $allowed, true))
                 : $parent->allowsChild($type);
@@ -257,22 +256,6 @@ final class BlockRegistry
         }
 
         return array_filter($done + $bound, static fn($v) => $v !== null);
-    }
-
-    /** Props saved under an older name: [block type => [old => new]]. */
-    private const RENAMED = ['core/separator' => ['style' => 'look']];
-
-    /** @param array<string, mixed> $node */
-    private static function renamed(string $type, array $node): array
-    {
-        foreach (self::RENAMED[$type] ?? [] as $old => $new) {
-            if (is_array($node['props'] ?? null) && array_key_exists($old, $node['props'])) {
-                $node['props'][$new] ??= $node['props'][$old];
-                unset($node['props'][$old]);
-            }
-        }
-
-        return $node;
     }
 
     /** Does a (prepared) tree hold a block of this type anywhere? */
@@ -646,7 +629,10 @@ final class BlockRegistry
         return array_values(array_unique($out));
     }
 
-    /** A field that held rich text before it became a blocks field: its HTML becomes one text block. */
+    /**
+     * A field changed from rich text to blocks in the content model builder still holds HTML in its
+     * entries: that HTML becomes one text block.
+     */
     private static function upgrade(mixed $tree): mixed
     {
         return is_string($tree) && trim($tree) !== ''

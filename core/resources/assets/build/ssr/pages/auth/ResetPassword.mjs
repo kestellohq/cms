@@ -1,4 +1,4 @@
-import { n as _sfc_main$1, t as _sfc_main$2 } from "../../chunks/FormErrors-BKXF8p1e.mjs";
+import { n as _sfc_main$1, t as _sfc_main$2 } from "../../chunks/FormErrors-InYWsRvI.mjs";
 import { t as _sfc_main$3 } from "../../chunks/PasswordInput-Ci59Qe3A.mjs";
 import { Fragment, createBlock, createTextVNode, createVNode, mergeProps, openBlock, toDisplayString, unref, useSSRContext, withCtx, withModifiers } from "vue";
 import { ssrInterpolate, ssrRenderComponent } from "vue/server-renderer";
@@ -33,10 +33,7 @@ var _sfc_main = {
 			form.post("/reset-password", { onFinish: () => form.reset("password", "password_confirmation") });
 		}
 		return (_ctx, _push, _parent, _attrs) => {
-			_push(ssrRenderComponent(_sfc_main$1, mergeProps({
-				title: unref(__)("Choose a new password"),
-				code: "K-03"
-			}, _attrs), {
+			_push(ssrRenderComponent(_sfc_main$1, mergeProps({ title: unref(__)("Choose a new password") }, _attrs), {
 				footer: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) _push(ssrRenderComponent(unref(Link), {
 						href: "/login",

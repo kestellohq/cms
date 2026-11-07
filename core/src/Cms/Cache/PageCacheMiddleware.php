@@ -103,7 +103,7 @@ final class PageCacheMiddleware implements MiddlewareInterface
                 return null;
             }
         }
-        $session = $this->cms->container->has(Session::class) ? $this->cms->container->make(Session::class)->name() : 'cms_session';
+        $session = $this->cms->container->has(Session::class) ? $this->cms->container->make(Session::class)->name() : Session::NAME;
         if (isset($request->cookies[$session]) || $request->header('Authorization') !== '') {
             return null;       // signed in (or might be): personal pages
         }

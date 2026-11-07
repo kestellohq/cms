@@ -306,6 +306,47 @@ final class DatabaseTest extends TestCase
         }
     }
 
+    /**
+     * Until the first release there is nothing to upgrade from: each core migration creates its
+     * tables in their final shape, and none alters, renames or rewrites what another one made.
+     */
+    public function testCoreMigrationsAreACleanSlate(): void
+    {
+        $files = glob(dirname(__DIR__, 2) . '/core/database/migrations/*.php') ?: [];
+        $this->assertTrue($files !== [], 'core migrations found');
+        $forbidden = [
+            '/->table\(/' => 'changes an existing table, or its rows',
+            '/\b(dropColumn|renameColumn|dropUnique|dropIndex|dropForeign)\(/' => 'changes an existing table',
+            '/->rename\(/' => 'renames a table',
+            '/\b(hasColumn|hasTable)\(/' => 'depends on what an earlier state left behind',
+            '/QueryBuilder::|->(insert|update|delete|upsert)\(/' => 'reads or rewrites stored data',
+        ];
+        foreach ($files as $path) {
+            $file = basename($path);
+            $code = (string) file_get_contents($path);
+            $this->assertTrue(str_contains($code, 'return new class extends Migration'), "{$file}: returns an anonymous class");
+            foreach ($forbidden as $pattern => $why) {
+                $this->assertSame(0, preg_match($pattern, $code), "{$file} {$why}; fold the change into the migration that creates the table");
+            }
+        }
+    }
+
+    public function testAMigrationMustReturnAnAnonymousClass(): void
+    {
+        $dir = $this->tempDir() . '/migrations';
+        mkdir($dir);
+        file_put_contents($dir . '/2026_01_01_000001_create_t_named.php', "<?php\nfinal class CreateTNamed extends \\Kestello\\Framework\\Database\\Migration {\n    public function up(): void {}\n    public function down(): void {}\n}\n");
+        $c = Connection::sqliteMemory();
+        $previous = DatabaseManager::hasConnection() ? DatabaseManager::getConnection() : null;
+        DatabaseManager::setConnection($c);
+        try {
+            $e = $this->assertThrows(\RuntimeException::class, fn() => (new MigrationRunner($dir, 'test'))->migrate());
+            $this->assertSame('Migration "2026_01_01_000001_create_t_named.php" must return an instance: `return new class extends Migration { ... };`.', $e->getMessage());
+        } finally {
+            $previous !== null ? DatabaseManager::setConnection($previous) : DatabaseManager::reset();
+        }
+    }
+
     public function testCoreMigrationsRunOnEveryDialect(): void
     {
         foreach ($this->connections() as $name => $c) {
@@ -320,7 +361,11 @@ final class DatabaseTest extends TestCase
 
                 $schema = $c->schema();
                 $this->assertTrue($schema->hasTable('personal_access_tokens'), $name);
-                $this->assertFalse($schema->hasColumn('users', 'api_token'), "{$name}: api_token dropped again");
+                $this->assertTrue($schema->hasTable('theme_fonts'), $name);
+                $this->assertTrue($schema->hasColumn('theme_documents', 'base_hash'), $name);
+                foreach (['api_token', 'avatar'] as $gone) {
+                    $this->assertFalse($schema->hasColumn('users', $gone), "{$name}: users.{$gone} is not part of the schema");
+                }
 
                 $user = $c->table('users')->insert(['username' => 'u', 'email' => 'u@x.test', 'password' => 'h', 'role' => 'admin', 'is_active' => true]);
                 $this->assertSame(1, $user, $name);

@@ -6,10 +6,9 @@ use Kestello\Framework\Database\Blueprint;
 use Kestello\Framework\Database\Migration;
 
 /**
- * Create the settings table for key-value site configuration.
+ * Site settings as key-value pairs, grouped by the screen that owns them.
  */
-final class CreateSettingsTable extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         $this->schema()->create('settings', function (Blueprint $table): void {
@@ -25,4 +24,4 @@ final class CreateSettingsTable extends Migration
     {
         $this->schema()->dropIfExists('settings');
     }
-}
+};
