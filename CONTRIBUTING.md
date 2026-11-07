@@ -148,7 +148,7 @@ Releases are cut by maintainers, through GitHub. [.agents/skills/release/SKILL.m
 3. Rebuild assets (`npm run build`), run `npm run check`, commit `chore(release): X.Y.Z`, and open a pull request into `main`.
 4. Only fixes land on the release branch. When it is green and approved, merge it into `main` with a merge commit.
 5. Tag the merge commit: `git tag -s vX.Y.Z -m "Kestello X.Y.Z" && git push origin vX.Y.Z`.
-6. The release workflow runs every check, checks the tag against `core/VERSION`, builds `kestello-core-X.Y.Z.zip`, signs it with the release key, verifies the signature against the keys in `core/config/release.php` (`bin/cms core:verify`), adds its SHA-256 checksum and the API stubs, and publishes a GitHub release with that version's changelog section as notes. A pre-release version becomes a GitHub pre-release.
+6. The release workflow runs every check, checks the tag against `core/VERSION`, builds `kestello-core-X.Y.Z.zip`, signs it with the release key, verifies the signature against the keys in `core/config/release.php` (`bin/cms core:verify`), builds `kestello-X.Y.Z.zip` for new installs (`bin/cms core:install-zip`), adds the SHA-256 checksums and the API stubs, and publishes a GitHub release with that version's changelog section as notes. A pre-release version becomes a GitHub pre-release.
 7. The back-merge workflow opens a pull request from `main` into `develop`. Merge it with a merge commit.
 
 Sites see the new version on **Updates** in the admin: Kestello checks the GitHub releases of `kestellohq/cms` twice a day (`config/release.php`), downloads a release only when its SHA-256 matches the published checksum, and installs it only when one of the release keys in `core/config/release.php` signed it.

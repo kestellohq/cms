@@ -23,5 +23,6 @@ Every change people would notice is listed here, newest first. The format follow
 - Entry addresses stay unique, also when two people save entries with the same title at the same moment.
 - Editor helpers: `.phpstorm.meta.php`, `jsconfig.json`, and `bin/cms ide:helpers --stubs` for plugins and themes developed in their own repositories.
 - An installer that works on shared hosting as uploaded: it creates the folders it writes to when a file manager left them out, serves its own scripts before the site exists, and lists server problems first with what to do about each. The last page shows the cron command for the server, and the steps cannot be skipped.
+- Every release carries `kestello-X.Y.Z.zip`, the folder to upload to install a new site, next to the signed update for existing sites. `bin/cms core:install-zip` builds it.
 
 [Unreleased]: https://github.com/kestellohq/cms/commits/develop
