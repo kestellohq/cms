@@ -111,7 +111,7 @@ jobs:
           php kestello/bin/cms package:build "$GITHUB_WORKSPACE/$PKG" --out="$GITHUB_WORKSPACE/dist" --key="$key"
           rm -f "$key"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.manifest.outputs.slug }}-${{ steps.manifest.outputs.version }}
           path: dist/
