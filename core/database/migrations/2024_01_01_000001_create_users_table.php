@@ -6,10 +6,9 @@ use Kestello\Framework\Database\Blueprint;
 use Kestello\Framework\Database\Migration;
 
 /**
- * Create the users table.
+ * The people who sign in. Emails are stored lower-cased (Kestello\Cms\Auth\Emails).
  */
-final class CreateUsersTable extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         $this->schema()->create('users', function (Blueprint $table): void {
@@ -20,7 +19,6 @@ final class CreateUsersTable extends Migration
             $table->string('role', 20)->default('user');
             $table->boolean('is_active')->default(1);
             $table->text('bio')->nullable();
-            $table->string('avatar', 255)->nullable();
             $table->timestamp('last_login_at')->nullable();
             $table->timestamps();
         });
@@ -30,4 +28,4 @@ final class CreateUsersTable extends Migration
     {
         $this->schema()->dropIfExists('users');
     }
-}
+};

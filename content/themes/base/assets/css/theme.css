@@ -740,26 +740,12 @@ img {
     }
 }
 
-/* ── inner pages and the small compatibility layer child themes use ─── */
-.container {
-    width: 100%;
-    max-width: 1360px;
-    margin: 0 auto;
-    padding: 0 40px;
-}
-.py-5 {
-    padding-top: 48px;
-    padding-bottom: 48px;
-}
+/* ── inner pages: a lead paragraph and running text (core blocks mark theirs .prose) ─── */
 .lead {
     font-size: 21px;
     line-height: 1.5;
 }
-.text-secondary {
-    color: var(--wall-ink-2);
-}
-.page h1,
-.container h1 {
+.page h1 {
     font-size: clamp(40px, 5vw, 64px);
     font-weight: 900;
     letter-spacing: -0.03em;
@@ -784,58 +770,4 @@ img {
 }
 .prose li + li {
     margin-top: 6px;
-}
-@media (max-width: 680px) {
-    .container {
-        padding: 0 16px;
-    }
-}
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 999px;
-    border: 2px solid var(--plate);
-    background: none;
-    color: var(--plate);
-    font: 800 15.5px var(--font);
-    text-decoration: none;
-    cursor: pointer;
-    transition:
-        background-color 0.15s,
-        color 0.15s;
-}
-.btn-primary {
-    background: var(--plate);
-    color: var(--enamel-white);
-}
-.btn-primary:hover {
-    background: var(--plate-deep);
-    border-color: var(--plate-deep);
-}
-.btn-outline-primary:hover {
-    background: var(--plate);
-    color: var(--enamel-white);
-}
-.btn:focus-visible {
-    outline: 3px solid var(--plate);
-    outline-offset: 3px;
-}
-@media (prefers-reduced-motion: reduce) {
-    .btn {
-        transition: none;
-    }
-}
-.d-flex {
-    display: flex;
-}
-.align-items-center {
-    align-items: center;
-}
-.gap-3 {
-    gap: 16px;
-}
-.flex-wrap {
-    flex-wrap: wrap;
 }

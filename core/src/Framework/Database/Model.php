@@ -544,12 +544,6 @@ abstract class Model
         return $key === null ? null : ($this->keyType === 'int' ? (int) $key : (string) $key);
     }
 
-    /** @deprecated use getKey() */
-    public function getId(): int|string|null
-    {
-        return $this->getKey();
-    }
-
     public function getKeyName(): string
     {
         return $this->primaryKey;

@@ -175,13 +175,11 @@ final class Auth
             return null;
         }
 
-        // A password change elsewhere ends this session. Sessions from before
-        // the fingerprint existed get one now.
+        // A password change elsewhere ends this session. login() always records the fingerprint,
+        // so a session without one was not signed in here.
         if ($this->bindToPassword) {
             $stored = $this->session->get(self::PASSWORD_KEY);
-            if ($stored === null) {
-                $this->session->set(self::PASSWORD_KEY, self::fingerprint($this->user));
-            } elseif (!is_string($stored) || !hash_equals(self::fingerprint($this->user), $stored)) {
+            if (!is_string($stored) || !hash_equals(self::fingerprint($this->user), $stored)) {
                 $this->logout();
                 return null;
             }

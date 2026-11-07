@@ -140,7 +140,7 @@ final class Kernel
         // before the database: during a restore it is being rebuilt
         $maintenance = new \Kestello\Cms\System\Maintenance($this->paths->storage());
         $bypass = (string) ($_SERVER['HTTP_X_KESTELLO_BYPASS'] ?? '');
-        if ($maintenance->blocks($uri, isset($_COOKIE['cms_session']), $bypass)) {
+        if ($maintenance->blocks($uri, isset($_COOKIE[Session::NAME]), $bypass)) {
             $this->maintenancePage($maintenance);
             return;
         }

@@ -1,4 +1,4 @@
-import { n as _sfc_main$1, t as _sfc_main$2 } from "../../chunks/FormErrors-BKXF8p1e.mjs";
+import { n as _sfc_main$1, t as _sfc_main$2 } from "../../chunks/FormErrors-InYWsRvI.mjs";
 import { createTextVNode, createVNode, mergeProps, toDisplayString, unref, useSSRContext, withCtx, withModifiers } from "vue";
 import { ssrInterpolate, ssrRenderComponent } from "vue/server-renderer";
 import { Link, useForm, usePage } from "@kestello/app";
@@ -17,8 +17,7 @@ var _sfc_main = {
 		return (_ctx, _push, _parent, _attrs) => {
 			_push(ssrRenderComponent(_sfc_main$1, mergeProps({
 				title: unref(__)("Reset your password"),
-				description: unref(__)("Enter the email address of your account. We will send you a link to choose a new password."),
-				code: "K-02"
+				description: unref(__)("Enter the email address of your account. We will send you a link to choose a new password.")
 			}, _attrs), {
 				footer: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) _push(ssrRenderComponent(unref(Link), {

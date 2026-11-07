@@ -279,30 +279,3 @@ export function errorFromMessage(tree, message) {
     if (label && rest.startsWith(`${label}: `)) rest = rest.slice(label.length + 2);
     return { id: node.id, rest };
 }
-
-/** Props saved under an older name, as the server renames them (BlockRegistry::RENAMED). */
-const RENAMED = { 'core/separator': { style: 'look' } };
-
-/** The tree with old prop names brought up to date; the same tree when nothing changed. */
-export function upgradeTree(nodes) {
-    let changed = false;
-    const out = nodes.map((n) => {
-        const map = RENAMED[n?.type];
-        let next = n;
-        if (map && n.props) {
-            for (const [old, now] of Object.entries(map)) {
-                if (old in next.props) {
-                    const { [old]: value, ...rest } = next.props;
-                    next = { ...next, props: { [now]: value, ...rest } };
-                }
-            }
-        }
-        if (Array.isArray(n?.children) && n.children.length) {
-            const kids = upgradeTree(n.children);
-            if (kids !== n.children) next = { ...next, children: kids };
-        }
-        if (next !== n) changed = true;
-        return next;
-    });
-    return changed ? out : nodes;
-}
