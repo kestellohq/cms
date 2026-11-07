@@ -266,4 +266,25 @@ final class MediaTest extends AuthTestCase
 
         $this->assertSame(204, $this->api('DELETE', "/media/{$media['id']}")->statusCode());
     }
+
+    public function testAFileAlreadyOnTheServerGoesThroughTheSameChecks(): void
+    {
+        $library = $this->cms->container->make(MediaLibrary::class);
+        $ana = $this->cms->auth->principalFor((array) $this->db->table('users')->where('username', 'ana')->first(), 'cli');
+        $local = $this->tempDir() . '/download.tmp';
+        file_put_contents($local, self::png(8, 6));
+
+        $media = $library->addFile($ana, $local, 'Studio Night.PNG', ['alt' => 'The studio', 'caption' => 'At night']);
+
+        $this->assertSame(['Studio Night.PNG', 'The studio', 'At night', 8, 6], [$media->filename, $media->alt, $media->caption, (int) $media->width, (int) $media->height]);
+        $this->assertFileDoesNotExist($local, 'the library owns it now');
+        $this->assertSame(0, $this->db->table('uploads')->count());
+
+        file_put_contents($local, '<?php echo 1;');
+        $this->assertThrows(\Kestello\Cms\Media\MediaException::class, fn() => $library->addFile($ana, $local, 'logo.png'));
+        $user = $this->cms->auth->principalFor((array) $this->db->table('users')->where('username', 'user')->first(), 'cli');
+        file_put_contents($local, self::png());
+        $this->assertThrows(\Kestello\Cms\Media\MediaException::class, fn() => $library->addFile($user, $local, 'logo.png'));
+        $this->assertSame(1, $this->db->table('media')->count());
+    }
 }

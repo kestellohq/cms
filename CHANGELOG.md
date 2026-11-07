@@ -24,5 +24,13 @@ Every change people would notice is listed here, newest first. The format follow
 - Editor helpers: `.phpstorm.meta.php`, `jsconfig.json`, and `bin/cms ide:helpers --stubs` for plugins and themes developed in their own repositories.
 - An installer that works on shared hosting as uploaded: it creates the folders it writes to when a file manager left them out, serves its own scripts before the site exists, and lists server problems first with what to do about each. The last page shows the cron command for the server, and the steps cannot be skipped.
 - Every release carries `kestello-X.Y.Z.zip`, the folder to upload to install a new site, next to the signed update for existing sites. `bin/cms core:install-zip` builds it.
+- Import from WordPress under **System > Import**, or with `bin/cms import:wordpress export.xml`. Upload the export WordPress makes under Tools > Export and see what will come over before anything is written: posts, pages and their drafts, dates and authors, categories and tags, files with their alt text and captions, menus, and redirects from the old addresses. Gutenberg blocks and classic posts become blocks here when nothing is lost, and stay as HTML when something would be. The import runs in the background, or from the screen on sites without a queue worker. Running it again updates what came over instead of copying it, and keeps anything edited here since. The report names everything that was skipped, changed on the way or could not come over, with the reason, and **Try again** retries the failures. A capability, `import.run`, guards it. API: `/imports`.
+- `MediaLibrary::addFile()` adds a file already on the server to the media library, with the same checks as an upload, and takes a caption along with the title and alt text.
+
+### Fixed
+
+- Redirects for addresses with letters outside ASCII (`/čaj`, or a page that moved from such an address) now match: the address is stored the way browsers send it, so `/čaj`, `/%c4%8daj` and `/%C4%8Daj` are one rule.
+- Downloads to a file that follow a redirect, such as core updates from GitHub releases, now hold only the final file instead of the redirect page followed by it. `HttpClient` takes a `max_bytes` option for downloads to a file and stops with `HttpTooLarge` past it.
+- A text field that asks for more than 255 characters with `->max()` now gets it, up to 2000, in the editor and when saving. Image alt text, captions, list items and table captions were cut off at 255.
 
 [Unreleased]: https://github.com/kestellohq/cms/commits/develop

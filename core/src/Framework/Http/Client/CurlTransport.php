@@ -18,6 +18,7 @@ final class CurlTransport implements Transport
         $tooLarge = false;
         $ch = curl_init($request->url);
 
+        $written = 0;
         $options = [
             CURLOPT_CUSTOMREQUEST => $request->method,
             CURLOPT_FOLLOWLOCATION => false,
@@ -38,8 +39,13 @@ final class CurlTransport implements Transport
                 }
                 return strlen($line);
             },
-            CURLOPT_WRITEFUNCTION => static function ($ch, string $chunk) use (&$body, &$tooLarge, $request): int {
+            CURLOPT_WRITEFUNCTION => static function ($ch, string $chunk) use (&$body, &$tooLarge, &$written, $request): int {
                 if ($request->sink !== null) {
+                    $written += strlen($chunk);
+                    if ($written > $request->maxBytes) {
+                        $tooLarge = true;
+                        return 0; // abort
+                    }
                     return (int) fwrite($request->sink, $chunk);
                 }
                 if (strlen($body) + strlen($chunk) > $request->maxBytes) {
@@ -75,7 +81,7 @@ final class CurlTransport implements Transport
         unset($ch);                       // closes the handle (curl_close() has done nothing since PHP 8.0)
 
         if ($tooLarge) {
-            throw new HttpException("Response from {$request->host} is larger than {$request->maxBytes} bytes.");
+            throw new HttpTooLarge("Response from {$request->host} is larger than {$request->maxBytes} bytes.");
         }
         if ($ok === false) {
             throw new HttpException("Request to {$request->host} failed: {$error}");

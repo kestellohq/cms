@@ -160,6 +160,8 @@ final class HttpClient
             throw new \InvalidArgumentException('sink and body_stream must be stream resources.');
         }
         $redirects = $bodyStream !== null ? 0 : max(0, (int) ($options['max_redirects'] ?? 3));
+        // a redirect's own body must not end up in front of the file it points to
+        $sinkStart = $sink !== null ? (int) ftell($sink) : 0;
         $originalHost = null;
 
         for ($hop = 0; ; $hop++) {
@@ -179,7 +181,7 @@ final class HttpClient
                 body: $body,
                 timeout: (float) ($options['timeout'] ?? 10),
                 connectTimeout: (float) ($options['connect_timeout'] ?? 5),
-                maxBytes: $sink !== null ? PHP_INT_MAX : (int) ($options['max_bytes'] ?? 5_242_880),
+                maxBytes: (int) ($options['max_bytes'] ?? ($sink !== null ? PHP_INT_MAX : 5_242_880)),
                 sink: $sink,
                 bodyStream: $bodyStream,
                 bodyLength: isset($options['body_length']) ? (int) $options['body_length'] : null,
@@ -187,6 +189,10 @@ final class HttpClient
 
             if (!$response->isRedirect() || $hop >= $redirects) {
                 return $response;
+            }
+            if ($sink !== null) {
+                ftruncate($sink, $sinkStart);
+                fseek($sink, $sinkStart);
             }
 
             $next = self::resolveLocation($url, (string) $response->header('location'));

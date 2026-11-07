@@ -19,7 +19,18 @@ final class TextField extends FieldType
         private readonly bool $multiline = false,
         private readonly ?string $format = null,
         private readonly ?string $pattern = null,
+        private readonly ?int $ceiling = null,
     ) {}
+
+    /**
+     * The longest value the field takes: its own max when set, else the
+     * type's ($maxLength); a field may go above that up to $ceiling, so a
+     * caption or alt text can say more than a title.
+     */
+    private function max(Field $field): int
+    {
+        return max(0, min($this->ceiling ?? $this->maxLength, (int) $field->getOption('max', $this->maxLength)));
+    }
 
     public function name(): string
     {
@@ -33,7 +44,7 @@ final class TextField extends FieldType
 
     public function schema(Field $field, FieldTypes $types): Schema
     {
-        $s = Schema::string()->max(min($this->maxLength, (int) $field->getOption('max', $this->maxLength)));
+        $s = Schema::string()->max($this->max($field));
         if (($min = $field->getOption('min')) !== null) {
             $s = $s->min((int) $min);
         }
@@ -67,7 +78,7 @@ final class TextField extends FieldType
 
     public function describe(Field $field, FieldTypes $types): array
     {
-        return ['max' => min($this->maxLength, (int) $field->getOption('max', $this->maxLength)), 'input' => match ($this->type) {
+        return ['max' => $this->max($field), 'input' => match ($this->type) {
             'email' => 'email', 'url' => 'url', default => 'text',
         }] + $field->getOptions();
     }

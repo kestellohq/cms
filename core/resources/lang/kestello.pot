@@ -161,6 +161,10 @@ msgstr ""
 msgid "A dropdown"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "A larger export, or a site whose old server is gone: copy the file (and wp-content/uploads) to this server and run"
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderPatterns.vue
 msgid "A layout fills the page with sections you then change: the words, the images, the order."
 msgstr ""
@@ -645,6 +649,10 @@ msgstr ""
 msgid "All files"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "All imports"
+msgstr ""
+
 #: core/resources/js/pages/admin/Dashboard.vue
 #: core/resources/js/pages/admin/users/Edit.vue
 msgid "All people"
@@ -902,6 +910,10 @@ msgstr ""
 msgid "Author"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Authors"
+msgstr ""
+
 #: core/src/Cms/Console/Package/CoreCheckCommand.php
 msgid "Available"
 msgstr ""
@@ -1090,6 +1102,10 @@ msgstr ""
 msgid "Bottom right corner"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Bring a WordPress site here: posts and pages, categories and tags, files, menus, and redirects from the old addresses. Importing the same site again updates what came over before instead of copying it."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Bring them back"
 msgstr ""
@@ -1184,6 +1200,7 @@ msgstr ""
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/roles/Index.vue
 #: core/resources/js/pages/admin/system/Backups.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Platform.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Storage.vue
@@ -1214,6 +1231,10 @@ msgstr ""
 #: core/resources/js/ui/builder/BuilderPatterns.vue
 #: core/src/Cms/Content/ContentModule.php
 msgid "Categories"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Categories and tags"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -1299,6 +1320,10 @@ msgstr ""
 
 #: core/resources/js/components/audit/events.js
 msgid "Changed infrastructure"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Changed on the way"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
@@ -1761,6 +1786,10 @@ msgstr ""
 msgid "Copy debug info"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Copy files from the old site"
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Copy styles"
 msgstr ""
@@ -1886,6 +1915,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/roles/Index.vue
 msgid "Created {role}. Pick what it may do, then save."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Credit posts by {name} to"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Health.vue
@@ -2403,6 +2436,7 @@ msgid "Documents"
 msgstr ""
 
 #: core/resources/js/components/content/StudioPublish.vue
+#: core/resources/js/pages/admin/system/Import.vue
 msgid "Done"
 msgstr ""
 
@@ -2504,6 +2538,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
 msgid "Each page gets its own copy to change freely."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Earlier imports"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -2825,6 +2863,10 @@ msgstr ""
 msgid "Everything on the site is replaced with the backup from {date}: content, settings, people and files. Everyone is signed out, you too."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Everything that could come over did. Below is what changed on the way."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Everywhere"
 msgstr ""
@@ -2857,6 +2899,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
+#: core/src/Cms/Console/ImportWordPressCommand.php
 msgid "Export"
 msgstr ""
 
@@ -2872,6 +2915,7 @@ msgstr ""
 msgid "Extra lines for robots.txt, after the built-in ones (admin and API are always excluded, and the sitemap is listed)."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Queue.vue
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
@@ -2973,6 +3017,7 @@ msgstr ""
 msgid "File uploads need submissions to be kept (Settings: keep submissions)."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Storage.vue
 #: core/src/Cms/Console/Backup/BackupRestoreCommand.php
@@ -2994,6 +3039,10 @@ msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
 msgid "Files in storage/sessions. No device list."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Files linked from posts"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Storage.vue
@@ -3070,6 +3119,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Queue.vue
 msgid "Finished with failures"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Finishing"
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreListBlocks.php
@@ -3154,6 +3207,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Index.vue
 msgid "For you and in notification emails. Visitors don't see it."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Forget"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Forget this import?"
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -3452,6 +3513,10 @@ msgstr ""
 msgid "Helps whoever assigns roles."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Here"
+msgstr ""
+
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "Here is what changed since you were last here."
 msgstr ""
@@ -3603,6 +3668,10 @@ msgstr ""
 msgid "Images"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Images and documents are downloaded from {url} into the media library, with their alt text and captions. Leave this off when the old site is offline; images then keep pointing at it."
+msgstr ""
+
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Images and files for your pages and posts. Drop files anywhere on this page to upload them."
 msgstr ""
@@ -3613,6 +3682,8 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
+#: core/resources/js/pages/admin/system/Import.vue
+#: core/src/Cms/Import/ImportModule.php
 msgid "Import"
 msgstr ""
 
@@ -3620,16 +3691,41 @@ msgstr ""
 msgid "Import a theme"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Import from WordPress"
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Import redirects"
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
+#: core/resources/js/pages/admin/system/Import.vue
 msgid "Imported"
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
 msgid "Imported redirects"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Imported, with some things left behind"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Importing"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Importing {site}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "In WordPress"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "In WordPress, open Tools → Export, choose All content and download the export file."
 msgstr ""
 
 #: core/src/Cms/Design/DesignBlocks.php
@@ -3773,6 +3869,7 @@ msgstr ""
 msgid "Italics"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Item"
 msgstr ""
@@ -3808,6 +3905,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Api.vue
 msgid "Its parameters, a form to try it and the code to call it appear here."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Its report goes. What it imported stays, and importing the same site again still updates instead of copying."
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Index.vue
@@ -3890,6 +3991,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Keeps that many automatic backups; the oldest go first. Backups made by hand stay until you delete them."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Kept as edited"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Kept as edited here"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
@@ -4207,6 +4316,10 @@ msgstr ""
 msgid "Links"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Links between posts"
+msgstr ""
+
 #: core/resources/js/components/content-types/FieldSettings.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "Links to"
@@ -4411,6 +4524,10 @@ msgstr ""
 msgid "Matches username or email"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Me, the person importing"
+msgstr ""
+
 #: core/resources/js/components/content-types/field-labels.js
 #: core/resources/js/pages/admin/media/Index.vue
 #: core/resources/js/pages/admin/system/Audit.vue
@@ -4459,6 +4576,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/admin/system/Audit.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/src/Cms/Content/ContentModule.php
 msgid "Menus"
 msgstr ""
@@ -4851,6 +4969,7 @@ msgid "Never seen"
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Submissions.vue
+#: core/resources/js/pages/admin/system/Import.vue
 msgid "New"
 msgstr ""
 
@@ -4963,6 +5082,10 @@ msgstr ""
 
 #: core/resources/js/ui/KMediaGrid.vue
 msgid "No alt text"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "No background worker runs on this site, so this screen imports while it stays open. Closing it pauses the import; opening it again carries on."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Storage.vue
@@ -5284,6 +5407,10 @@ msgstr ""
 msgid "Not found"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Not imported"
+msgstr ""
+
 #: core/resources/js/pages/admin/content-types/Index.vue
 msgid "Not public"
 msgstr ""
@@ -5307,6 +5434,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Submissions.vue
 msgid "Not spam"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Not started"
 msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
@@ -5724,6 +5855,7 @@ msgstr ""
 msgid "Optional. Themes may show it next to what you publish."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/ui/builder/BuilderBar.vue
 msgid "Options"
 msgstr ""
@@ -6159,6 +6291,10 @@ msgstr ""
 msgid "Posts"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Posts and pages"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Pre-release"
 msgstr ""
@@ -6344,6 +6480,10 @@ msgstr ""
 msgid "Read out by screen readers."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Read the file"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Styles.vue
 msgid "Readability"
 msgstr ""
@@ -6413,6 +6553,10 @@ msgstr ""
 msgid "Redirect added."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Redirect old addresses"
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Redirect removed."
 msgstr ""
@@ -6423,8 +6567,13 @@ msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Audit.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/src/Cms/Redirects/RedirectsModule.php
 msgid "Redirects"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Redirects from old addresses"
 msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
@@ -6635,6 +6784,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Replies go to"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Report"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Audit.vue
@@ -7682,9 +7835,11 @@ msgstr ""
 msgid "Single-entry answers only"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/builder/useCatalog.js
 #: core/src/Cms/Console/Backup/BackupRestoreCommand.php
+#: core/src/Cms/Console/ImportWordPressCommand.php
 msgid "Site"
 msgstr ""
 
@@ -7727,6 +7882,10 @@ msgstr ""
 
 #: core/resources/js/layouts/Admin.vue
 msgid "Skip to content"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Skipped"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -7900,6 +8059,10 @@ msgstr ""
 msgid "Start writing"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Started"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Themes.vue
 msgid "Starting look"
 msgstr ""
@@ -7910,6 +8073,7 @@ msgid "State"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Index.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Queue.vue
 #: core/resources/js/pages/admin/users/Edit.vue
 #: core/resources/js/pages/admin/users/Index.vue
@@ -7920,6 +8084,7 @@ msgstr ""
 msgid "Step"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Queue.vue
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "Stop"
@@ -7939,6 +8104,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Stop this email"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Stopped"
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
@@ -8345,6 +8514,10 @@ msgstr ""
 msgid "The admin, emails and the text your theme shows on its own use this language. Language packs add more."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "The background worker is importing. You can leave this screen."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "The background worker is moving them. You can leave this screen."
 msgstr ""
@@ -8432,6 +8605,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
 msgid "The https:// URL the receiving service gave you."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "The import stopped by itself"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "The import was stopped"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Queue.vue
@@ -8785,6 +8966,10 @@ msgstr ""
 msgid "These blocks are locked by the layout and can't be removed."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "These changed on this site after the last import, so the WordPress version did not replace them."
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "These lines were skipped:"
 msgstr ""
@@ -9064,6 +9249,10 @@ msgstr ""
 msgid "To find it again later, such as: before the redesign."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "To import"
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Token revoked."
@@ -9121,6 +9310,7 @@ msgstr ""
 msgid "Trust the provider's two-step check"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/KBuilder.vue
 msgid "Try again"
@@ -9237,6 +9427,10 @@ msgstr ""
 msgid "Typed or bookmarked"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Unchanged"
+msgstr ""
+
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/ui/builder/BuilderBar.vue
 #: core/resources/js/ui/builder/useDocument.js
@@ -9351,6 +9545,10 @@ msgstr ""
 msgid "Up to {size} per file."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Up to {size}."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Update"
 msgstr ""
@@ -9370,6 +9568,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "Update {plugin}?"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Updated"
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
@@ -9425,6 +9627,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Upload images and documents here, then use them in your pages and posts."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Upload it here. Nothing is imported until you have seen what will come over."
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreBlocks.php
@@ -9671,6 +9877,10 @@ msgstr ""
 msgid "Visitors"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Visitors and search engines following an old link land on the same page here. A redirect only applies where nothing else lives at that address."
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Visitors to {from} will see the \"not found\" page."
 msgstr ""
@@ -9722,6 +9932,7 @@ msgid "Weights"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Audit.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "What"
 msgstr ""
@@ -9780,6 +9991,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "What visitors and search engines see."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "What was imported stays. Try again carries on with the rest."
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
@@ -9933,6 +10148,11 @@ msgstr ""
 msgid "Whole numbers only"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Whose name each post carries here. People are matched by email address, then by username."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Why"
 msgstr ""
@@ -9959,6 +10179,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Withdraw (back to draft)"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "WordPress export file"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDetails.vue
@@ -10348,6 +10572,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/GetMe.php
 msgid "null for a browser session (no narrowing)"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "of {total}"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Storage.vue
@@ -10741,6 +10969,11 @@ msgstr ""
 msgid "{n, plural, one {# attempt} other {# attempts}}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# comment is} other {# comments are}} not imported: visitor comments are not part of Kestello."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Api.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {# endpoint} other {# endpoints}}"
@@ -10756,6 +10989,11 @@ msgstr ""
 msgid "{n, plural, one {# field} other {# fields}}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# item} other {# items}} could not be imported. The reason is next to each."
+msgstr ""
+
 #: core/resources/js/pages/admin/forms/Index.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {# new} other {# new}}"
@@ -10764,6 +11002,11 @@ msgstr ""
 #: core/resources/js/pages/admin/system/Security.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {# person} other {# people}}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# post} other {# posts}}"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Terms.vue
@@ -11068,6 +11311,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "{rows} rows in {tables} tables came back. Everyone was signed out, you too: sign in with an account from the backup."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "{site} is here"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue

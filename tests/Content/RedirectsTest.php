@@ -133,6 +133,18 @@ final class RedirectsTest extends AuthTestCase
         $this->assertSame(403, $this->api('GET', '/redirects')->statusCode(), 'contributors can\'t manage redirects');
     }
 
+    public function testAddressesWithLettersOutsideAsciiMatchHoweverTheyAreWritten(): void
+    {
+        $this->assertSame('/%C4%8Daj/%D0%B7%D0%B4', Redirects::normalize('/čaj/зд/'));
+        $this->assertSame('/%C4%8Daj', Redirects::normalize('/%c4%8daj?x=1'), 'escapes in one case');
+        $this->assertSame('/a%20b', Redirects::normalize('/a b'));
+        $this->assertSame('/100%25', Redirects::normalize('/100%'), 'a lone % is escaped, not read as one');
+
+        $this->assertSame(200, $this->api('POST', '/redirects', ['source' => '/čaj', 'target' => '/tea'])->statusCode());
+        $this->assertSame([301, '/tea'], $this->goesTo('/%C4%8Daj'), 'as a browser sends it');
+        $this->assertSame([301, '/tea'], $this->goesTo('/%c4%8daj/'));
+    }
+
     public function testTheNotFoundLogAndCsv(): void
     {
         $this->visit('/missing-page', 'https://news.example/story?token=secret');
