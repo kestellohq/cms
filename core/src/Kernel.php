@@ -213,19 +213,35 @@ final class Kernel
 
     private function handleInstaller(Application $app, string $uri, bool $installed): void
     {
-        if (!$installed && $uri !== '/install' && !str_starts_with($uri, '/install/')) {
-            header('Location: /install');
-            return;
-        }
-
-        if ($installed && $uri !== '/install/complete') {
-            header('Location: /');
+        $redirect = self::installerRedirect($uri, $installed);
+        if ($redirect !== null) {
+            header('Location: ' . $redirect);
             return;
         }
 
         $app->bootstrap();
-        InstallerRoutes::register($app->router(), $this->paths, $this->isSecureRequest($app));
+        if (str_starts_with($uri, '/assets/core/')) {
+            InstallerRoutes::assets($app->router(), $this->paths);
+        } else {
+            InstallerRoutes::register($app->router(), $this->paths, $this->isSecureRequest($app));
+        }
         $app->run();
+    }
+
+    /**
+     * Where a request goes while the installer is in charge, or null to serve it.
+     * Before installation only the installer and the core assets it loads (its
+     * scripts and styles) are served; after it, only the closing page.
+     */
+    public static function installerRedirect(string $uri, bool $installed): ?string
+    {
+        if ($installed) {
+            return $uri === '/install/complete' ? null : '/';
+        }
+
+        $served = $uri === '/install' || str_starts_with($uri, '/install/') || str_starts_with($uri, '/assets/core/');
+
+        return $served ? null : '/install';
     }
 
     /**

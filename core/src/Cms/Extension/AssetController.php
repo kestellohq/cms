@@ -56,8 +56,18 @@ final class AssetController
     public function core(Request $request, string $path): Response
     {
         $root = Cms::instance()?->paths->coreAssets();
+
+        return $root === null ? Response::notFound() : $this->coreFrom($root, $request, $path);
+    }
+
+    /**
+     * A core asset from $root (core/resources/assets). The installer calls this
+     * directly, because before installation there is no Cms to ask for paths.
+     */
+    public function coreFrom(string $root, Request $request, string $path): Response
+    {
         [$path, $versioned] = self::stripVersion($path);
-        $file = $root !== null ? self::resolve($root, $path) : null;
+        $file = self::resolve($root, $path);
 
         // Vendored files carry their version in the filename.
         $versioned = $versioned || str_starts_with($path, 'vendor/');

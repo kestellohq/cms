@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Kestello\Tests\Installer;
 
 use Kestello\Cms\Installer\InstallerController;
+use Kestello\Cms\Installer\InstallerRoutes;
 use Kestello\Framework\Core\Paths;
 use Kestello\Framework\Core\Request;
+use Kestello\Framework\Core\Router;
 use Kestello\Framework\Testing\TestCase;
+use Kestello\Kernel;
 
 final class InstallerTest extends TestCase
 {
@@ -64,5 +67,45 @@ final class InstallerTest extends TestCase
         $this->assertTrue(str_contains($this->post(['step' => '3', 'site_name' => 'S', 'site_url' => 'javascript:alert(1)']), 'step=3&error='));
         $this->assertSame('/install?step=4', $this->post(['step' => '3', 'site_name' => 'S', 'site_url' => 'https://example.test/']));
         $this->assertSame('https://example.test', $_SESSION['installer']['site_url']);
+    }
+
+    public function testBeforeInstallationOnlyTheInstallerAndItsAssetsAreServed(): void
+    {
+        $before = [
+            '/install' => null,
+            '/install/complete' => null,
+            '/assets/core/~0.1.0/build/app/index.js' => null,
+            '/assets/core/vendor/vue.js' => null,
+            '/' => '/install',
+            '/admin' => '/install',
+            '/installer' => '/install',
+            '/assets/themes/base/theme.css' => '/install',
+            '/assets/plugins/x/app.js' => '/install',
+        ];
+        foreach ($before as $uri => $expected) {
+            $this->assertSame($expected, Kernel::installerRedirect($uri, false), $uri);
+        }
+
+        $this->assertSame('/', Kernel::installerRedirect('/install', true));
+        $this->assertNull(Kernel::installerRedirect('/install/complete', true));
+    }
+
+    public function testTheInstallerServesItsOwnScriptsAndNothingPrivate(): void
+    {
+        $core = dirname(__DIR__, 2) . '/core';
+        $router = new Router();
+        InstallerRoutes::assets($router, new Paths($this->root, $core));
+        $get = static fn(string $uri): \Kestello\Framework\Core\Response => $router->dispatch(new Request('GET', $uri, $uri, [], [], [], [], [], []));
+
+        $files = glob($core . '/resources/assets/build/app/index-*.js') ?: [];
+        $this->assertNotSame([], $files, 'the built admin entry exists');
+        $script = $get('/assets/core/~0.1.0/build/app/' . basename($files[0]));
+        $this->assertSame(200, $script->statusCode());
+        $this->assertStringStartsWith('text/javascript', $script->headers()['Content-Type'] ?? '');
+        $this->assertSame(file_get_contents($files[0]), $script->content(), 'byte for byte, so integrity checks pass');
+
+        foreach (['/assets/core/build/.vite/manifest.json', '/assets/core/../../config/app.php', '/assets/core/build/ssr/app.mjs'] as $private) {
+            $this->assertSame(404, $get($private)->statusCode(), $private);
+        }
     }
 }
