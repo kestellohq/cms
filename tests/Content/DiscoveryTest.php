@@ -19,7 +19,7 @@ final class DiscoveryTest extends AuthTestCase
     {
         Model::resetRegistry();
         parent::setUp();
-        foreach ([new ContentModule(), new SiteModule(), new \Kestello\Cms\Blocks\BlocksModule(), new \Kestello\Cms\Search\SearchModule()] as $module) {
+        foreach ([new ContentModule(), new SiteModule(), new \Kestello\Cms\Blocks\BlocksModule(), new \Kestello\Cms\Search\SearchModule(), new \Kestello\Cms\Media\MediaModule()] as $module) {
             $module->register($this->cms->container);
             $module->boot($this->cms);
         }
@@ -114,6 +114,40 @@ final class DiscoveryTest extends AuthTestCase
 
         $this->settings(['reading' => ['discourage_search' => true]]);
         $this->assertStringContainsString('<meta name="robots" content="noindex">', $this->head('/blog/rye'), 'a hidden site asks on every page');
+    }
+
+    public function testAnEntryChoosesItsSearchTitleAndSharingImage(): void
+    {
+        $png = (function (): string {
+            ob_start();
+            imagepng(imagecreatetruecolor(12, 8));
+            return (string) ob_get_clean();
+        })();
+        $up = $this->json($this->api('POST', '/media/uploads', ['filename' => 'loaf.png', 'size' => strlen($png)]))['data'];
+        $this->api('PUT', "/media/uploads/{$up['id']}/chunks/0", raw: $png);
+        $media = $this->json($this->api('POST', "/media/uploads/{$up['id']}/complete"))['data'];
+        $this->api('PATCH', "/media/{$media['id']}", ['alt' => 'A rye loaf']);
+
+        $this->post(['title' => 'Rye', 'slug' => 'rye', 'data' => ['seo' => ['title' => 'Rye bread in three days', 'image' => $media['id']]]]);
+        $page = $this->visit('/blog/rye')->payload();
+        $this->assertSame('Rye bread in three days', Seo::title($page->props), 'the search title, not the heading');
+        $this->assertSame('Rye', $page->props['title'], 'the page still shows its own title');
+        $head = $this->head('/blog/rye');
+        foreach ([
+            '<meta property="og:title" content="Rye bread in three days">',
+            '<meta property="og:image:width" content="12">',
+            '<meta property="og:image:alt" content="A rye loaf">',
+            '<meta name="twitter:card" content="summary_large_image">',
+        ] as $tag) {
+            $this->assertStringContainsString($tag, $head);
+        }
+        $this->assertMatchesRegularExpression('#<meta property="og:image" content="https?://[^"]+">#', $head);
+
+        $this->post(['title' => 'Spelt', 'slug' => 'spelt', 'data' => ['seo' => ['title' => '  ']]]);
+        $this->assertStringContainsString('<meta property="og:title" content="Spelt">', $this->head('/blog/spelt'), 'an empty search title: the title');
+
+        $this->db->table('media')->where('id', $media['id'])->delete();
+        $this->assertFalse(str_contains($this->head('/blog/rye'), 'og:image'), 'a file that is gone is not shared');
     }
 
     public function testFeeds(): void

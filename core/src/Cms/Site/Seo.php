@@ -27,8 +27,12 @@ final class Seo
     public static function field(): Field
     {
         return Field::group('seo', [
+            Field::text('title')->label('Search title')->max(150)
+                ->help('Shown as the title in search results and link previews, instead of the title on the page. Left empty, the title is used.'),
             Field::textarea('description')->label('Search description')->max(300)
                 ->help('Shown under the title in search results and link previews. Left empty, the excerpt or the first lines are used.'),
+            Field::media('image', ['image'])->label('Sharing image')
+                ->help('Shown when the page is shared on social media or in a chat. Left empty, the first image of the page is used.'),
             Field::boolean('noindex')->label('Hide from search engines')
                 ->help('The page stays public but is left out of the sitemap, and search engines are asked not to list it.'),
         ])->label('Search and sharing')->sidebar();
@@ -46,11 +50,12 @@ final class Seo
         $own = is_array($own) ? $own : [];
         $data = (array) $presented['data'];
 
+        $title = trim((string) ($own['title'] ?? ''));
         $description = trim((string) ($own['description'] ?? ''));
         if ($description === '') {
             $description = trim((string) ($presented['excerpt'] ?? ''));
         }
-        $image = null;
+        $image = self::image($own['image'] ?? null);
         foreach ($type->getFields() as $field) {
             if ($field->isInternal()) {
                 continue;
@@ -72,6 +77,7 @@ final class Seo
         }
 
         return [
+            'title' => $title === '' ? null : $title,
             'description' => self::clip($description),
             'canonical' => $canonical,
             'image' => $image,
@@ -79,6 +85,42 @@ final class Seo
             'published' => $type->hasArchive() ? ($presented['published_at'] ?? null) : null,
             'noindex' => !empty($own['noindex']),
         ];
+    }
+
+    /**
+     * The chosen sharing image as {url,width,height,alt}, or null when none
+     * is set, the file is gone or it isn't an image.
+     *
+     * @return array{url: string, width: mixed, height: mixed, alt: string}|null
+     */
+    private static function image(mixed $id): ?array
+    {
+        $id = is_array($id) ? ($id[0] ?? null) : $id;
+        if (!is_numeric($id) || (int) $id < 1) {
+            return null;
+        }
+        $media = \Kestello\Cms\Media\MediaPresenter::many([(int) $id])[(int) $id] ?? null;
+        if ($media === null || $media['kind'] !== 'image') {
+            return null;
+        }
+
+        return ['url' => (string) $media['url'], 'width' => $media['width'], 'height' => $media['height'], 'alt' => (string) $media['alt']];
+    }
+
+    /**
+     * The page's title for search engines and link previews: its own search
+     * title when it has one, then its title, then the site name.
+     *
+     * @param array<string, mixed> $props
+     */
+    public static function title(array $props): string
+    {
+        $own = $props['seo']['title'] ?? null;
+        if (is_string($own) && $own !== '') {
+            return $own;
+        }
+
+        return is_string($props['title'] ?? null) ? $props['title'] : '';
     }
 
     /** Whether an entry asked to stay out of search engines. */
@@ -158,7 +200,7 @@ final class Seo
         if (!$error && $base !== '') {
             $path = (string) ($seo['canonical'] ?? (parse_url($data['url'], PHP_URL_PATH) ?: '/'));
             $url = $abs($path);
-            $title = is_string($props['title'] ?? null) && $props['title'] !== '' ? $props['title'] : $site;
+            $title = self::title($props) ?: $site;
             $tags[] = ['link', ['rel' => 'canonical', 'href' => $url]];
             $tags[] = ['meta', ['property' => 'og:type', 'content' => $seo['type'] ?? 'website']];
             $tags[] = ['meta', ['property' => 'og:title', 'content' => $title]];

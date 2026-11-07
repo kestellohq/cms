@@ -31,6 +31,25 @@ function createLeaveGuards() {
 function leavesPage(from, to, { method = "get", preserveState = false } = {}) {
 	return String(method).toLowerCase() === "get" && !preserveState && (from.origin !== to.origin || from.pathname !== to.pathname);
 }
+// core/resources/js/app/document-title.js
+/**
+* The text of a page's <title>, the same as the server writes it
+* (PageRenderer): "Title - Site". The page's own title gives way to its
+* search title from Search and sharing; another title (a theme page's
+* "About") is kept as given. raw skips the site name.
+*
+* @param {string} title what <Head title> was given
+* @param {{ props?: { title?: string, site?: { name?: string }, seo?: { title?: string } } } | null} page
+* @param {boolean} [raw]
+* @returns {string}
+*/
+function documentTitle(title, page, raw = false) {
+	const site = page?.props?.site?.name ?? "";
+	const own = page?.props?.seo?.title;
+	const shown = own && title === page?.props?.title ? own : title;
+	if (raw || !site) return shown || site;
+	return shown ? `${shown} - ${site}` : site;
+}
 // core/resources/js/app/index.js
 /**
 * @kestello/app: the client runtime for Vue-rendered pages.
@@ -603,11 +622,7 @@ var Head = defineComponent({
 	setup(props) {
 		const head = inject(HEAD, null);
 		const page = inject(PAGE, null);
-		const full = () => {
-			const site = page?.props?.site?.name ?? "";
-			if (props.raw || !site) return props.title || site;
-			return props.title ? `${props.title} - ${site}` : site;
-		};
+		const full = () => documentTitle(props.title, page, props.raw);
 		if (head) head.title = full();
 		if (isBrowser) {
 			onMounted(() => {
