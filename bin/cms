@@ -14,4 +14,8 @@ $core = is_file($root . '/core/current.php')
 
 require $core . '/bootstrap.php';
 
-exit(Kestello\Kernel::create($root)->handleConsole($argv));
+// $_SERVER['argv'] rather than the $argv global, which static analysis on PHP 8.5 no longer assumes is set.
+/** @var list<string> $arguments */
+$arguments = $_SERVER['argv'] ?? [];
+
+exit(Kestello\Kernel::create($root)->handleConsole($arguments));
