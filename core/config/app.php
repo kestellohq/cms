@@ -47,6 +47,11 @@ return [
         'health_url' => null,
     ],
 
+    // Saved page HTML, for sites without the Node renderer below: pages go out as
+    // real HTML once an administrator's browser has drawn them (in the background
+    // of the admin). Off on a public demo, and when ssr.url is set.
+    'prerender' => true,
+
     // Optional server-side rendering of Vue pages (core/ssr/server.mjs).
     // null = client-side rendering only. Failures always fall back to the client.
     'ssr' => [

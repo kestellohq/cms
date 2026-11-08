@@ -12,6 +12,8 @@ use Kestello\Cms\I18n\BrowserCatalogue;
 use Kestello\Cms\View\PageRegistry;
 use Kestello\Cms\View\PageRenderer;
 use Kestello\Cms\View\PageResponse;
+use Kestello\Cms\View\Prerender\PrerenderController;
+use Kestello\Cms\View\Prerender\PrerenderStore;
 use Kestello\Cms\View\SsrGateway;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
@@ -56,15 +58,38 @@ final class FrontendModule extends Provider
             body: static fn(array $data = []): array => ['open' => (string) $cms->filters->apply('page.body_open', '', $data), 'close' => (string) $cms->filters->apply('page.footer', '', $data)],
             debug: (bool) $cms->config->get('app.debug', false),
             ssr: is_string($ssrUrl) && $ssrUrl !== '' ? new SsrGateway($ssrUrl, (float) $cms->config->get('app.ssr.timeout', 1.5)) : null,
+            prerender: self::prerender($cms, $ssrUrl),
         );
 
         $cms->container->instance(Csp::class, $csp);
         $cms->container->instance(PageRenderer::class, $renderer);
+
+        // where administrators' browsers draw waiting pages to HTML (saved page HTML)
+        $prerender = static fn(): PrerenderController => new PrerenderController($cms, $renderer->registry());
+        $cms->routes->get(PrerenderController::ROUTE, static fn(Request $r): Response => $prerender()->frame($r))->name('prerender.frame');
+        $cms->routes->get(PrerenderController::modulesRoute(), static fn(Request $r, string $path): Response => $prerender()->module($r, $path))
+            ->where(['path' => '.+'])
+            ->name('prerender.modules');
         $middleware = new FrontendMiddleware($csp, $renderer);
         $cms->routes->pushGlobalMiddleware($middleware);
 
         // Error pages (404, 403, 500 …) render as Vue pages too.
         $cms->container->instance('kestello.error_page', self::errorPages($renderer, $middleware, static fn(Request $request) => \Kestello\Cms\Admin\AdminPageController::notFound($cms, $request)));
+    }
+
+    /**
+     * Saved page HTML (app.prerender), for sites without the Node renderer:
+     * off with one, and on a public demo, where everyone is an administrator.
+     */
+    public static function prerender(Cms $cms, mixed $ssrUrl): ?PrerenderStore
+    {
+        if ((is_string($ssrUrl) && $ssrUrl !== '') || $cms->config->get('app.prerender', true) === false || \Kestello\Cms\Demo\Demo::on($cms->config)) {
+            return null;
+        }
+        $store = new PrerenderStore($cms->paths->storage('framework/prerender'));
+        $cms->container->instance(PrerenderStore::class, $store);
+
+        return $store;
     }
 
     /**

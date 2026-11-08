@@ -10,13 +10,15 @@
  * (core: core/resources/js → core/resources/assets/build, plus the runtime).
  * `vue` and `@kestello/{app,sdk,ui}` stay external: the page shell's import map points
  * them at the single vendored runtime, so every package shares one Vue.
- * A second SSR build (assets/build/ssr/) feeds the optional Node renderer.
+ * A second SSR build (assets/build/ssr/) feeds the optional Node renderer and,
+ * with assets/build/prerender/ (prerender.mjs), saved page HTML.
  */
 import { build } from 'vite';
 import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { entries, kestello } from './preset.mjs';
+import { buildPrerender } from './prerender.mjs';
 
 const repo = path.resolve(import.meta.dirname, '../..');
 
@@ -67,6 +69,7 @@ for (const target of targets) {
     try {
         await build(await configFor(spec, false));
         await build(await configFor(spec, true));
+        if (spec.runtime) await buildPrerender(repo);
         console.log(`✓ ${target}: ${count} entries → ${path.relative(repo, spec.outDir)}`);
     } catch (error) {
         failed = true;
