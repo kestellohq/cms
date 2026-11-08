@@ -36,6 +36,7 @@ final class PageRenderer
         private readonly bool $debug = false,
         private readonly ?SsrGateway $ssr = null,
         private readonly ?Closure $body = null,
+        private readonly ?Prerender\PrerenderStore $prerender = null,
     ) {}
 
     public function registry(): PageRegistry
@@ -78,7 +79,7 @@ final class PageRenderer
         }
 
         return $base
-            ->withContent($this->shell($data))
+            ->withContent($this->shell($data, $base->statusCode()))
             ->withHeader('Content-Type', 'text/html; charset=UTF-8')
             ->withHeader('Vary', 'X-Kestello');
     }
@@ -86,15 +87,12 @@ final class PageRenderer
     /**
      * @param array{component: string, props: array<string, mixed>, url: string, version: string} $data
      */
-    private function shell(array $data): string
+    private function shell(array $data, int $status = 200): string
     {
         $entry = $this->registry->get($data['component']);
         $runtime = $this->registry->runtime() ?? throw new RuntimeException('Core frontend is not built: run "npm run build".');
         $vendor = $this->vendor();
         $nonce = self::e($this->csp->nonce());
-        // Admin pages are per-user and need no SEO: always rendered in the browser.
-        $ssr = isset($data['props']['admin']) ? null : $this->ssr?->render($data, $this->registry);
-
         $imports = ['vue' => $vendor['url']];
         $integrity = [$vendor['url'] => $vendor['integrity']];
         $preload = '';
@@ -122,6 +120,18 @@ final class PageRenderer
             $extraCss = [...$extraCss, ...($more['css'] ?? [])];
         }
         unset($data['preload']);
+        $pageJson = json_encode($data, self::JSON_FLAGS);
+
+        // Admin pages are per-user and need no SEO: always rendered in the browser.
+        // Others: by the Node renderer when there is one, else from saved HTML.
+        $ssr = null;
+        if (!isset($data['props']['admin'])) {
+            $ssr = $this->ssr?->render($data, $this->registry);
+            if ($ssr === null && $this->prerender !== null && self::sameForEveryone($data)) {
+                $ssr = $this->saved($data, $pageJson, $status);
+            }
+        }
+
         $seen = [];
         foreach ([...$preloadFiles, ...($entry['js'] ?? []), ...$extraJs] as $file) {
             if (isset($seen[$file['url']])) {
@@ -150,7 +160,6 @@ final class PageRenderer
         }
 
         $map = json_encode(['imports' => $imports, 'integrity' => $integrity], self::JSON_FLAGS);
-        $pageJson = json_encode($data, self::JSON_FLAGS);
         $boot = json_encode(['registry' => $this->registry->client()], self::JSON_FLAGS);
         $lang = $this->escape(str_replace('_', '-', Translator::locale()));
         $dir = Translator::direction();
@@ -176,6 +185,73 @@ final class PageRenderer
         </html>
 
         HTML;
+    }
+
+    /**
+     * The page's saved HTML, or null; then the page waits for an
+     * administrator's browser to draw it, and its cached copy carries a tag
+     * so it is dropped when the HTML arrives.
+     *
+     * @param array{component: string, props: array<string, mixed>, url: string, version: string} $data
+     * @return array{head: string, body: string, title: string}|null
+     */
+    private function saved(array $data, string $pageJson, int $status): ?array
+    {
+        if ($this->prerender === null) {
+            return null;
+        }
+        $key = Prerender\PrerenderStore::key($pageJson);
+        try {
+            $saved = $this->prerender->find($key);
+            if ($saved !== null) {
+                return ['head' => '', 'body' => $saved['body'], 'title' => $saved['title']];
+            }
+            if ($status === 200 && self::plainAddress($data['url'])) {
+                \Kestello\Cms\Cache\PageTags::add(self::tag($key));
+                $this->prerender->want($key, [
+                    'url' => $data['url'],
+                    'page' => $data,
+                    'modules' => array_map(static fn(array $m): string => $m['url'], $this->registry->siteSsr()),
+                    'messages' => SsrGateway::messages($data),
+                ]);
+            }
+        } catch (Throwable $e) {
+            error_log('[kestello] saved page HTML skipped: ' . $e->getMessage());     // a full or read-only disk never stops a page
+        }
+
+        return null;
+    }
+
+    /** The page cache tag of a page waiting for its HTML. */
+    public static function tag(string $key): string
+    {
+        return 'html:' . substr($key, 0, 40);
+    }
+
+    /**
+     * Whether every visitor gets this exact page: nobody signed in, no
+     * session (form errors, a flash message, a CSRF token). Only those have
+     * one key for everyone, so only those are saved.
+     *
+     * @param array{props: array<string, mixed>} $data
+     */
+    private static function sameForEveryone(array $data): bool
+    {
+        $p = $data['props'];
+
+        return ($p['auth']['user'] ?? null) === null
+            && ($p['csrfToken'] ?? '') === ''
+            && (array) ($p['errors'] ?? []) === []     // shared as {} when empty
+            && (array) ($p['old'] ?? []) === []
+            && array_filter((array) ($p['flash'] ?? [])) === [];
+    }
+
+    /** No query string but a page number: other queries are endless, and would push real pages out of the queue. */
+    private static function plainAddress(string $url): bool
+    {
+        $query = (string) parse_url($url, PHP_URL_QUERY);
+
+        return $query === '' || preg_match('/^page=\d{1,4}$/', $query) === 1;
     }
 
     private function escape(string $value): string

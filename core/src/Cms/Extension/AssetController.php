@@ -127,6 +127,24 @@ final class AssetController
     }
 
     /**
+     * An SSR module ("~1.0.0/build/ssr/pages/x.mjs") inside $root, or null.
+     * They are never public assets (resolve() refuses them): only the
+     * prerender route serves them, to administrators.
+     */
+    public static function resolveSsr(string $root, string $path): ?string
+    {
+        [$path] = self::stripVersion($path);
+        if (!str_starts_with($path, 'build/ssr/') || !str_ends_with($path, '.mjs') || str_contains($path, "\0") || str_contains($path, '..')
+            || preg_match('#(^|/)\.#', $path) === 1) {
+            return null;
+        }
+        $realRoot = realpath($root . '/build/ssr');
+        $realFile = realpath($root . '/' . $path);
+
+        return $realRoot !== false && $realFile !== false && is_file($realFile) && str_starts_with($realFile, $realRoot . '/') ? $realFile : null;
+    }
+
+    /**
      * The real file for $path inside $root, or null if missing, outside root or not an allowed type.
      */
     public static function resolve(string $root, string $path): ?string

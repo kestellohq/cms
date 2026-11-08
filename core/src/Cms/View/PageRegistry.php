@@ -27,8 +27,15 @@ final class PageRegistry
     public const array CORE_SITE_PAGES = ['@core/errors/', '@core/content/', '@core/blocks/'];
 
 
-    /** @var array<string, array{owner: string, url: string, css: list<string>, js: list<array{path: string, url: string}>, ssr: ?string}>|null */
+    /** @var array<string, array{owner: string, url: string, css: list<string>, js: list<array{path: string, url: string}>, ssr: ?string, ssrUrl: ?string}>|null */
     private ?array $entries = null;
+
+    /**
+     * Where signed-in administrators' browsers fetch the SSR modules, to save
+     * pages' HTML (Prerender\PrerenderController). The rest of the path is the
+     * package's asset path: core/~<version>/build/ssr/…, themes/<slug>/~<version>/…
+     */
+    public const string SSR_MODULES = '/system/prerender/modules';
 
     /** Core's shared browser modules (import map names) and their sources. */
     public const array MODULES = [
@@ -37,7 +44,7 @@ final class PageRegistry
         '@kestello/ui' => 'resources/js/ui/index.js',
     ];
 
-    /** @var array<string, array{path: string, url: string, ssr: ?string}> */
+    /** @var array<string, array{path: string, url: string, ssr: ?string, ssrUrl: ?string}> */
     private array $modules = [];
 
     /** @var list<string> manifests read, for the asset version */
@@ -56,7 +63,7 @@ final class PageRegistry
     }
 
     /**
-     * @return array{owner: string, url: string, css: list<string>, js: list<array{path: string, url: string}>, ssr: ?string}|null
+     * @return array{owner: string, url: string, css: list<string>, js: list<array{path: string, url: string}>, ssr: ?string, ssrUrl: ?string}|null
      */
     public function get(string $name): ?array
     {
@@ -89,9 +96,35 @@ final class PageRegistry
     }
 
     /**
+     * The components a page of the site may draw, with their SSR build:
+     * every page, layout and block except the admin's. The renderer imports
+     * only those it meets, so handing it all of them costs nothing, and
+     * blocks drawn by other blocks (a query's items, a pattern) are found too.
+     *
+     * @return array<string, array{path: string, url: string}> name => SSR file and the address browsers fetch it from
+     */
+    public function siteSsr(): array
+    {
+        $out = [];
+        foreach ($this->entries() as $name => $entry) {
+            if ($entry['ssr'] !== null && $entry['ssrUrl'] !== null && !self::isAdminName($name)) {
+                $out[$name] = ['path' => $entry['ssr'], 'url' => $entry['ssrUrl']];
+            }
+        }
+
+        return $out;
+    }
+
+    /** An admin or installer page, a field input or the admin layout: never part of the site's HTML. */
+    private static function isAdminName(string $name): bool
+    {
+        return $name === 'layouts/Admin' || preg_match('#^@[a-z0-9-]+/(admin|fields|installer)/#', $name) === 1;
+    }
+
+    /**
      * The @kestello/app runtime module.
      *
-     * @return array{path: string, url: string, ssr: ?string}|null
+     * @return array{path: string, url: string, ssr: ?string, ssrUrl: ?string}|null
      */
     public function runtime(): ?array
     {
@@ -101,9 +134,9 @@ final class PageRegistry
     }
 
     /**
-     * Shared modules for the import map: name => {path, url, ssr}.
+     * Shared modules for the import map: name => {path, url, ssr, ssrUrl}.
      *
-     * @return array<string, array{path: string, url: string, ssr: ?string}>
+     * @return array<string, array{path: string, url: string, ssr: ?string, ssrUrl: ?string}>
      */
     public function modules(): array
     {
@@ -197,7 +230,7 @@ final class PageRegistry
     }
 
     /**
-     * @return array<string, array{owner: string, url: string, css: list<string>, js: list<array{path: string, url: string}>, ssr: ?string}>
+     * @return array<string, array{owner: string, url: string, css: list<string>, js: list<array{path: string, url: string}>, ssr: ?string, ssrUrl: ?string}>
      */
     private function entries(): array
     {
@@ -246,6 +279,7 @@ final class PageRegistry
                     'path' => $buildDir . '/' . $chunk['file'],
                     'url' => $baseUrl . $chunk['file'],
                     'ssr' => is_string($ssrFile) ? $buildDir . '/ssr/' . $ssrFile : null,
+                    'ssrUrl' => is_string($ssrFile) ? self::ssrUrl($baseUrl, $ssrFile) : null,
                 ];
                 continue;
             }
@@ -276,8 +310,15 @@ final class PageRegistry
                 'css' => array_values(array_unique([...$sheets, ...$css])),
                 'js' => $js,
                 'ssr' => is_string($ssrFile) ? $buildDir . '/ssr/' . $ssrFile : null,
+                'ssrUrl' => is_string($ssrFile) ? self::ssrUrl($baseUrl, $ssrFile) : null,
             ];
         }
+    }
+
+    /** "/assets/core/~0.1.0/build/" + "pages/x.mjs" → "/system/prerender/modules/core/~0.1.0/build/ssr/pages/x.mjs" */
+    private static function ssrUrl(string $baseUrl, string $file): string
+    {
+        return self::SSR_MODULES . substr($baseUrl, strlen('/assets')) . 'ssr/' . $file;
     }
 
     /** New admin pages wear the admin UI kit, not the theme. */

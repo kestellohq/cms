@@ -5,6 +5,7 @@ import DemoBar from '../components/demo/DemoBar.vue';
 import { setReauthHandler, requestPassword, useAdmin, useApi, useCan, useUser, __, notify } from '@kestello/sdk';
 import { KAvatar, KDialogs, KFinder, KIcon, KToasts, KAlert, KTime } from '@kestello/ui';
 import AdminNav from '../components/admin/AdminNav.vue';
+import { startPrerender } from '../prerender/background.js';
 
 /**
  * The admin app frame. Pages opt in with defineOptions({ layout: 'Admin' });
@@ -70,6 +71,7 @@ const bellOpen = ref(false);
 const unread = ref(0);
 const recent = ref([]);
 let timer = null;
+let stopPrerender = null;
 
 async function loadNotifications() {
     if (!can('profile.manage')) return;
@@ -115,9 +117,12 @@ onMounted(() => {
         if (document.visibilityState === 'visible') loadNotifications();
     }, 60000);
     document.addEventListener('click', onDocumentClick);
+    // saved page HTML: administrators' browsers draw the site's waiting pages in the background
+    if (can('system.manage')) stopPrerender = startPrerender(api);
 });
 onBeforeUnmount(() => {
     clearInterval(timer);
+    stopPrerender?.();
     document.removeEventListener('click', onDocumentClick);
 });
 </script>
