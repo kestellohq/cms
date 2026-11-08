@@ -54,6 +54,8 @@ final class ApiModule extends Provider
         Endpoints\Search\SearchSite::class,
         Endpoints\Search\FindInAdmin::class,
         Endpoints\System\ClearPageCache::class,
+        Endpoints\System\ListWaitingPages::class,
+        Endpoints\System\SavePageHtml::class,
         Endpoints\System\GetStorage::class,
         Endpoints\Design\GetStyles::class,
         Endpoints\Design\PublishStyles::class,

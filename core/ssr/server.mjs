@@ -1,5 +1,6 @@
 // Kestello SSR renderer (optional). PHP posts the page object plus the SSR
-// module paths of the page and layouts; we answer with rendered HTML.
+// module paths of every component the site may draw (the page, layouts and
+// blocks: SsrGateway::payload); we answer with rendered HTML.
 //
 //   node core/ssr/server.mjs            (or: npm run ssr)
 //   env: SSR_HOST (127.0.0.1), SSR_PORT (13714), KESTELLO_ROOT (cwd)

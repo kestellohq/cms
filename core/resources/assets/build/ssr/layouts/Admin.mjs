@@ -234,6 +234,66 @@ _sfc_main$1.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/components/admin/AdminNav.vue");
 	return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : void 0;
 };
+// core/resources/js/prerender/background.js
+/**
+* Saved page HTML, from the admin's side: while an administrator has the
+* admin open, now and then ask whether pages are waiting for their HTML and,
+* when some are, open the hidden frame (/system/prerender) that draws them.
+* The frame says when it is done; it is removed then, or after a while.
+*/
+/** Wait this long after the admin opens, so the frame never slows the screen being opened. */
+var FIRST_CHECK = 2e4;
+/** Then check this often. */
+var EVERY = 6e5;
+/** Remove a frame that has not said it is done by then. */
+var FRAME_TIMEOUT = 12e4;
+/** Whether a check found work for the frame (GET /system/prerender). */
+function hasWork(status) {
+	return Boolean(status?.enabled) && Number(status?.waiting ?? 0) > 0;
+}
+/**
+* @param {{ get: Function }} api the admin's API client
+* @returns {() => void} stops checking and removes any frame
+*/
+function startPrerender(api) {
+	let frame = null;
+	let removeTimer = null;
+	function close() {
+		clearTimeout(removeTimer);
+		frame?.remove();
+		frame = null;
+	}
+	function onMessage(event) {
+		if (event.origin === window.location.origin && event.source === frame?.contentWindow && event.data?.type === "kestello:prerender-done") close();
+	}
+	async function check() {
+		if (frame || document.visibilityState !== "visible") return;
+		let status;
+		try {
+			status = (await api.get("/system/prerender", { limit: 1 }))?.data;
+		} catch {
+			return;
+		}
+		if (!hasWork(status) || frame) return;
+		frame = document.createElement("iframe");
+		frame.src = "/system/prerender";
+		frame.title = "Saving page HTML";
+		frame.setAttribute("aria-hidden", "true");
+		frame.tabIndex = -1;
+		frame.style.cssText = "position:absolute;width:0;height:0;border:0;visibility:hidden";
+		document.body.append(frame);
+		removeTimer = setTimeout(close, FRAME_TIMEOUT);
+	}
+	window.addEventListener("message", onMessage);
+	const first = setTimeout(check, FIRST_CHECK);
+	const timer = setInterval(check, EVERY);
+	return () => {
+		clearTimeout(first);
+		clearInterval(timer);
+		window.removeEventListener("message", onMessage);
+		close();
+	};
+}
 // core/resources/js/layouts/Admin.vue
 /**
 * The admin app frame. Pages opt in with defineOptions({ layout: 'Admin' });
@@ -299,6 +359,7 @@ var _sfc_main = {
 		const unread = ref(0);
 		const recent = ref([]);
 		let timer = null;
+		let stopPrerender = null;
 		async function loadNotifications() {
 			if (!can("profile.manage")) return;
 			try {
@@ -322,9 +383,11 @@ var _sfc_main = {
 				if (document.visibilityState === "visible") loadNotifications();
 			}, 6e4);
 			document.addEventListener("click", onDocumentClick);
+			if (can("system.manage")) stopPrerender = startPrerender(api);
 		});
 		onBeforeUnmount(() => {
 			clearInterval(timer);
+			stopPrerender?.();
 			document.removeEventListener("click", onDocumentClick);
 		});
 		return (_ctx, _push, _parent, _attrs) => {
