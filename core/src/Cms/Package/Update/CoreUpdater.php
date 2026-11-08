@@ -7,7 +7,6 @@ namespace Kestello\Cms\Package\Update;
 use Kestello\Cms\Backup\Backups;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Content\ContentException;
-use Kestello\Cms\Package\PackageInstaller;
 use Kestello\Cms\Package\PackageSignature;
 use Kestello\Cms\System\Maintenance;
 use Kestello\Framework\Support\Semver;
@@ -37,7 +36,6 @@ final class CoreUpdater
 
     public function __construct(
         private readonly Cms $cms,
-        private readonly PackageInstaller $installer,
         private readonly Backups $backups,
         private readonly HealthProbe $probe,
         private readonly ?string $running = null,
@@ -46,14 +44,15 @@ final class CoreUpdater
     ) {}
 
     /**
-     * Who may sign a core release: the official release keys and the publishers in
-     * app.packages.trusted_keys.
+     * Who may sign a core release: the release keys (release.keys) only. The
+     * publishers in app.packages.trusted_keys sign plugins and themes; trusting
+     * them for core would let any plugin vendor replace the whole CMS.
      *
      * @return array<string, array{name: string, public_key: string}>
      */
     public function trustedKeys(): array
     {
-        return $this->releaseKeys + $this->installer->trustedKeys();
+        return $this->releaseKeys;
     }
 
     public function running(): string

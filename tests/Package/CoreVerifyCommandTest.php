@@ -46,7 +46,7 @@ final class CoreVerifyCommandTest extends TestCase
     public function testASignedReleaseWithItsKeyListedPasses(): void
     {
         $keys = PackageSignature::generateKeys();
-        PackageSignature::sign($this->zip, $keys['secret_key']);
+        PackageSignature::sign($this->zip, $keys['secret_key'], PackageSignature::CORE);
         file_put_contents($this->zip . '.sha256', hash_file('sha256', $this->zip) . "  x.zip\n");
 
         [$code, $out] = $this->verify([['name' => 'Kestello releases', 'public_key' => $keys['public_key']]]);
@@ -66,7 +66,7 @@ final class CoreVerifyCommandTest extends TestCase
         [$code, $out] = $this->verify($entry);
         $this->assertSame([1, true], [$code, str_contains($out, 'not signed')], $out);
 
-        PackageSignature::sign($this->zip, PackageSignature::generateKeys()['secret_key']);
+        PackageSignature::sign($this->zip, PackageSignature::generateKeys()['secret_key'], PackageSignature::CORE);
         file_put_contents($this->zip . '.sha256', hash_file('sha256', $this->zip) . "  x.zip\n");
         [$code, $out] = $this->verify($entry);
         $this->assertSame([1, true], [$code, str_contains($out, 'not in core/config/release.php')], $out);

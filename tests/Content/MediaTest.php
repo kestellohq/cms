@@ -198,6 +198,12 @@ final class MediaTest extends AuthTestCase
         $this->assertSame([['id' => $event['id'], 'type' => 'events', 'title' => 'Bake-off', 'status' => 'draft', 'field' => 'poster']], $usage);
         $this->assertSame(['docs'], array_column($this->ok('GET', "/media/{$doc['id']}")['usage'], 'field'), 'nested fields count, once');
 
+        // the editor's draft uses the author's file: the author may see that it is used, not what uses it
+        $this->signIn('author');
+        $seen = $this->ok('GET', "/media/{$mine['id']}");
+        $this->assertSame([[], 1], [$seen['usage'], $seen['usage_hidden']], 'someone else\'s draft is counted, never named');
+        $this->signIn('editor');
+
         $public = \Kestello\Cms\Content\ContentController::present(\Kestello\Cms\Content\Entry::query()->find($event['id']), $this->cms->content->get('events'), full: true);
         $poster = $public['data']->poster;
         $this->assertSame(['id' => $mine['id'], 'url' => $mine['url'], 'alt' => '', 'title' => 'mine', 'caption' => null, 'width' => 4, 'height' => 3, 'kind' => 'image', 'mime' => 'image/png'], array_intersect_key($poster, array_flip(['id', 'url', 'alt', 'title', 'caption', 'width', 'height', 'kind', 'mime'])), 'public pages get the file, not its id');

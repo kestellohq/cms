@@ -102,6 +102,16 @@ final class CoreHealthChecks
                 : HealthResult::critical('Kestello cannot write to: ' . implode(', ', $bad) . '. Check folder permissions.', $details);
         }, 'reliability');
 
+        $h->check('core.private-files', 'Private folders', static function () use ($cms): HealthResult {
+            $exposed = PrivateFolders::exposed($cms->container->make(\Kestello\Framework\Http\Client\HttpClient::class), (string) $cms->config->get('app.url', ''), $cms->paths->root(), $cms->paths->storage());
+
+            return match ($exposed) {
+                true => HealthResult::critical('Files in storage/ can be downloaded from the web, so settings, sessions, logs and backups in config/ and storage/ are probably readable too. Point the site\'s document root at the public/ folder, or on nginx deny /config, /storage, /core and /content.'),
+                false => HealthResult::good('Browsers cannot read config/, storage/, core/ or content/.'),
+                null => HealthResult::good('Could not check over the web whether private folders are hidden (the site address is not set or the server cannot reach itself).'),
+            };
+        }, 'security');
+
         $h->check('core.disk-space', 'Free disk space', static function () use ($cms): HealthResult {
             $free = @disk_free_space($cms->paths->storage());
             if ($free === false) {

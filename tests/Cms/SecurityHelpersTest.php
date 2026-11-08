@@ -49,6 +49,15 @@ final class SecurityHelpersTest extends TestCase
         $this->assertNull(AssetController::resolve($assets, 'link.css'), 'symlink escaping root');
         $this->assertNull(AssetController::resolve($assets, "css/app.css\0.png"), 'null byte');
         $this->assertNull(AssetController::resolve($assets, '/etc/passwd'));
+
+        // the server-only SSR bundle, however it is named
+        mkdir("$assets/build/ssr", 0777, true);
+        file_put_contents("$assets/build/ssr/app.js", 'export const secret = 1;');
+        symlink("$assets/build/ssr/app.js", "$assets/build/public.js");
+        foreach (['build/ssr/app.js', 'Build/SSR/app.js', 'BUILD/ssr/app.js', 'build/public.js'] as $path) {
+            $this->assertNull(AssetController::resolve($assets, $path), $path);
+        }
+        $this->assertNull(AssetController::resolve($assets, 'css/.Hidden.css'));
     }
 
     public function testPackageCheckerFlagsDangerousCode(): void

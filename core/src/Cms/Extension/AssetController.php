@@ -153,8 +153,7 @@ final class AssetController
             return null;
         }
 
-        // Hidden files (.vite manifests …) and server-only SSR bundles are never public.
-        if (preg_match('#(^|/)\.|(^|/)build/ssr/#', $path) === 1) {
+        if (self::private($path)) {
             return null;
         }
 
@@ -170,6 +169,13 @@ final class AssetController
             return null;
         }
 
-        return $realFile;
+        // the path as it is on disk too: on a case-insensitive disk "Build/SSR/x.js" is build/ssr/x.js
+        return self::private(substr($realFile, strlen($realRoot) + 1)) ? null : $realFile;
+    }
+
+    /** Hidden files (.vite manifests …) and server-only SSR bundles are never public, whatever their case. */
+    private static function private(string $path): bool
+    {
+        return preg_match('#(^|/)\.|(^|/)build/ssr/#i', str_replace('\\', '/', $path)) === 1;
     }
 }

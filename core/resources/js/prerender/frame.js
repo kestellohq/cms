@@ -22,7 +22,12 @@ async function api(method, path, body) {
         },
         body: body ? JSON.stringify(body) : undefined,
     });
-    if (!response.ok) throw new Error(`${method} ${path}: ${response.status}`);
+    if (!response.ok) {
+        // the server says why (a refused page names what it holds), so the warning can too
+        const problem = await response.json().catch(() => null);
+        const reason = Object.values(problem?.errors ?? {}).flat()[0] ?? problem?.detail ?? '';
+        throw new Error(`${method} ${path}: ${response.status}${reason ? ` (${reason})` : ''}`);
+    }
     return (await response.json())?.data;
 }
 

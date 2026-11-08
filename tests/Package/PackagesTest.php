@@ -134,6 +134,7 @@ final class PackagesTest extends AuthTestCase
         $zip = $this->built();
         $this->assertSame(['status' => 'signed', 'key' => $this->keys['id'], 'name' => 'Acme Plugins'], PackageSignature::verify(Zip::open($zip), $trusted));
         $this->assertSame('untrusted', PackageSignature::verify(Zip::open($zip), [])['status']);
+        $this->assertSame('tampered', PackageSignature::verify(Zip::open($zip), $trusted, PackageSignature::CORE)['status'], 'a package signature is not a core one');
         // another key with the same id claim can't pass
         $other = PackageSignature::generateKeys();
         $this->assertSame('tampered', PackageSignature::verify(Zip::open($zip), [$this->keys['id'] => ['name' => 'Impostor', 'public_key' => $other['public_key']]])['status']);

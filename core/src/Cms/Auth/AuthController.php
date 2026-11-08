@@ -107,6 +107,23 @@ final class AuthController
         return Response::redirect('/forgot-password');
     }
 
+    /** The link a new email address was sent: the account takes the address, or the person is told why not. */
+    public function confirmEmail(Request $request): Response
+    {
+        $cms = Cms::instance();
+        $result = $cms === null || !$cms->container->has(EmailChanges::class)
+            ? 'Email changes are not available on this site.'
+            : $cms->container->make(EmailChanges::class)->confirm((string) $request->input('token', ''), $request->ip());
+        if (is_string($result)) {
+            $this->session()->flash('error', $result);
+        } else {
+            $cms?->audit->record('profile.email_confirmed', ['user', $result['user_id']], [], $result['user_id']);
+            $this->session()->flash('success', 'Your new email address is confirmed.');
+        }
+
+        return Response::redirect('/admin/profile');
+    }
+
     public function showReset(Request $request): Response
     {
         $token = (string) $request->input('token', '');

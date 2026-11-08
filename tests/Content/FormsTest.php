@@ -132,6 +132,9 @@ final class FormsTest extends AuthTestCase
             [['fields' => [['name' => 'x', 'type' => 'php']]], 'fields.0.type', 'only known types'],
             [['captcha' => true], 'captcha', 'no captcha service installed'],
             [['redirect' => 'javascript:alert(1)'], 'redirect', 'redirects are site paths or web addresses'],
+            [['redirect' => '/\\evil.test/x'], 'redirect', 'browsers read /\\host as //host'],
+            [['redirect' => '//evil.test'], 'redirect', 'no protocol-relative addresses'],
+            [['redirect' => "/thanks\x07page"], 'redirect', 'no control characters'],
         ] as [$def, $key, $why]) {
             $r = $this->api('POST', '/forms', $broken($def));
             $this->assertSame(422, $r->statusCode(), $why);
