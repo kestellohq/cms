@@ -4,6 +4,10 @@ Every change people would notice is listed here, newest first. The format follow
 
 ## [Unreleased]
 
+### Changed
+
+- The admin menu is easier to find your way in. Groups fold (your browser remembers which), **System** starts folded, the group of the page you are on always opens, and that page is scrolled into view. Every entry shows its icon. A new **Site** group holds **Settings**, **Updates**, **Backups**, **Import** and **Redirects**, so **System** keeps only the tools for whoever looks after the site. **Your profile** stays in the menu's footer and the finder.
+
 ### Added
 
 - Structured data for search engines: every public page describes itself as JSON-LD (the site, who runs it, the page, its main image, an Article for dated entries, and breadcrumbs). **Settings > Search and sharing** says whether an organization or a person runs the site, with a name, logo or photo, and profiles on other sites. Plugins change the nodes with the `seo.schema` filter; pages hidden from search, error pages and the admin get none.

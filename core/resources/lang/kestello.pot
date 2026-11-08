@@ -610,6 +610,10 @@ msgstr ""
 msgid "Admin"
 msgstr ""
 
+#: core/resources/js/components/admin/AdminNav.vue
+msgid "Admin menu"
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 #: core/src/Cms/Auth/Roles.php
 msgid "Administrator"
@@ -7930,6 +7934,7 @@ msgstr ""
 #: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/builder/useCatalog.js
+#: core/src/Cms/Admin/AdminRegistry.php
 #: core/src/Cms/Console/Backup/BackupRestoreCommand.php
 #: core/src/Cms/Console/ImportWordPressCommand.php
 msgid "Site"
@@ -10720,6 +10725,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "of {total} moved"
+msgstr ""
+
+#: core/resources/js/components/admin/AdminNav.vue
+msgid "opens in a new tab"
 msgstr ""
 
 #: core/resources/js/pages/auth/Login.vue

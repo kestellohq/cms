@@ -324,17 +324,58 @@ body.k-modal-open {
     scrollbar-color: var(--k-rail-rule) transparent;
 }
 .k-nav__group + .k-nav__group {
-    margin-top: 14px;
+    margin-top: 10px;
 }
+/* A group heading is the button that folds it. */
 .k-nav__heading {
+    margin: 0;
+    font: inherit;
+}
+.k-nav__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 26px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: var(--k-radius);
+    background: none;
+    color: var(--k-rail-ink-2);
+    font: inherit;
     font-size: 11.5px;
     font-weight: 600;
-    color: var(--k-rail-ink-2);
-    padding: 0 10px 4px;
+    text-align: start;
+    cursor: pointer;
+}
+.k-nav__toggle:hover,
+.k-nav__toggle.is-current {
+    color: var(--k-rail-ink);
+}
+.k-nav__caret {
+    font-size: 11px;
+    opacity: 0;
+    transition:
+        transform 0.15s var(--k-ease),
+        opacity 0.15s var(--k-ease);
+}
+/* The caret shows when it can be used, and always on a folded group. */
+.k-nav__toggle:hover .k-nav__caret,
+.k-nav__toggle:focus-visible .k-nav__caret,
+.k-nav__group.is-folded .k-nav__caret {
+    opacity: 1;
+}
+.k-nav__group.is-folded .k-nav__caret {
+    transform: rotate(-90deg);
+}
+@media (hover: none) {
+    .k-nav__caret {
+        opacity: 1;
+    }
 }
 .k-nav ul {
     list-style: none;
-    margin: 0;
+    margin: 2px 0 0;
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -343,7 +384,7 @@ body.k-modal-open {
 .k-nav__link {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     min-height: 30px;
     padding: 0 10px;
     border-radius: var(--k-radius);
@@ -351,7 +392,12 @@ body.k-modal-open {
     text-decoration: none;
     font-weight: 500;
 }
-.k-nav__link > span:first-child {
+.k-nav__icon {
+    flex: none;
+    font-size: 16px;
+    color: var(--k-rail-ink-2);
+}
+.k-nav__label {
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -361,11 +407,17 @@ body.k-modal-open {
 .k-nav__link:hover {
     background: var(--k-rail-2);
 }
+.k-nav__link:hover .k-nav__icon {
+    color: var(--k-rail-ink);
+}
 .k-nav__link.is-active {
     background: color-mix(in srgb, var(--k-rail-ink) 14%, transparent);
     color: var(--k-rail-ink);
     font-weight: 650;
 } /* a soft tint, not a white block */
+.k-nav__link.is-active .k-nav__icon {
+    color: var(--k-rail-ink);
+}
 .k-nav__external {
     font-size: 12px;
     color: var(--k-rail-ink-2);

@@ -105,7 +105,10 @@ final class AdminRegistry
             'content' => ['label' => 'Content', 'order' => 10, 'owner' => 'core'],
             'people' => ['label' => 'People', 'order' => 20, 'owner' => 'core'],
             'appearance' => ['label' => 'Appearance', 'order' => 30, 'owner' => 'core'],
+            // the whole site: what an owner changes or runs now and then
+            'site' => ['label' => 'Site', 'order' => 40, 'owner' => 'core'],
             'plugins' => ['label' => 'Plugins', 'order' => 80, 'owner' => 'core'],
+            // how it runs: checks, logs and tools for whoever looks after it
             'system' => ['label' => 'System', 'order' => 90, 'owner' => 'core'],
         ];
     }

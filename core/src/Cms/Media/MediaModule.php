@@ -60,7 +60,7 @@ final class MediaModule extends Provider
         $roles->grant('editor', 'media.manage');
 
         $cms->admin->page('media', '@core/admin/media/Index', 'Media', 'admin.access', ['label' => 'Media', 'icon' => 'images', 'group' => 'content', 'order' => 800]);
-        $cms->admin->page('system/storage', '@core/admin/system/Storage', 'File storage', 'system.manage', ['label' => 'File storage', 'icon' => 'hard-drive', 'group' => 'system', 'order' => 25]);
+        $cms->admin->page('system/storage', '@core/admin/system/Storage', 'File storage', 'system.manage', ['label' => 'File storage', 'icon' => 'hard-drive', 'group' => 'system', 'order' => 80]);
 
         $cms->schedule->call(static fn() => $cms->container->make(MediaLibrary::class)->purgeExpired() . ' unfinished uploads removed.', 'media.purge-uploads')
             ->hourly()->description('Removes uploads nobody finished within a day.');

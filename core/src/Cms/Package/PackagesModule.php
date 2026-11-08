@@ -75,7 +75,7 @@ final class PackagesModule extends Provider
     {
         $cms->auth->roles->capability('plugins.manage', 'Install, update, activate, deactivate and delete plugins', sensitive: true);
         $cms->auth->roles->capability('core.update', 'Update Kestello itself', sensitive: true);
-        $cms->admin->page('system/updates', '@core/admin/system/Updates', 'Updates', 'core.update', ['label' => 'Updates', 'icon' => 'arrows-clockwise', 'group' => 'system', 'order' => 14]);
+        $cms->admin->page('system/updates', '@core/admin/system/Updates', 'Updates', 'core.update', ['label' => 'Updates', 'icon' => 'arrows-clockwise', 'group' => 'site', 'order' => 20]);
         $cms->admin->page('system/plugins', '@core/admin/system/Plugins', 'Plugins', 'plugins.manage', ['label' => 'Manage plugins', 'icon' => 'plug', 'group' => 'plugins', 'order' => 0]);
 
         // new Kestello versions: asked of GitHub at most every release.check_every hours; nothing is installed
