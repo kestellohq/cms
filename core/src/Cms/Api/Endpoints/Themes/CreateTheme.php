@@ -20,6 +20,12 @@ final class CreateTheme extends ThemeEndpoint
         return 'Create a theme';
     }
 
+    /** It can switch the live theme (activate), and with it the code that runs: like ActivateTheme, a recent sign-in. */
+    public function requiresRecentAuth(): bool
+    {
+        return true;
+    }
+
     public function body(): ?Schema
     {
         return Schema::object([

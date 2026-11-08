@@ -30,6 +30,8 @@ var AUDIT_LABELS = {
 	"users.updated": __("Changed a person"),
 	"users.deleted": __("Deleted a person"),
 	"profile.updated": __("Updated their profile"),
+	"profile.email_change_requested": __("Asked to change their email"),
+	"profile.email_confirmed": __("Confirmed a new email"),
 	"role.created": __("Created a role"),
 	"role.updated": __("Changed a role"),
 	"role.deleted": __("Deleted a role"),

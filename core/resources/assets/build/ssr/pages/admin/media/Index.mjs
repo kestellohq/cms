@@ -888,7 +888,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 		}
 		async function remove() {
 			const m = current.value;
-			const used = m.usage?.length ?? 0;
+			const used = (m.usage?.length ?? 0) + (m.usage_hidden ?? 0);
 			if (!await confirm({
 				title: __("Delete “{title}”?", { title: m.title }),
 				message: used ? __("{n} entries use this file. They will show a missing file until you pick another one.", { n: used }) : __("The file is removed from storage. This cannot be undone."),
@@ -1312,7 +1312,10 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 								_push(`<span class="k-muted k-small"${_scopeId}> · ${ssrInterpolate(STATUS[u.status] ?? u.status)}</span></li>`);
 							});
 							_push(`<!--]--></ul>`);
-						} else _push(`<p class="k-muted k-small"${_scopeId}>${ssrInterpolate(unref(__)("Not used in any entry yet."))}</p>`);
+						} else _push(`<!---->`);
+						if (current.value.usage_hidden) _push(`<p class="k-muted k-small"${_scopeId}>${ssrInterpolate(unref(__)("And {n} entries you cannot open.", { n: current.value.usage_hidden }))}</p>`);
+						else if (!current.value.usage?.length) _push(`<p class="k-muted k-small"${_scopeId}>${ssrInterpolate(unref(__)("Not used in any entry yet."))}</p>`);
+						else _push(`<!---->`);
 						_push(`</section>`);
 					} else return [
 						createVNode("figure", { class: "k-media-preview" }, [isImage.value && current.value.url ? (openBlock(), createBlock("span", {
@@ -1474,15 +1477,22 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						createVNode("section", {
 							class: "k-media-usage",
 							"aria-label": unref(__)("Where it is used")
-						}, [createVNode("h3", { class: "k-media-usage__title" }, toDisplayString(unref(__)("Used in")), 1), current.value.usage?.length ? (openBlock(), createBlock("ul", { key: 0 }, [(openBlock(true), createBlock(Fragment, null, renderList(current.value.usage, (u) => {
-							return openBlock(), createBlock("li", { key: `${u.id}-${u.field}` }, [createVNode(unref(Link), { href: `/admin/content/${u.type}/${u.id}` }, {
-								default: withCtx(() => [createTextVNode(toDisplayString(u.title || unref(__)("(untitled)")), 1)]),
-								_: 2
-							}, 1032, ["href"]), createVNode("span", { class: "k-muted k-small" }, " · " + toDisplayString(STATUS[u.status] ?? u.status), 1)]);
-						}), 128))])) : (openBlock(), createBlock("p", {
-							key: 1,
-							class: "k-muted k-small"
-						}, toDisplayString(unref(__)("Not used in any entry yet.")), 1))], 8, ["aria-label"])
+						}, [
+							createVNode("h3", { class: "k-media-usage__title" }, toDisplayString(unref(__)("Used in")), 1),
+							current.value.usage?.length ? (openBlock(), createBlock("ul", { key: 0 }, [(openBlock(true), createBlock(Fragment, null, renderList(current.value.usage, (u) => {
+								return openBlock(), createBlock("li", { key: `${u.id}-${u.field}` }, [createVNode(unref(Link), { href: `/admin/content/${u.type}/${u.id}` }, {
+									default: withCtx(() => [createTextVNode(toDisplayString(u.title || unref(__)("(untitled)")), 1)]),
+									_: 2
+								}, 1032, ["href"]), createVNode("span", { class: "k-muted k-small" }, " · " + toDisplayString(STATUS[u.status] ?? u.status), 1)]);
+							}), 128))])) : createCommentVNode("v-if", true),
+							current.value.usage_hidden ? (openBlock(), createBlock("p", {
+								key: 1,
+								class: "k-muted k-small"
+							}, toDisplayString(unref(__)("And {n} entries you cannot open.", { n: current.value.usage_hidden })), 1)) : !current.value.usage?.length ? (openBlock(), createBlock("p", {
+								key: 2,
+								class: "k-muted k-small"
+							}, toDisplayString(unref(__)("Not used in any entry yet.")), 1)) : createCommentVNode("v-if", true)
+						], 8, ["aria-label"])
 					];
 				}),
 				_: 2

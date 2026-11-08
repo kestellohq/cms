@@ -29,7 +29,7 @@ use Kestello\Framework\Settings\Settings;
 final class PageCacheModule extends Provider
 {
     /** Recorded changes that can show up on any page. */
-    private const array FLUSH_ON = ['settings.updated', 'menu.', 'media.updated', 'media.deleted', 'platform.changed', 'profile.updated', 'user.', 'content_model.', 'theme.'];
+    private const array FLUSH_ON = ['settings.updated', 'menu.', 'media.updated', 'media.deleted', 'platform.changed', 'profile.updated', 'profile.email_confirmed', 'user.', 'content_model.', 'theme.'];
 
     public function register(Container $container): void
     {

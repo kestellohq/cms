@@ -56,11 +56,13 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 			savingAccount.value = true;
 			accountErrors.value = {};
 			try {
+				const email = account.email.trim();
+				const changed = email !== me.data.value?.email;
 				await api.patch("/me", {
-					email: account.email.trim(),
+					email,
 					bio: account.bio
 				});
-				notify.success(__("Your profile was saved."));
+				notify.success(changed ? __("Check {email} for a link to confirm it.", { email }) : __("Your profile was saved."));
 				await me.reload({ silent: true });
 			} catch (e) {
 				accountErrors.value = fieldErrors(e) ?? {};
@@ -402,19 +404,22 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 							}, _parent, _scopeId));
 							_push(ssrRenderComponent(unref(KField), {
 								label: unref(__)("Email"),
-								help: unref(__)("Password resets go here. Changing it asks for your password."),
+								help: unref(__)("Password resets go here. Changing it asks for your password, and the new address must confirm it."),
 								error: accountErrors.value.email ?? ""
 							}, {
 								default: withCtx(({ id, invalid }, _push, _parent, _scopeId) => {
-									if (_push) _push(ssrRenderComponent(unref(KInput), {
-										id,
-										modelValue: account.email,
-										"onUpdate:modelValue": ($event) => account.email = $event,
-										type: "email",
-										autocomplete: "email",
-										invalid
-									}, null, _parent, _scopeId));
-									else return [createVNode(unref(KInput), {
+									if (_push) {
+										_push(ssrRenderComponent(unref(KInput), {
+											id,
+											modelValue: account.email,
+											"onUpdate:modelValue": ($event) => account.email = $event,
+											type: "email",
+											autocomplete: "email",
+											invalid
+										}, null, _parent, _scopeId));
+										if (unref(me).data.value?.pending_email) _push(`<p class="k-muted"${_scopeId}>${ssrInterpolate(unref(__)("Waiting for {email} to be confirmed: open the link sent there.", { email: unref(me).data.value.pending_email }))}</p>`);
+										else _push(`<!---->`);
+									} else return [createVNode(unref(KInput), {
 										id,
 										modelValue: account.email,
 										"onUpdate:modelValue": ($event) => account.email = $event,
@@ -426,7 +431,10 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 										"modelValue",
 										"onUpdate:modelValue",
 										"invalid"
-									])];
+									]), unref(me).data.value?.pending_email ? (openBlock(), createBlock("p", {
+										key: 0,
+										class: "k-muted"
+									}, toDisplayString(unref(__)("Waiting for {email} to be confirmed: open the link sent there.", { email: unref(me).data.value.pending_email })), 1)) : createCommentVNode("v-if", true)];
 								}),
 								_: 1
 							}, _parent, _scopeId));
@@ -466,7 +474,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 							}, 8, ["label", "help"]),
 							createVNode(unref(KField), {
 								label: unref(__)("Email"),
-								help: unref(__)("Password resets go here. Changing it asks for your password."),
+								help: unref(__)("Password resets go here. Changing it asks for your password, and the new address must confirm it."),
 								error: accountErrors.value.email ?? ""
 							}, {
 								default: withCtx(({ id, invalid }) => [createVNode(unref(KInput), {
@@ -481,7 +489,10 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 									"modelValue",
 									"onUpdate:modelValue",
 									"invalid"
-								])]),
+								]), unref(me).data.value?.pending_email ? (openBlock(), createBlock("p", {
+									key: 0,
+									class: "k-muted"
+								}, toDisplayString(unref(__)("Waiting for {email} to be confirmed: open the link sent there.", { email: unref(me).data.value.pending_email })), 1)) : createCommentVNode("v-if", true)]),
 								_: 1
 							}, 8, [
 								"label",

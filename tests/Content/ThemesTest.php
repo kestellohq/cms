@@ -122,6 +122,13 @@ final class ThemesTest extends AuthTestCase
         return $path;
     }
 
+    public function testEverythingThatCanSwitchTheLiveThemeAsksForARecentSignIn(): void
+    {
+        foreach ([\Kestello\Cms\Api\Endpoints\Themes\ActivateTheme::class, \Kestello\Cms\Api\Endpoints\Themes\CreateTheme::class] as $class) {
+            $this->assertTrue((new $class())->requiresRecentAuth(), "{$class}: creating with activate switches the live theme too");
+        }
+    }
+
     public function testTheWizardMakesADataOnlyChildThemeFromTheSite(): void
     {
         // the site changes the accent and the header

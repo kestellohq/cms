@@ -95,8 +95,8 @@
     "file": "chunks/device-BM6AZ4hl.js",
     "name": "device"
   },
-  "_events-KecfYxrp.js": {
-    "file": "chunks/events-KecfYxrp.js",
+  "_events-DcZfDYPc.js": {
+    "file": "chunks/events-DcZfDYPc.js",
     "name": "events"
   },
   "_field-paths-BjBE4cX3.js": {
@@ -156,12 +156,12 @@
     ]
   },
   "resources/js/pages/admin/Dashboard.vue": {
-    "file": "pages/admin/Dashboard-By3JSW8P.js",
+    "file": "pages/admin/Dashboard-D3tNBTpZ.js",
     "name": "pages/admin/Dashboard",
     "src": "resources/js/pages/admin/Dashboard.vue",
     "isEntry": true,
     "imports": [
-      "_events-KecfYxrp.js"
+      "_events-DcZfDYPc.js"
     ]
   },
   "resources/js/pages/admin/NotFound.vue": {
@@ -171,7 +171,7 @@
     "isEntry": true
   },
   "resources/js/pages/admin/Profile.vue": {
-    "file": "pages/admin/Profile-BX_Db303.js",
+    "file": "pages/admin/Profile-BYRCk4Vz.js",
     "name": "pages/admin/Profile",
     "src": "resources/js/pages/admin/Profile.vue",
     "isEntry": true,
@@ -332,7 +332,7 @@
     ]
   },
   "resources/js/pages/admin/media/Index.vue": {
-    "file": "pages/admin/media/Index-Bg_dM47A.js",
+    "file": "pages/admin/media/Index-D9dGNmBX.js",
     "name": "pages/admin/media/Index",
     "src": "resources/js/pages/admin/media/Index.vue",
     "isEntry": true
@@ -380,12 +380,12 @@
     ]
   },
   "resources/js/pages/admin/system/Audit.vue": {
-    "file": "pages/admin/system/Audit-BVKAjzra.js",
+    "file": "pages/admin/system/Audit-rFqhNLA4.js",
     "name": "pages/admin/system/Audit",
     "src": "resources/js/pages/admin/system/Audit.vue",
     "isEntry": true,
     "imports": [
-      "_events-KecfYxrp.js"
+      "_events-DcZfDYPc.js"
     ]
   },
   "resources/js/pages/admin/system/Backups.vue": {
@@ -451,13 +451,13 @@
     "isEntry": true
   },
   "resources/js/pages/admin/system/Security.vue": {
-    "file": "pages/admin/system/Security-BpZeEOUx.js",
+    "file": "pages/admin/system/Security-DK1cA_Kz.js",
     "name": "pages/admin/system/Security",
     "src": "resources/js/pages/admin/system/Security.vue",
     "isEntry": true,
     "imports": [
       "_device-BM6AZ4hl.js",
-      "_events-KecfYxrp.js"
+      "_events-DcZfDYPc.js"
     ]
   },
   "resources/js/pages/admin/system/Storage.vue": {

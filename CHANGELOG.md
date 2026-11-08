@@ -4,6 +4,15 @@ Every change people would notice is listed here, newest first. The format follow
 
 ## [Unreleased]
 
+### Security
+
+- Changing your email address takes effect only once you open a link sent to the new address, and your old address is told a change was asked for. Before, the address changed at once, so an account could take an address its owner never confirmed. `GET /me` shows a waiting address as `pending_email`.
+- Password reset links stop working when an account's email address changes, whether you confirm a new one or an administrator sets it.
+- Wrong second-factor codes are limited to 20 an hour per account, from anywhere (it was 100), and after 5 the account's owner is emailed that someone has their password.
+- Creating a theme asks for a recent sign-in, like activating one, since it can switch the live theme.
+- A media file's details list only the entries you may open; the others are counted. Before, anyone who could upload saw the titles of drafts that used a file.
+- The people list for author and user fields no longer includes each person's role.
+
 ### Fixed
 
 - Backspace in an empty quote source, table caption or image caption no longer removes the whole block; only the block's first field does that.

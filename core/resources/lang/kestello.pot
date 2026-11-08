@@ -185,6 +185,10 @@ msgstr ""
 msgid "A name of up to 200 characters."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/GetMe.php
+msgid "A new address waiting for its confirmation link to be opened; the account keeps email until then"
+msgstr ""
+
 #: core/src/Cms/Api/Resources/EntryResource.php
 msgid "A newer unsaved draft, if any; single-entry answers only"
 msgstr ""
@@ -753,6 +757,10 @@ msgstr ""
 msgid "An update stopped halfway and was not put back"
 msgstr ""
 
+#: core/resources/js/pages/admin/media/Index.vue
+msgid "And {n} entries you cannot open."
+msgstr ""
+
 #: core/src/Cms/Content/Models/ContentModels.php
 msgid "Another field here is already called {name}."
 msgstr ""
@@ -871,6 +879,10 @@ msgstr ""
 
 #: core/resources/js/components/audit/events.js
 msgid "Asked for changes"
+msgstr ""
+
+#: core/resources/js/components/audit/events.js
+msgid "Asked to change their email"
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
@@ -1440,6 +1452,10 @@ msgstr ""
 msgid "Check the delivery log below for what the service answered, fix it, then turn the webhook on again."
 msgstr ""
 
+#: core/resources/js/pages/admin/Profile.vue
+msgid "Check {email} for a link to confirm it."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Checked"
 msgstr ""
@@ -1727,6 +1743,10 @@ msgstr ""
 
 #: core/resources/js/sdk/index.js
 msgid "Confirm your password"
+msgstr ""
+
+#: core/resources/js/components/audit/events.js
+msgid "Confirmed a new email"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -2356,7 +2376,7 @@ msgid "Deletes API tokens that expired over 30 days ago."
 msgstr ""
 
 #: core/src/Cms/System/CoreTasks.php
-msgid "Deletes audit entries past retention, and expired password-reset and sign-up links."
+msgid "Deletes audit entries past retention, and expired password-reset, sign-up and email-change links."
 msgstr ""
 
 #: core/src/Cms/System/CoreTasks.php
@@ -3660,6 +3680,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "How many of the newest entries feed readers get."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/MediaResource.php
+msgid "How many other entries use it (ones the viewer may not open)"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/RevokeUserSessions.php
@@ -6220,7 +6244,7 @@ msgid "Password resets and notifications go here."
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
-msgid "Password resets go here. Changing it asks for your password."
+msgid "Password resets go here. Changing it asks for your password, and the new address must confirm it."
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderToolbar.vue
@@ -10201,6 +10225,10 @@ msgstr ""
 msgid "Waiting for review. An editor publishes it or asks for changes, and you are told either way."
 msgstr ""
 
+#: core/resources/js/pages/admin/Profile.vue
+msgid "Waiting for {email} to be confirmed: open the link sent there."
+msgstr ""
+
 #: core/resources/js/components/content-types/field-labels.js
 msgid "Web address"
 msgstr ""
@@ -10358,7 +10386,7 @@ msgid "Where it is used"
 msgstr ""
 
 #: core/src/Cms/Api/Resources/MediaResource.php
-msgid "Where it is used; single-item answers only"
+msgid "Where it is used; single-item answers only, and only entries the viewer may open"
 msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php

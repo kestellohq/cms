@@ -75,8 +75,8 @@
     "file": "chunks/device-DTfRdqhB.mjs",
     "name": "device"
   },
-  "_events-z0wVOOcI.mjs": {
-    "file": "chunks/events-z0wVOOcI.mjs",
+  "_events-CqZeUdIa.mjs": {
+    "file": "chunks/events-CqZeUdIa.mjs",
     "name": "events"
   },
   "_field-paths-X95yVgQw.mjs": {
@@ -141,7 +141,7 @@
     "src": "resources/js/pages/admin/Dashboard.vue",
     "isEntry": true,
     "imports": [
-      "_events-z0wVOOcI.mjs"
+      "_events-CqZeUdIa.mjs"
     ]
   },
   "resources/js/pages/admin/NotFound.vue": {
@@ -365,7 +365,7 @@
     "src": "resources/js/pages/admin/system/Audit.vue",
     "isEntry": true,
     "imports": [
-      "_events-z0wVOOcI.mjs"
+      "_events-CqZeUdIa.mjs"
     ]
   },
   "resources/js/pages/admin/system/Backups.vue": {
@@ -437,7 +437,7 @@
     "isEntry": true,
     "imports": [
       "_device-DTfRdqhB.mjs",
-      "_events-z0wVOOcI.mjs"
+      "_events-CqZeUdIa.mjs"
     ]
   },
   "resources/js/pages/admin/system/Storage.vue": {
