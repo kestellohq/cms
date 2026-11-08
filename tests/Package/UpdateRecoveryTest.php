@@ -534,7 +534,7 @@ final class UpdateRecoveryTest extends AuthTestCase
             $this->assertSame([true, false, 'Kestello'], [$stopped['running'], $stopped['gave_up'], $stopped['name']], json_encode($stopped));
             $check = $this->cms->health->run(fresh: true, only: ['core.update-stopped'])['checks'][0];
             $this->assertSame('recommended', $check['status'], json_encode($check));
-            $this->assertStringContainsString('is still running', $check['message']);
+            $this->assertStringContainsString('The update of Kestello from 0.1.0 to 0.2.0 has been running for 16 minutes.', $check['message'], 'its age, not a clock time in the server\'s time zone');
             $this->assertSame(409, $this->api('POST', '/updates/recover')->statusCode(), 'nothing to try again while it runs');
         });
         $this->assertFalse(json_decode($this->api('GET', '/updates')->content(), true)['data']['stopped_update']['running'], 'once it lets go, it is a stopped update');

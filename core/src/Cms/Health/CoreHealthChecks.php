@@ -149,7 +149,7 @@ final class CoreHealthChecks
                 $name = \Kestello\Cms\Package\Update\UpdateRecovery::displayName($cms, (string) $long['owner']);
 
                 return HealthResult::recommended(
-                    "The update of {$name} from {$long['from']} to {$long['to']} started " . date('Y-m-d H:i', (int) $long['started_at']) . ' and is still running. Visitors see the maintenance page until it ends; the site puts it back by itself after that. If it does not end within the hour, ask your host to restart PHP for this site.',
+                    "The update of {$name} from {$long['from']} to {$long['to']} has been running for " . max(1, intdiv(time() - (int) $long['started_at'], 60)) . ' minutes. Visitors see the maintenance page until it ends; the site puts it back by itself after that. If it does not end within the hour, ask your host to restart PHP for this site.',
                     ['owner' => $long['owner'], 'from' => $long['from'], 'to' => $long['to'], 'running' => true],
                     ['Open Updates', '/admin/system/updates'],
                 );
