@@ -1,4 +1,4 @@
-import { n as auditLabel } from "../../chunks/events-DFJBVCyy.mjs";
+import { n as auditLabel } from "../../chunks/events-z0wVOOcI.mjs";
 import { Fragment, computed, createBlock, createCommentVNode, createTextVNode, createVNode, openBlock, renderList, toDisplayString, unref, useSSRContext, withCtx } from "vue";
 import { ssrInterpolate, ssrRenderComponent, ssrRenderList } from "vue/server-renderer";
 import { Head, Link } from "@kestello/app";

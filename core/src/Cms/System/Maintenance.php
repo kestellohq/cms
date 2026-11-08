@@ -60,6 +60,21 @@ final class Maintenance
     }
 
     /**
+     * Make sure visitors get the maintenance page for $minutes more: the
+     * maintenance already on is extended (its bypass for the update's own
+     * check stays valid), even when it ran out; otherwise it is turned on.
+     */
+    public function hold(string $reason, int $minutes = 30): void
+    {
+        $data = is_file($this->file()) ? json_decode((string) @file_get_contents($this->file()), true) : null;
+        if (is_array($data)) {
+            $this->extend($minutes);
+            return;
+        }
+        $this->on(self::VISITORS, $reason, $minutes);
+    }
+
+    /**
      * Keep maintenance on for at least $minutes more, when it is on: long
      * work (a restore of a large site) calls this as it goes, so the site
      * doesn't open halfway through.

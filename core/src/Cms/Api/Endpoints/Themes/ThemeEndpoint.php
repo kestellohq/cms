@@ -71,11 +71,13 @@ abstract class ThemeEndpoint extends Endpoint
             $variations[] = ['name' => $name, 'label' => $v['label']];
         }
         $running = $ext->activeTheme()?->slug();
+        // updates come with the packages module; without it there is nothing to switch back to
+        $recovery = $this->cms()->container->has(\Kestello\Cms\Package\Update\UpdateRecovery::class) ? $this->cms()->container->make(\Kestello\Cms\Package\Update\UpdateRecovery::class) : null;
         $active = $ext->configuredTheme();
         $docs = $running === null ? 0 : count($this->cms()->container->make(\Kestello\Cms\Design\ThemeDocuments::class)->allPublished($running));
 
         return [
-            'themes' => $this->packages()->list(),
+            'themes' => array_map(fn(array $t): array => $t + ['switch_back' => $recovery?->switchBackOption('theme:' . $t['slug'], $t['version'])], $this->packages()->list()),
             'active' => $active,
             'running' => $running,
             'variations' => $variations,
