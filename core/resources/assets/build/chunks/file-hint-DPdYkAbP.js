@@ -1,1 +1,0 @@
-var e=(e,t)=>Number.isFinite(Number(e))&&Number(e)>=1&&e!==``&&e!==null?Math.floor(Number(e)):t;function t(t,n){let r=e(t?.max_size,5),i=t?.multiple?e(t?.max,5):1;return i>1?n.many({size:r,count:i}):n.one({size:r})}function n(e,t={}){return String(e).replace(/\{(\w+)\}/g,(e,n)=>n in t?String(t[n]):e)}export{n,t};
