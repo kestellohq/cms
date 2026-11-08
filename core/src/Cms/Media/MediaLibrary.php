@@ -110,16 +110,46 @@ final class MediaLibrary
      */
     public function start(Principal $p, string $filename, int $size): array
     {
-        $filename = $this->check($p, $filename, $size);
-        $pending = QueryBuilder::table('uploads')->where('user_id', $p->userId)->where('expires_at', '>', gmdate('Y-m-d H:i:s'))->count();
-        if ($pending >= self::MAX_PENDING) {
-            throw MediaException::conflict('Too many unfinished uploads. Finish or cancel some first.');
-        }
         $direct = $this->directDisk();
-        $row = $this->newRow($p, $filename, $size, $direct !== null ? 'direct' : 'chunked');
-        QueryBuilder::table('uploads')->insert($row);
+        $row = $this->reserving($p, function () use ($p, $filename, $size, $direct): array {
+            $filename = $this->check($p, $filename, $size);
+            $pending = QueryBuilder::table('uploads')->where('user_id', $p->userId)->where('expires_at', '>', gmdate('Y-m-d H:i:s'))->count();
+            if ($pending >= self::MAX_PENDING) {
+                throw MediaException::conflict('Too many unfinished uploads. Finish or cancel some first.');
+            }
+            $row = $this->newRow($p, $filename, $size, $direct !== null ? 'direct' : 'chunked');
+            QueryBuilder::table('uploads')->insert($row);
+
+            return $row;
+        });
 
         return $this->describeUpload($row, $direct);
+    }
+
+    /** Seconds an upload waits for another of the same person's to be counted (tests shorten it). */
+    public static int $quotaLockWait = 10;
+
+    /**
+     * Run $work (check the quota, then reserve the room with an `uploads` row)
+     * as one step per person: two uploads started at once would otherwise both
+     * pass the check before either is counted.
+     *
+     * @template T
+     * @param \Closure(): T $work
+     * @return T
+     * @throws MediaException
+     */
+    private function reserving(Principal $p, \Closure $work): mixed
+    {
+        $c = $this->cms->container;
+        if ($p->userId === null || !$c->has(\Kestello\Contracts\Cache\Store::class)) {
+            return $work();
+        }
+        try {
+            return $c->make(\Kestello\Contracts\Cache\Store::class)->lock('media-quota:' . $p->userId, 30)->block(self::$quotaLockWait, $work);
+        } catch (\Kestello\Contracts\Cache\LockTimeout) {
+            throw MediaException::conflict('Another upload is starting. Try again in a moment.');
+        }
     }
 
     /**
@@ -134,13 +164,17 @@ final class MediaLibrary
     {
         clearstatcache(true, $local);
         $size = is_file($local) ? (int) filesize($local) : 0;
-        $filename = $this->check($p, $filename, $size);
-        $row = $this->newRow($p, $filename, $size, 'chunked');
-        $row['received'] = max(1, (int) ceil($size / self::CHUNK_SIZE));
-        if (!@rename($local, $this->tempPath((string) $row['id'])) && !(@copy($local, $this->tempPath((string) $row['id'])) && @unlink($local))) {
-            throw new \RuntimeException('Could not move the file into the media library.');
-        }
-        QueryBuilder::table('uploads')->insert($row);
+        $row = $this->reserving($p, function () use ($p, $local, $filename, $size): array {
+            $filename = $this->check($p, $filename, $size);
+            $row = $this->newRow($p, $filename, $size, 'chunked');
+            $row['received'] = max(1, (int) ceil($size / self::CHUNK_SIZE));
+            if (!@rename($local, $this->tempPath((string) $row['id'])) && !(@copy($local, $this->tempPath((string) $row['id'])) && @unlink($local))) {
+                throw new \RuntimeException('Could not move the file into the media library.');
+            }
+            QueryBuilder::table('uploads')->insert($row);
+
+            return $row;
+        });
 
         return $this->complete($row, $p, $details);
     }

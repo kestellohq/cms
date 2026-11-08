@@ -28,7 +28,7 @@ return [
     'trusted_proxies' => [],
 
     // Package zips (plugins and themes with code). trusted_keys: publishers whose
-    // signed packages the admin may install, as a list of
+    // signed plugins and themes the admin may install (never core: see release.keys), as a list of
     // ['name' => 'Acme Plugins', 'public_key' => '<base64 Ed25519 key from package:keygen>'].
     // admin_unsigned: let the admin install unsigned packages too (development sites).
     // The CLI (plugin:install <zip>) always may: whoever runs it can change code anyway.

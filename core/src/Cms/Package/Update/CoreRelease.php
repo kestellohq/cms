@@ -68,7 +68,7 @@ final class CoreRelease
     /**
      * Unpack a release into $tmpRoot and describe it.
      *
-     * @param array<string, array{name: string, public_key: string}> $trusted key id => publisher (PackageInstaller::trustedKeys())
+     * @param array<string, array{name: string, public_key: string}> $trusted key id => publisher (release.keys: CoreUpdater::trustedKeys())
      * @return array{root: string, dir: string, version: string, php: ?string, extensions: list<string>, signature: array<string, mixed>}
      * @throws ContentException
      */
@@ -90,7 +90,7 @@ final class CoreRelease
                 throw ContentException::invalid(['file' => ["This is not a Kestello core release (core/{$file} is missing)."]]);
             }
         }
-        $signature = PackageSignature::verify($zip, $trusted);
+        $signature = PackageSignature::verify($zip, $trusted, PackageSignature::CORE);
 
         $root = rtrim($tmpRoot, '/') . '/core-' . bin2hex(random_bytes(6));
         mkdir($root, 0700, true);

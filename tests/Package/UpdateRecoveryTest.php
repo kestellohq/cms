@@ -12,7 +12,6 @@ use Kestello\Cms\Extension\ExtensionManager;
 use Kestello\Cms\Extension\PackageType;
 use Kestello\Cms\Extension\SuspensionList;
 use Kestello\Cms\Package\PackageBuilder;
-use Kestello\Cms\Package\PackageInstaller;
 use Kestello\Cms\Package\PackagesModule;
 use Kestello\Cms\Package\Update\CorePointer;
 use Kestello\Cms\Package\Update\CoreRelease;
@@ -117,7 +116,7 @@ final class UpdateRecoveryTest extends AuthTestCase
     private function core(string $running): CoreUpdater
     {
         $c = $this->cms->container;
-        $core = new CoreUpdater($this->cms, $c->make(PackageInstaller::class), $c->make(Backups::class), $c->make(HealthProbe::class), $running);
+        $core = new CoreUpdater($this->cms, $c->make(Backups::class), $c->make(HealthProbe::class), $running);
         $c->instance(CoreUpdater::class, $core);
 
         return $core;
