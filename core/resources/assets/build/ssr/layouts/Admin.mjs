@@ -3,6 +3,65 @@ import { ssrInterpolate, ssrRenderAttr, ssrRenderAttrs, ssrRenderClass, ssrRende
 import { Link, usePage } from "@kestello/app";
 import { __, requestPassword, setReauthHandler, useAdmin, useApi, useCan, useUser } from "@kestello/sdk";
 import { KAlert, KAvatar, KDialogs, KFinder, KIcon, KTime, KToasts } from "@kestello/ui";
+// core/resources/js/components/demo/demo.js
+/**
+* A public demo (config app.demo) tells every page so through the "demo"
+* page prop: the account to sign in with and when the site resets.
+*/
+/**
+* Whole minutes until the next reset, at least 1; null when it is not known
+* (before the first snapshot) or overdue (the reset runs with the next
+* scheduled task).
+*
+* @param {?number} nextReset unix seconds
+* @param {number} now unix milliseconds
+*/
+function minutesUntil(nextReset, now) {
+	if (typeof nextReset !== "number" || !Number.isFinite(nextReset)) return null;
+	const seconds = nextReset - Math.floor(now / 1e3);
+	return seconds <= 0 ? null : Math.max(1, Math.ceil(seconds / 60));
+}
+// core/resources/js/components/demo/DemoBar.vue
+/**
+* The admin's demo bar: this is a demo, what it shares with other
+* visitors, when it resets, and what is locked.
+*/
+var _sfc_main$2 = {
+	__name: "DemoBar",
+	__ssrInlineRender: true,
+	props: { 
+	/** The "demo" page prop: { next_reset, every }. */
+demo: {
+		type: Object,
+		required: true
+	} },
+	setup(__props) {
+		const props = __props;
+		const now = ref(Date.now());
+		const timer = setInterval(() => now.value = Date.now(), 3e4);
+		onBeforeUnmount(() => clearInterval(timer));
+		const minutes = computed(() => minutesUntil(props.demo.next_reset, now.value));
+		const when = computed(() => minutes.value === null ? __("Everything goes back to how it was shortly.") : minutes.value === 1 ? __("Everything goes back to how it was in about a minute.") : __("Everything goes back to how it was in {n} minutes.", { n: minutes.value }));
+		return (_ctx, _push, _parent, _attrs) => {
+			_push(ssrRenderComponent(unref(KAlert), mergeProps({
+				tone: "info",
+				title: unref(__)("This is a demo")
+			}, _attrs), {
+				default: withCtx((_, _push, _parent, _scopeId) => {
+					if (_push) _push(`<p${_scopeId}>${ssrInterpolate(when.value)} ${ssrInterpolate(unref(__)("Anyone can sign in here, so others may see what you change, and you may see theirs. Nothing is emailed."))}</p><p class="k-small"${_scopeId}>${ssrInterpolate(unref(__)("Content, design, menus, forms and images can be changed. Your account, people, plugins, updates, backups and settings are locked."))}</p>`);
+					else return [createVNode("p", null, toDisplayString(when.value) + " " + toDisplayString(unref(__)("Anyone can sign in here, so others may see what you change, and you may see theirs. Nothing is emailed.")), 1), createVNode("p", { class: "k-small" }, toDisplayString(unref(__)("Content, design, menus, forms and images can be changed. Your account, people, plugins, updates, backups and settings are locked.")), 1)];
+				}),
+				_: 1
+			}, _parent));
+		};
+	}
+};
+var _sfc_setup$2 = _sfc_main$2.setup;
+_sfc_main$2.setup = (props, ctx) => {
+	const ssrContext = useSSRContext();
+	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/components/demo/DemoBar.vue");
+	return _sfc_setup$2 ? _sfc_setup$2(props, ctx) : void 0;
+};
 // core/resources/js/components/admin/nav.js
 /**
 * The admin sidebar's rules, kept apart from its markup so they can be
@@ -280,7 +339,10 @@ var _sfc_main = {
 				}),
 				_: 1
 			}, _parent));
-			_push(`<span class="k-sidebar__product">Kestello ${ssrInterpolate(unref(admin).version)}</span></div><a href="/" class="k-icon-btn"${ssrRenderAttr("title", unref(__)("View site"))}${ssrRenderAttr("aria-label", unref(__)("View site"))}>`);
+			_push(`<span class="k-sidebar__product">Kestello ${ssrInterpolate(unref(admin).version)}`);
+			if (unref(page).props.demo) _push(`<!--[--> · ${ssrInterpolate(unref(__)("Demo"))}<!--]-->`);
+			else _push(`<!---->`);
+			_push(`</span></div><a href="/" class="k-icon-btn"${ssrRenderAttr("title", unref(__)("View site"))}${ssrRenderAttr("aria-label", unref(__)("View site"))}>`);
 			_push(ssrRenderComponent(unref(KIcon), { name: "arrow-square-out" }, null, _parent));
 			_push(`</a></div><button type="button" class="k-finder-btn"${ssrRenderAttr("aria-label", unref(__)("Find ({keys})", { keys: unref(isMac) ? "Command K" : "Control K" }))}>`);
 			_push(ssrRenderComponent(unref(KIcon), { name: "magnifying-glass" }, null, _parent));
@@ -351,6 +413,8 @@ var _sfc_main = {
 			_push(`</button><span class="k-topbar__site">${ssrInterpolate(site.value)}</span><button type="button" class="k-icon-btn"${ssrRenderAttr("aria-label", unref(__)("Find"))}>`);
 			_push(ssrRenderComponent(unref(KIcon), { name: "magnifying-glass" }, null, _parent));
 			_push(`</button></header><main id="k-main" class="k-main" tabindex="-1"><div class="k-flash">`);
+			if (unref(page).props.demo) _push(ssrRenderComponent(_sfc_main$2, { demo: unref(page).props.demo }, null, _parent));
+			else _push(`<!---->`);
 			if (unref(page).props.recoveryMode) _push(ssrRenderComponent(unref(KAlert), {
 				tone: "warning",
 				title: unref(__)("Recovery mode")

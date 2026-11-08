@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref, useId } from 'vue';
+import { usePage } from '@kestello/app';
 import { visibleFields } from '@kestello/sdk';
 import FormField from '../../shared/FormField.vue';
 import { fill } from '../../shared/file-hint.js';
@@ -27,6 +28,9 @@ let token = null;
 let tokenRequest = null;
 
 const def = computed(() => props.definition);
+// on a public demo everyone shares one account, so what a visitor sends here is readable by the next one
+const page = usePage();
+const demo = computed(() => !!page.props?.demo);
 const fields = computed(() => def.value?.fields ?? []);
 for (const f of props.definition?.fields ?? []) {
     values[f.name] = f.type === 'multi_select' ? [] : f.type === 'boolean' ? f.default === true : (f.default ?? '');
@@ -156,11 +160,19 @@ async function submit() {
             <button type="submit" class="k-b-form__submit" :disabled="state === 'sending'" :aria-busy="state === 'sending' ? 'true' : undefined">
                 {{ state === 'sending' ? text('sending') : def.submit_label }}
             </button>
+            <p v-if="demo" class="k-b-form__demo">
+                This is a demo: anyone who signs in to it can read what you send here, until it resets within the hour. Use made-up details.
+            </p>
         </form>
     </div>
 </template>
 
 <style scoped>
+.k-b-form__demo {
+    margin: 0.75rem 0 0;
+    font-size: 0.875em;
+    opacity: 0.8;
+}
 .k-b-form__alert {
     margin: 0 0 1.1rem;
     padding: 0.75rem 1rem;

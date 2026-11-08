@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Link, usePage } from '@kestello/app';
+import DemoBar from '../components/demo/DemoBar.vue';
 import { setReauthHandler, requestPassword, useAdmin, useApi, useCan, useUser, __, notify } from '@kestello/sdk';
 import { KAvatar, KDialogs, KFinder, KIcon, KToasts, KAlert, KTime } from '@kestello/ui';
 import AdminNav from '../components/admin/AdminNav.vue';
@@ -131,7 +132,9 @@ onBeforeUnmount(() => {
                 <img :src="'/assets/core/brand/kestello-symbol-white.svg'" alt="" width="24" height="24" class="k-logo k-logo--dark" />
                 <div>
                     <Link href="/admin" class="k-sidebar__site">{{ site }}</Link>
-                    <span class="k-sidebar__product">Kestello {{ admin.version }}</span>
+                    <span class="k-sidebar__product"
+                        >Kestello {{ admin.version }}<template v-if="page.props.demo"> · {{ __('Demo') }}</template></span
+                    >
                 </div>
                 <a href="/" class="k-icon-btn" :title="__('View site')" :aria-label="__('View site')"><KIcon name="arrow-square-out" /></a>
             </div>
@@ -215,6 +218,7 @@ onBeforeUnmount(() => {
 
             <main id="k-main" class="k-main" tabindex="-1">
                 <div class="k-flash">
+                    <DemoBar v-if="page.props.demo" :demo="page.props.demo" />
                     <KAlert v-if="page.props.recoveryMode" tone="warning" :title="__('Recovery mode')">
                         {{
                             __(

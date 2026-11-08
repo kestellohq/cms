@@ -46,7 +46,7 @@ var _sfc_main = {
 						ssrRenderList(__props.timezones, (tz) => {
 							_push(`<option${ssrRenderAttr("value", tz)}${ssrIncludeBooleanAttr(tz === __props.site.timezone) ? " selected" : ""}${_scopeId}>${ssrInterpolate(tz)}</option>`);
 						});
-						_push(`<!--]--></select><p id="timezone_help" class="k-field__help"${_scopeId}>For scheduled posts and dates.</p></div></div><div class="k-setup__actions"${_scopeId}><a href="/install?step=2" class="k-btn k-btn--secondary k-btn--md"${_scopeId}>Back</a><button type="submit" class="k-btn k-btn--primary k-btn--md"${_scopeId}>Continue</button></div></form>`);
+						_push(`<!--]--></select><p id="timezone_help" class="k-field__help"${_scopeId}>For scheduled posts and dates.</p></div></div><fieldset class="k-setup__choices"${_scopeId}><legend${_scopeId}>What is this site for?</legend><label class="k-setup__choice"${_scopeId}><input type="radio" name="site_kind" value="site"${ssrIncludeBooleanAttr(!__props.site.demo) ? " checked" : ""}${_scopeId}><strong${_scopeId}>A website</strong><span${_scopeId}>Your own site. You make the administrator account in the next step.</span></label><label class="k-setup__choice"${_scopeId}><input type="radio" name="site_kind" value="demo"${ssrIncludeBooleanAttr(__props.site.demo) ? " checked" : ""}${_scopeId}><strong${_scopeId}>A public demo</strong><span${_scopeId}>For showing Kestello to others. It starts with a sample bakery site, anyone can sign in as demo with the password demo, and it resets every hour. Accounts, plugins, updates, backups and settings are locked, and nothing is emailed. You manage it on the server with bin/cms.</span></label></fieldset><div class="k-setup__actions"${_scopeId}><a href="/install?step=2" class="k-btn k-btn--secondary k-btn--md"${_scopeId}>Back</a><button type="submit" class="k-btn k-btn--primary k-btn--md"${_scopeId}>Continue</button></div></form>`);
 					} else return [createVNode("form", {
 						method: "POST",
 						action: "/install",
@@ -134,6 +134,29 @@ var _sfc_main = {
 								class: "k-field__help"
 							}, "For scheduled posts and dates.")
 						])]),
+						createVNode("fieldset", { class: "k-setup__choices" }, [
+							createVNode("legend", null, "What is this site for?"),
+							createVNode("label", { class: "k-setup__choice" }, [
+								createVNode("input", {
+									type: "radio",
+									name: "site_kind",
+									value: "site",
+									checked: !__props.site.demo
+								}, null, 8, ["checked"]),
+								createVNode("strong", null, "A website"),
+								createVNode("span", null, "Your own site. You make the administrator account in the next step.")
+							]),
+							createVNode("label", { class: "k-setup__choice" }, [
+								createVNode("input", {
+									type: "radio",
+									name: "site_kind",
+									value: "demo",
+									checked: __props.site.demo
+								}, null, 8, ["checked"]),
+								createVNode("strong", null, "A public demo"),
+								createVNode("span", null, "For showing Kestello to others. It starts with a sample bakery site, anyone can sign in as demo with the password demo, and it resets every hour. Accounts, plugins, updates, backups and settings are locked, and nothing is emailed. You manage it on the server with bin/cms.")
+							])
+						]),
 						createVNode("div", { class: "k-setup__actions" }, [createVNode("a", {
 							href: "/install?step=2",
 							class: "k-btn k-btn--secondary k-btn--md"

@@ -133,7 +133,7 @@
     ]
   },
   "resources/js/layouts/Admin.vue": {
-    "file": "layouts/Admin-zKXCH2CO.js",
+    "file": "layouts/Admin-5q9gq3GX.js",
     "name": "layouts/Admin",
     "src": "resources/js/layouts/Admin.vue",
     "isEntry": true
@@ -535,7 +535,7 @@
     ]
   },
   "resources/js/pages/auth/Login.vue": {
-    "file": "pages/auth/Login-BMSH5BmK.js",
+    "file": "pages/auth/Login-Du6rXNsB.js",
     "name": "pages/auth/Login",
     "src": "resources/js/pages/auth/Login.vue",
     "isEntry": true,
@@ -687,7 +687,7 @@
     ]
   },
   "resources/js/pages/blocks/Form.vue": {
-    "file": "pages/blocks/Form-BTkq67bG.js",
+    "file": "pages/blocks/Form-NAG98mOl.js",
     "name": "pages/blocks/Form",
     "src": "resources/js/pages/blocks/Form.vue",
     "isEntry": true,
@@ -697,7 +697,7 @@
       "__plugin-vue_export-helper-BDNMzG2s.js"
     ],
     "css": [
-      "assets/Form-CqfQ3R7j.css"
+      "assets/Form-DNWs6ESJ.css"
     ]
   },
   "resources/js/pages/blocks/Gallery.vue": {
@@ -1149,7 +1149,7 @@
     ]
   },
   "resources/js/pages/installer/Finalize.vue": {
-    "file": "pages/installer/Finalize-BJoKYkAB.js",
+    "file": "pages/installer/Finalize-B9aUzshZ.js",
     "name": "pages/installer/Finalize",
     "src": "resources/js/pages/installer/Finalize.vue",
     "isEntry": true,
@@ -1168,7 +1168,7 @@
     ]
   },
   "resources/js/pages/installer/Site.vue": {
-    "file": "pages/installer/Site-xGoPWPJH.js",
+    "file": "pages/installer/Site-Cf1bnkCW.js",
     "name": "pages/installer/Site",
     "src": "resources/js/pages/installer/Site.vue",
     "isEntry": true,

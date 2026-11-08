@@ -138,6 +138,36 @@ final class InstallerTest extends TestCase
         $this->assertSame(4, InstallerController::firstIncompleteStep($_SESSION['installer'] + ['db_driver' => 'sqlite', 'site_name' => 'S']));
     }
 
+    public function testAPublicDemoSkipsTheAdministratorAndIsWrittenToTheConfig(): void
+    {
+        $_SESSION['installer'] = ['db_driver' => 'sqlite', 'db_name' => 'site'];
+        mkdir($this->root . '/storage/database', 0755, true);
+        $this->assertSame('/install?step=5', $this->post(['step' => '3', 'site_name' => 'Demo', 'site_url' => 'https://demo.example.test', 'site_kind' => 'demo']), 'no administrator step');
+        $this->assertSame('demo', $_SESSION['installer']['admin_username']);
+        $this->assertTrue(\Kestello\Support\Hash::verify('demo', $_SESSION['installer']['admin_password_hash']));
+
+        $this->assertSame('/install?step=4', $this->post(['step' => '3', 'site_name' => 'Demo', 'site_url' => 'https://demo.example.test', 'site_kind' => 'site']));
+        $this->assertSame(4, InstallerController::firstIncompleteStep($_SESSION['installer']), 'a website gets its own administrator, not the demo account');
+
+        $this->post(['step' => '3', 'site_name' => 'Demo', 'site_url' => 'https://demo.example.test', 'site_kind' => 'demo']);
+        $this->assertSame('/install/complete', $this->post(['step' => '5']));
+        $config = require $this->root . '/config/app.php';
+        $this->assertTrue($config['demo'] ?? false);
+        $user = (new \Kestello\Framework\Database\Connection(['driver' => 'sqlite', 'database' => $this->root . '/storage/database/site.sqlite']))->table('users')->first();
+        $this->assertSame(['demo', 'admin'], [$user['username'] ?? null, $user['role'] ?? null]);
+    }
+
+    public function testAWebsiteIsNotADemo(): void
+    {
+        $_SESSION['installer'] = ['db_driver' => 'sqlite', 'db_name' => 'site'];
+        mkdir($this->root . '/storage/database', 0755, true);
+        $this->post(['step' => '3', 'site_name' => 'Mine', 'site_url' => 'https://example.test']);
+        $good = 'a-long-and-unusual-passphrase';
+        $this->post(['step' => '4', 'admin_username' => 'ana', 'admin_email' => 'ana@example.test', 'admin_password' => $good, 'admin_password_confirm' => $good]);
+        $this->assertSame('/install/complete', $this->post(['step' => '5']));
+        $this->assertFalse(array_key_exists('demo', require $this->root . '/config/app.php'));
+    }
+
     public function testLaterStepsSendPeopleBackToTheFirstUnfinishedOne(): void
     {
         $this->assertSame(2, InstallerController::firstIncompleteStep([]));

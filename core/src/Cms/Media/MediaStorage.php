@@ -161,6 +161,9 @@ final class MediaStorage
     /** Megabytes this person may hold, or null for no limit. */
     public function quotaFor(Principal $p): ?int
     {
+        if (\Kestello\Cms\Demo\Demo::on($this->cms->config)) {
+            return intdiv(\Kestello\Cms\Demo\Demo::MEDIA_BYTES, 1_048_576);    // every visitor is the one demo account: this is the whole demo's room
+        }
         $role = (string) ($p->user['role'] ?? '');
         if ($role === '' || $role === 'admin' || in_array('*', $p->capabilities, true)) {
             return null;

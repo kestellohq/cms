@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Installer;
 
+use Kestello\Cms\Demo\Demo;
 use Kestello\Cms\View\Page;
 use Kestello\Framework\Core\Paths;
 use Kestello\Framework\Core\Request;
@@ -337,6 +338,7 @@ final class InstallerController
                 'description' => (string) ($saved['site_description'] ?? ''),
                 'url' => (string) ($saved['site_url'] ?? $guess),
                 'timezone' => (string) ($saved['timezone'] ?? 'UTC'),
+                'demo' => (bool) ($saved['demo'] ?? false),
             ],
         ]);
     }
@@ -357,9 +359,20 @@ final class InstallerController
         $timezone = trim((string) $request->input('timezone', 'UTC'));
         $saved['timezone'] = in_array($timezone, timezone_identifiers_list(), true) ? $timezone : 'UTC';
 
+        $wasDemo = (bool) ($saved['demo'] ?? false);
+        $saved['demo'] = $request->input('site_kind', 'site') === 'demo';
+        if ($saved['demo']) {
+            // a public demo's only account is the shared one (Demo); its owner works on the server
+            $saved['admin_username'] = Demo::USERNAME;
+            $saved['admin_email'] = Demo::EMAIL;
+            $saved['admin_password_hash'] = \Kestello\Support\Hash::password(Demo::PASSWORD);
+        } elseif ($wasDemo) {
+            unset($saved['admin_username'], $saved['admin_email'], $saved['admin_password_hash']);
+            unset($_SESSION['installer']['admin_username'], $_SESSION['installer']['admin_email'], $_SESSION['installer']['admin_password_hash']);   // saving merges
+        }
         $this->saveInstallerSession($saved);
 
-        return Response::redirect('/install?step=4');
+        return Response::redirect($saved['demo'] ? '/install?step=5' : '/install?step=4');
     }
 
     // -------------------------------------------------------------------------
@@ -369,6 +382,9 @@ final class InstallerController
     private function stepAdmin(Request $request): Response
     {
         $saved = $this->getInstallerSession();
+        if ($saved['demo'] ?? false) {
+            return Response::redirect('/install?step=5');
+        }
 
         return $this->renderStep('Admin', [
             'step' => 4,
@@ -443,6 +459,7 @@ final class InstallerController
                 'db_name' => (string) ($saved['db_name'] ?? ''),
                 'admin_username' => (string) ($saved['admin_username'] ?? ''),
                 'admin_email' => (string) ($saved['admin_email'] ?? ''),
+                'demo' => (bool) ($saved['demo'] ?? false),
             ],
             'error' => self::error($request),
         ]);
@@ -551,6 +568,9 @@ final class InstallerController
             'debug' => false,
             'secret_key' => bin2hex(random_bytes(32)),
         ];
+        if ($data['demo'] ?? false) {
+            $appConfig['demo'] = true;
+        }
         $path = $configDir . '/app.php';
         $this->writeConfigFile($path, $appConfig);
         $written[] = $path;

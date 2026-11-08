@@ -44,6 +44,9 @@ final class MediaLibrary
 
     public function types(): MediaTypes
     {
+        if (\Kestello\Cms\Demo\Demo::on($this->cms->config)) {
+            return new MediaTypes(['image'], false);    // a public demo hosts no one's documents, and no SVG
+        }
         $s = Settings::getInstance();
         $kinds = ['image'];
         foreach (['document' => true, 'audio' => true, 'video' => true, 'archive' => false] as $kind => $default) {
@@ -57,7 +60,9 @@ final class MediaLibrary
 
     public function maxBytes(): int
     {
-        return max(1, min(5120, (int) Settings::getInstance()->get('media_max_upload_mb', 64))) * 1_048_576;
+        $max = max(1, min(5120, (int) Settings::getInstance()->get('media_max_upload_mb', 64))) * 1_048_576;
+
+        return \Kestello\Cms\Demo\Demo::on($this->cms->config) ? min($max, \Kestello\Cms\Demo\Demo::MAX_UPLOAD_BYTES) : $max;
     }
 
     public function maxPixels(): int

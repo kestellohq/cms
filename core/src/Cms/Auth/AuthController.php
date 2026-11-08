@@ -25,9 +25,17 @@ final class AuthController
         $this->session()->token();   // the form posts with a CSRF token: start the session (guests browsing get none)
         return Page::render('@core/auth/Login', [
             'title' => 'Login',
-            'providers' => self::providers($request),
-            'canRegister' => $this->service(Registrations::class)->isOpen(),
+            // a public demo has one shared account: no outside sign-in, no new accounts
+            'providers' => $this->demo() ? [] : self::providers($request),
+            'canRegister' => !$this->demo() && $this->service(Registrations::class)->isOpen(),
         ]);
+    }
+
+    private function demo(): bool
+    {
+        $cms = \Kestello\Cms\Cms::instance();
+
+        return $cms !== null && \Kestello\Cms\Demo\Demo::on($cms->config);
     }
 
     public function login(Request $request): Response
