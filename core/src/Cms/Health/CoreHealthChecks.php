@@ -138,6 +138,31 @@ final class CoreHealthChecks
                 : HealthResult::good('The database is reachable.', $details);
         }, 'reliability');
 
+        $h->check('core.update-stopped', 'Updates', static function () use ($cms): HealthResult {
+            $journal = new \Kestello\Cms\Package\Update\UpdateJournal($cms->paths->storage());
+            $stopped = $journal->stopped();
+            if ($stopped === null) {
+                $long = $journal->runningLong();
+                if ($long === null) {
+                    return HealthResult::good('No update stopped halfway.');
+                }
+                $name = \Kestello\Cms\Package\Update\UpdateRecovery::displayName($cms, (string) $long['owner']);
+
+                return HealthResult::recommended(
+                    "The update of {$name} from {$long['from']} to {$long['to']} has been running for " . max(1, intdiv(time() - (int) $long['started_at'], 60)) . ' minutes. Visitors see the maintenance page until it ends; the site puts it back by itself after that. If it does not end within the hour, ask your host to restart PHP for this site.',
+                    ['owner' => $long['owner'], 'from' => $long['from'], 'to' => $long['to'], 'running' => true],
+                    ['Open Updates', '/admin/system/updates'],
+                );
+            }
+            $name = \Kestello\Cms\Package\Update\UpdateRecovery::displayName($cms, (string) $stopped['owner']);
+            $details = ['owner' => $stopped['owner'], 'from' => $stopped['from'], 'to' => $stopped['to'], 'attempts' => $stopped['attempts']];
+
+            return HealthResult::critical(
+                "The update of {$name} from {$stopped['from']} to {$stopped['to']} stopped halfway and was not put back. Visitors see the maintenance page until it is.",
+                $details,
+                ['Open Updates', '/admin/system/updates'],
+            );
+        });
         $h->check('core.drivers', 'Infrastructure drivers', static function () use ($cms): HealthResult {
             $degraded = $cms->drivers->degraded();
             $details = [];

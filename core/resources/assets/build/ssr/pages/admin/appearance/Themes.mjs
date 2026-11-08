@@ -1,7 +1,8 @@
+import { n as switchBackOutcome, r as takeSwitchBack, t as rememberSwitchBack } from "../../../chunks/switch-back-DFscO2EH.mjs";
 import { t as _plugin_vue_export_helper_default } from "../../../chunks/_plugin-vue_export-helper-DjkACiAr.mjs";
 import { Fragment, computed, createBlock, createCommentVNode, createSlots, createTextVNode, createVNode, isRef, openBlock, reactive, ref, toDisplayString, unref, useSSRContext, watch, withCtx, withModifiers } from "vue";
 import { ssrInterpolate, ssrRenderAttr, ssrRenderClass, ssrRenderComponent, ssrRenderList } from "vue/server-renderer";
-import { ApiError, __, confirm, notify, useApi } from "@kestello/sdk";
+import { ApiError, __, confirm, formatDateTime, notify, useApi, useCan } from "@kestello/sdk";
 import { KAlert, KBadge, KButton, KField, KIcon, KInput, KModal, KPageHeader, KSelect, KSwitch } from "@kestello/ui";
 // core/resources/js/pages/admin/appearance/Themes.vue
 var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
@@ -12,20 +13,61 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 		* Appearance → Themes: switch themes, make a new one from the current
 		* look, and move themes between sites as a zip. Themes made here hold no
 		* code (tokens, CSS, templates, parts, patterns and fonts), so importing
-		* one can't run anything on the server.
+		* one can't run anything on the server. After a developer theme is
+		* updated, Switch back goes to the version before it, with the database
+		* from before it (people who manage plugins only: it is code).
 		*/
 		const api = useApi();
 		const data = ref(null);
 		const loadError = ref(null);
 		const busy = ref("");
+		const can = useCan();
 		async function load() {
 			try {
 				data.value = (await api.get("/themes")).data;
 			} catch (e) {
 				loadError.value = e;
+				return;
+			}
+			const note = takeSwitchBack();
+			if (note?.owner.startsWith("theme:")) {
+				const running = data.value.themes.find((t) => `theme:${t.slug}` === note.owner)?.version ?? null;
+				if (switchBackOutcome(note, running, null) === "done") notify.success(__("{theme} {v} is back, with the database from before the update.", {
+					theme: note.name,
+					v: note.version
+				}));
+				else notify.error(__("Switching {theme} back to {v} did not finish. Site → Updates and the audit log say why.", {
+					theme: note.name,
+					v: note.version
+				}));
 			}
 		}
 		load();
+		async function switchBack(theme) {
+			const option = theme.switch_back;
+			if (!await confirm({
+				title: __("Switch {theme} back to {v}?", {
+					theme: theme.name,
+					v: option.to
+				}),
+				message: __("{theme} {v} is still on the server. Switching back also puts the database back as it was before the update, on {date}: anything changed on the site since then is lost from the site. A backup of the site as it is now is made first, under Site → Backups. Visitors see a short maintenance page.", {
+					theme: theme.name,
+					v: option.to,
+					date: formatDateTime(option.backup_at || option.updated_at)
+				}),
+				confirmLabel: __("Switch back to {v}", { v: option.to }),
+				danger: true
+			})) return;
+			busy.value = `switch-back:${theme.slug}`;
+			try {
+				await api.post("/plugins/switch-back", { owner: `theme:${theme.slug}` });
+				rememberSwitchBack(`theme:${theme.slug}`, theme.name, option.to);
+				window.location.reload();
+			} catch (e) {
+				notify.error(e);
+				busy.value = "";
+			}
+		}
 		const names = computed(() => Object.fromEntries((data.value?.themes ?? []).map((t) => [t.slug, t.name])));
 		const pendingSwitch = computed(() => data.value && data.value.running && data.value.active !== data.value.running);
 		async function activate(theme) {
@@ -242,16 +284,16 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 			}, _parent));
 			else _push(`<!---->`);
 			if (data.value) {
-				_push(`<ul class="k-themes" data-v-1147ee25><!--[-->`);
+				_push(`<ul class="k-themes" data-v-133c2b5e><!--[-->`);
 				ssrRenderList(data.value.themes, (t) => {
-					_push(`<li class="${ssrRenderClass([{ "is-active": t.slug === data.value.active }, "k-theme"])}" data-v-1147ee25><div class="k-theme__shot" data-v-1147ee25>`);
-					if (t.screenshot) _push(`<img${ssrRenderAttr("src", `/system/themes/${t.slug}/screenshot`)}${ssrRenderAttr("alt", "")} loading="lazy" data-v-1147ee25>`);
+					_push(`<li class="${ssrRenderClass([{ "is-active": t.slug === data.value.active }, "k-theme"])}" data-v-133c2b5e><div class="k-theme__shot" data-v-133c2b5e>`);
+					if (t.screenshot) _push(`<img${ssrRenderAttr("src", `/system/themes/${t.slug}/screenshot`)}${ssrRenderAttr("alt", "")} loading="lazy" data-v-133c2b5e>`);
 					else {
-						_push(`<span class="k-theme__noshot" aria-hidden="true" data-v-1147ee25>`);
+						_push(`<span class="k-theme__noshot" aria-hidden="true" data-v-133c2b5e>`);
 						_push(ssrRenderComponent(unref(KIcon), { name: "columns" }, null, _parent));
 						_push(`</span>`);
 					}
-					_push(`</div><div class="k-theme__body" data-v-1147ee25><div class="k-theme__title" data-v-1147ee25><h2 data-v-1147ee25>${ssrInterpolate(t.name)}</h2>`);
+					_push(`</div><div class="k-theme__body" data-v-133c2b5e><div class="k-theme__title" data-v-133c2b5e><h2 data-v-133c2b5e>${ssrInterpolate(t.name)}</h2>`);
 					if (t.slug === data.value.active) _push(ssrRenderComponent(unref(KBadge), { tone: "success" }, {
 						default: withCtx((_, _push, _parent, _scopeId) => {
 							if (_push) _push(`${ssrInterpolate(unref(__)("Active"))}`);
@@ -260,17 +302,23 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						_: 2
 					}, _parent));
 					else _push(`<!---->`);
-					_push(`</div><p class="k-muted k-small k-theme__meta" data-v-1147ee25><span class="k-num" data-v-1147ee25>${ssrInterpolate(t.version)}</span>`);
+					_push(`</div><p class="k-muted k-small k-theme__meta" data-v-133c2b5e><span class="k-num" data-v-133c2b5e>${ssrInterpolate(t.version)}</span>`);
 					if (t.parent) _push(`<!--[--> · ${ssrInterpolate(unref(__)("Builds on {theme}", { theme: names.value[t.parent] ?? t.parent }))}<!--]-->`);
 					else _push(`<!---->`);
 					if (t.author) _push(`<!--[--> · ${ssrInterpolate(t.author)}<!--]-->`);
 					else _push(`<!---->`);
 					_push(`</p>`);
-					if (t.description) _push(`<p class="k-theme__desc" data-v-1147ee25>${ssrInterpolate(t.description)}</p>`);
+					if (t.description) _push(`<p class="k-theme__desc" data-v-133c2b5e>${ssrInterpolate(t.description)}</p>`);
 					else _push(`<!---->`);
-					_push(`<p class="k-muted k-small k-theme__kind" data-v-1147ee25>`);
+					_push(`<p class="k-muted k-small k-theme__kind" data-v-133c2b5e>`);
 					_push(ssrRenderComponent(unref(KIcon), { name: t.data_only ? "sliders" : "code" }, null, _parent));
-					_push(` ${ssrInterpolate(t.data_only ? unref(__)("Made in the admin, no code") : unref(__)("Developer theme with code"))}</p></div><div class="k-theme__actions" data-v-1147ee25>`);
+					_push(` ${ssrInterpolate(t.data_only ? unref(__)("Made in the admin, no code") : unref(__)("Developer theme with code"))}</p>`);
+					if (t.switch_back) _push(`<p class="k-muted k-small k-theme__back" data-v-133c2b5e>${ssrInterpolate(unref(__)("Updated from {v} on {date}.", {
+						v: t.switch_back.to,
+						date: unref(formatDateTime)(t.switch_back.updated_at)
+					}))}</p>`);
+					else _push(`<!---->`);
+					_push(`</div><div class="k-theme__actions" data-v-133c2b5e>`);
 					if (t.slug !== data.value.active) _push(ssrRenderComponent(unref(KButton), {
 						size: "sm",
 						variant: "primary",
@@ -304,6 +352,21 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						default: withCtx((_, _push, _parent, _scopeId) => {
 							if (_push) _push(`${ssrInterpolate(unref(__)("Export"))}`);
 							else return [createTextVNode(toDisplayString(unref(__)("Export")), 1)];
+						}),
+						_: 2
+					}, _parent));
+					else _push(`<!---->`);
+					if (t.switch_back && unref(can)("plugins.manage")) _push(ssrRenderComponent(unref(KButton), {
+						size: "sm",
+						variant: "ghost",
+						icon: "clock-counter-clockwise",
+						loading: busy.value === `switch-back:${t.slug}`,
+						disabled: !!busy.value,
+						onClick: ($event) => switchBack(t)
+					}, {
+						default: withCtx((_, _push, _parent, _scopeId) => {
+							if (_push) _push(`${ssrInterpolate(unref(__)("Switch back to {v}", { v: t.switch_back.to }))}`);
+							else return [createTextVNode(toDisplayString(unref(__)("Switch back to {v}", { v: t.switch_back.to })), 1)];
 						}),
 						_: 2
 					}, _parent));
@@ -364,7 +427,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				}),
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) {
-						_push(`<form id="k-theme-new" class="k-form" data-v-1147ee25${_scopeId}>`);
+						_push(`<form id="k-theme-new" class="k-form" data-v-133c2b5e${_scopeId}>`);
 						_push(ssrRenderComponent(unref(KField), {
 							label: unref(__)("Name"),
 							error: formErrors.value.name ?? ""
@@ -485,7 +548,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 								label: unref(__)("Include this site's changes"),
 								disabled: !data.value.site_changes
 							}, null, _parent, _scopeId));
-							_push(`<p class="k-muted k-small k-theme-note" data-v-1147ee25${_scopeId}>${ssrInterpolate(data.value.site_changes ? unref(__)("Styles, templates, parts and patterns changed on this site become part of the theme ({n} changed).", { n: data.value.site_changes }) : unref(__)("Nothing has been changed on this site yet."))}</p><!--]-->`);
+							_push(`<p class="k-muted k-small k-theme-note" data-v-133c2b5e${_scopeId}>${ssrInterpolate(data.value.site_changes ? unref(__)("Styles, templates, parts and patterns changed on this site become part of the theme ({n} changed).", { n: data.value.site_changes }) : unref(__)("Nothing has been changed on this site yet."))}</p><!--]-->`);
 						} else _push(`<!---->`);
 						_push(ssrRenderComponent(unref(KField), {
 							label: unref(__)("Description"),
@@ -693,13 +756,13 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				}),
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) {
-						_push(`<form id="k-theme-import" class="k-form" data-v-1147ee25${_scopeId}><p class="k-muted k-small k-theme-note" data-v-1147ee25${_scopeId}>${ssrInterpolate(unref(__)("Choose a zip exported from Appearance → Themes on any Kestello site. Only themes without code can be imported here; the theme it builds on must be installed."))}</p>`);
+						_push(`<form id="k-theme-import" class="k-form" data-v-133c2b5e${_scopeId}><p class="k-muted k-small k-theme-note" data-v-133c2b5e${_scopeId}>${ssrInterpolate(unref(__)("Choose a zip exported from Appearance → Themes on any Kestello site. Only themes without code can be imported here; the theme it builds on must be installed."))}</p>`);
 						_push(ssrRenderComponent(unref(KField), {
 							label: unref(__)("Theme zip"),
 							error: importErrors.value.file ?? ""
 						}, {
 							default: withCtx(({ id }, _push, _parent, _scopeId) => {
-								if (_push) _push(`<input${ssrRenderAttr("id", id)} type="file" accept=".zip,application/zip" class="k-input" required data-v-1147ee25${_scopeId}>`);
+								if (_push) _push(`<input${ssrRenderAttr("id", id)} type="file" accept=".zip,application/zip" class="k-input" required data-v-133c2b5e${_scopeId}>`);
 								else return [createVNode("input", {
 									id,
 									type: "file",
@@ -775,5 +838,5 @@ _sfc_main.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/admin/appearance/Themes.vue");
 	return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-var Themes_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-1147ee25"]]);
+var Themes_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-133c2b5e"]]);
 export { Themes_default as default };

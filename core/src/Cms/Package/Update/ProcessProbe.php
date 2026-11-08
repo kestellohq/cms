@@ -10,7 +10,9 @@ namespace Kestello\Cms\Package\Update;
  */
 final class ProcessProbe implements HealthProbe
 {
-    public function __construct(private readonly string $root, private readonly ?string $php = null, private readonly int $timeout = 120) {}
+    public const int TIMEOUT = 120;
+
+    public function __construct(private readonly string $root, private readonly ?string $php = null, private readonly int $timeout = self::TIMEOUT) {}
 
     public function available(): bool
     {
@@ -21,7 +23,7 @@ final class ProcessProbe implements HealthProbe
 
     public function run(string $owner, string $bypass): array
     {
-        $process = @proc_open([$this->binary(), $this->root . '/bin/cms', 'update:probe', $owner], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, $this->root);
+        $process = @proc_open($this->command($owner), [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, $this->root);
         if (!is_resource($process)) {
             return ['probe_error' => 'The check could not start a PHP process.'];
         }
@@ -63,6 +65,18 @@ final class ProcessProbe implements HealthProbe
         }
 
         return ['probe_error' => 'The site did not start after the update: ' . mb_substr(trim($err !== '' ? $err : $out), 0, 600)];
+    }
+
+    /**
+     * The check gets a time limit of its own (PHP's, for time spent running
+     * code): when the server stops the update that started it, nobody waits
+     * for it any more, and it holds the update lock until it ends.
+     *
+     * @return list<string>
+     */
+    public function command(string $owner): array
+    {
+        return [$this->binary(), '-d', 'max_execution_time=' . $this->timeout, $this->root . '/bin/cms', 'update:probe', $owner];
     }
 
     private function binary(): string

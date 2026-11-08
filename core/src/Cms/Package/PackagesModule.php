@@ -14,6 +14,7 @@ use Kestello\Cms\Package\Update\ProcessProbe;
 use Kestello\Cms\Package\Update\UpdateChecker;
 use Kestello\Cms\Package\Update\UpdateProbe;
 use Kestello\Cms\Package\Update\Updater;
+use Kestello\Cms\Package\Update\UpdateRecovery;
 use Kestello\Cms\System\Maintenance;
 use Kestello\Framework\Core\Container;
 use Kestello\Framework\Core\Request;
@@ -69,6 +70,7 @@ final class PackagesModule extends Provider
             static fn(array $result) => Settings::getInstance()->set(self::LAST_CHECK, (string) json_encode($result, JSON_UNESCAPED_SLASHES), 'updates'),
         ));
         $container->singleton(Updater::class, static fn(Container $c): Updater => new Updater(self::cms(), $c->make(PackageInstaller::class), $c->make(Backups::class), $c->make(HealthProbe::class)));
+        $container->singleton(UpdateRecovery::class, static fn(Container $c): UpdateRecovery => new UpdateRecovery(self::cms(), $c->make(Backups::class)));
     }
 
     public function boot(Cms $cms): void

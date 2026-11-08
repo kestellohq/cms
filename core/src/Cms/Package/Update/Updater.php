@@ -26,7 +26,9 @@ use Throwable;
  * database backup go back, by themselves.
  *
  * Old package folders are kept in storage/app/backups/packages (the newest
- * three per package) for a manual way back.
+ * three per package): with the backup they are the way back (Switch back,
+ * UpdateRecovery). Each step is written to UpdateJournal first, so an update
+ * PHP stopped halfway is put back by the next request.
  */
 final class Updater
 {
@@ -92,6 +94,9 @@ final class Updater
      */
     private function problems(array $staged, array $options): array
     {
+        if ((new UpdateJournal($this->cms->paths->storage()))->current() !== null) {
+            return [UpdateRecovery::BLOCKED];
+        }
         $check = $staged['check'];
         if ($check['installed'] === null) {
             return ["{$check['name']} is not installed: install it instead of updating."];
@@ -126,19 +131,23 @@ final class Updater
         $target = ($type === PackageType::Plugin ? $this->cms->paths->plugins() : $this->cms->paths->themes()) . '/' . $slug;
         $aside = $this->cms->paths->storage('app/backups/packages') . "/{$slug}-{$from}-" . date('Ymd-His') . '-' . bin2hex(random_bytes(3));
 
+        $storage = $this->cms->paths->storage();
         $backup = $this->backups->create(['files' => false, 'kind' => 'before-update', 'note' => "Before updating {$check['name']} {$from} to {$to}"])['name'];
-        $maintenance = new Maintenance($this->cms->paths->storage());
+        $maintenance = new Maintenance($storage);
         $bypass = $maintenance->on(Maintenance::VISITORS, "update {$slug}", 30);
         $swapped = false;
         $report = [];
         $ext->suspensions()->refresh();
         $suspended = $ext->suspensions()->all();
         $pluginsBefore = array_keys($ext->activePlugins());
+        $journal = new UpdateJournal($storage);
+        $journal->begin(['kind' => 'update', 'owner' => $owner, 'from' => $from, 'to' => $to, 'backup' => $backup, 'target' => $target, 'aside' => $aside, 'suspended' => $suspended]);
 
         try {
             if (!is_dir(dirname($aside))) {
                 mkdir(dirname($aside), 0700, true);
             }
+            $journal->step(UpdateJournal::SWITCHING);
             Files::move($target, $aside);
             Files::move($staged['package'], $target);
             $swapped = true;
@@ -151,9 +160,12 @@ final class Updater
         }
 
         if ($problems === []) {
+            $journal->step(UpdateJournal::CONFIRMED);
             $maintenance->off();
             $ext->discover(true);
-            $this->pruneOld($slug);
+            $this->pruneOld($slug, $aside);
+            (new UpdateHistory($storage))->add(['owner' => $owner, 'from' => $from, 'to' => $to, 'backup' => $backup, 'aside' => $aside, 'actor' => $options['actor'] ?? null]);
+            $journal->clear();
             $this->cms->audit->record('package.updated', [$type->value, $slug], ['from' => $from, 'to' => $to, 'signature' => $check['signature']['status'], 'backup' => $backup], $options['actor'] ?? null);
 
             return ['ok' => true, 'slug' => $slug, 'type' => $type->value, 'from' => $from, 'to' => $to, 'problems' => [], 'backup' => $backup, 'rolled_back' => false, 'rollback_problems' => []];
@@ -182,8 +194,11 @@ final class Updater
             $rollback[] = 'Rolling back failed: ' . $e->getMessage() . " The database backup is {$backup}; the old files are in " . $aside . '.';
         }
         if ($rollback === []) {
+            $journal->clear();
             $maintenance->off();
         } else {
+            // a later request (or Try again on the Updates screen) tries again from the journal
+            $journal->giveUp();
             // The rollback did not finish: keep visitors out until someone looks (signed-in administrators still get in).
             $maintenance->on(Maintenance::VISITORS, 'An update failed and could not be rolled back completely', \Kestello\Cms\Backup\Backups::BROKEN_MINUTES);
         }
@@ -205,12 +220,16 @@ final class Updater
         }
     }
 
-    private function pruneOld(string $slug): void
+    /** Keep the newest KEEP_OLD old folders of a package, always with the one just set aside. */
+    private function pruneOld(string $slug, string $keep): void
     {
         $old = glob($this->cms->paths->storage('app/backups/packages') . "/{$slug}-*", GLOB_ONLYDIR) ?: [];
         $old = array_values(array_filter($old, static fn(string $d): bool => preg_match('/^' . preg_quote($slug, '/') . '-\d+\.\d+\.\d+[^\/]*-\d{8}-\d{6}-[a-f0-9]{6}$/', basename($d)) === 1));
         usort($old, static fn(string $a, string $b): int => filemtime($b) <=> filemtime($a));
         foreach (array_slice($old, self::KEEP_OLD) as $dir) {
+            if ($dir === $keep) {
+                continue;
+            }
             Files::removeTree($dir);
         }
     }

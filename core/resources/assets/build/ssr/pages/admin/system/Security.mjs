@@ -1,5 +1,5 @@
 import { t as deviceLabel } from "../../../chunks/device-DTfRdqhB.mjs";
-import { n as auditLabel, t as AUDIT_WARN } from "../../../chunks/events-DFJBVCyy.mjs";
+import { n as auditLabel, t as AUDIT_WARN } from "../../../chunks/events-z0wVOOcI.mjs";
 import { Fragment, computed, createBlock, createCommentVNode, createTextVNode, createVNode, openBlock, renderList, toDisplayString, unref, useSSRContext, withCtx } from "vue";
 import { ssrInterpolate, ssrRenderAttr, ssrRenderComponent, ssrRenderList } from "vue/server-renderer";
 import { Head, Link } from "@kestello/app";

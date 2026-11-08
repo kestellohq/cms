@@ -1,7 +1,9 @@
+import { t as StoppedUpdate_default } from "../../../chunks/StoppedUpdate-DsAr14_D.mjs";
+import { n as switchBackOutcome, r as takeSwitchBack, t as rememberSwitchBack } from "../../../chunks/switch-back-DFscO2EH.mjs";
 import { t as _plugin_vue_export_helper_default } from "../../../chunks/_plugin-vue_export-helper-DjkACiAr.mjs";
 import { Fragment, computed, createBlock, createCommentVNode, createSlots, createTextVNode, createVNode, openBlock, ref, renderList, toDisplayString, unref, useSSRContext, withCtx, withModifiers } from "vue";
 import { ssrInterpolate, ssrRenderAttr, ssrRenderClass, ssrRenderComponent, ssrRenderList } from "vue/server-renderer";
-import { ApiError, __, confirm, notify, useApi } from "@kestello/sdk";
+import { ApiError, __, confirm, formatDateTime, notify, useApi, useCan } from "@kestello/sdk";
 import { KAlert, KBadge, KButton, KEmpty, KField, KIcon, KModal, KPageHeader, KSwitch } from "@kestello/ui";
 // core/resources/js/pages/admin/system/Plugins.vue
 var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
@@ -12,20 +14,62 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 		* Plugins: activate, deactivate, delete, and install from a zip. An upload
 		* is reviewed first (who signed it, what it declares it will do); only
 		* packages signed by a publisher the server trusts install from here.
+		* After an update, Switch back goes to the version before it, with the
+		* database from before it.
 		*/
 		const api = useApi();
 		const data = ref(null);
 		const loadError = ref(null);
 		const busy = ref("");
 		const open = ref({});
+		const can = useCan();
 		async function load() {
 			try {
 				data.value = (await api.get("/plugins")).data;
 			} catch (e) {
 				loadError.value = e;
+				return;
+			}
+			const note = takeSwitchBack();
+			if (note?.owner.startsWith("plugin:")) {
+				const running = data.value.plugins.find((p) => `plugin:${p.slug}` === note.owner)?.version ?? null;
+				const outcome = switchBackOutcome(note, running, data.value.stopped_update);
+				if (outcome === "done") notify.success(__("{plugin} {v} is back, with the database from before the update.", {
+					plugin: note.name,
+					v: note.version
+				}));
+				else if (outcome === "not-done") notify.error(__("Switching {plugin} back to {v} did not finish. The audit log says why.", {
+					plugin: note.name,
+					v: note.version
+				}));
 			}
 		}
 		load();
+		async function switchBack(plugin) {
+			const option = plugin.switch_back;
+			if (!await confirm({
+				title: __("Switch {plugin} back to {v}?", {
+					plugin: plugin.name,
+					v: option.to
+				}),
+				message: __("{plugin} {v} is still on the server. Switching back also puts the database back as it was before the update, on {date}: anything changed on the site since then is lost from the site. A backup of the site as it is now is made first, under Site → Backups. Visitors see a short maintenance page.", {
+					plugin: plugin.name,
+					v: option.to,
+					date: formatDateTime(option.backup_at || option.updated_at)
+				}),
+				confirmLabel: __("Switch back to {v}", { v: option.to }),
+				danger: true
+			})) return;
+			busy.value = `switch-back:${plugin.slug}`;
+			try {
+				await api.post("/plugins/switch-back", { owner: `plugin:${plugin.slug}` });
+				rememberSwitchBack(`plugin:${plugin.slug}`, plugin.name, option.to);
+				window.location.reload();
+			} catch (e) {
+				notify.error(e);
+				busy.value = "";
+			}
+		}
 		const statusTone = {
 			active: "success",
 			inactive: "neutral",
@@ -258,6 +302,11 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				}, _parent));
 			});
 			_push(`<!--]-->`);
+			if (data.value?.stopped_update) _push(ssrRenderComponent(StoppedUpdate_default, {
+				stopped: data.value.stopped_update,
+				"can-retry": unref(can)("core.update")
+			}, null, _parent));
+			else _push(`<!---->`);
 			if (data.value) {
 				_push(`<!--[-->`);
 				if (!data.value.plugins.length) _push(ssrRenderComponent(unref(KEmpty), {
@@ -271,9 +320,9 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 					_: 1
 				}, _parent));
 				else {
-					_push(`<ul class="k-plugins" data-v-32699f29><!--[-->`);
+					_push(`<ul class="k-plugins" data-v-497afa28><!--[-->`);
 					ssrRenderList(data.value.plugins, (p) => {
-						_push(`<li class="${ssrRenderClass([`is-${p.status}`, "k-plugin"])}" data-v-32699f29><div class="k-plugin__main" data-v-32699f29><div class="k-plugin__title" data-v-32699f29><h2 data-v-32699f29>${ssrInterpolate(p.name)}</h2><span class="k-num k-muted k-small" data-v-32699f29>${ssrInterpolate(p.version)}</span>`);
+						_push(`<li class="${ssrRenderClass([`is-${p.status}`, "k-plugin"])}" data-v-497afa28><div class="k-plugin__main" data-v-497afa28><div class="k-plugin__title" data-v-497afa28><h2 data-v-497afa28>${ssrInterpolate(p.name)}</h2><span class="k-num k-muted k-small" data-v-497afa28>${ssrInterpolate(p.version)}</span>`);
 						_push(ssrRenderComponent(unref(KBadge), { tone: statusTone[p.status] }, {
 							default: withCtx((_, _push, _parent, _scopeId) => {
 								if (_push) _push(`${ssrInterpolate(statusLabel[p.status])}`);
@@ -282,9 +331,9 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 							_: 2
 						}, _parent));
 						_push(`</div>`);
-						if (p.description) _push(`<p class="k-plugin__desc" data-v-32699f29>${ssrInterpolate(p.description)}</p>`);
+						if (p.description) _push(`<p class="k-plugin__desc" data-v-497afa28>${ssrInterpolate(p.description)}</p>`);
 						else _push(`<!---->`);
-						_push(`<p class="k-muted k-small k-plugin__meta" data-v-32699f29>`);
+						_push(`<p class="k-muted k-small k-plugin__meta" data-v-497afa28>`);
 						if (p.author) _push(`<!--[-->${ssrInterpolate(unref(__)("By {author}", { author: p.author }))}<!--]-->`);
 						else _push(`<!---->`);
 						if (Object.keys(p.requires.plugins).length) _push(`<!--[--> · ${ssrInterpolate(unref(__)("Needs {plugins}", { plugins: Object.keys(p.requires.plugins).map((s) => names.value[s] ?? s).join(", ") }))}<!--]-->`);
@@ -293,20 +342,39 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						else _push(`<!---->`);
 						_push(`</p>`);
 						if (p.problem) {
-							_push(`<p class="k-plugin__problem" data-v-32699f29>`);
+							_push(`<p class="k-plugin__problem" data-v-497afa28>`);
 							_push(ssrRenderComponent(unref(KIcon), { name: "warning-octagon" }, null, _parent));
 							_push(` ${ssrInterpolate(p.problem)}</p>`);
 						} else _push(`<!---->`);
-						if (permissionRows(p.permissions, p.replaces).length) _push(`<button type="button" class="k-link-btn k-small"${ssrRenderAttr("aria-expanded", !!open.value[p.slug])} data-v-32699f29>${ssrInterpolate(open.value[p.slug] ? unref(__)("Hide what it may do") : unref(__)("What it may do"))}</button>`);
+						if (p.switch_back) _push(`<p class="k-muted k-small k-plugin__back" data-v-497afa28>${ssrInterpolate(unref(__)("Updated from {v} on {date}.", {
+							v: p.switch_back.to,
+							date: unref(formatDateTime)(p.switch_back.updated_at)
+						}))}</p>`);
+						else _push(`<!---->`);
+						if (permissionRows(p.permissions, p.replaces).length) _push(`<button type="button" class="k-link-btn k-small"${ssrRenderAttr("aria-expanded", !!open.value[p.slug])} data-v-497afa28>${ssrInterpolate(open.value[p.slug] ? unref(__)("Hide what it may do") : unref(__)("What it may do"))}</button>`);
 						else _push(`<!---->`);
 						if (open.value[p.slug]) {
-							_push(`<dl class="k-plugin__perms" data-v-32699f29><!--[-->`);
+							_push(`<dl class="k-plugin__perms" data-v-497afa28><!--[-->`);
 							ssrRenderList(permissionRows(p.permissions, p.replaces), (row) => {
-								_push(`<!--[--><dt data-v-32699f29>${ssrInterpolate(row.label)}</dt><dd data-v-32699f29>${ssrInterpolate(row.value)}</dd><!--]-->`);
+								_push(`<!--[--><dt data-v-497afa28>${ssrInterpolate(row.label)}</dt><dd data-v-497afa28>${ssrInterpolate(row.value)}</dd><!--]-->`);
 							});
 							_push(`<!--]--></dl>`);
 						} else _push(`<!---->`);
-						_push(`</div><div class="k-plugin__actions" data-v-32699f29>`);
+						_push(`</div><div class="k-plugin__actions" data-v-497afa28>`);
+						if (p.switch_back) _push(ssrRenderComponent(unref(KButton), {
+							size: "sm",
+							icon: "clock-counter-clockwise",
+							loading: busy.value === `switch-back:${p.slug}`,
+							disabled: !!busy.value || !!data.value.stopped_update,
+							onClick: ($event) => switchBack(p)
+						}, {
+							default: withCtx((_, _push, _parent, _scopeId) => {
+								if (_push) _push(`${ssrInterpolate(unref(__)("Switch back to {v}", { v: p.switch_back.to }))}`);
+								else return [createTextVNode(toDisplayString(unref(__)("Switch back to {v}", { v: p.switch_back.to })), 1)];
+							}),
+							_: 2
+						}, _parent));
+						else _push(`<!---->`);
 						if (p.status === "inactive") _push(ssrRenderComponent(unref(KButton), {
 							size: "sm",
 							variant: "primary",
@@ -447,13 +515,13 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) {
 						if (!review.value) {
-							_push(`<form id="k-plugin-upload" class="k-form" data-v-32699f29${_scopeId}><p class="k-muted k-small k-plugins__note" data-v-32699f29${_scopeId}>${ssrInterpolate(unref(__)("Choose a plugin zip. Nothing is installed yet: you see who signed it and what it declares first."))}</p>`);
+							_push(`<form id="k-plugin-upload" class="k-form" data-v-497afa28${_scopeId}><p class="k-muted k-small k-plugins__note" data-v-497afa28${_scopeId}>${ssrInterpolate(unref(__)("Choose a plugin zip. Nothing is installed yet: you see who signed it and what it declares first."))}</p>`);
 							_push(ssrRenderComponent(unref(KField), {
 								label: unref(__)("Plugin zip"),
 								error: uploadErrors.value.file ?? ""
 							}, {
 								default: withCtx(({ id }, _push, _parent, _scopeId) => {
-									if (_push) _push(`<input${ssrRenderAttr("id", id)} type="file" accept=".zip,application/zip" class="k-input" required data-v-32699f29${_scopeId}>`);
+									if (_push) _push(`<input${ssrRenderAttr("id", id)} type="file" accept=".zip,application/zip" class="k-input" required data-v-497afa28${_scopeId}>`);
 									else return [createVNode("input", {
 										id,
 										type: "file",
@@ -467,32 +535,32 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 							}, _parent, _scopeId));
 							_push(`</form>`);
 						} else {
-							_push(`<div class="k-review" data-v-32699f29${_scopeId}><p class="k-review__head" data-v-32699f29${_scopeId}><strong data-v-32699f29${_scopeId}>${ssrInterpolate(pkg.value.name)}</strong> <span class="k-num k-muted" data-v-32699f29${_scopeId}>${ssrInterpolate(pkg.value.version)}</span>`);
-							if (pkg.value.author) _push(`<span class="k-muted" data-v-32699f29${_scopeId}> · ${ssrInterpolate(unref(__)("By {author}", { author: pkg.value.author }))}</span>`);
+							_push(`<div class="k-review" data-v-497afa28${_scopeId}><p class="k-review__head" data-v-497afa28${_scopeId}><strong data-v-497afa28${_scopeId}>${ssrInterpolate(pkg.value.name)}</strong> <span class="k-num k-muted" data-v-497afa28${_scopeId}>${ssrInterpolate(pkg.value.version)}</span>`);
+							if (pkg.value.author) _push(`<span class="k-muted" data-v-497afa28${_scopeId}> · ${ssrInterpolate(unref(__)("By {author}", { author: pkg.value.author }))}</span>`);
 							else _push(`<!---->`);
 							_push(`</p>`);
-							if (pkg.value.description) _push(`<p class="k-review__desc" data-v-32699f29${_scopeId}>${ssrInterpolate(pkg.value.description)}</p>`);
+							if (pkg.value.description) _push(`<p class="k-review__desc" data-v-497afa28${_scopeId}>${ssrInterpolate(pkg.value.description)}</p>`);
 							else _push(`<!---->`);
-							_push(`<p class="${ssrRenderClass([`is-${signature.value.tone}`, "k-review__sig"])}" data-v-32699f29${_scopeId}>`);
+							_push(`<p class="${ssrRenderClass([`is-${signature.value.tone}`, "k-review__sig"])}" data-v-497afa28${_scopeId}>`);
 							_push(ssrRenderComponent(unref(KIcon), { name: signature.value.icon }, null, _parent, _scopeId));
 							_push(` ${ssrInterpolate(signature.value.text)}</p>`);
-							if (update.value) _push(`<p class="k-muted k-small" data-v-32699f29${_scopeId}>${ssrInterpolate(unref(__)("Updates version {from}. The database is backed up and the site is checked after the new files are in place; if anything is wrong, version {from} and the database are put back.", { from: update.value.from }))}</p>`);
-							else if (pkg.value.installed) _push(`<p class="k-muted k-small" data-v-32699f29${_scopeId}>${ssrInterpolate(unref(__)("Version {v} is installed (inactive).", { v: pkg.value.installed.version }))}</p>`);
+							if (update.value) _push(`<p class="k-muted k-small" data-v-497afa28${_scopeId}>${ssrInterpolate(unref(__)("Updates version {from}. The database is backed up and the site is checked after the new files are in place; if anything is wrong, version {from} and the database are put back.", { from: update.value.from }))}</p>`);
+							else if (pkg.value.installed) _push(`<p class="k-muted k-small" data-v-497afa28${_scopeId}>${ssrInterpolate(unref(__)("Version {v} is installed (inactive).", { v: pkg.value.installed.version }))}</p>`);
 							else _push(`<!---->`);
-							_push(`<h3 class="k-review__h" data-v-32699f29${_scopeId}>${ssrInterpolate(unref(__)("What it may do"))}</h3>`);
+							_push(`<h3 class="k-review__h" data-v-497afa28${_scopeId}>${ssrInterpolate(unref(__)("What it may do"))}</h3>`);
 							if (permissionRows(pkg.value.permissions, pkg.value.replaces).length) {
-								_push(`<dl class="k-plugin__perms" data-v-32699f29${_scopeId}><!--[-->`);
+								_push(`<dl class="k-plugin__perms" data-v-497afa28${_scopeId}><!--[-->`);
 								ssrRenderList(permissionRows(pkg.value.permissions, pkg.value.replaces), (row) => {
-									_push(`<!--[--><dt data-v-32699f29${_scopeId}>${ssrInterpolate(row.label)}</dt><dd data-v-32699f29${_scopeId}>${ssrInterpolate(row.value)}</dd><!--]-->`);
+									_push(`<!--[--><dt data-v-497afa28${_scopeId}>${ssrInterpolate(row.label)}</dt><dd data-v-497afa28${_scopeId}>${ssrInterpolate(row.value)}</dd><!--]-->`);
 								});
 								_push(`<!--]--></dl>`);
-							} else _push(`<p class="k-muted k-small" data-v-32699f29${_scopeId}>${ssrInterpolate(unref(__)("It declares nothing beyond its own pages, tables and settings."))}</p>`);
+							} else _push(`<p class="k-muted k-small" data-v-497afa28${_scopeId}>${ssrInterpolate(unref(__)("It declares nothing beyond its own pages, tables and settings."))}</p>`);
 							if (errors.value.length || warnings.value.length) {
-								_push(`<!--[--><h3 class="k-review__h" data-v-32699f29${_scopeId}>${ssrInterpolate(unref(__)("Code check"))}</h3><ul class="k-review__findings" data-v-32699f29${_scopeId}><!--[-->`);
+								_push(`<!--[--><h3 class="k-review__h" data-v-497afa28${_scopeId}>${ssrInterpolate(unref(__)("Code check"))}</h3><ul class="k-review__findings" data-v-497afa28${_scopeId}><!--[-->`);
 								ssrRenderList([...errors.value, ...warnings.value], (f) => {
-									_push(`<li class="${ssrRenderClass(`is-${f.level}`)}" data-v-32699f29${_scopeId}>`);
+									_push(`<li class="${ssrRenderClass(`is-${f.level}`)}" data-v-497afa28${_scopeId}>`);
 									_push(ssrRenderComponent(unref(KIcon), { name: f.level === "error" ? "x-circle" : "warning" }, null, _parent, _scopeId));
-									_push(` <code data-v-32699f29${_scopeId}>${ssrInterpolate(f.file)}${ssrInterpolate(f.line ? `:${f.line}` : "")}</code> ${ssrInterpolate(f.message)}</li>`);
+									_push(` <code data-v-497afa28${_scopeId}>${ssrInterpolate(f.file)}${ssrInterpolate(f.line ? `:${f.line}` : "")}</code> ${ssrInterpolate(f.message)}</li>`);
 								});
 								_push(`<!--]--></ul><!--]-->`);
 							} else _push(`<!---->`);
@@ -504,14 +572,14 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 									if (_push) {
 										_push(`<!--[-->`);
 										ssrRenderList(failed.value.problems, (problem) => {
-											_push(`<p class="k-review__problem" data-v-32699f29${_scopeId}>${ssrInterpolate(problem)}</p>`);
+											_push(`<p class="k-review__problem" data-v-497afa28${_scopeId}>${ssrInterpolate(problem)}</p>`);
 										});
 										_push(`<!--]-->`);
-										if (failed.value.rolled_back) _push(`<p data-v-32699f29${_scopeId}>${ssrInterpolate(unref(__)("Version {v} and the database were put back. The site runs as before.", { v: failed.value.from }))}</p>`);
+										if (failed.value.rolled_back) _push(`<p data-v-497afa28${_scopeId}>${ssrInterpolate(unref(__)("Version {v} and the database were put back. The site runs as before.", { v: failed.value.from }))}</p>`);
 										else {
 											_push(`<!--[-->`);
 											ssrRenderList(failed.value.rollback_problems, (problem) => {
-												_push(`<p data-v-32699f29${_scopeId}>${ssrInterpolate(problem)}</p>`);
+												_push(`<p data-v-497afa28${_scopeId}>${ssrInterpolate(problem)}</p>`);
 											});
 											_push(`<!--]-->`);
 										}
@@ -542,7 +610,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 									if (_push) {
 										_push(`<!--[-->`);
 										ssrRenderList(update.value.problems, (problem) => {
-											_push(`<p class="k-review__problem" data-v-32699f29${_scopeId}>${ssrInterpolate(problem)}</p>`);
+											_push(`<p class="k-review__problem" data-v-497afa28${_scopeId}>${ssrInterpolate(problem)}</p>`);
 										});
 										_push(`<!--]-->`);
 									} else return [(openBlock(true), createBlock(Fragment, null, renderList(update.value.problems, (problem) => {
@@ -703,5 +771,5 @@ _sfc_main.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/admin/system/Plugins.vue");
 	return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-var Plugins_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-32699f29"]]);
+var Plugins_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-497afa28"]]);
 export { Plugins_default as default };
