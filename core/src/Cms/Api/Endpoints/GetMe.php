@@ -36,6 +36,7 @@ final class GetMe extends Endpoint
         $S = \Kestello\Cms\Api\Schema::class;
 
         return $S::object(UserResource::properties())->extend([
+            'pending_email' => $S::string()->nullable()->description('A new address waiting for its confirmation link to be opened; the account keeps email until then'),
             'auth' => $S::object([
                 'method' => $S::string()->description('session, token or external'),
                 'scopes' => $S::list($S::string())->nullable()->description('null for a browser session (no narrowing)'),
@@ -62,7 +63,11 @@ final class GetMe extends Endpoint
             ? $cms->container->make(\Kestello\Cms\Auth\TwoFactor::class)->isEnabled((int) $request->userId())
             : false;
 
+        $changes = $cms?->container->has(\Kestello\Cms\Auth\EmailChanges::class) ? $cms->container->make(\Kestello\Cms\Auth\EmailChanges::class) : null;
+
         return $data + [
+            // a new address waiting for its link to be opened (the account keeps "email" until then)
+            'pending_email' => $changes?->pending((int) $request->userId()),
             'auth' => [
                 'method' => $p->method,
                 'scopes' => $p->scopes,

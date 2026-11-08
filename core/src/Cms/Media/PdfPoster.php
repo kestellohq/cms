@@ -19,6 +19,8 @@ final class PdfPoster
 {
     public const int DPI = 110;
     public const float TIMEOUT = 25.0;
+    /** The poster's longest side at most: larger pages are drawn at a lower resolution. */
+    public const int MAX_SIDE = 2000;
     /** Pages beyond this many pixels are thrown away instead of stored. */
     public const int MAX_PIXELS = 40_000_000;
 
@@ -29,6 +31,25 @@ final class PdfPoster
     public static function binary(): ?string
     {
         return self::$found['gs'] ??= (Process::available() ? Process::which('gs') : null);
+    }
+
+    /**
+     * The resolution to draw page 1 at, from Ghostscript's -dPDFINFO report:
+     * DPI, or lower when the page would be longer than MAX_SIDE pixels. Null
+     * when the report names no usable page size.
+     */
+    public static function dpiFor(string $report): ?int
+    {
+        if (preg_match('/Page 1 MediaBox:\s*\[\s*(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s*\]/', $report, $m) !== 1) {
+            return null;
+        }
+        $points = max(abs((float) $m[3] - (float) $m[1]), abs((float) $m[4] - (float) $m[2]));
+        if ($points < 1) {
+            return null;
+        }
+        $dpi = (int) floor(min(self::DPI, self::MAX_SIDE * 72 / $points));
+
+        return $dpi >= 1 ? $dpi : null;
     }
 
     /** @internal tests */
@@ -49,14 +70,24 @@ final class PdfPoster
             return null;
         }
         @unlink($png);
+        $env = ['PATH' => '/usr/local/bin:/usr/bin:/bin', 'TMPDIR' => dirname($png)];
         try {
+            // the page's size first: a PDF can declare a page of any size, and
+            // Ghostscript would draw all of it before anything here could look
+            $info = Process::run([
+                $gs, '-q', '-dSAFER', '-dNODISPLAY', '-dNOPROMPT', '-dPDFINFO', '-dFirstPage=1', '-dLastPage=1', '--', $pdf,
+            ], cwd: dirname($png), env: $env, timeout: self::TIMEOUT);
+            $dpi = self::dpiFor($info->output . "\n" . $info->errorOutput);
+            if ($dpi === null) {
+                return null;
+            }
             $r = Process::run([
-                $gs, '-q', '-dSAFER', '-dBATCH', '-dNOPAUSE', '-dNOPROMPT', '-dNOINTERPOLATE',
+                $gs, '-q', '-dSAFER', '-dBATCH', '-dNOPAUSE', '-dNOPROMPT', '-dNOINTERPOLATE', '-dPDFSTOPONERROR',
                 '-dFirstPage=1', '-dLastPage=1',
-                '-sDEVICE=png16m', '-r' . self::DPI, '-dTextAlphaBits=4', '-dGraphicsAlphaBits=4',
+                '-sDEVICE=png16m', '-r' . $dpi, '-dTextAlphaBits=4', '-dGraphicsAlphaBits=4',
                 '-sOutputFile=' . $png,
                 '--', $pdf,            // nothing after -- is read as an option
-            ], cwd: dirname($png), env: ['PATH' => '/usr/local/bin:/usr/bin:/bin', 'TMPDIR' => dirname($png)], timeout: self::TIMEOUT);
+            ], cwd: dirname($png), env: $env, timeout: self::TIMEOUT);
         } catch (\Throwable) {
             return null;
         }

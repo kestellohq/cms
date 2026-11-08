@@ -110,16 +110,46 @@ final class MediaLibrary
      */
     public function start(Principal $p, string $filename, int $size): array
     {
-        $filename = $this->check($p, $filename, $size);
-        $pending = QueryBuilder::table('uploads')->where('user_id', $p->userId)->where('expires_at', '>', gmdate('Y-m-d H:i:s'))->count();
-        if ($pending >= self::MAX_PENDING) {
-            throw MediaException::conflict('Too many unfinished uploads. Finish or cancel some first.');
-        }
         $direct = $this->directDisk();
-        $row = $this->newRow($p, $filename, $size, $direct !== null ? 'direct' : 'chunked');
-        QueryBuilder::table('uploads')->insert($row);
+        $row = $this->reserving($p, function () use ($p, $filename, $size, $direct): array {
+            $filename = $this->check($p, $filename, $size);
+            $pending = QueryBuilder::table('uploads')->where('user_id', $p->userId)->where('expires_at', '>', gmdate('Y-m-d H:i:s'))->count();
+            if ($pending >= self::MAX_PENDING) {
+                throw MediaException::conflict('Too many unfinished uploads. Finish or cancel some first.');
+            }
+            $row = $this->newRow($p, $filename, $size, $direct !== null ? 'direct' : 'chunked');
+            QueryBuilder::table('uploads')->insert($row);
+
+            return $row;
+        });
 
         return $this->describeUpload($row, $direct);
+    }
+
+    /** Seconds an upload waits for another of the same person's to be counted (tests shorten it). */
+    public static int $quotaLockWait = 10;
+
+    /**
+     * Run $work (check the quota, then reserve the room with an `uploads` row)
+     * as one step per person: two uploads started at once would otherwise both
+     * pass the check before either is counted.
+     *
+     * @template T
+     * @param \Closure(): T $work
+     * @return T
+     * @throws MediaException
+     */
+    private function reserving(Principal $p, \Closure $work): mixed
+    {
+        $c = $this->cms->container;
+        if ($p->userId === null || !$c->has(\Kestello\Contracts\Cache\Store::class)) {
+            return $work();
+        }
+        try {
+            return $c->make(\Kestello\Contracts\Cache\Store::class)->lock('media-quota:' . $p->userId, 30)->block(self::$quotaLockWait, $work);
+        } catch (\Kestello\Contracts\Cache\LockTimeout) {
+            throw MediaException::conflict('Another upload is starting. Try again in a moment.');
+        }
     }
 
     /**
@@ -134,13 +164,17 @@ final class MediaLibrary
     {
         clearstatcache(true, $local);
         $size = is_file($local) ? (int) filesize($local) : 0;
-        $filename = $this->check($p, $filename, $size);
-        $row = $this->newRow($p, $filename, $size, 'chunked');
-        $row['received'] = max(1, (int) ceil($size / self::CHUNK_SIZE));
-        if (!@rename($local, $this->tempPath((string) $row['id'])) && !(@copy($local, $this->tempPath((string) $row['id'])) && @unlink($local))) {
-            throw new \RuntimeException('Could not move the file into the media library.');
-        }
-        QueryBuilder::table('uploads')->insert($row);
+        $row = $this->reserving($p, function () use ($p, $local, $filename, $size): array {
+            $filename = $this->check($p, $filename, $size);
+            $row = $this->newRow($p, $filename, $size, 'chunked');
+            $row['received'] = max(1, (int) ceil($size / self::CHUNK_SIZE));
+            if (!@rename($local, $this->tempPath((string) $row['id'])) && !(@copy($local, $this->tempPath((string) $row['id'])) && @unlink($local))) {
+                throw new \RuntimeException('Could not move the file into the media library.');
+            }
+            QueryBuilder::table('uploads')->insert($row);
+
+            return $row;
+        });
 
         return $this->complete($row, $p, $details);
     }
@@ -705,7 +739,7 @@ final class MediaLibrary
      * Entries that use each file.
      *
      * @param list<int> $ids
-     * @return array<int, list<array{id: int, type: string, title: string, status: string, field: string}>>
+     * @return array<int, list<array{id: int, type: string, title: string, status: string, field: string, author_id: ?int}>>
      */
     public function usage(array $ids): array
     {
@@ -714,15 +748,41 @@ final class MediaLibrary
         }
         $rows = QueryBuilder::table('media_usage')->join('entries', 'entries.id', '=', 'media_usage.entry_id')
             ->whereIn('media_usage.media_id', $ids)
-            ->select('media_usage.media_id', 'media_usage.field', 'entries.id', 'entries.type', 'entries.title', 'entries.status', 'entries.deleted_at')
+            ->select('media_usage.media_id', 'media_usage.field', 'entries.id', 'entries.type', 'entries.title', 'entries.status', 'entries.deleted_at', 'entries.author_id')
             ->orderBy('entries.title')->get();
         $out = [];
         foreach ($rows as $r) {
             $r = (array) $r;
-            $out[(int) $r['media_id']][] = ['id' => (int) $r['id'], 'type' => (string) $r['type'], 'title' => (string) $r['title'], 'status' => $r['deleted_at'] !== null ? 'trash' : (string) $r['status'], 'field' => (string) $r['field']];
+            $out[(int) $r['media_id']][] = ['id' => (int) $r['id'], 'type' => (string) $r['type'], 'title' => (string) $r['title'], 'status' => $r['deleted_at'] !== null ? 'trash' : (string) $r['status'], 'field' => (string) $r['field'],
+                'author_id' => $r['author_id'] === null ? null : (int) $r['author_id']];
         }
 
         return $out;
+    }
+
+    /**
+     * The entries of usage() this person may open, and how many others use the file.
+     * Someone who may upload but not edit others' entries never learns their titles.
+     *
+     * @param list<array{id: int, type: string, title: string, status: string, field: string, author_id: ?int}> $rows
+     * @return array{0: list<array{id: int, type: string, title: string, status: string, field: string}>, 1: int}
+     */
+    public function visibleUsage(array $rows, Principal $p): array
+    {
+        $shown = [];
+        $hidden = 0;
+        foreach ($rows as $r) {
+            $type = $this->cms->content->get($r['type']);
+            $own = $r['author_id'] !== null && $r['author_id'] === $p->userId;
+            if ($type !== null && $p->can($type->capability('edit')) && ($own || $p->can($type->capability('edit_others')))) {
+                unset($r['author_id']);
+                $shown[] = $r;
+            } else {
+                $hidden++;
+            }
+        }
+
+        return [$shown, $hidden];
     }
 
     /**

@@ -12,9 +12,11 @@ use RuntimeException;
  * Ed25519 signatures for package zips, carried inside the zip as SIGNATURE,
  * so a package stays one file (uploads, registry downloads).
  *
- * What is signed: "kestello-package-v1\n" + the SHA-256 of a listing of every
- * other file ("<sha256> <name>\n", sorted by name). Changing, adding or
- * removing any file breaks the signature.
+ * What is signed: a domain line + the SHA-256 of a listing of every other
+ * file ("<sha256> <name>\n", sorted by name). Changing, adding or removing
+ * any file breaks the signature. The domain is "kestello-package-v1\n" for
+ * plugins and themes and "kestello-core-v1\n" for core releases, so a
+ * package signature never passes as a core one, even under the same key.
  *
  * Trusted public keys come from the server's config (app.packages.trusted_keys, and
  * release.keys for core releases); never from the admin.
@@ -24,7 +26,9 @@ use RuntimeException;
 final class PackageSignature
 {
     public const string FILE = 'SIGNATURE';
-    private const string DOMAIN = "kestello-package-v1\n";
+    public const string PACKAGE = 'package';
+    public const string CORE = 'core';
+    private const array DOMAINS = [self::PACKAGE => "kestello-package-v1\n", self::CORE => "kestello-core-v1\n"];
     private const int MAX_ENTRY = 128 << 20;
 
     public const string SIGNED = 'signed';          // by a trusted key
@@ -62,9 +66,10 @@ final class PackageSignature
         return hash('sha256', implode('', $lines));
     }
 
-    /** Sign $zipPath in place (an existing signature is replaced). */
-    public static function sign(string $zipPath, string $secretKeyBase64): void
+    /** Sign $zipPath in place (an existing signature is replaced). $kind: PACKAGE or CORE. */
+    public static function sign(string $zipPath, string $secretKeyBase64, string $kind = self::PACKAGE): void
     {
+        $domain = self::domain($kind);
         self::requireSodium();
         $secret = base64_decode($secretKeyBase64, true);
         if ($secret === false || strlen($secret) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
@@ -77,7 +82,7 @@ final class PackageSignature
             'alg' => 'ed25519',
             'key' => self::keyId(sodium_crypto_sign_publickey_from_secretkey($secret)),
             'digest' => $digest,
-            'signature' => base64_encode(sodium_crypto_sign_detached(self::DOMAIN . $digest, $secret)),
+            'signature' => base64_encode(sodium_crypto_sign_detached($domain . $digest, $secret)),
             'signed_at' => gmdate('c'),
         ];
 
@@ -95,10 +100,12 @@ final class PackageSignature
 
     /**
      * @param array<string, array{name: string, public_key: string}> $trusted key id => key
+     * @param string $kind PACKAGE or CORE: what the zip must have been signed as
      * @return array{status: string, key: ?string, name: ?string}
      */
-    public static function verify(ZipReader $zip, array $trusted): array
+    public static function verify(ZipReader $zip, array $trusted, string $kind = self::PACKAGE): array
     {
+        $domain = self::domain($kind);
         if (!$zip->has(self::FILE)) {
             return ['status' => self::UNSIGNED, 'key' => null, 'name' => null];
         }
@@ -118,7 +125,7 @@ final class PackageSignature
         $public = base64_decode($key['public_key'], true);
         $raw = base64_decode($sig['signature'], true);
         $ok = $public !== false && $raw !== false && strlen($public) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES && strlen($raw) === SODIUM_CRYPTO_SIGN_BYTES
-            && sodium_crypto_sign_verify_detached($raw, self::DOMAIN . $digest, $public);
+            && sodium_crypto_sign_verify_detached($raw, $domain . $digest, $public);
 
         return ['status' => $ok ? self::SIGNED : self::TAMPERED, 'key' => $sig['key'], 'name' => $ok ? $key['name'] : null];
     }
@@ -142,6 +149,11 @@ final class PackageSignature
         }
 
         return $out;
+    }
+
+    private static function domain(string $kind): string
+    {
+        return self::DOMAINS[$kind] ?? throw new \InvalidArgumentException("Unknown signature kind: {$kind}.");
     }
 
     private static function requireSodium(): void

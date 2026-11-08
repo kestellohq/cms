@@ -87,18 +87,69 @@ final class PrerenderTest extends TestCase
     public function testHtmlThatDidNotComeFromVueIsRefused(): void
     {
         $this->assertNull(PrerenderStore::refuse('<p class="x">Write onclick="go()" in your code</p><a href="/js">js</a>'));
+        $this->assertNull(PrerenderStore::refuse('<p>a</p>< SCRIPT src=x>'), 'not a tag: browsers show it as text too');
         foreach ([
             '' => 'empty',
             '<p>a</p><script>alert(1)</script>' => 'a script',
-            '<p>a</p>< SCRIPT src=x>' => 'a script, spaced',
             '<img src=x onerror=alert(1)>' => 'a handler',
+            '<img alt=">" src=x onerror=alert(1)>' => 'a handler after a ">" in a quoted attribute',
             '<div/onmouseover="x">' => 'a handler after a slash',
             '<a href="javascript:alert(1)">x</a>' => 'a javascript: address',
             '<a href=" JavaScript:x">x</a>' => 'a javascript: address, spaced',
+            '<a href="&#106;avascript:alert(1)">x</a>' => 'a javascript: address, entity-encoded',
+            '<meta http-equiv="refresh" content="0;url=https://evil.test">' => 'a redirect',
+            '<link rel="stylesheet" href="https://evil.test/x.css">' => 'an outside stylesheet',
+            '<style>body{display:none}</style>' => 'a style element',
+            '<base href="https://evil.test/">' => 'a base address',
+            '<iframe src="https://evil.test"></iframe>' => 'a frame that is no video player',
+            '<iframe srcdoc="&lt;script&gt;x&lt;/script&gt;" src="https://www.youtube-nocookie.com/embed/abc"></iframe>' => 'a frame with its own document',
+            '<object data="x.swf"></object>' => 'a plugin object',
+            '<form action="https://evil.test/login"><input name="password"></form>' => 'a form posting elsewhere',
+            '<form action="//evil.test/login"></form>' => 'a form posting elsewhere, without a scheme',
+            '<button formaction="https://evil.test">Go</button>' => 'a button posting elsewhere',
+            '<div id="kestello-page">{}</div>' => 'the page data id',
+            '<div id="app"></div>' => 'the app id',
+            '<svg><animate attributeName="href" to="javascript:alert(1)"/></svg>' => 'an SVG animation',
+            '<svg><use href="https://evil.test/sprite.svg#x"/></svg>' => 'an outside SVG sprite',
+            '<div style="background:url(javascript:alert(1))"></div>' => 'a javascript: address in a style',
+            '<div style="background:url(data:text/html,x)"></div>' => 'a data address in a style that is no image',
+            '<div style="width:expression(alert(1))"></div>' => 'a style expression',
+            '<img srcset="javascript:alert(1) 1x">' => 'a javascript: address in srcset',
             str_repeat('a', PrerenderStore::MAX_BYTES + 1) => 'too large',
         ] as $html => $why) {
             $this->assertNotNull(PrerenderStore::refuse((string) $html), "refused: {$why}");
         }
+    }
+
+    public function testWhatPagesDrawIsAccepted(): void
+    {
+        foreach ([
+            '<header><nav aria-label="Main"><a href="/about" class="is-current">About</a></nav></header>' => 'navigation',
+            '<picture><source type="image/avif" srcset="/media/a-640.avif 640w, /media/a-1280.avif 1280w"><img src="/media/a.jpg" alt="" style="object-position:50% 50%;background-image:url(&quot;data:image/webp;base64,UklGRg==&quot;);background-size:cover"></picture>' => 'a picture with its placeholder',
+            '<img src="https://bucket.example/a.jpg" alt="">' => 'an image on another host (cloud storage)',
+            '<figure><iframe src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1" allowfullscreen></iframe></figure>' => 'a YouTube player',
+            '<iframe src="https://player.vimeo.com/video/76979871?autoplay=1&amp;dnt=1"></iframe>' => 'a Vimeo player',
+            '<form action="/search" role="search"><label for="q">Search</label><input id="q" name="q" type="search"><button type="submit">Search</button></form>' => 'the search form',
+            '<form><textarea name="message"></textarea><select><option>A</option></select></form>' => 'a form posting where it is',
+            '<svg viewBox="0 0 256 256" aria-hidden="true"><path d="M0 0h256v256H0z" fill="currentColor"/></svg>' => 'an icon',
+            '<details><summary>More</summary><p>Hidden</p></details><dialog aria-label="Image"></dialog>' => 'details and the lightbox',
+            '<table><caption>Prices</caption><thead><tr><th scope="col">Plan</th></tr></thead><tbody><tr><td>9</td></tr></tbody></table>' => 'a table',
+            '<a href="mailto:hi@example.test">Mail</a> <a href="tel:+381">Call</a> <a href="#top">Top</a>' => 'mail, phone and anchor links',
+            '<div data-v-3936facb="" class="k-b-cover" style="--k-overlay:0.4"><!--[--><p>On a cover</p><!--]--></div>' => 'Vue\'s own markers and variables',
+        ] as $html => $what) {
+            $this->assertNull(PrerenderStore::refuse((string) $html), "accepted: {$what}");
+        }
+    }
+
+    public function testRefusedHtmlStopsThePageWaiting(): void
+    {
+        $store = new PrerenderStore($this->dir);
+        $key = str_repeat('c', 64);
+        $store->want($key, $this->item('/contact'));
+        $this->assertThrows(\InvalidArgumentException::class, fn() => $store->save($key, '<p onclick="x">Hi</p>', ''));
+        $this->assertSame(['saved' => 0, 'waiting' => 0], $store->counts(), 'not asked for again: the browser keeps drawing it');
+        $store->want($key, $this->item('/contact'));
+        $this->assertSame(0, $store->counts()['waiting'], 'a later visit does not ask again: the same data would be refused again');
     }
 
     public function testTheQueueKeepsTheNewestPages(): void

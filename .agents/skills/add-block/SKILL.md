@@ -67,7 +67,7 @@ defineProps({ items: { type: Array, default: () => [] }, price: { type: Boolean,
 - Editable text fields carry `data-k-field="<prop>"` so the canvas edits them in place (see `core/resources/js/pages/blocks/Heading.vue`; `useCanvas()` from `@kestello/app` tells you the block is in the editor).
 - Scoped styles, no global selectors. Blocks render on the public site: follow the theme's custom properties.
 
-Rebuild: `node core/build/build.mjs <package dir>` (or `npm run build:core` for core). Commit the changed `assets/build/`.
+Rebuild: `node core/build/build.mjs <package dir>` (or `npm run build:core` for core). For a package, commit the changed `assets/build/`; core's build is not committed.
 
 ## 3. Test it
 
@@ -94,7 +94,7 @@ npm run i18n                                       # core blocks: refresh the te
 - [ ] The name uses the owner's prefix and a valid category.
 - [ ] Labels and help are plain English, and the component's own text goes through `__()`.
 - [ ] Validation, placement and `prepare()` have PHP tests.
-- [ ] `assets/build/` is rebuilt and committed.
+- [ ] `assets/build/` is rebuilt (and committed, for a package).
 - [ ] `npm run lint`, `npm test` and the PHP tests pass.
 - [ ] A changelog entry under `## [Unreleased]` if people will notice it.
 

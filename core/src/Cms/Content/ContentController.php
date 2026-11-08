@@ -9,6 +9,7 @@ use Kestello\Cms\View\Page;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
 use Kestello\Framework\Database\Orm\Caster;
+use Kestello\Support\Html;
 
 /**
  * Public pages for entries. Themes override the
@@ -368,7 +369,9 @@ final class ContentController
                 if (!$field->isInternal()) {
                     $data[$field->name] = $entry->field($field->name);
                     if ($field->type === 'rich_text') {
-                        $html[] = $field->name; // sanitized on save: safe to render as HTML
+                        // sanitized on save, and again here: a value written another way (an older type, a restored revision, a plugin) is never trusted as HTML
+                        $data[$field->name] = is_string($data[$field->name]) ? Html::sanitize($data[$field->name], 'rich-text') : $data[$field->name];
+                        $html[] = $field->name;
                     }
                     if ($field->type === 'blocks') {
                         // validated again and prepared for this viewer (visibility, bindings, queries)

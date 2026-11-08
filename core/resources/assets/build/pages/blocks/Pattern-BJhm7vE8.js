@@ -1,1 +1,0 @@
-import{createElementBlock as e,openBlock as t,renderSlot as n}from"vue";var r=[`data-pattern`],i={__name:`Pattern`,props:{pattern:{type:String,default:``}},setup(i){return(a,o)=>(t(),e(`div`,{class:`k-b-pattern k-blocks`,"data-width":`full`,"data-pattern":i.pattern},[n(a.$slots,`default`)],8,r))}};export{i as default};

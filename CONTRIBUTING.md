@@ -33,6 +33,7 @@ git clone https://github.com/kestellohq/cms.git kestello && cd kestello
 cp .env.example .env
 docker compose up -d
 npm ci
+npm run build        # the Vue pages: built, not committed
 composer install     # PHP CS Fixer and PHPStan, the only (dev) requirements
 ```
 
@@ -145,7 +146,7 @@ Releases are cut by maintainers, through GitHub. [.agents/skills/release/SKILL.m
 
 1. `git switch develop && git pull`, then `git switch -c release/X.Y.Z`.
 2. `npm run release:prepare -- X.Y.Z` sets `core/VERSION`, turns `## [Unreleased]` into `## [X.Y.Z] - <date>` with a fresh empty Unreleased section, and refreshes the translation template and editor helpers.
-3. Rebuild assets (`npm run build`), run `npm run check`, commit `chore(release): X.Y.Z`, and open a pull request into `main`.
+3. Run `npm run check`, commit `chore(release): X.Y.Z`, and open a pull request into `main`.
 4. Only fixes land on the release branch. When it is green and approved, merge it into `main` with a merge commit.
 5. Tag the merge commit: `git tag -s vX.Y.Z -m "Kestello X.Y.Z" && git push origin vX.Y.Z`.
 6. The release workflow runs every check, checks the tag against `core/VERSION`, builds `kestello-core-X.Y.Z.zip`, signs it with the release key, verifies the signature against the keys in `core/config/release.php` (`bin/cms core:verify`), builds `kestello-X.Y.Z.zip` for new installs (`bin/cms core:install-zip`), adds the SHA-256 checksums and the API stubs, and publishes a GitHub release with that version's changelog section as notes. A pre-release version becomes a GitHub pre-release.
@@ -171,7 +172,7 @@ A hotfix works the same way from `hotfix/X.Y.Z`, branched from `main`.
 | `npm run test:php:matrix` | PHP tests on MySQL, PostgreSQL and Redis as well, as CI runs them. |
 | `npm run i18n` | Rewrites the translation template, `core/resources/lang/kestello.pot`. |
 | `npm run ide` | Rewrites `.phpstorm.meta.php`. |
-| `npm run build` | Rebuilds the Vue pages. Built files are committed. |
+| `npm run build` | Builds the Vue pages. Built files are not committed: CI builds them for its checks and the release workflow for the zips. |
 | `npm run check` | Everything above that checks, in one go. |
 
 PHP CS Fixer and PHPStan are the only entries in `require-dev` (`php-cs-fixer/shim` and `phpstan/phpstan`, both single PHARs with no dependencies of their own), locked in `composer.lock`. They never ship: the install and update zips leave `vendor/` out. To upgrade one, run `composer update <package>` in a `build(deps):` commit. Moving to PER Coding Style 3.0 is a one-line change in `.php-cs-fixer.dist.php` (`@PER-CS3x0`), followed by `npm run format` in its own commit.

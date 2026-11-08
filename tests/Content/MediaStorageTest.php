@@ -94,12 +94,12 @@ final class MediaStorageTest extends AuthTestCase
     }
 
     /** One A6 page with a black square. */
-    private static function pdf(): string
+    private static function pdf(string $box = '0 0 298 420'): string
     {
         $objects = [
             '<< /Type /Catalog /Pages 2 0 R >>',
             '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 298 420] /Contents 4 0 R /Resources << >> >>',
+            '<< /Type /Page /Parent 2 0 R /MediaBox [' . $box . '] /Contents 4 0 R /Resources << >> >>',
         ];
         $stream = '0 0 0 rg 50 150 200 200 re f';
         $objects[] = '<< /Length ' . strlen($stream) . " >>\nstream\n{$stream}\nendstream";
@@ -194,6 +194,20 @@ final class MediaStorageTest extends AuthTestCase
         $this->assertStringContainsString('1 MB of storage', $this->json($r)['errors']['size'][0] ?? '');
         $this->assertSame(200, $this->api('POST', '/media/uploads', ['filename' => 'a.png', 'size' => 600_000])->statusCode());
         $this->assertSame(422, $this->api('POST', '/media/uploads', ['filename' => 'b.png', 'size' => 600_000])->statusCode(), 'unfinished uploads count too');
+
+        // checking and reserving are one step: while another request of bo's holds it, this one waits, then gives up
+        $bo = (int) $this->db->table('users')->where('username', 'bo')->value('id');
+        $held = $this->cms->container->make(\Kestello\Contracts\Cache\Store::class)->lock('media-quota:' . $bo, 30, 'another-request');
+        $this->assertTrue($held->acquire());
+        $wait = \Kestello\Cms\Media\MediaLibrary::$quotaLockWait;
+        \Kestello\Cms\Media\MediaLibrary::$quotaLockWait = 1;
+        try {
+            $this->assertSame(409, $this->api('POST', '/media/uploads', ['filename' => 'c.png', 'size' => 10])->statusCode());
+        } finally {
+            \Kestello\Cms\Media\MediaLibrary::$quotaLockWait = $wait;
+            $held->release();
+        }
+        $this->assertSame(200, $this->api('POST', '/media/uploads', ['filename' => 'c.png', 'size' => 10])->statusCode(), 'and goes ahead once it is free');
         $this->assertSame(403, $this->api('GET', '/system/storage')->statusCode(), 'only administrators see storage');
     }
 
@@ -346,6 +360,25 @@ final class MediaStorageTest extends AuthTestCase
 
         $this->assertSame(204, $this->api('DELETE', "/media/{$pdf['id']}")->statusCode());
         $this->assertFalse($this->onDisk('media', $poster['path']), 'deleting the PDF deletes its picture');
+    }
+
+    public function testAPosterNeverOutgrowsItsLimitWhateverThePageClaims(): void
+    {
+        $this->assertSame(PdfPoster::DPI, PdfPoster::dpiFor("File has 1 page.\nPage 1 MediaBox: [0 0 595 842]"));
+        $this->assertSame(10, PdfPoster::dpiFor('Page 1 MediaBox: [0 0 14400 14400]'), '200 inches square: 2000 px at 10 dpi');
+        $this->assertSame(PdfPoster::DPI, PdfPoster::dpiFor('Page 1 MediaBox: [-10.5 -10.5 289.5 409.5]'));
+        foreach (['', 'File has 1 page.', 'Page 1 MediaBox: [0 0 0 0]', 'Page 1 MediaBox: [0 0 9999999 1]'] as $report) {
+            $this->assertNull(PdfPoster::dpiFor($report), "no poster from: {$report}");
+        }
+
+        if (PdfPoster::binary() === null) {
+            return;
+        }
+        $this->cms->media->useEngine('gd');
+        $huge = Media::query()->find($this->upload('huge.pdf', self::pdf('0 0 14400 14400'))['id']);
+        $poster = $huge->meta['poster'] ?? null;
+        $this->assertTrue(is_array($poster), 'a giant page still gets a picture');
+        $this->assertTrue(max($poster['width'], $poster['height']) <= PdfPoster::MAX_SIDE, 'drawn small, never at full size');
     }
 
     public function testOptimizersKeepOnlySmallerValidFiles(): void
