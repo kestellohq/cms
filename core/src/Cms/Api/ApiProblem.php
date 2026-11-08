@@ -63,6 +63,12 @@ final class ApiProblem extends RuntimeException
         return new self(409, 'conflict', 'Conflict', $detail);
     }
 
+    /** Refused because the site is a public demo (DemoPolicy). */
+    public static function demo(): self
+    {
+        return new self(403, 'demo', 'Not in the demo', \Kestello\Cms\Demo\DemoPolicy::REFUSED);
+    }
+
     public static function forbidden(string $detail = 'You are not allowed to do this.'): self
     {
         return new self(403, 'forbidden', 'Forbidden', $detail);

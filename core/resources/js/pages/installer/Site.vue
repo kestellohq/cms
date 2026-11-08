@@ -44,6 +44,24 @@ defineProps({ step: Number, error: { type: String, default: null }, site: { type
                 </div>
             </div>
 
+            <fieldset class="k-setup__choices">
+                <legend>What is this site for?</legend>
+                <label class="k-setup__choice">
+                    <input type="radio" name="site_kind" value="site" :checked="!site.demo" />
+                    <strong>A website</strong>
+                    <span>Your own site. You make the administrator account in the next step.</span>
+                </label>
+                <label class="k-setup__choice">
+                    <input type="radio" name="site_kind" value="demo" :checked="site.demo" />
+                    <strong>A public demo</strong>
+                    <span
+                        >For showing Kestello to others. It starts with a sample bakery site, anyone can sign in as demo with the password demo, and it resets
+                        every hour. Accounts, plugins, updates, backups and settings are locked, and nothing is emailed. You manage it on the server with
+                        bin/cms.</span
+                    >
+                </label>
+            </fieldset>
+
             <div class="k-setup__actions">
                 <a href="/install?step=2" class="k-btn k-btn--secondary k-btn--md">Back</a>
                 <button type="submit" class="k-btn k-btn--primary k-btn--md">Continue</button>

@@ -41,18 +41,24 @@ const installing = ref(false);
                         <code>{{ summary.db_name }}</code>
                     </dd>
                 </div>
-                <div>
-                    <dt>Administrator</dt>
-                    <dd>{{ summary.admin_username }} <a href="/install?step=4" class="k-link k-small">Change</a></dd>
+                <div v-if="summary.demo">
+                    <dt>Kind</dt>
+                    <dd>A public demo: everyone signs in as demo, and it resets every hour <a href="/install?step=3" class="k-link k-small">Change</a></dd>
                 </div>
-                <div>
-                    <dt>Administrator email</dt>
-                    <dd>{{ summary.admin_email }}</dd>
-                </div>
+                <template v-else>
+                    <div>
+                        <dt>Administrator</dt>
+                        <dd>{{ summary.admin_username }} <a href="/install?step=4" class="k-link k-small">Change</a></dd>
+                    </div>
+                    <div>
+                        <dt>Administrator email</dt>
+                        <dd>{{ summary.admin_email }}</dd>
+                    </div>
+                </template>
             </dl>
 
             <div class="k-setup__actions">
-                <a href="/install?step=4" class="k-btn k-btn--secondary k-btn--md">Back</a>
+                <a :href="summary.demo ? '/install?step=3' : '/install?step=4'" class="k-btn k-btn--secondary k-btn--md">Back</a>
                 <button type="submit" class="k-btn k-btn--primary k-btn--md" :disabled="installing" :aria-busy="installing">
                     {{ installing ? 'Installing…' : 'Install Kestello' }}
                 </button>

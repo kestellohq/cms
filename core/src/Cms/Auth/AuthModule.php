@@ -134,16 +134,19 @@ final class AuthModule extends Provider
         $r->get('/login/two-factor', [AuthController::class, 'showTwoFactor'])->name('login.two-factor');
         $r->post('/login/two-factor', [AuthController::class, 'twoFactor'])->name('login.two-factor.post');
         $r->post('/logout', [AuthController::class, 'logout'])->name('logout');
-        $r->get('/forgot-password', [AuthController::class, 'showForgot'])->name('password.forgot');
-        $r->post('/forgot-password', [AuthController::class, 'forgot'])->name('password.forgot.post');
-        $r->get('/reset-password', [AuthController::class, 'showReset'])->name('password.reset');
-        $r->post('/reset-password', [AuthController::class, 'reset'])->name('password.reset.post');
-        $r->get('/register', [RegistrationController::class, 'show'])->name('register');
-        $r->post('/register', [RegistrationController::class, 'register'])->name('register.post');
-        $r->get('/register/complete', [RegistrationController::class, 'showComplete'])->name('register.complete');
-        $r->post('/register/complete', [RegistrationController::class, 'complete'])->name('register.complete.post');
-        $r->get('/auth/{provider}/redirect', [ExternalAuthController::class, 'redirect'])->where(['provider' => '[a-z0-9][a-z0-9-]{0,31}'])->name('auth.external.redirect');
-        $r->get('/auth/{provider}/callback', [ExternalAuthController::class, 'callback'])->where(['provider' => '[a-z0-9][a-z0-9-]{0,31}'])->name('auth.external.callback');
+        // a public demo: one shared account nobody may take over, and no mail goes out
+        if (!$cms->config->get('app.demo', false)) {
+            $r->get('/forgot-password', [AuthController::class, 'showForgot'])->name('password.forgot');
+            $r->post('/forgot-password', [AuthController::class, 'forgot'])->name('password.forgot.post');
+            $r->get('/reset-password', [AuthController::class, 'showReset'])->name('password.reset');
+            $r->post('/reset-password', [AuthController::class, 'reset'])->name('password.reset.post');
+            $r->get('/register', [RegistrationController::class, 'show'])->name('register');
+            $r->post('/register', [RegistrationController::class, 'register'])->name('register.post');
+            $r->get('/register/complete', [RegistrationController::class, 'showComplete'])->name('register.complete');
+            $r->post('/register/complete', [RegistrationController::class, 'complete'])->name('register.complete.post');
+            $r->get('/auth/{provider}/redirect', [ExternalAuthController::class, 'redirect'])->where(['provider' => '[a-z0-9][a-z0-9-]{0,31}'])->name('auth.external.redirect');
+            $r->get('/auth/{provider}/callback', [ExternalAuthController::class, 'callback'])->where(['provider' => '[a-z0-9][a-z0-9-]{0,31}'])->name('auth.external.callback');
+        }
     }
 
     /** @return array{0: string, 1: string} site name and base URL */

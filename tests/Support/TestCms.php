@@ -23,7 +23,7 @@ use Kestello\Framework\Http\RateLimiter;
 final class TestCms
 {
     /** @param Closure(\Kestello\Framework\Core\Request): bool|null $csrf */
-    public static function make(string $root, bool $debug = true, ?Closure $csrf = null): Cms
+    public static function make(string $root, bool $debug = true, ?Closure $csrf = null, bool $demo = false): Cms
     {
         $container = new Container();
         $router = new Router();
@@ -37,6 +37,7 @@ final class TestCms
             limiter: new RateLimiter(new \Kestello\Framework\Cache\ArrayStore()),
             csrf: $csrf ?? static fn(): bool => false,
             debug: $debug,
+            demo: $demo,
         );
 
         $config = new Config([]);

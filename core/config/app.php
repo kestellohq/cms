@@ -18,6 +18,11 @@ return [
     'debug' => false,
     'secret_key' => '',
 
+    // A public demo: everyone signs in as "demo", only content, design, menus,
+    // forms and images can be changed, nothing is emailed, and the site goes back
+    // to its snapshot every hour (Kestello\Cms\Demo). Only the server can turn it off.
+    'demo' => false,
+
     // Reverse proxies allowed to set X-Forwarded-For (IPs or CIDR ranges).
     // Empty = the client IP is always the connecting address.
     'trusted_proxies' => [],

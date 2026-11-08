@@ -39,6 +39,9 @@ abstract class AuthTestCase extends TestCase
     protected bool $csrfValid = true;
     protected ?int $sessionUser = null;
 
+    /** Boot the site as a public demo (app.demo). */
+    protected bool $demo = false;
+
     protected function setUp(): void
     {
         $this->db = Connection::sqliteMemory();
@@ -57,7 +60,7 @@ abstract class AuthTestCase extends TestCase
      */
     protected function bootCms(?string $root = null): void
     {
-        $this->cms = TestCms::make($root ?? $this->tempDir(), csrf: fn(): bool => $this->csrfValid);
+        $this->cms = TestCms::make($root ?? $this->tempDir(), csrf: fn(): bool => $this->csrfValid, demo: $this->demo);
         Cms::setInstance($this->cms);
         $c = $this->cms->container;
         $c->instance(Cms::class, $this->cms);

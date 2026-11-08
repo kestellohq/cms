@@ -302,6 +302,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Audit.vue
 #: core/resources/js/ui/builder/BuilderPatterns.vue
+#: core/src/Cms/Demo/content/bakery.php
 msgid "About"
 msgstr ""
 
@@ -763,6 +764,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Anyone"
+msgstr ""
+
+#: core/resources/js/components/demo/DemoBar.vue
+msgid "Anyone can sign in here, so others may see what you change, and you may see theirs. Nothing is emailed."
 msgstr ""
 
 #: core/resources/js/components/content/SharePreviews.vue
@@ -1534,6 +1539,10 @@ msgstr ""
 msgid "Chosen per entry: {types}"
 msgstr ""
 
+#: core/src/Cms/Demo/content/bakery.php
+msgid "Cinnamon buns, the way Margit makes them"
+msgstr ""
+
 #: core/resources/js/ui/builder/DesignColor.vue
 #: core/resources/js/ui/builder/DesignScale.vue
 msgid "Clear"
@@ -1737,6 +1746,7 @@ msgid "Consent"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderPatterns.vue
+#: core/src/Cms/Demo/content/bakery.php
 msgid "Contact"
 msgstr ""
 
@@ -1773,6 +1783,10 @@ msgstr ""
 #: core/resources/js/pages/admin/system/Audit.vue
 #: core/src/Cms/Content/ContentModule.php
 msgid "Content types"
+msgstr ""
+
+#: core/resources/js/components/demo/DemoBar.vue
+msgid "Content, design, menus, forms and images can be changed. Your account, people, plugins, updates, backups and settings are locked."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
@@ -2350,6 +2364,10 @@ msgstr ""
 msgid "Deliveries"
 msgstr ""
 
+#: core/resources/js/layouts/Admin.vue
+msgid "Demo"
+msgstr ""
+
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Describe the image for people who can't see it. Leave empty only if it is purely decorative."
 msgstr ""
@@ -2644,6 +2662,7 @@ msgstr ""
 #: core/resources/js/pages/admin/users/Edit.vue
 #: core/resources/js/pages/admin/users/Index.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+#: core/src/Cms/Demo/content/bakery.php
 msgid "Email"
 msgstr ""
 
@@ -2886,6 +2905,18 @@ msgstr ""
 #: core/resources/js/pages/admin/roles/Index.vue
 #: core/resources/js/pages/admin/system/Audit.vue
 msgid "Everything"
+msgstr ""
+
+#: core/resources/js/components/demo/DemoBar.vue
+msgid "Everything goes back to how it was in about a minute."
+msgstr ""
+
+#: core/resources/js/components/demo/DemoBar.vue
+msgid "Everything goes back to how it was in {n} minutes."
+msgstr ""
+
+#: core/resources/js/components/demo/DemoBar.vue
+msgid "Everything goes back to how it was shortly."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
@@ -3595,6 +3626,10 @@ msgstr ""
 msgid "History"
 msgstr ""
 
+#: core/src/Cms/Demo/content/bakery.php
+msgid "Home"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Home page title"
 msgstr ""
@@ -3629,6 +3664,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "How visitors find their way around. Build a menu here; your theme decides where each one appears."
+msgstr ""
+
+#: core/src/Cms/Demo/content/bakery.php
+msgid "How we feed our sourdough starter"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -4645,6 +4684,7 @@ msgstr ""
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/forms/Index.vue
+#: core/src/Cms/Demo/content/bakery.php
 msgid "Message"
 msgstr ""
 
@@ -5025,6 +5065,10 @@ msgstr ""
 #: core/resources/js/pages/admin/forms/Submissions.vue
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "New"
+msgstr ""
+
+#: core/src/Cms/Demo/content/bakery.php
+msgid "New Saturday hours"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Index.vue
@@ -5953,6 +5997,10 @@ msgstr ""
 msgid "Other accounts you can sign in with instead of your password."
 msgstr ""
 
+#: core/src/Cms/Demo/content/bakery.php
+msgid "Our spring rye is back"
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderDetails.vue
 msgid "Outline"
 msgstr ""
@@ -6509,6 +6557,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Put the form on a page with the Form block."
+msgstr ""
+
+#: core/src/Cms/Demo/DemoModule.php
+msgid "Puts the demo back to its snapshot every hour."
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderPatterns.vue
@@ -7821,6 +7873,10 @@ msgstr ""
 msgid "Sign in again"
 msgstr ""
 
+#: core/resources/js/pages/auth/Login.vue
+msgid "Sign in as {username} with the password {password}. Everyone shares this account, and the site resets every hour."
+msgstr ""
+
 #: core/resources/js/layouts/Admin.vue
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/system/Security.vue
@@ -7999,6 +8055,10 @@ msgstr ""
 
 #: core/src/Cms/Blocks/CoreListBlocks.php
 msgid "Social links"
+msgstr ""
+
+#: core/src/Cms/Demo/content/bakery.php
+msgid "Soda bread for a quiet Sunday"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDesign.vue
@@ -9209,6 +9269,11 @@ msgstr ""
 msgid "This form is closed."
 msgstr ""
 
+#: core/resources/js/components/demo/DemoBar.vue
+#: core/resources/js/pages/auth/Login.vue
+msgid "This is a demo"
+msgstr ""
+
 #: core/src/Cms/Redirects/Redirects.php
 msgid "This is not a valid regular expression."
 msgstr ""
@@ -9986,6 +10051,10 @@ msgstr ""
 msgid "Visible to people who manage accounts."
 msgstr ""
 
+#: core/src/Cms/Demo/content/bakery.php
+msgid "Visit us"
+msgstr ""
+
 #: core/resources/js/ui/KBlockSettings.vue
 msgid "Visitors"
 msgstr ""
@@ -10444,6 +10513,7 @@ msgid "Your current codes stop working."
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Index.vue
+#: core/src/Cms/Demo/content/bakery.php
 msgid "Your name"
 msgstr ""
 

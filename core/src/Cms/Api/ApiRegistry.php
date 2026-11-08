@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use Kestello\Cms\Auth\AuthRegistry;
 use Kestello\Cms\Auth\InvalidCredentials;
 use Kestello\Cms\Auth\Roles;
+use Kestello\Cms\Demo\DemoPolicy;
 use Kestello\Contracts\Auth\Principal;
 use Kestello\Framework\Core\Container;
 use Kestello\Framework\Core\ExecutionContext;
@@ -79,6 +80,7 @@ final class ApiRegistry
         private readonly RateLimiter $limiter,
         private readonly Closure $csrf,
         private readonly bool $debug = false,
+        private readonly bool $demo = false,
     ) {
         foreach (self::CORE_SCOPES as $name => $description) {
             $this->scopes[$name] = ['description' => $description, 'owner' => 'core'];
@@ -216,6 +218,10 @@ final class ApiRegistry
                 if ($endpoint->sameOriginOnly() ? !self::sameOrigin($request) : !($this->csrf)($request)) {
                     throw ApiProblem::csrf();
                 }
+            }
+
+            if ($this->demo && !DemoPolicy::allows($entry['route']->method, $entry['route']->path, $endpoint->capability(), $endpoint->requiresRecentAuth())) {
+                throw ApiProblem::demo();
             }
 
             $this->authorizePrincipal($endpoint, $principal);

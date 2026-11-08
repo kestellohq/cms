@@ -1,13 +1,15 @@
 <script setup>
 import { Link, useForm, usePage } from '@kestello/app';
 import { __ } from '@kestello/sdk';
-import { KButton, KField, KIcon, KInput } from '@kestello/ui';
+import { KAlert, KButton, KField, KIcon, KInput } from '@kestello/ui';
 import AuthCard from '../../components/AuthCard.vue';
 import FormErrors from '../../components/FormErrors.vue';
 import PasswordInput from '../../components/PasswordInput.vue';
 
 const page = usePage();
-const form = useForm({ email: page.props.old?.email ?? '', password: '' });
+// a public demo says which account to use, and fills it in
+const demo = page.props.demo ?? null;
+const form = useForm({ email: page.props.old?.email ?? demo?.username ?? '', password: demo?.password ?? '' });
 const providers = page.props.providers ?? [];
 const canRegister = page.props.canRegister === true;
 const site = page.props.site?.name || 'Kestello';
@@ -23,6 +25,14 @@ function submit() {
 <template>
     <AuthCard :title="__('Sign in')" :description="__('Use your email address or username.')">
         <FormErrors :errors="form.errors" :fields="['email', 'password']" />
+        <KAlert v-if="demo" tone="info" :title="__('This is a demo')">
+            {{
+                __('Sign in as {username} with the password {password}. Everyone shares this account, and the site resets every hour.', {
+                    username: demo.username,
+                    password: demo.password,
+                })
+            }}
+        </KAlert>
 
         <form class="k-auth__form" novalidate @submit.prevent="submit">
             <KField v-slot="{ id, describedBy, invalid }" :label="__('Email or username')" :error="form.errors.email">
@@ -42,7 +52,7 @@ function submit() {
                 <PasswordInput :id="id" v-model="form.password" :invalid="invalid" :aria-describedby="describedBy" autocomplete="current-password" required />
             </KField>
             <KButton type="submit" variant="primary" icon="sign-in" block :loading="form.processing">{{ __('Sign in') }}</KButton>
-            <Link href="/forgot-password" class="k-link k-auth__aside">{{ __('Forgot your password?') }}</Link>
+            <Link v-if="!demo" href="/forgot-password" class="k-link k-auth__aside">{{ __('Forgot your password?') }}</Link>
         </form>
 
         <template v-if="providers.length">
