@@ -4,6 +4,12 @@ Every change people would notice is listed here, newest first. The format follow
 
 ## [Unreleased]
 
+### Security
+
+- The query builder refuses a column or table name that isn't a plain name (`name`, `table.name`, `name AS alias`) instead of passing it into SQL unchanged. Raw SQL needs `new Expression(…)` or `QueryBuilder::raw()`. Plugins that passed SQL such as `'COUNT(*) as total'` to `select()` must wrap it.
+- A form's "redirect after sending" path is checked like other return paths, so `/\host` (which browsers read as `//host`) and control characters are refused.
+- The server renderer (`app.ssr.url`) must be an `http` or `https` address, and its redirects are never followed, so page data only goes to the renderer itself.
+
 ### Fixed
 
 - Backspace in an empty quote source, table caption or image caption no longer removes the whole block; only the block's first field does that.
