@@ -263,10 +263,12 @@ export function useCanvas(b, { api, props, emit, root }) {
     });
 
     // ── accessibility checks, on what the canvas actually shows
-    const issues = ref([]);
+    const pageIssues = ref([]);
+    // the page's own, then what the document adds (an entry's search checks, on its unsaved values)
+    const issues = computed(() => [...pageIssues.value, ...(props.extraIssues ?? [])]);
     const bodyHidden = ref(false); // the template has no place for these blocks: visitors don't see them
     function runChecks() {
-        issues.value = checkPage(frame.value?.contentDocument, { kind: props.kind, owns: b.owns, t: __ });
+        pageIssues.value = checkPage(frame.value?.contentDocument, { kind: props.kind, owns: b.owns, t: __ });
     }
 
     // ── messages from the canvas

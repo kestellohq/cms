@@ -240,7 +240,7 @@
     ]
   },
   "resources/js/pages/admin/content/Edit.vue": {
-    "file": "pages/admin/content/Edit-Bi4RX0yJ.js",
+    "file": "pages/admin/content/Edit-fCeu_DVK.js",
     "name": "pages/admin/content/Edit",
     "src": "resources/js/pages/admin/content/Edit.vue",
     "isEntry": true,
@@ -248,7 +248,7 @@
       "__plugin-vue_export-helper-BDNMzG2s.js"
     ],
     "css": [
-      "assets/Edit-BCh-J5bl.css"
+      "assets/Edit-DOcK9Qi8.css"
     ]
   },
   "resources/js/pages/admin/content/Index.vue": {
@@ -1161,7 +1161,7 @@
     "isEntry": true
   },
   "resources/js/ui/index.js": {
-    "file": "ui/index-DG0K7D1s.js",
+    "file": "ui/index-C3TOtYZ4.js",
     "name": "ui/index",
     "src": "resources/js/ui/index.js",
     "isEntry": true,

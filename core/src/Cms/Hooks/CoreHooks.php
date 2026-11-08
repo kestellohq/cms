@@ -52,6 +52,10 @@ final class CoreHooks
         $hooks->filter('page.footer', '0.1.0', 'string', 'HTML right before </body> on public pages.', ['array $data' => 'The page props.'], $page);
         $hooks->filter('page.shared', '0.1.0', 'array', 'The data shared with every Vue page. It is sent to the browser, so never add secrets.', [], $page);
         $hooks->filter('seo.head', '0.1.0', 'list', 'The search and sharing tags of a page, as [\'meta\' or \'link\', attributes] pairs. Kestello escapes the attributes.', ['array $data' => 'The page props.'], $page);
+        $hooks->filter('seo.schema', '0.1.0', 'list', 'The schema.org nodes of a page\'s JSON-LD @graph (WebSite, Organization or Person, WebPage, Article, BreadcrumbList). Add, change or remove nodes; each needs an @type. Pages that are not listed in search get none.', ['array $data' => 'The page: component, props and url.'], $page);
+        $hooks->filter('seo.alternates', '0.1.0', 'list', 'The same page in other languages, as [\'hreflang\' => \'de\', \'href\' => \'/de/page\'] pairs, written as hreflang links. Invalid language tags and addresses are left out. Empty by default.', ['array $data' => 'The page: component, props and url.'], $page);
+        $hooks->filter('sitemap.files', '0.1.0', 'array', 'The files listed in /sitemap.xml, name => last change (DateTimeInterface or null). Add "<name>-<n>" to serve /sitemaps/<name>-<n>.xml and fill it with sitemap.urls.', [], $page);
+        $hooks->filter('sitemap.urls', '0.1.0', 'list', 'The addresses in one sitemap file, as [\'loc\' => \'/path\', \'lastmod\' => ?DateTimeInterface, \'images\' => [urls]]. Only addresses on this site are kept.', ['string $file' => 'The file name, such as post-1.'], $page);
         $hooks->filter('robots.txt', '0.1.0', 'string', 'The generated robots.txt.', [], $page);
         $hooks->filter('pagecache.query', '0.1.0', 'list', 'Query parameters that get their own page cache entry. The default is [\'page\'].', [], $page);
 

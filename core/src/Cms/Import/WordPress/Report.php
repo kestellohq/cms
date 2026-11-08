@@ -159,6 +159,7 @@ final class Report
             'cover-video' => 'A cover had a video behind its text: the text was kept, the video left out (covers take an image here).',
             'media-missing' => 'An image or file that was not imported still points at the old site.',
             'html' => 'Custom HTML was kept, without scripts, styles and frames.',
+            'seo' => "Search titles, descriptions and sharing settings came over from {$what}.",
             'fallback' => 'A post was kept as text: its layout did not fit the blocks here.',
             default => $key,
         };

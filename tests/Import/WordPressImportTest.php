@@ -622,4 +622,41 @@ final class WordPressImportTest extends AuthTestCase
         $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ed', 'password' => self::PASSWORD])->statusCode());
         $this->assertSame(403, $this->api('GET', '/imports')->statusCode());
     }
+
+    public function testSearchSettingsFromSeoPluginsComeOver(): void
+    {
+        $meta = static fn(string $key, string $value): string => "<wp:postmeta><wp:meta_key><![CDATA[{$key}]]></wp:meta_key><wp:meta_value><![CDATA[{$value}]]></wp:meta_value></wp:postmeta>";
+        $xml = (string) file_get_contents(self::FIXTURE);
+        $post = $meta('_edit_last', '1');
+        $page = $meta('_wp_page_template', 'default');
+        $this->assertSame(1, substr_count($xml, $post));
+        $this->assertSame(1, substr_count($xml, $page));
+        $xml = str_replace($post, $post
+            . $meta('_yoast_wpseo_title', 'Hello from our new studio %%sep%% %%sitename%%')
+            . $meta('_yoast_wpseo_metadesc', 'We moved to %%sitename%%\'s bigger place.')
+            . $meta('_yoast_wpseo_canonical', 'https://old.example.com/2024/06/hello-studio/')
+            . $meta('_yoast_wpseo_opengraph-image-id', '40'), $xml);
+        $xml = str_replace($page, $page
+            . $meta('rank_math_title', '%title% %sep% %sitename%')
+            . $meta('rank_math_robots', 'a:1:{i:0;s:7:"noindex";}')
+            . $meta('rank_math_canonical_url', 'https://medium.com/@ana/about'), $xml);
+        $file = $this->tempDir() . '/seo.xml';
+        file_put_contents($file, $xml);
+
+        $report = $this->import($file);
+        $post = $this->entry(41);
+        $this->assertSame([
+            'title' => 'Hello from our new studio',
+            'description' => 'We moved to Old Studio\'s bigger place.',
+            'image' => $post->field('image'),
+        ], array_intersect_key((array) $post->field('seo'), array_flip(['title', 'description', 'image', 'canonical'])), 'a canonical address on the old site is left out');
+        $this->assertNotNull($post->field('image'));
+        $about = (array) $this->entry(50)->field('seo');
+        $this->assertSame([true, 'https://medium.com/@ana/about', null], [$about['noindex'] ?? null, $about['canonical'] ?? null, $about['title'] ?? null], 'the default title template needs no search title');
+        $this->assertSame(1, $report['notes']['seo:Yoast SEO'] ?? null);
+        $this->assertSame(1, $report['notes']['seo:Rank Math'] ?? null);
+
+        $again = $this->import($file);
+        $this->assertSame(0, $again['counts']['entry']['updated'] ?? null, 'running it again changes nothing');
+    }
 }

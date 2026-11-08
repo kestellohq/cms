@@ -59,6 +59,7 @@ final class Stager
     /** @var array<string, int> */
     private array $counts = [];
     private int $comments = 0;
+    private string $siteTitle = '';
 
     public function __construct(private readonly ContentRegistry $content) {}
 
@@ -111,6 +112,8 @@ final class Stager
         // the install address on another host (example.wordpress.com behind example.com): links to it are to the same pages
         $install = (string) parse_url((string) $r['url'], PHP_URL_HOST);
         $this->site = new OldSite($url, $site->hostsOf($this->fileHosts), $install === '' ? [] : [$install]);
+
+        $this->siteTitle = trim(html_entity_decode((string) $r['title'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
 
         return ['title' => (string) $r['title'], 'url' => $url, 'file_hosts' => $this->site->fileHosts(), 'aliases' => $this->site->aliases(), 'version' => (string) $r['version'], 'language' => (string) $r['language']];
     }
@@ -228,6 +231,11 @@ final class Stager
             'thumbnail' => (int) ($r['meta']['_thumbnail_id'] ?? 0),
             'link' => (string) $r['link'],
         ];
+        // only when an SEO plugin left something, so posts without it keep their checksum
+        $seo = SeoMeta::read((array) $r['meta'], (string) $r['title'], $this->siteTitle);
+        if ($seo !== null) {
+            $payload['seo'] = $seo;
+        }
         $this->add('entry', (string) $id, $id, $label, $payload, linkPath: $linkPath, skipped: $reason);
         if ($reason !== null) {
             return;
@@ -239,6 +247,9 @@ final class Stager
             $this->add('redirect', 'entry:' . $id, $id, $linkPath, ['from' => $linkPath, 'kind' => 'entry', 'key' => (string) $id]);
         }
         $this->collectFiles((string) $r['content'], $label);
+        if (($seo['image_url'] ?? null) !== null && (int) ($seo['image_id'] ?? 0) === 0) {
+            $this->collectFiles((string) $seo['image_url'], $label);     // a sharing image that is not in the media library
+        }
     }
 
     /**
