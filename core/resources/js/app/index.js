@@ -28,6 +28,7 @@ import {
 } from 'vue';
 import { designAttrs } from '../shared/block-design.js';
 import { createLeaveGuards, leavesPage } from './leave-guards.js';
+import { endedElsewhere } from './same-site.js';
 import { staleStylesheets, stylesFor } from './stylesheets.js';
 import { documentTitle } from './document-title.js';
 
@@ -183,6 +184,12 @@ class Router {
             if (response.status === 409 && response.headers.get('X-Kestello-Location')) {
                 // New deployment: assets changed, load the page fully.
                 window.location.href = response.headers.get('X-Kestello-Location');
+                return;
+            }
+
+            if (endedElsewhere(response, window.location.origin)) {
+                // redirected to another site: go there, never draw its answer as a page of this one
+                window.location.href = response.url;
                 return;
             }
 

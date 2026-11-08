@@ -11,6 +11,7 @@ use Kestello\Cms\Content\Field;
 use Kestello\Cms\Content\Permalinks;
 use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Database\QueryBuilder;
+use Kestello\Support\Html;
 use Kestello\Support\Json;
 use Kestello\Support\Translator;
 use OutOfBoundsException;
@@ -582,7 +583,8 @@ final class ContentModels
             }
             if ($now['type'] !== $f['type']) {
                 $count = $this->countValues($name, $f['path']);
-                $changes[] = ['change' => 'retyped', 'destructive' => $count > 0, 'field' => $now['label'], 'from' => $f['type'], 'to' => $now['type'], 'entries' => $count];
+                $changes[] = ['change' => 'retyped', 'destructive' => $count > 0, 'field' => $now['label'], 'from' => $f['type'], 'to' => $now['type'], 'entries' => $count,
+                    'path' => $now['path']];
             }
         }
 
@@ -674,7 +676,9 @@ final class ContentModels
     {
         $moves = array_values(array_filter($changes, static fn($c) => $c['change'] === 'renamed'));
         $removals = $purge ? array_values(array_filter($changes, static fn($c) => $c['change'] === 'removed')) : [];
-        if ($moves === [] && $removals === []) {
+        // text that becomes rich text is rendered as HTML from now on: it goes through the sanitizer like any rich text saved
+        $toHtml = array_values(array_filter($changes, static fn($c) => $c['change'] === 'retyped' && $c['to'] === 'rich_text' && isset($c['path'])));
+        if ($moves === [] && $removals === [] && $toHtml === []) {
             return;
         }
         foreach ($this->chunks($type) as $rows) {
@@ -689,6 +693,9 @@ final class ContentModels
                 }
                 foreach ($removals as $r) {
                     $data = self::remove($data, $r['path_remove']);
+                }
+                foreach ($toHtml as $t) {
+                    $data = self::mapValues($data, $t['path'], static fn(mixed $v): mixed => is_string($v) ? Html::sanitize($v, 'rich-text') : $v);
                 }
                 if ($data !== $before) {
                     QueryBuilder::table('entries')->where('id', (int) $row['id'])->update(['data' => Json::encode($data === [] ? new \stdClass() : $data)]);
@@ -764,6 +771,35 @@ final class ContentModels
             return $data;
         }
         $data[$key] = self::set(is_array($data[$key] ?? null) ? $data[$key] : [], $path, $value);
+
+        return $data;
+    }
+
+    /**
+     * The value at a path changed by $fn; inside repeaters ("*"), in every item.
+     *
+     * @param array<array-key, mixed> $data
+     * @param list<string> $path
+     * @param \Closure(mixed): mixed $fn
+     * @return array<array-key, mixed>
+     */
+    private static function mapValues(array $data, array $path, \Closure $fn): array
+    {
+        $key = array_shift($path);
+        if ($key === null) {
+            return $data;
+        }
+        if ($key === '*') {
+            return array_is_list($data) ? array_map(static fn($item) => is_array($item) ? self::mapValues($item, $path, $fn) : $item, $data) : $data;
+        }
+        if (!array_key_exists($key, $data)) {
+            return $data;
+        }
+        if ($path === []) {
+            $data[$key] = $fn($data[$key]);
+        } elseif (is_array($data[$key])) {
+            $data[$key] = self::mapValues($data[$key], $path, $fn);
+        }
 
         return $data;
     }

@@ -9,6 +9,7 @@ use Kestello\Cms\Blocks\BlockDefinition;
 use Kestello\Cms\Blocks\BlockRegistry;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Content\Field;
+use Kestello\Support\Html;
 
 /**
  * Blocks that make templates work: a template part, a synced
@@ -104,7 +105,7 @@ final class DesignBlocks
         }
         $html = $entry->field($field->name);
         $node['children'] = [];
-        $node['props'] = ['kind' => 'html', 'field' => $field->name, 'html' => is_string($html) ? $html : ''];     // sanitized when saved
+        $node['props'] = ['kind' => 'html', 'field' => $field->name, 'html' => is_string($html) ? Html::sanitize($html, 'rich-text') : ''];     // sanitized when saved, and again: never trusted as HTML
 
         return $html === null || $html === '' ? null : $node;
     }
