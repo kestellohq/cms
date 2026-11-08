@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { useCanvas } from '@kestello/app';
 
 // core/table: rows of plain-text cells (Fields\TableField). A wide table scrolls sideways
 // inside its own box, which keyboard users can reach and scroll.
@@ -10,30 +11,33 @@ const props = defineProps({
     side: Boolean,
     width: { type: String, default: 'content' },
 });
+const canvas = useCanvas();
 const rows = computed(() => (Array.isArray(props.table?.rows) ? props.table.rows.filter(Array.isArray) : []));
 const head = computed(() => (props.table?.head && rows.value.length ? rows.value[0] : null));
 const body = computed(() => (head.value ? rows.value.slice(1) : rows.value));
+// where a body cell is in the stored rows (a heading row is row 0), for typing on the canvas
+const cellField = (r, c) => `table.rows.${r + (head.value ? 1 : 0)}.${c}`;
 </script>
 
 <template>
     <div v-if="rows.length" class="k-b-table" :class="striped && 'is-striped'" :data-width="width">
         <div class="k-b-table__scroll" role="region" :aria-label="caption || 'Table'" tabindex="0">
             <table>
-                <caption v-if="caption">
+                <caption v-if="caption || canvas" data-k-field="caption" data-placeholder="Caption">
                     {{
                         caption
                     }}
                 </caption>
                 <thead v-if="head">
                     <tr>
-                        <th v-for="(cell, c) in head" :key="c" scope="col">{{ cell }}</th>
+                        <th v-for="(cell, c) in head" :key="c" scope="col" :data-k-field="`table.rows.0.${c}`">{{ cell }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(row, r) in body" :key="r">
                         <template v-for="(cell, c) in row" :key="c">
-                            <th v-if="side && c === 0" scope="row">{{ cell }}</th>
-                            <td v-else>{{ cell }}</td>
+                            <th v-if="side && c === 0" scope="row" :data-k-field="cellField(r, c)">{{ cell }}</th>
+                            <td v-else :data-k-field="cellField(r, c)">{{ cell }}</td>
                         </template>
                     </tr>
                 </tbody>

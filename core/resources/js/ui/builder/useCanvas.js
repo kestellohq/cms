@@ -7,7 +7,8 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue';
 import { __ } from '@kestello/sdk';
 import * as T from './tree.js';
-import { editableFields, firstInline } from './blocks.js';
+import { editableFields, firstInlineOf } from './blocks.js';
+import { typingKey } from './typing-keys.js';
 import { checkPage } from './checks.js';
 import { prepareTree } from './prepare.js';
 import { linkFromInput } from '../../shared/canvas-protocol.js';
@@ -127,7 +128,7 @@ export function useCanvas(b, { api, props, emit, root }) {
 
     /** After this change, the caret goes into the block's first text field (a new block, a block turned into another). */
     function continueTyping(node, at = 'end') {
-        const field = firstInline(b.defOf(node));
+        const field = firstInlineOf(node, b.defOf(node));
         focusNext = field ? { id: node.id, field, at } : null;
     }
     const firstEditable = (id) => Object.keys(editable.value[id] ?? {})[0] ?? null;
@@ -156,25 +157,57 @@ export function useCanvas(b, { api, props, emit, root }) {
         typing.value = kind ? { id: data.id, field: data.field, kind } : null;
         if (!typing.value) formats.value = {};
     }
-    /** A new text block after this one, the caret in it (Enter at the end of a block). */
-    function newTextAfter(id, { first = false } = {}) {
+    /** A new text block at a place in the tree, the caret in it. */
+    function newTextAt(parent, index, { message = true } = {}) {
         const def = b.catalog.value.get('core/text');
-        const at = first ? null : T.locate(b.list.value, id);
-        const parent = at?.parent ?? null;
-        if (!def || !b.fitsIn(def, parent) || (!first && !at)) return false;
+        if (!def || !b.fitsIn(def, parent)) return false;
         const node = b.create(def);
         node.props = { ...node.props, text: '' };
         focusNext = { id: node.id, field: 'text', at: 'start' };
-        b.insertAt(node, parent?.id ?? null, first ? 0 : at.index + 1, { message: !first });
+        b.insertAt(node, parent?.id ?? null, index, { message });
         b.quietSelect(node.id);
         return true;
+    }
+    /** A new text block after this one, the caret in it (Enter at the end of a block). */
+    function newTextAfter(id, { first = false } = {}) {
+        if (first) return newTextAt(null, 0, { message: false });
+        const at = T.locate(b.list.value, id);
+        return at ? newTextAt(at.parent ?? null, at.index + 1) : false;
     }
     /** An empty entry: start with a paragraph, the caret in it. */
     function startWriting() {
         if (!newTextAfter(null, { first: true })) b.openQuick({ mode: 'after', id: null });
     }
-    function onCanvasKey({ id, key, rect }) {
-        if (props.disabled || typeof id !== 'string' || !T.locate(b.list.value, id)) return;
+    /** A key typed in a list's item or a table's cell (typing-keys.js), or one any block answers alike. */
+    function onCanvasKey({ id, field, key, rect }) {
+        const at = props.disabled || typeof id !== 'string' ? null : T.locate(b.list.value, id);
+        if (!at) return;
+        if ((key === 'enter' || key === 'remove') && typeof field === 'string' && editable.value[id]?.[field]) {
+            const def = b.defOf(at.node);
+            const answer = typingKey({ node: at.node, def, field, key, first: firstInlineOf(at.node, def) });
+            if (answer.do === 'none') {
+                // Enter took the caret out of the field to wait for a new block: put it back
+                if (key === 'enter') post({ type: 'kestello:focus', id, field, at: 'end' });
+                return;
+            }
+            if (answer.do === 'props') {
+                focusNext = { id, ...answer.focus };
+                if (!b.setKeyed(id, answer.props)) focusNext = null;
+                return;
+            }
+            if (answer.do === 'leave') {
+                // the empty last item goes and a paragraph starts after the list (in its place, if it was the only item)
+                if (answer.props) {
+                    b.setKeyed(id, answer.props);
+                    newTextAfter(id);
+                } else if (b.removeNode(id, { focusRow: false })) {
+                    // the parent as it is now (the one located before the removal is an older copy)
+                    const parent = at.parent ? (T.locate(b.list.value, at.parent.id)?.node ?? null) : null;
+                    newTextAt(parent, at.index);
+                }
+                return;
+            }
+        }
         if (key === 'enter') newTextAfter(id);
         else if (key === 'remove') {
             // Backspace in an empty block: it goes, and typing carries on at the end of the one before

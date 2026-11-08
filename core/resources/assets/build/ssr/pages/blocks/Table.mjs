@@ -1,6 +1,7 @@
 import { t as _plugin_vue_export_helper_default } from "../../chunks/_plugin-vue_export-helper-DjkACiAr.mjs";
-import { computed, mergeProps, useSSRContext } from "vue";
+import { computed, mergeProps, unref, useSSRContext } from "vue";
 import { ssrInterpolate, ssrRenderAttr, ssrRenderAttrs, ssrRenderList } from "vue/server-renderer";
+import { useCanvas } from "@kestello/app";
 // core/resources/js/pages/blocks/Table.vue
 var _sfc_main = {
 	__name: "Table",
@@ -23,31 +24,33 @@ var _sfc_main = {
 	},
 	setup(__props) {
 		const props = __props;
+		const canvas = useCanvas();
 		const rows = computed(() => Array.isArray(props.table?.rows) ? props.table.rows.filter(Array.isArray) : []);
 		const head = computed(() => props.table?.head && rows.value.length ? rows.value[0] : null);
 		const body = computed(() => head.value ? rows.value.slice(1) : rows.value);
+		const cellField = (r, c) => `table.rows.${r + (head.value ? 1 : 0)}.${c}`;
 		return (_ctx, _push, _parent, _attrs) => {
 			if (rows.value.length) {
 				_push(`<div${ssrRenderAttrs(mergeProps({
 					class: ["k-b-table", __props.striped && "is-striped"],
 					"data-width": __props.width
-				}, _attrs))} data-v-2b7736c2><div class="k-b-table__scroll" role="region"${ssrRenderAttr("aria-label", __props.caption || "Table")} tabindex="0" data-v-2b7736c2><table data-v-2b7736c2>`);
-				if (__props.caption) _push(`<caption data-v-2b7736c2>${ssrInterpolate(__props.caption)}</caption>`);
+				}, _attrs))} data-v-3936facb><div class="k-b-table__scroll" role="region"${ssrRenderAttr("aria-label", __props.caption || "Table")} tabindex="0" data-v-3936facb><table data-v-3936facb>`);
+				if (__props.caption || unref(canvas)) _push(`<caption data-k-field="caption" data-placeholder="Caption" data-v-3936facb>${ssrInterpolate(__props.caption)}</caption>`);
 				else _push(`<!---->`);
 				if (head.value) {
-					_push(`<thead data-v-2b7736c2><tr data-v-2b7736c2><!--[-->`);
+					_push(`<thead data-v-3936facb><tr data-v-3936facb><!--[-->`);
 					ssrRenderList(head.value, (cell, c) => {
-						_push(`<th scope="col" data-v-2b7736c2>${ssrInterpolate(cell)}</th>`);
+						_push(`<th scope="col"${ssrRenderAttr("data-k-field", `table.rows.0.${c}`)} data-v-3936facb>${ssrInterpolate(cell)}</th>`);
 					});
 					_push(`<!--]--></tr></thead>`);
 				} else _push(`<!---->`);
-				_push(`<tbody data-v-2b7736c2><!--[-->`);
+				_push(`<tbody data-v-3936facb><!--[-->`);
 				ssrRenderList(body.value, (row, r) => {
-					_push(`<tr data-v-2b7736c2><!--[-->`);
+					_push(`<tr data-v-3936facb><!--[-->`);
 					ssrRenderList(row, (cell, c) => {
 						_push(`<!--[-->`);
-						if (__props.side && c === 0) _push(`<th scope="row" data-v-2b7736c2>${ssrInterpolate(cell)}</th>`);
-						else _push(`<td data-v-2b7736c2>${ssrInterpolate(cell)}</td>`);
+						if (__props.side && c === 0) _push(`<th scope="row"${ssrRenderAttr("data-k-field", cellField(r, c))} data-v-3936facb>${ssrInterpolate(cell)}</th>`);
+						else _push(`<td${ssrRenderAttr("data-k-field", cellField(r, c))} data-v-3936facb>${ssrInterpolate(cell)}</td>`);
 						_push(`<!--]-->`);
 					});
 					_push(`<!--]--></tr>`);
@@ -63,5 +66,5 @@ _sfc_main.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/blocks/Table.vue");
 	return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-var Table_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-2b7736c2"]]);
+var Table_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-3936facb"]]);
 export { Table_default as default };

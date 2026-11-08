@@ -79,6 +79,10 @@
     "file": "chunks/events-z0wVOOcI.mjs",
     "name": "events"
   },
+  "_field-paths-X95yVgQw.mjs": {
+    "file": "chunks/field-paths-X95yVgQw.mjs",
+    "name": "field-paths"
+  },
   "_file-hint-Ce4VhQ7O.mjs": {
     "file": "chunks/file-hint-Ce4VhQ7O.mjs",
     "name": "file-hint"
@@ -92,12 +96,13 @@
     "name": "tabs"
   },
   "resources/js/app/canvas/index.js": {
-    "file": "chunks/canvas-CDPa7MXn.mjs",
+    "file": "chunks/canvas-Cs2eNzQG.mjs",
     "name": "canvas",
     "src": "resources/js/app/canvas/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_canvas-protocol-BnvfVFqm.mjs"
+      "_canvas-protocol-BnvfVFqm.mjs",
+      "_field-paths-X95yVgQw.mjs"
     ]
   },
   "resources/js/app/index.js": {
@@ -726,7 +731,7 @@
       "__plugin-vue_export-helper-DjkACiAr.mjs"
     ],
     "css": [
-      "assets/IconList-Be7aocqu.css"
+      "assets/IconList-B11G-KJy.css"
     ]
   },
   "resources/js/pages/blocks/Image.vue": {
@@ -738,7 +743,7 @@
       "__plugin-vue_export-helper-DjkACiAr.mjs"
     ],
     "css": [
-      "assets/Image-BwrgrixF.css"
+      "assets/Image-nLcUayKd.css"
     ]
   },
   "resources/js/pages/blocks/List.vue": {
@@ -750,7 +755,7 @@
       "__plugin-vue_export-helper-DjkACiAr.mjs"
     ],
     "css": [
-      "assets/List-CXalnX_p.css"
+      "assets/List-BSMYRdms.css"
     ]
   },
   "resources/js/pages/blocks/MediaText.vue": {
@@ -792,7 +797,7 @@
       "__plugin-vue_export-helper-DjkACiAr.mjs"
     ],
     "css": [
-      "assets/Query-DJvE4ao9.css"
+      "assets/Query-DDElK08t.css"
     ]
   },
   "resources/js/pages/blocks/QueryItem.vue": {
@@ -891,7 +896,7 @@
       "__plugin-vue_export-helper-DjkACiAr.mjs"
     ],
     "css": [
-      "assets/Table-k5t2MP7z.css"
+      "assets/Table-BfOP-dEu.css"
     ]
   },
   "resources/js/pages/blocks/Tabs.vue": {
@@ -1170,6 +1175,7 @@
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-DjkACiAr.mjs",
+      "_field-paths-X95yVgQw.mjs",
       "_canvas-protocol-BnvfVFqm.mjs",
       "_block-design-BwxGdv-2.mjs"
     ],

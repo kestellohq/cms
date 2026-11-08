@@ -30,6 +30,11 @@ export function createBlock(def, catalog) {
         else if (f.required && f.type === 'select' && f.options?.choices?.length) values[f.name] = f.options.choices[0].value;
         else if (f.required && Array.isArray(f.options?.suggest) && f.options.suggest.length) values[f.name] = f.options.suggest[0].value;
     }
+    // a list that needs an item starts with an empty one, so there is somewhere to type
+    for (const f of def.fields) {
+        const inner = f.type === 'repeater' ? (f.fields ?? []).filter((s) => INLINE[s.type] && s.type !== 'rich_text') : [];
+        if (values[f.name] === undefined && f.required && inner.length) values[f.name] = [Object.fromEntries(inner.map((s) => [s.name, '']))];
+    }
     const node = { type: def.name, id: newId(), props: values, children: [] };
     // what it starts with: its own starter (BlockDefinition::starter), else two of its only kind of child
     // (columns: as many as the layout has)
@@ -130,7 +135,39 @@ export function blockIcon(node, def) {
 /** How each kind of text field is typed on the page. */
 export const INLINE = { text: 'plain', textarea: 'multi', rich_text: 'rich' };
 
-/** For each block, the fields that may be typed straight into the page: text that holds text (not bound to data, not locked). */
+/** Items and table cells are typed as one line or several, never as rich text (they hold plain text). */
+const ITEM_INLINE = { text: 'plain', textarea: 'multi' };
+
+/**
+ * A block's fields that may be typed straight into the page, in order, by field
+ * path (shared/field-paths.js): its own text fields holding text, each item's
+ * text in a list of items, and each cell of a table. Values bound to data (not
+ * strings) are left out.
+ *
+ * @returns {Record<string, 'plain'|'multi'|'rich'>}
+ */
+export function inlineFieldsOf(node, def) {
+    const out = {};
+    for (const f of def?.fields ?? []) {
+        const v = node.props?.[f.name];
+        if (INLINE[f.type] && (v === undefined || v === null || typeof v === 'string')) out[f.name] = INLINE[f.type];
+        else if (f.type === 'repeater' && Array.isArray(v)) {
+            v.forEach((item, i) => {
+                for (const s of f.fields ?? []) {
+                    const x = item?.[s.name];
+                    if (ITEM_INLINE[s.type] && (x === undefined || x === null || typeof x === 'string')) out[`${f.name}.${i}.${s.name}`] = ITEM_INLINE[s.type];
+                }
+            });
+        } else if (f.type === 'table' && Array.isArray(v?.rows)) {
+            v.rows.forEach((row, r) => {
+                if (Array.isArray(row)) row.forEach((cell, c) => typeof cell === 'string' && (out[`${f.name}.rows.${r}.${c}`] = 'plain'));
+            });
+        }
+    }
+    return out;
+}
+
+/** For each block, the fields that may be typed straight into the page (inlineFieldsOf), unless it is locked. */
 export function editableFields(tree, defOf, { disabled = false, locks = true } = {}) {
     const out = {};
     if (disabled) return out;
@@ -138,10 +175,8 @@ export function editableFields(tree, defOf, { disabled = false, locks = true } =
         for (const n of nodes) {
             const def = defOf(n);
             if (def && !(locks && (n.lock ?? []).includes('edit'))) {
-                for (const f of def.fields) {
-                    const v = n.props?.[f.name];
-                    if (INLINE[f.type] && (v === undefined || v === null || typeof v === 'string')) (out[n.id] ??= {})[f.name] = INLINE[f.type];
-                }
+                const fields = inlineFieldsOf(n, def);
+                if (Object.keys(fields).length) out[n.id] = fields;
             }
             visit(n.children ?? []);
         }
@@ -150,8 +185,8 @@ export function editableFields(tree, defOf, { disabled = false, locks = true } =
     return out;
 }
 
-/** The first field of a block that is typed on the page. */
-export const firstInline = (def) => def?.fields.find((f) => INLINE[f.type])?.name ?? null;
+/** The first field of a block that is typed on the page (a path: "items.0.text" for a list). */
+export const firstInlineOf = (node, def) => Object.keys(inlineFieldsOf(node, def))[0] ?? null;
 
 // ── turning a block into another ───────────────────────────────────────
 export const TEXTUAL = ['core/text', 'core/heading', 'core/quote', 'core/list', 'core/code', 'core/details'];

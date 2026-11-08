@@ -11,6 +11,7 @@ import * as T from './tree.js';
 import { createHistory } from './history.js';
 import { createPlacement } from './placement.js';
 import { stylesFitting } from './design.js';
+import { setAt } from '../../shared/field-paths.js';
 import { blockIcon, documentStats, errorFromMessage, errorTarget, isKind, summarize, TEXTUAL, turnInto as turned } from './blocks.js';
 
 const CLIPBOARD = 'kestello.builder.clipboard';
@@ -161,10 +162,19 @@ export function useDocument(b, { tree, props, root }) {
         if (at) patchSelected({ props: { ...(at.node.props ?? {}), [key]: value } });
     }
     /** A field typed on the page: grouped with the typing around it into one undo step. */
+    /** Text typed on the page, at a field path ("text", "items.2.text"); typing into one block is one undo step. */
     function setTyped(id, field, value) {
         const at = T.locate(list.value, id);
-        if (!at || at.node.props?.[field] === value) return false;
-        commit(T.update(list.value, id, { props: { ...(at.node.props ?? {}), [field]: value } }), `props:${id}`);
+        const next = at ? setAt(at.node.props ?? {}, field, value) : null;
+        if (!next || JSON.stringify(next) === JSON.stringify(at.node.props ?? {})) return false;
+        commit(T.update(list.value, id, { props: next }), `props:${id}`);
+        return true;
+    }
+    /** New props for a block from a key typed on the page (an item or a row added or removed): its own undo step. */
+    function setKeyed(id, nextProps) {
+        const at = T.locate(list.value, id);
+        if (!at || props.disabled) return false;
+        commit(T.update(list.value, id, { props: nextProps }));
         return true;
     }
     /** A number set by dragging a handle on the page, kept within the field's limits. */
@@ -460,6 +470,7 @@ export function useDocument(b, { tree, props, root }) {
         patchSelected,
         setProp,
         setTyped,
+        setKeyed,
         setNumber,
         insertAt,
         removeNode,
