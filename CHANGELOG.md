@@ -4,6 +4,10 @@ Every change people would notice is listed here, newest first. The format follow
 
 ## [Unreleased]
 
+### Fixed
+
+- Moving between pages without a full reload no longer drops the styles of blocks. Going back to a page showed a cover without its text or overlay, and buttons as plain links, until the page was reloaded.
+
 ### Changed
 
 - A folder moved to another disk during an update or restore is copied next to its new place and renamed into it, so a stopped copy never leaves half a folder behind.

@@ -67,6 +67,18 @@ final class PagesTest extends TestCase
         $this->assertSame('/login?x=1', $page['url']);
     }
 
+    public function testTheBlocksStylesheetsAreKeptWhenThePageChanges(): void
+    {
+        $html = $this->renderer([])
+            ->render($this->request(), new PageResponse('@core/content/Entry', ['title' => 'Home'], preload: ['@core/blocks/Buttons']), new Response())
+            ->content();
+
+        // the browser loads a block once and never adds its stylesheet again, so moving to another page must not drop it
+        $this->assertTrue((bool) preg_match('#href="/assets/core/[^"]*/Buttons-[^"]+\.css" data-kestello-css data-kestello-keep>#', $html), 'a block\'s stylesheet is kept');
+        preg_match_all('#<link rel="stylesheet" href="[^"]+" data-kestello-css>#', $html, $page);
+        $this->assertNotSame([], $page[0], 'the page\'s own are swapped');
+    }
+
     public function testFirstVisitGetsSafeHtmlShell(): void
     {
         $html = $this->renderer(['site' => ['name' => 'A&B']])
