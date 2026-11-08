@@ -28,7 +28,7 @@ Kestello is a self-hosted PHP CMS for client sites: a non-technical owner runs a
 
 ## Hard rules
 
-- **Zero PHP dependencies.** Never add one; `composer.json` has no `require` beyond PHP and its extensions. Development tools are pinned PHARs (`tools/tools.lock`) or npm dev dependencies.
+- **Zero PHP dependencies.** Never add one; `composer.json` has no `require` beyond PHP and its extensions. Development tools are `require-dev` packages (PHPStan and PHP CS Fixer, locked in `composer.lock`) or npm dev dependencies; none of them ship.
 - **Security first.** Every endpoint and admin page checks a capability on the server (`useCan()` in the browser is cosmetic). Validate input with `Schema`, escape output, bind SQL values, never send secrets to the browser. Run the [security review](.agents/skills/security-review/SKILL.md) on anything that touches auth, input, files, HTTP or packages.
 - **Extensibility first.** Core uses the same public API plugins use. Prefer adding an extension point over a special case.
 - **Every fix starts with a failing test**, and every feature comes with tests. Keep logic in small pure modules so it can be tested (in JavaScript, the SDK can't be imported in Node: put logic in a pure module beside it).

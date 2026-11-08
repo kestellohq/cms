@@ -30,7 +30,7 @@ jobs:
           php-version: '8.5'
           extensions: ${{ env.PHP_EXTENSIONS }}
           coverage: none
-          tools: none
+          tools: composer
 
       - uses: actions/setup-node@v7
         with:
@@ -39,23 +39,23 @@ jobs:
 
       - run: npm ci
 
-      - name: Cache the pinned PHP tools
+      - name: Cache the PHP dev tools
         uses: actions/cache@v6
         with:
-          path: tools/bin
-          key: php-tools-${{ hashFiles('tools/tools.lock') }}
+          path: vendor
+          key: php-dev-tools-${{ hashFiles('composer.lock') }}
 
-      - name: Download the PHP tools (checksums verified)
-        run: sh tools/fetch.sh
+      - name: Install the PHP dev tools (composer.lock)
+        run: composer install --no-interaction --no-progress
 
       - name: PHP syntax
         run: git ls-files -z '*.php' bin/cms | xargs -0 -n1 -P4 php -l > /dev/null
 
       - name: PHP code style (PER-CS 2.0)
-        run: php tools/bin/php-cs-fixer.phar fix --dry-run --diff --show-progress=none --using-cache=no
+        run: php vendor/bin/php-cs-fixer fix --dry-run --diff --show-progress=none --using-cache=no
 
       - name: PHPStan
-        run: php -d memory_limit=2G tools/bin/phpstan.phar analyse -c phpstan.dist.neon --no-progress --error-format=github
+        run: php -d memory_limit=2G vendor/bin/phpstan analyse -c phpstan.dist.neon --no-progress --error-format=github
 
       - name: ESLint
         run: npx eslint .

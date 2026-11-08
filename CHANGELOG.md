@@ -12,6 +12,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Changed
 
+- PHPStan and PHP CS Fixer are installed with `composer install` (the only `require-dev` packages, locked in `composer.lock`) instead of `tools/fetch.sh`. Sites are not affected: Kestello still requires nothing at runtime, and `vendor/` never ships.
 - A folder moved to another disk during an update or restore is copied next to its new place and renamed into it, so a stopped copy never leaves half a folder behind.
 - The old plugin or theme folder set aside by an update is always kept, whatever its date; before, it could be pruned right away when the plugin had been installed long ago.
 - The update screens and **Site Health** name the plugin or theme an unfinished update is about, not its folder.

@@ -31,5 +31,9 @@
   },
   "config": {
     "sort-packages": true
+  },
+  "require-dev": {
+    "php-cs-fixer/shim": "^3.95.28",
+    "phpstan/phpstan": "^2.3.5"
   }
 }

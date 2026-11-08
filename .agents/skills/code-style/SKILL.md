@@ -1,6 +1,6 @@
 ---
 name: code-style
-description: Kestello's code style and static analysis (PHP CS Fixer with PER Coding Style 2.0, PHPStan level 6, ESLint, Prettier) and how the pinned tools are fetched and upgraded. Load it before committing, when a lint or analysis check fails, or when changing tool versions or rules.
+description: Kestello's code style and static analysis (PHP CS Fixer with PER Coding Style 2.0, PHPStan level 6, ESLint, Prettier) and how the tools are installed and upgraded. Load it before committing, when a lint or analysis check fails, or when changing tool versions or rules.
 ---
 
 # Code style and static analysis
@@ -11,7 +11,7 @@ Formatting is never argued about: the tools decide. Run them before every commit
 
 | Command | What it does |
 | --- | --- |
-| `npm run tools` | Downloads the pinned PHARs into `tools/bin/` (`sh tools/fetch.sh`). |
+| `npm run tools` | Installs PHPStan and PHP CS Fixer into `vendor/` (`composer install`). |
 | `npm run format` | `format:php` (PHP CS Fixer, fixes files) then `format:js` (Prettier, writes files). |
 | `npm run lint` | `lint:php` (PHP CS Fixer dry run with diff), `lint:js` (ESLint and `prettier --check`), then `analyse`. |
 | `npm run analyse` | PHPStan with `phpstan.dist.neon`. |
@@ -51,14 +51,13 @@ Conventions the formatter doesn't enforce but reviews do:
 
 ## Pinned tools
 
-`tools/tools.lock` lists each tool as `name version sha256 url`. `tools/fetch.sh` downloads with `curl --retry 3`, verifies the SHA-256 and refuses a mismatch; a tool already present with the right checksum is kept. `tools/bin/` is ignored by git.
+PHP CS Fixer and PHPStan are the only `require-dev` packages in `composer.json`: `php-cs-fixer/shim` and `phpstan/phpstan`, each a single PHAR with no dependencies of its own. `composer.lock` pins their versions and checksums. `vendor/` is ignored by git and never ships.
 
 To upgrade PHP CS Fixer or PHPStan:
 
-1. Find the new release's PHAR URL and its SHA-256 (from the release page, or download it and run `shasum -a 256`).
-2. Change version, checksum and URL together in `tools/tools.lock`.
-3. `npm run tools`, then `npm run lint`. If the new version reports new findings, fix them (or reformat in a separate `style:` commit).
-4. Commit as `build(deps): php-cs-fixer 3.x.y` (or `phpstan`).
+1. `composer update php-cs-fixer/shim` (or `phpstan/phpstan`).
+2. `npm run lint`. If the new version reports new findings, fix them (or reformat in a separate `style:` commit).
+3. Commit `composer.json` and `composer.lock` as `build(deps): php-cs-fixer 3.x.y` (or `phpstan`).
 
 JavaScript tools are exact-pinned dev dependencies in `package.json`; upgrade with `npm install --save-dev --save-exact <pkg>@<version>`.
 

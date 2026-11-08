@@ -51,8 +51,6 @@ storage/plugins/
 # Local design-tool state (Impeccable mocks, critiques, captures): never part of the project
 /.impeccable/
 
-# Dev tools: pinned PHARs fetched by tools/fetch.sh, and their caches
-/tools/bin/
 .php-cs-fixer.cache
 .phpstan/
 .eslintcache
@@ -64,4 +62,3 @@ dist/
 
 # ide:helpers --stubs output (published with each release instead)
 /kestello.stub.php
-/composer.lock
