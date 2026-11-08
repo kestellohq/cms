@@ -1,0 +1,35 @@
+{
+  "name": "kestello/cms",
+  "description": "Self-hosted CMS for developers who build client sites: visual editor, plugins, themes, signed updates. Zero PHP dependencies.",
+  "type": "project",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "cms",
+    "content management",
+    "visual editor",
+    "self-hosted",
+    "vue"
+  ],
+  "homepage": "https://kestello.com",
+  "support": {
+    "docs": "https://docs.kestello.com",
+    "issues": "https://github.com/kestellohq/cms/issues",
+    "source": "https://github.com/kestellohq/cms",
+    "security": "https://github.com/kestellohq/cms/blob/main/SECURITY.md"
+  },
+  "require": {
+    "php": ">=8.4",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-pdo": "*",
+    "ext-sodium": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Kestello\\": "core/src/"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  }
+}

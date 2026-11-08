@@ -5,7 +5,7 @@ description: How the Kestello codebase is laid out, how a request boots, and the
 
 # Kestello architecture
 
-Kestello is a self-hosted PHP CMS with no Composer dependencies. Core is built on the same public extension API that plugins and themes use, and the admin is a set of Vue pages that talk only to the REST API under `/api/v1`.
+Kestello is a self-hosted PHP CMS with zero PHP dependencies. Core is built on the same public extension API that plugins and themes use, and the admin is a set of Vue pages that talk only to the REST API under `/api/v1`.
 
 ## Repository map
 
@@ -64,7 +64,7 @@ Every registration is recorded with its owner: `core`, `plugin:<slug>` or `theme
 
 ## Invariants
 
-- **No Composer and no PHP dependencies.** Dev tools are pinned PHARs in `tools/` or npm dev dependencies.
+- **Zero PHP dependencies** (`composer.json` has no requirements). Dev tools are pinned PHARs in `tools/` or npm dev dependencies.
 - **Core dogfoods the extension API.** A new feature is an extension point first. If core needs a private shortcut, the public API is missing something: add it.
 - **`@api` and `@internal`.** Classes marked `@api` are the stable public API. Anything marked `@internal` may change at any time and must not be used by plugins. Everything else not marked `@internal` is public too (see "What counts as the public API" in `CONTRIBUTING.md`).
 - **Deny by default.** Endpoints need a capability and a scope or must say they are public; plugin network access and sign-in methods are limited to what the manifest declares.
