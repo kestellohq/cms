@@ -31,7 +31,12 @@ export const DEFS = [
         f('align', 'select', { default: 'start' }),
     ]),
     def('core/quote', [f('text', 'textarea', { required: true }), f('cite', 'text')]),
-    def('core/list', [f('ordered', 'boolean'), f('items', 'repeater')]),
+    def('core/list', [
+        f('ordered', 'boolean'),
+        f('items', 'repeater', { required: true, options: { min: 1, max: 3 }, fields: [f('text', 'text', { required: true })] }),
+    ]),
+    def('core/icon-list', [f('items', 'repeater', { fields: [f('icon', 'select', { default: 'check' }), f('text', 'text', { required: true })] })]),
+    def('core/table', [f('table', 'table', { required: true }), f('caption', 'text')]),
     def('core/code', [f('code', 'textarea'), f('language', 'text')]),
     def('core/details', [f('summary', 'text'), f('text', 'rich_text'), f('open', 'boolean')]),
     def(

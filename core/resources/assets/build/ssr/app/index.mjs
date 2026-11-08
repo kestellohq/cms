@@ -807,7 +807,7 @@ async function boot({ registry }) {
 	app.mount(el);
 	router.listen();
 	listenForStylePreview();
-	if (window.parent !== window && router.page.props?.design?.canvas === true) import("../chunks/canvas-CDPa7MXn.mjs").then(({ startCanvas }) => startCanvas(router)).catch((error) => console.error("[kestello] the canvas could not start", error));
+	if (window.parent !== window && router.page.props?.design?.canvas === true) import("../chunks/canvas-Cs2eNzQG.mjs").then(({ startCanvas }) => startCanvas(router)).catch((error) => console.error("[kestello] the canvas could not start", error));
 	return app;
 }
 export { BlockTree, Head, KImage, Link, boot, createKestelloApp, useCanvas, useComponentLoader, useForm, usePage, useRouter };

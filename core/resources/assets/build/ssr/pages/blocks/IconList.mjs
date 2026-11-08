@@ -1,7 +1,7 @@
 import { t as _sfc_main$1 } from "../../chunks/Icon-DNYYdoNX.mjs";
 import { t as _plugin_vue_export_helper_default } from "../../chunks/_plugin-vue_export-helper-DjkACiAr.mjs";
 import { mergeProps, unref, useSSRContext } from "vue";
-import { ssrInterpolate, ssrRenderAttrs, ssrRenderComponent, ssrRenderList } from "vue/server-renderer";
+import { ssrInterpolate, ssrRenderAttr, ssrRenderAttrs, ssrRenderComponent, ssrRenderList } from "vue/server-renderer";
 // core/resources/js/shared/icons.js
 /** Icons for content (icon lists). */
 var ICONS = {
@@ -88,14 +88,14 @@ var _sfc_main = {
 					1,
 					2,
 					3
-				].includes(Number(__props.columns)) ? Number(__props.columns) : 1}`, __props.tone === "text" ? "is-tone-text" : "is-tone-accent"]] }, _attrs))} data-v-31d53005><!--[-->`);
+				].includes(Number(__props.columns)) ? Number(__props.columns) : 1}`, __props.tone === "text" ? "is-tone-text" : "is-tone-accent"]] }, _attrs))} data-v-1ce89685><!--[-->`);
 				ssrRenderList(__props.items, (item, i) => {
-					_push(`<li data-v-31d53005>`);
+					_push(`<li data-v-1ce89685>`);
 					_push(ssrRenderComponent(_sfc_main$1, {
 						class: "k-b-iconlist__icon",
 						d: unref(ICONS)[item?.icon] ?? unref(ICONS).check
 					}, null, _parent));
-					_push(`<span data-v-31d53005>${ssrInterpolate(item?.text)}</span></li>`);
+					_push(`<span${ssrRenderAttr("data-k-field", `items.${i}.text`)} data-placeholder="Point" data-v-1ce89685>${ssrInterpolate(item?.text)}</span></li>`);
 				});
 				_push(`<!--]--></ul>`);
 			} else _push(`<!---->`);
@@ -108,5 +108,5 @@ _sfc_main.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/blocks/IconList.vue");
 	return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-var IconList_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-31d53005"]]);
+var IconList_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-1ce89685"]]);
 export { IconList_default as default };

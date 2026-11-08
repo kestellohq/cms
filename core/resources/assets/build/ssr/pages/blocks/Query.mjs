@@ -55,15 +55,15 @@ var _sfc_main = {
 			_push(`<div${ssrRenderAttrs(mergeProps({
 				class: "k-b-query",
 				"data-width": __props.width
-			}, _attrs))} data-v-f460b2ad>`);
+			}, _attrs))} data-v-9111eef4>`);
 			if (__props.count) {
-				_push(`<ul class="k-b-query__items" data-v-f460b2ad>`);
+				_push(`<ul class="k-b-query__items" data-v-9111eef4>`);
 				ssrRenderSlot(_ctx.$slots, "default", {}, null, _push, _parent);
 				_push(`</ul>`);
-			} else if (__props.empty) _push(`<p class="k-b-query__empty" data-v-f460b2ad>${ssrInterpolate(__props.empty)}</p>`);
+			} else if (__props.empty) _push(`<p class="k-b-query__empty" data-k-field="empty" data-v-9111eef4>${ssrInterpolate(__props.empty)}</p>`);
 			else _push(`<!---->`);
 			if (pages.value.last > 1) {
-				_push(`<nav class="k-b-query__pages" aria-label="Pages" data-v-f460b2ad>`);
+				_push(`<nav class="k-b-query__pages" aria-label="Pages" data-v-9111eef4>`);
 				if (pages.value.page > 1) _push(ssrRenderComponent(unref(Link), {
 					href: href(pages.value.page - 1),
 					rel: "prev"
@@ -75,7 +75,7 @@ var _sfc_main = {
 					_: 1
 				}, _parent));
 				else _push(`<!---->`);
-				_push(`<span data-v-f460b2ad>Page ${ssrInterpolate(pages.value.page)} of ${ssrInterpolate(pages.value.last)}</span>`);
+				_push(`<span data-v-9111eef4>Page ${ssrInterpolate(pages.value.page)} of ${ssrInterpolate(pages.value.last)}</span>`);
 				if (pages.value.page < pages.value.last) _push(ssrRenderComponent(unref(Link), {
 					href: href(pages.value.page + 1),
 					rel: "next"
@@ -99,5 +99,5 @@ _sfc_main.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/blocks/Query.vue");
 	return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-var Query_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-f460b2ad"]]);
+var Query_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-9111eef4"]]);
 export { Query_default as default };

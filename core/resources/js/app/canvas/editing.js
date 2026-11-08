@@ -5,7 +5,8 @@
  * typed goes to the editor as the field's new value; the editor validates and
  * saves it, and the server cleans rich text again before the site shows it.
  */
-import { blockCommand, FORMATS, safeField, safeId, safeLink } from '../../shared/canvas-protocol.js';
+import { blockCommand, FORMATS, safeId, safeLink } from '../../shared/canvas-protocol.js';
+import { cellOf, itemOf, neighbours, safeFieldPath } from '../../shared/field-paths.js';
 
 const MAX = 200_000;
 
@@ -90,7 +91,7 @@ export function createEditing({ send, fieldEl, rectOf, onIdle }, doc = document)
         for (const [id, fields] of Object.entries(editable)) {
             if (!safeId(id) || !fields || typeof fields !== 'object') continue;
             for (const [field, kind] of Object.entries(fields)) {
-                const el = safeField(field) ? fieldEl(id, field) : null;
+                const el = safeFieldPath(field) ? fieldEl(id, field) : null;
                 if (!el) continue;
                 el.setAttribute('data-k-editable', ['rich', 'multi'].includes(kind) ? kind : 'plain');
                 el.setAttribute('contenteditable', kind === 'rich' ? 'true' : 'plaintext-only');
@@ -120,11 +121,34 @@ export function createEditing({ send, fieldEl, rectOf, onIdle }, doc = document)
         waiting = null;
     }
 
+    /** Is the caret on the first (up) or last (down) line of the field? Then the arrow leaves it. */
+    function onEdgeLine(el, dir) {
+        const sel = win.getSelection();
+        if (!sel?.rangeCount || !sel.isCollapsed) return false;
+        const caret = sel.getRangeAt(0).getClientRects()[0];
+        if (!caret) return true; // an empty field has no caret box: one line
+        const box = el.getBoundingClientRect();
+        return dir === 'up' ? caret.top - box.top < caret.height * 0.75 : box.bottom - caret.bottom < caret.height * 0.75;
+    }
+    /** Cells in a table row, for Shift+Tab from a row's first cell. */
+    const widthOf = (id, table, row) => {
+        let n = 0;
+        while (n < 64 && fieldEl(id, `${table}.rows.${row}.${n}`)) n++;
+        return n;
+    };
+    /** Move the caret to the first of these fields the page has; false if none. */
+    function moveTo(id, paths, at) {
+        const target = paths.find((p) => fieldEl(id, p));
+        if (!target) return false;
+        focus(id, target, at);
+        return true;
+    }
+
     const isEmpty = (el) => (el.textContent ?? '').trim() === '' && !el.querySelector('img');
     const infoOf = (el) => {
         const block = el.closest('[data-block-id]');
         const id = safeId(block?.getAttribute('data-block-id'));
-        const field = safeField(el.getAttribute('data-k-field'));
+        const field = safeFieldPath(el.getAttribute('data-k-field'));
         return id && field && editable[id]?.[field] ? { el, id, field, kind: el.getAttribute('data-k-editable') } : null;
     };
 
@@ -298,7 +322,31 @@ export function createEditing({ send, fieldEl, rectOf, onIdle }, doc = document)
             report();
         };
         const command = blockCommand(event);
+        const cell = cellOf(field);
+        const plainMods = !event.metaKey && !event.ctrlKey && !event.altKey;
+        const go = (dir, at) =>
+            moveTo(
+                id,
+                neighbours(field, dir, (row) => widthOf(id, cell?.field, row)),
+                at,
+            );
         let line;
+        // ── between items and cells (the editor isn't asked: only the page changes)
+        if ((itemOf(field) || cell) && plainMods && !event.shiftKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+            const dir = event.key === 'ArrowUp' ? 'up' : 'down';
+            if (onEdgeLine(el, dir) && go(dir, dir === 'up' ? 'end' : 'start')) event.preventDefault();
+            return;
+        }
+        if (cell && plainMods && event.key === 'Tab') {
+            if (go(event.shiftKey ? 'prev' : 'next', 'end')) event.preventDefault();
+            return;
+        }
+        // Enter in a cell goes down a row; on the last row the editor adds one
+        if (cell && plainMods && event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            if (!go('down', 'end')) startNext('enter');
+            return;
+        }
         if (event.key === 'Enter' && !event.shiftKey && kind === 'plain') {
             event.preventDefault();
             startNext('enter');

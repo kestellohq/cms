@@ -11,7 +11,8 @@
  * What the messages carry: shared/canvas-protocol.js.
  */
 import { nextTick } from 'vue';
-import { REVEAL, safeField, safeId } from '../../shared/canvas-protocol.js';
+import { REVEAL, safeId } from '../../shared/canvas-protocol.js';
+import { safeFieldPath } from '../../shared/field-paths.js';
 import { createDrag } from './drag.js';
 import { createEditing } from './editing.js';
 import { createOverlay } from './overlay.js';
@@ -137,7 +138,7 @@ export function startCanvas(router, win = window) {
         nextTick(() => {
             editing.mark();
             reportRect();
-            if (data.focus) editing.focus(safeId(data.focus.id), safeField(data.focus.field), data.focus.at === 'start' ? 'start' : 'end');
+            if (data.focus) editing.focus(safeId(data.focus.id), safeFieldPath(data.focus.field), data.focus.at === 'start' ? 'start' : 'end');
         });
     }
 
@@ -181,7 +182,7 @@ export function startCanvas(router, win = window) {
                 editing.format(data.command, data.value);
                 break;
             case 'kestello:focus':
-                editing.focus(safeId(data.id), safeField(data.field), data.at === 'start' ? 'start' : 'end');
+                editing.focus(safeId(data.id), safeFieldPath(data.field), data.at === 'start' ? 'start' : 'end');
                 break;
             case 'kestello:drag':
                 drag.setActive(data.active);

@@ -1,4 +1,5 @@
 import { t as _plugin_vue_export_helper_default } from "../chunks/_plugin-vue_export-helper-DjkACiAr.mjs";
+import { i as itemPath, n as cellPath, r as itemOf, s as setAt, t as cellOf } from "../chunks/field-paths-X95yVgQw.mjs";
 import { i as linkFromInput, r as blockCommand } from "../chunks/canvas-protocol-BnvfVFqm.mjs";
 import { a as withValue, i as effective, n as SCREENS, t as PROPS } from "../chunks/block-design-BwxGdv-2.mjs";
 import { Fragment, computed, createBlock, createCommentVNode, createSlots, createTextVNode, createVNode, inject, isRef, mergeModels, mergeProps, nextTick, onBeforeUnmount, onErrorCaptured, onMounted, openBlock, provide, reactive, ref, renderList, renderSlot, resolveDynamicComponent, shallowRef, toDisplayString, toRaw, unref, useId, useModel, useSSRContext, vModelText, watch, withCtx, withDirectives, withModifiers } from "vue";
@@ -3733,6 +3734,10 @@ function createBlock$1(def, catalog) {
 	for (const f of def.fields) if (f.default !== null && f.default !== void 0) values[f.name] = f.default;
 	else if (f.required && f.type === "select" && f.options?.choices?.length) values[f.name] = f.options.choices[0].value;
 	else if (f.required && Array.isArray(f.options?.suggest) && f.options.suggest.length) values[f.name] = f.options.suggest[0].value;
+	for (const f of def.fields) {
+		const inner = f.type === "repeater" ? (f.fields ?? []).filter((s) => INLINE[s.type] && s.type !== "rich_text") : [];
+		if (values[f.name] === void 0 && f.required && inner.length) values[f.name] = [Object.fromEntries(inner.map((s) => [s.name, ""]))];
+	}
 	const node = {
 		type: def.name,
 		id: newId(),
@@ -3851,16 +3856,46 @@ var INLINE = {
 	textarea: "multi",
 	rich_text: "rich"
 };
-/** For each block, the fields that may be typed straight into the page: text that holds text (not bound to data, not locked). */
+/** Items and table cells are typed as one line or several, never as rich text (they hold plain text). */
+var ITEM_INLINE = {
+	text: "plain",
+	textarea: "multi"
+};
+/**
+* A block's fields that may be typed straight into the page, in order, by field
+* path (shared/field-paths.js): its own text fields holding text, each item's
+* text in a list of items, and each cell of a table. Values bound to data (not
+* strings) are left out.
+*
+* @returns {Record<string, 'plain'|'multi'|'rich'>}
+*/
+function inlineFieldsOf(node, def) {
+	const out = {};
+	for (const f of def?.fields ?? []) {
+		const v = node.props?.[f.name];
+		if (INLINE[f.type] && (v === void 0 || v === null || typeof v === "string")) out[f.name] = INLINE[f.type];
+		else if (f.type === "repeater" && Array.isArray(v)) v.forEach((item, i) => {
+			for (const s of f.fields ?? []) {
+				const x = item?.[s.name];
+				if (ITEM_INLINE[s.type] && (x === void 0 || x === null || typeof x === "string")) out[`${f.name}.${i}.${s.name}`] = ITEM_INLINE[s.type];
+			}
+		});
+		else if (f.type === "table" && Array.isArray(v?.rows)) v.rows.forEach((row, r) => {
+			if (Array.isArray(row)) row.forEach((cell, c) => typeof cell === "string" && (out[`${f.name}.rows.${r}.${c}`] = "plain"));
+		});
+	}
+	return out;
+}
+/** For each block, the fields that may be typed straight into the page (inlineFieldsOf), unless it is locked. */
 function editableFields(tree, defOf, { disabled = false, locks = true } = {}) {
 	const out = {};
 	if (disabled) return out;
 	const visit = (nodes) => {
 		for (const n of nodes) {
 			const def = defOf(n);
-			if (def && !(locks && (n.lock ?? []).includes("edit"))) for (const f of def.fields) {
-				const v = n.props?.[f.name];
-				if (INLINE[f.type] && (v === void 0 || v === null || typeof v === "string")) (out[n.id] ??= {})[f.name] = INLINE[f.type];
+			if (def && !(locks && (n.lock ?? []).includes("edit"))) {
+				const fields = inlineFieldsOf(n, def);
+				if (Object.keys(fields).length) out[n.id] = fields;
 			}
 			visit(n.children ?? []);
 		}
@@ -3868,8 +3903,8 @@ function editableFields(tree, defOf, { disabled = false, locks = true } = {}) {
 	visit(tree);
 	return out;
 }
-/** The first field of a block that is typed on the page. */
-var firstInline = (def) => def?.fields.find((f) => INLINE[f.type])?.name ?? null;
+/** The first field of a block that is typed on the page (a path: "items.0.text" for a list). */
+var firstInlineOf = (node, def) => Object.keys(inlineFieldsOf(node, def))[0] ?? null;
 var TEXTUAL = [
 	"core/text",
 	"core/heading",
@@ -4029,6 +4064,128 @@ function errorFromMessage(tree, message) {
 	return {
 		id: node.id,
 		rest
+	};
+}
+// core/resources/js/ui/builder/typing-keys.js
+/**
+* What a key typed on the page does to a list's items or a table's rows
+* (spec: theme-builder.md §15). The canvas reports Enter on a one-line field and
+* Backspace in an empty field as `kestello:key`; for items and cells the answer
+* depends on where the caret is, and that is decided here, as data, so the
+* editor (useCanvas) only carries it out. Moving between items and cells needs
+* only the page and happens in the frame (app/canvas/editing.js).
+*
+* Answers:
+*   { do: 'default' }                              what the key does for any block
+*   { do: 'none' }                                 nothing (the caret goes back where it was)
+*   { do: 'props', props, focus: { field, at } }   new props for the block, then typing goes on there
+*   { do: 'leave', props }                         the list loses its empty last item (props null: the
+*                                                  whole block goes) and a paragraph starts after it
+*/
+/** The table's most rows (Fields\TableField: option max, 200 by default). */
+var TABLE_ROWS = 200;
+var isBlank = (v) => typeof v !== "string" || v.trim() === "";
+/**
+* @param {{ node: object, def: object, field: string, key: string, first: string|null }} at
+*   first: the block's first field typed on the page (blocks.js firstInlineOf)
+*/
+function typingKey({ node, def, field, key, first }) {
+	const props = node?.props ?? {};
+	const item = itemOf(field);
+	if (item) {
+		const f = def?.fields?.find((x) => x.name === item.list && x.type === "repeater");
+		const items = Array.isArray(props[item.list]) ? props[item.list] : null;
+		if (!f || !items || item.index >= items.length) return { do: "none" };
+		if (key === "enter") return enterInItem(props, f, items, item);
+		if (key === "remove") return removeItem(props, items, item);
+		return { do: "default" };
+	}
+	const cell = cellOf(field);
+	if (cell) {
+		const f = def?.fields?.find((x) => x.name === cell.field && x.type === "table");
+		const rows = Array.isArray(props[cell.field]?.rows) ? props[cell.field].rows : null;
+		if (!f || !rows) return { do: "none" };
+		if (key === "enter" && cell.row === rows.length - 1) return addRow(props, f, rows, cell);
+		return key === "enter" || key === "remove" ? { do: "none" } : { do: "default" };
+	}
+	if (key === "remove" && first && field !== first) return { do: "none" };
+	return { do: "default" };
+}
+function enterInItem(props, f, items, { list, index, sub }) {
+	if (index === items.length - 1 && isBlank(items[index]?.[sub])) {
+		if (items.length === 1) return {
+			do: "leave",
+			props: null
+		};
+		return {
+			do: "leave",
+			props: {
+				...props,
+				[list]: items.slice(0, -1)
+			}
+		};
+	}
+	const max = Number(f.options?.max ?? 100);
+	if (items.length >= max) return { do: "none" };
+	const empty = Object.fromEntries((f.fields ?? []).filter((s) => ["text", "textarea"].includes(s.type)).map((s) => [s.name, ""]));
+	const fresh = {
+		...items[index] ?? {},
+		...empty
+	};
+	const next = [
+		...items.slice(0, index + 1),
+		fresh,
+		...items.slice(index + 1)
+	];
+	return {
+		do: "props",
+		props: {
+			...props,
+			[list]: next
+		},
+		focus: {
+			field: itemPath(list, index + 1, sub),
+			at: "start"
+		}
+	};
+}
+function removeItem(props, items, { list, index, sub }) {
+	if (items.length === 1) return { do: "default" };
+	const next = items.filter((_, i) => i !== index);
+	const focus = index > 0 ? {
+		field: itemPath(list, index - 1, sub),
+		at: "end"
+	} : {
+		field: itemPath(list, 0, sub),
+		at: "start"
+	};
+	return {
+		do: "props",
+		props: {
+			...props,
+			[list]: next
+		},
+		focus
+	};
+}
+function addRow(props, f, rows, { field, col }) {
+	const max = Number(f.options?.max ?? TABLE_ROWS);
+	if (rows.length >= max) return { do: "none" };
+	const width = Math.max(1, ...rows.map((r) => Array.isArray(r) ? r.length : 0));
+	const table = {
+		...props[field],
+		rows: [...rows, Array.from({ length: width }, () => "")]
+	};
+	return {
+		do: "props",
+		props: {
+			...props,
+			[field]: table
+		},
+		focus: {
+			field: cellPath(field, rows.length, col),
+			at: "start"
+		}
 	};
 }
 // core/resources/js/ui/builder/checks.js
@@ -4409,7 +4566,7 @@ function useCanvas$1(b, { api, props, emit, root }) {
 	});
 	/** After this change, the caret goes into the block's first text field (a new block, a block turned into another). */
 	function continueTyping(node, at = "end") {
-		const field = firstInline(b.defOf(node));
+		const field = firstInlineOf(node, b.defOf(node));
 		focusNext = field ? {
 			id: node.id,
 			field,
@@ -4448,12 +4605,10 @@ function useCanvas$1(b, { api, props, emit, root }) {
 		} : null;
 		if (!typing.value) formats.value = {};
 	}
-	/** A new text block after this one, the caret in it (Enter at the end of a block). */
-	function newTextAfter(id, { first = false } = {}) {
+	/** A new text block at a place in the tree, the caret in it. */
+	function newTextAt(parent, index, { message = true } = {}) {
 		const def = b.catalog.value.get("core/text");
-		const at = first ? null : locate(b.list.value, id);
-		const parent = at?.parent ?? null;
-		if (!def || !b.fitsIn(def, parent) || !first && !at) return false;
+		if (!def || !b.fitsIn(def, parent)) return false;
 		const node = b.create(def);
 		node.props = {
 			...node.props,
@@ -4464,9 +4619,15 @@ function useCanvas$1(b, { api, props, emit, root }) {
 			field: "text",
 			at: "start"
 		};
-		b.insertAt(node, parent?.id ?? null, first ? 0 : at.index + 1, { message: !first });
+		b.insertAt(node, parent?.id ?? null, index, { message });
 		b.quietSelect(node.id);
 		return true;
+	}
+	/** A new text block after this one, the caret in it (Enter at the end of a block). */
+	function newTextAfter(id, { first = false } = {}) {
+		if (first) return newTextAt(null, 0, { message: false });
+		const at = locate(b.list.value, id);
+		return at ? newTextAt(at.parent ?? null, at.index + 1) : false;
 	}
 	/** An empty entry: start with a paragraph, the caret in it. */
 	function startWriting() {
@@ -4475,8 +4636,44 @@ function useCanvas$1(b, { api, props, emit, root }) {
 			id: null
 		});
 	}
-	function onCanvasKey({ id, key, rect }) {
-		if (props.disabled || typeof id !== "string" || !locate(b.list.value, id)) return;
+	/** A key typed in a list's item or a table's cell (typing-keys.js), or one any block answers alike. */
+	function onCanvasKey({ id, field, key, rect }) {
+		const at = props.disabled || typeof id !== "string" ? null : locate(b.list.value, id);
+		if (!at) return;
+		if ((key === "enter" || key === "remove") && typeof field === "string" && editable.value[id]?.[field]) {
+			const def = b.defOf(at.node);
+			const answer = typingKey({
+				node: at.node,
+				def,
+				field,
+				key,
+				first: firstInlineOf(at.node, def)
+			});
+			if (answer.do === "none") {
+				if (key === "enter") post({
+					type: "kestello:focus",
+					id,
+					field,
+					at: "end"
+				});
+				return;
+			}
+			if (answer.do === "props") {
+				focusNext = {
+					id,
+					...answer.focus
+				};
+				if (!b.setKeyed(id, answer.props)) focusNext = null;
+				return;
+			}
+			if (answer.do === "leave") {
+				if (answer.props) {
+					b.setKeyed(id, answer.props);
+					newTextAfter(id);
+				} else if (b.removeNode(id, { focusRow: false })) newTextAt(at.parent ? locate(b.list.value, at.parent.id)?.node ?? null : null, at.index);
+				return;
+			}
+		}
 		if (key === "enter") newTextAfter(id);
 		else if (key === "remove") {
 			const at = b.removeNode(id, { focusRow: false });
@@ -5275,13 +5472,18 @@ function useDocument(b, { tree, props, root }) {
 		} });
 	}
 	/** A field typed on the page: grouped with the typing around it into one undo step. */
+	/** Text typed on the page, at a field path ("text", "items.2.text"); typing into one block is one undo step. */
 	function setTyped(id, field, value) {
 		const at = locate(list.value, id);
-		if (!at || at.node.props?.[field] === value) return false;
-		commit(update(list.value, id, { props: {
-			...at.node.props ?? {},
-			[field]: value
-		} }), `props:${id}`);
+		const next = at ? setAt(at.node.props ?? {}, field, value) : null;
+		if (!next || JSON.stringify(next) === JSON.stringify(at.node.props ?? {})) return false;
+		commit(update(list.value, id, { props: next }), `props:${id}`);
+		return true;
+	}
+	/** New props for a block from a key typed on the page (an item or a row added or removed): its own undo step. */
+	function setKeyed(id, nextProps) {
+		if (!locate(list.value, id) || props.disabled) return false;
+		commit(update(list.value, id, { props: nextProps }));
 		return true;
 	}
 	/** A number set by dragging a handle on the page, kept within the field's limits. */
@@ -5548,6 +5750,7 @@ function useDocument(b, { tree, props, root }) {
 		patchSelected,
 		setProp,
 		setTyped,
+		setKeyed,
 		setNumber,
 		insertAt,
 		removeNode,

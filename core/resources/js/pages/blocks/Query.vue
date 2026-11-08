@@ -29,7 +29,7 @@ const pages = computed(() => props.pagination ?? { page: 1, last: 1 });
         <ul v-if="count" class="k-b-query__items">
             <slot />
         </ul>
-        <p v-else-if="empty" class="k-b-query__empty">{{ empty }}</p>
+        <p v-else-if="empty" class="k-b-query__empty" data-k-field="empty">{{ empty }}</p>
         <nav v-if="pages.last > 1" class="k-b-query__pages" aria-label="Pages">
             <Link v-if="pages.page > 1" :href="href(pages.page - 1)" rel="prev">Newer</Link>
             <span>Page {{ pages.page }} of {{ pages.last }}</span>

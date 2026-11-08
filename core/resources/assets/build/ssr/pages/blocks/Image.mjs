@@ -100,7 +100,7 @@ var _sfc_main = {
 						"--k-size-f": pct.value / 100,
 						"--k-img-ratio": ratio.value ?? void 0
 					}
-				}, _attrs))} data-v-efb9c063>`);
+				}, _attrs))} data-v-9284597a>`);
 				ssrRenderVNode(_push, createVNode(resolveDynamicComponent(__props.link ? internal.value ? unref(Link) : "a" : zoomable.value ? "button" : "div"), {
 					href: __props.link || void 0,
 					type: zoomable.value ? "button" : void 0,
@@ -130,9 +130,9 @@ var _sfc_main = {
 					}),
 					_: 1
 				}), _parent);
-				if (__props.caption) _push(`<figcaption data-v-efb9c063>${ssrInterpolate(__props.caption)}</figcaption>`);
+				if (__props.caption || unref(canvas)) _push(`<figcaption data-k-field="caption" data-placeholder="Caption" data-v-9284597a>${ssrInterpolate(__props.caption)}</figcaption>`);
 				else _push(`<!---->`);
-				if (zoomable.value) _push(`<dialog class="k-b-image__box" data-v-efb9c063><img${ssrRenderAttr("src", big.value)}${ssrRenderAttr("alt", label.value)} data-v-efb9c063><button type="button" class="k-b-image__close" aria-label="Close" data-v-efb9c063>×</button></dialog>`);
+				if (zoomable.value) _push(`<dialog class="k-b-image__box" data-v-9284597a><img${ssrRenderAttr("src", big.value)}${ssrRenderAttr("alt", label.value)} data-v-9284597a><button type="button" class="k-b-image__close" aria-label="Close" data-v-9284597a>×</button></dialog>`);
 				else _push(`<!---->`);
 				_push(`</figure>`);
 			} else _push(`<!---->`);
@@ -145,5 +145,5 @@ _sfc_main.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/blocks/Image.vue");
 	return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-var Image_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-efb9c063"]]);
+var Image_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-9284597a"]]);
 export { Image_default as default };
