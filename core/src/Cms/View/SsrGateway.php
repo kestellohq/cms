@@ -19,6 +19,21 @@ final class SsrGateway
     ) {}
 
     /**
+     * The renderer's /render address, or null when app.ssr.url is not an
+     * http(s) address: file_get_contents would read files or other streams
+     * (file://, php://, phar://) just as readily.
+     */
+    public static function endpoint(string $url): ?string
+    {
+        $parts = parse_url(trim($url));
+        if (!is_array($parts) || !in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true) || ($parts['host'] ?? '') === '') {
+            return null;
+        }
+
+        return rtrim(trim($url), '/') . '/render';
+    }
+
+    /**
      * The messages the browser loads before hydrating (BrowserCatalogue), so a
      * render draws the same text: none when the site's language needs none.
      *
@@ -65,8 +80,9 @@ final class SsrGateway
      */
     public function render(array $page, PageRegistry $registry): ?array
     {
-        $payload = self::payload($page, $registry);
-        if ($payload === null) {
+        $endpoint = self::endpoint($this->url);
+        $payload = $endpoint === null ? null : self::payload($page, $registry);
+        if ($endpoint === null || $payload === null) {
             return null;
         }
         $body = json_encode(['messages' => (object) $payload['messages']] + $payload, JSON_UNESCAPED_SLASHES);
@@ -76,9 +92,11 @@ final class SsrGateway
             'content' => $body,
             'timeout' => $this->timeout,
             'ignore_errors' => true,
+            'follow_location' => 0,     // the page data goes to the renderer, nowhere it points to
+            'max_redirects' => 0,
         ]]);
 
-        $response = @file_get_contents(rtrim($this->url, '/') . '/render', false, $context);
+        $response = @file_get_contents($endpoint, false, $context);
         $headers = http_get_last_response_headers() ?? [];
         $status = isset($headers[0]) && preg_match('#\s(\d{3})\s#', (string) $headers[0], $m) === 1 ? (int) $m[1] : 0;
 

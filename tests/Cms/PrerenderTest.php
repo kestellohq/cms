@@ -229,6 +229,21 @@ final class PrerenderTest extends TestCase
         return $renderer->render($request, new PageResponse('@core/content/Entry', ['title' => 'About'], preload: ['@core/blocks/Buttons']), new Response('', $status))->content();
     }
 
+    public function testTheRendererIsOnlyEverAnHttpAddress(): void
+    {
+        $this->assertSame('http://ssr:13714/render', SsrGateway::endpoint('http://ssr:13714/'));
+        $this->assertSame('https://render.example.test/base/render', SsrGateway::endpoint(' https://render.example.test/base '));
+        foreach (['', 'ssr:13714', 'file:///etc/passwd', 'php://filter/resource=/etc/passwd', 'phar:///tmp/x.phar', 'ftp://ssr/', 'http://', '//ssr:13714'] as $bad) {
+            $this->assertNull(SsrGateway::endpoint($bad), $bad);
+        }
+
+        // a file:// address renders nothing (and reads nothing)
+        $dir = $this->tempDir();
+        file_put_contents($dir . '/render', json_encode(['body' => '<p>from a file</p>']));
+        $page = ['component' => '@core/content/Entry', 'props' => [], 'url' => '/', 'version' => 'x'];
+        $this->assertNull((new SsrGateway('file://' . $dir))->render($page, $this->registry()));
+    }
+
     private function registry(): PageRegistry
     {
         return new PageRegistry(new Paths($this->tempDir(), dirname(__DIR__, 2) . '/core'), null, '0.1.0');

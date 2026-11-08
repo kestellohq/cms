@@ -26,9 +26,19 @@ final class QueryBuilderTest extends TestCase
 
     public function testExpressionsPassThroughUnchanged(): void
     {
-        $sql = $this->table('users')->select('users.*', 'COUNT(*) as total', '*')->join('posts', 'posts.user_id', '=', 'users.id')->toSql();
+        $sql = $this->table('users')->select('users.*', new \Kestello\Framework\Database\Expression('COUNT(*) as total'), '*')->join('posts', 'posts.user_id', '=', 'users.id')->toSql();
 
         $this->assertSame('SELECT `users`.*, COUNT(*) as total, * FROM `users` INNER JOIN `posts` ON `posts`.`user_id` = `users`.`id`', $sql);
+    }
+
+    public function testNamesThatAreNotNamesAreRefusedNotPassedThrough(): void
+    {
+        foreach (['id; DROP TABLE t', 'name) OR (1=1', 'COUNT(*) as total', 'a b', '`x`', 'a.b.c', ''] as $bad) {
+            $this->assertThrows(InvalidArgumentException::class, fn() => $this->table('t')->orderBy($bad)->toSql(), $bad);
+            $this->assertThrows(InvalidArgumentException::class, fn() => $this->table('t')->select($bad)->toSql(), $bad);
+        }
+        $this->assertThrows(InvalidArgumentException::class, fn() => $this->table('t')->where('x = 1 OR 1', 1)->toSql());
+        $this->assertSame('SELECT `t`.`a` AS `b`, * FROM `t`', $this->table('t')->select('t.a as b', '*')->toSql());
     }
 
     public function testOperatorsAndJoinTypesAreAllowlisted(): void

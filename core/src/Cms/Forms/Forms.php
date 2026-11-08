@@ -139,7 +139,9 @@ final class Forms
         ];
         $redirect = trim((string) (is_scalar($in['redirect'] ?? null) ? $in['redirect'] : ''));
         if ($redirect !== '') {
-            if (preg_match('#^/(?!/)[^\s]*$#', $redirect) !== 1 && filter_var($redirect, FILTER_VALIDATE_URL) === false) {
+            // a path must stay on this site: browsers read "/\host" as "//host"
+            $local = str_starts_with($redirect, '/') && preg_match('/\s/', $redirect) !== 1 && \Kestello\Cms\Auth\External\ReturnPath::sanitize($redirect) !== null;
+            if (!$local && (str_starts_with($redirect, '/') || filter_var($redirect, FILTER_VALIDATE_URL) === false)) {
                 $errors['redirect'][] = Translator::get('A path on this site such as /thanks, or a full https:// address.');
             } elseif (!str_starts_with($redirect, '/') && !preg_match('#^https?://#i', $redirect)) {
                 $errors['redirect'][] = Translator::get('Only http and https addresses.');

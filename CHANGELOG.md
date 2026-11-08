@@ -6,6 +6,9 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Security
 
+- The query builder refuses a column or table name that isn't a plain name (`name`, `table.name`, `name AS alias`) instead of passing it into SQL unchanged. Raw SQL needs `new Expression(…)` or `QueryBuilder::raw()`. Plugins that passed SQL such as `'COUNT(*) as total'` to `select()` must wrap it.
+- A form's "redirect after sending" path is checked like other return paths, so `/\host` (which browsers read as `//host`) and control characters are refused.
+- The server renderer (`app.ssr.url`) must be an `http` or `https` address, and its redirects are never followed, so page data only goes to the renderer itself.
 - Core updates are accepted only when signed with a key in `release.keys`. Before, a key trusted for plugins and themes (`app.packages.trusted_keys`) could sign a core release too. Core and packages also sign under different domains, so a package signature never passes as a core one. Release zips must be signed with `core:release --key`.
 - Images are decoded one frame at a time, within limits on memory, disk, pixels and time. Before, an animated GIF had every frame expanded first, so a small file with thousands of frames could fill memory or disk.
 - PDF thumbnails are drawn at a lower resolution when the page is very large, so a PDF that claims a huge page can't make Ghostscript draw a giant image.
