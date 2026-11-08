@@ -69,7 +69,7 @@ final class Seo
             }
             if ($description === '' && $field->type === 'blocks' && ($cms = \Kestello\Cms\Cms::instance()) !== null) {
                 // pages built from blocks: the text every visitor sees, never members-only or scheduled blocks
-                $description = $cms->search->visibleBlockText($entry->field($field->name));
+                $description = self::sentences($cms->search->visibleBlockTexts($entry->field($field->name)));
             }
             if ($image === null && $field->type === 'media') {
                 $value = $data[$field->name] ?? null;
@@ -248,6 +248,28 @@ final class Seo
         return self::clip(trim((string) preg_replace('/\s+/u', ' ', $text)), $length);
     }
 
+    /**
+     * Pieces of text read one after another (a heading, a paragraph, button
+     * labels) as sentences: a piece that does not end a sentence gets a full
+     * stop, so "Fresh bread" and "Baked daily" read "Fresh bread. Baked daily",
+     * not "Fresh bread Baked daily".
+     *
+     * @param list<string> $pieces
+     */
+    public static function sentences(array $pieces): string
+    {
+        $out = [];
+        foreach ($pieces as $piece) {
+            $piece = trim((string) preg_replace('/\s+/u', ' ', $piece));
+            if ($piece === '') {
+                continue;
+            }
+            $out[] = preg_match('/[.!?…:;]["”’)\]]*$/u', $piece) === 1 ? $piece : $piece . '.';
+        }
+
+        return implode(' ', $out);
+    }
+
     private static function clip(string $text, int $length = 300): string
     {
         if (mb_strlen($text) <= $length) {
@@ -309,7 +331,9 @@ final class Seo
         if (!$error && $base !== '') {
             $path = (string) ($seo['canonical'] ?? (parse_url($data['url'], PHP_URL_PATH) ?: '/'));
             $url = $abs($path);
-            $title = self::title($props) ?: $site;
+            // the home page is shared as the site, unless the editor gave it a title for sharing
+            $own = is_string($seo['title'] ?? null) && $seo['title'] !== '';
+            $title = ($path === '/' && !$own && $site !== '') ? $site : (self::title($props) ?: $site);
             $tags[] = ['link', ['rel' => 'canonical', 'href' => $url]];
             $tags[] = ['meta', ['property' => 'og:type', 'content' => $seo['type'] ?? 'website']];
             $tags[] = ['meta', ['property' => 'og:title', 'content' => $title]];

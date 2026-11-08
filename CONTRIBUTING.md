@@ -17,7 +17,7 @@ Thank you for helping. This file is the rulebook for everyone who changes Kestel
 
 ## Ground rules
 
-- **No Composer, no PHP dependencies.** Everything Kestello runs is in this repository. Development tools are fine: they are pinned PHARs in `tools/` (see [Code style and checks](#code-style-and-checks)) or npm dev dependencies, and none of them ship.
+- **Zero PHP dependencies.** Everything Kestello runs is in this repository, and `composer.json` stays without requirements. Development tools are fine: they are pinned PHARs in `tools/` (see [Code style and checks](#code-style-and-checks)) or npm dev dependencies, and none of them ship.
 - **Security and extensibility come first.** Core is built on the same public API plugins use. New features are extension points first and screens second.
 - **Every fix has a test.** A bug fix starts with a test that fails without it. A feature comes with tests for what it promises.
 - **Small, pure, debuggable code.** Prefer small modules and pure functions. Errors say what went wrong and what to do about it.

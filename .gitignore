@@ -64,3 +64,4 @@ dist/
 
 # ide:helpers --stubs output (published with each release instead)
 /kestello.stub.php
+/composer.lock

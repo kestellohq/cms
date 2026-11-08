@@ -104,7 +104,7 @@ final class DiscoveryTest extends AuthTestCase
             ['type' => 'core/text', 'props' => ['text' => '<p>From <b>seven</b> until noon.</p>']],
             ['type' => 'core/text', 'props' => ['text' => '<p>Staff code 4471</p>'], 'visibility' => ['auth' => 'user']],
         ]]]);
-        $this->assertStringContainsString('<meta name="description" content="Open every day From seven until noon.">', $this->head('/opening-hours'), 'a page built from blocks: the text every visitor sees');
+        $this->assertStringContainsString('<meta name="description" content="Open every day. From seven until noon.">', $this->head('/opening-hours'), 'a page built from blocks: the text every visitor sees');
         $this->api('POST', '/content/page/entries', ['title' => 'Contact', 'status' => 'published']);
         $this->assertStringContainsString('<meta name="description" content="Bread, daily.">', $this->head('/contact'), 'nothing to say: the site description');
         $error = Seo::head($this->cms, ['component' => '@core/errors/Error', 'props' => ['status' => 404], 'url' => '/nope']);
@@ -225,6 +225,35 @@ final class DiscoveryTest extends AuthTestCase
         $this->assertStringNotContainsString('ld+json', Seo::head($this->cms, ['component' => '@core/errors/Error', 'props' => ['status' => 404], 'url' => '/nope']));
         $this->settings(['reading' => ['discourage_search' => true]]);
         $this->assertSame([], $this->graph('/blog/rye'), 'nor is anything on a hidden site');
+    }
+
+    public function testTheHomePageIsSharedAsTheSite(): void
+    {
+        $home = $this->json($this->api('POST', '/content/page/entries', ['title' => 'Home', 'slug' => 'home', 'status' => 'published']))['data'];
+        $this->settings(['reading' => ['front_page' => (string) $home['id']]]);
+        $this->assertStringContainsString('<meta property="og:title" content="Bakery">', $this->head('/'), 'not "Home"');
+
+        $this->api('PATCH', "/content/page/entries/{$home['id']}", ['data' => ['seo' => ['title' => 'Bakery on the quay']]]);
+        $this->assertStringContainsString('<meta property="og:title" content="Bakery on the quay">', $this->head('/'), 'the editor\'s own sharing title wins');
+    }
+
+    public function testAPageOfBlocksIsDescribedInSentences(): void
+    {
+        $node = static fn(string $type, array $props = [], array $children = []): array => ['type' => $type, 'props' => $props, 'children' => $children];
+        $r = $this->api('POST', '/content/page/entries', ['title' => 'Bread', 'slug' => 'bread', 'status' => 'published', 'data' => ['body' => [
+            $node('core/heading', ['text' => 'Bread from the oven', 'level' => '1']),
+            $node('core/text', ['text' => '<p>Sourdough, rye and sweet buns.</p>']),
+            $node('core/buttons', [], [$node('core/button', ['text' => 'See what we bake', 'link' => '/menu'])]),
+        ]]]);
+        $this->assertSame(200, $r->statusCode(), $r->content());
+
+        $this->assertStringContainsString('<meta name="description" content="Bread from the oven. Sourdough, rye and sweet buns. See what we bake.">', $this->head('/bread'));
+    }
+
+    public function testPiecesOfTextReadAsSentences(): void
+    {
+        $this->assertSame('Fresh bread. Baked daily. Open: Mon to Sat. Why rye? "Slow."', Seo::sentences(['Fresh bread', ' Baked   daily ', '', 'Open:', 'Mon to Sat', 'Why rye?', '"Slow."']));
+        $this->assertSame('', Seo::sentences([]));
     }
 
     public function testStructuredDataCannotBreakOutOfItsScript(): void
