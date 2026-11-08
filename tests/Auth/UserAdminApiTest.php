@@ -169,7 +169,8 @@ final class UserAdminApiTest extends AuthTestCase
 
         $this->assertSame(422, $this->api('PATCH', '/me', ['email' => 'bob@example.test'])->statusCode());
         $ok = $this->json($this->api('PATCH', '/me', ['email' => 'Ana.New@example.test', 'bio' => 'Runs the place.']))['data'];
-        $this->assertSame(['ana.new@example.test', 'Runs the place.'], [$ok['email'], $ok['bio']]);
+        $this->assertSame(['ana@example.test', 'Runs the place.'], [$ok['email'], $ok['bio']], 'the bio is saved; the email waits for its link');
+        $this->assertSame('ana.new@example.test', $this->json($this->api('GET', '/me'))['data']['pending_email']);
     }
 
     public function testAccountsSettingsAreWhatSignUpReads(): void

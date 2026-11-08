@@ -6,6 +6,12 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Security
 
+- Changing your email address takes effect only once you open a link sent to the new address, and your old address is told a change was asked for. Before, the address changed at once, so an account could take an address its owner never confirmed. `GET /me` shows a waiting address as `pending_email`.
+- Password reset links stop working when an account's email address changes, whether you confirm a new one or an administrator sets it.
+- Wrong second-factor codes are limited to 20 an hour per account, from anywhere (it was 100), and after 5 the account's owner is emailed that someone has their password.
+- Creating a theme asks for a recent sign-in, like activating one, since it can switch the live theme.
+- A media file's details list only the entries you may open; the others are counted. Before, anyone who could upload saw the titles of drafts that used a file.
+- The people list for author and user fields no longer includes each person's role.
 - Saved page HTML is checked by parsing it against what pages draw, not by matching patterns, so tricks such as a `>` inside a quoted attribute, entity-encoded `javascript:` links, `<meta>` redirects, frames other than the YouTube and Vimeo players, forms posting to another site, or an element taking the page's own `kestello-page` id are refused. A refused page is not asked for again and stays drawn in the browser; the admin's browser console says why it was refused.
 - Rich text is sanitized again wherever it is shown, not only when saved, and changing a text field into rich text sanitizes the values already stored. Before, markup typed into a plain text field was shown as HTML once the field became rich text.
 - Moving between pages without a reload goes to another site in full when the site redirects there, instead of reading that site's answer as a page.

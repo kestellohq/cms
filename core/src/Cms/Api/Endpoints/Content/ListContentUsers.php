@@ -11,8 +11,9 @@ use Kestello\Framework\Database\DatabaseManager;
 use Kestello\Framework\Database\QueryBuilder;
 
 /**
- * Names only (no emails) of active people, for author and user fields:
- * editors pick from these without needing users.read.
+ * Names only (no emails, no roles) of active people, for author and user
+ * fields: editors pick from these without needing users.read. The role is
+ * left out so a contributor can't list who the administrators are.
  */
 final class ListContentUsers extends ContentEndpoint
 {
@@ -35,7 +36,7 @@ final class ListContentUsers extends ContentEndpoint
 
     public function handle(ApiRequest $request): mixed
     {
-        $q = DatabaseManager::connection()->table('users')->select('id', 'username', 'role')->where('is_active', 1);
+        $q = DatabaseManager::connection()->table('users')->select('id', 'username')->where('is_active', 1);
         $ids = array_slice(array_values(array_unique(array_map('intval', array_filter(explode(',', (string) $request->query('ids', '')))))), 0, 100);
         if ($ids !== []) {
             $q->whereIn('id', $ids);
@@ -46,6 +47,6 @@ final class ListContentUsers extends ContentEndpoint
             $q->orderBy('username')->limit(20);
         }
 
-        return array_map(static fn(array $u): array => ['id' => (int) $u['id'], 'username' => (string) $u['username'], 'role' => (string) $u['role']], $q->get());
+        return array_map(static fn(array $u): array => ['id' => (int) $u['id'], 'username' => (string) $u['username']], $q->get());
     }
 }

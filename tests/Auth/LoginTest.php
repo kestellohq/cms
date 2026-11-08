@@ -6,6 +6,7 @@ namespace Kestello\Tests\Auth;
 
 use Kestello\Cms\Auth\LoginResult;
 use Kestello\Cms\Auth\LoginService;
+use Kestello\Cms\Auth\LoginThrottle;
 use Kestello\Cms\Auth\Totp;
 use Kestello\Cms\Auth\TwoFactor;
 use Kestello\Cms\Events\LoginFailed;
@@ -156,6 +157,31 @@ final class LoginTest extends AuthTestCase
         $this->assertContains('auth.login_failed', $this->auditEvents());
         $this->assertTrue($tf->disable($uid));
         $this->assertSame(0, $this->db->table('mfa_recovery_codes')->count());
+    }
+
+    public function testGuessingTheSecondFactorIsCappedAndTheOwnerIsWarned(): void
+    {
+        $user = $this->createUser();
+        $uid = (int) $user['id'];
+        $tf = $this->cms->container->make(TwoFactor::class);
+        $enroll = $tf->beginTotp($uid, 'ana@example.test', 'Kestello Test');
+        $tf->confirmTotp($uid, Totp::code($enroll['secret'], Totp::step()));
+
+        // someone with the password, spread over many addresses, one wrong code per challenge
+        $statuses = [];
+        for ($i = 1; $i <= 25; $i++) {
+            $ip = '198.51.100.' . $i;
+            $this->assertSame(LoginResult::TWO_FACTOR, $this->login()->attempt('ana', self::PASSWORD, $ip)->status);
+            $statuses[] = $this->login()->verifySecondFactor('000000', $ip)->status;
+        }
+        $capped = LoginThrottle::SCOPE_LIMITS['2fa'];
+        $this->assertSame(array_fill(0, $capped, LoginResult::FAILED), array_slice($statuses, 0, $capped));
+        $this->assertSame(array_fill(0, 25 - $capped, LoginResult::THROTTLED), array_slice($statuses, $capped), 'the account stops taking codes for the hour');
+
+        $warnings = array_values(array_filter($this->mail, static fn(array $m): bool => str_contains($m['subject'], 'has your')));
+        $this->assertCount(1, $warnings, 'the owner is told once');
+        $this->assertSame('ana@example.test', $warnings[0]['to']);
+        $this->assertStringContainsString('change your password', $warnings[0]['html']);
     }
 
     public function testPendingChallengeExpires(): void
