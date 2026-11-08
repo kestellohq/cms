@@ -17,7 +17,8 @@ interface DirectUploads
 
     /**
      * A form the browser POSTs the file to (S3 presigned POST). The policy
-     * pins the key, the exact size and the content type.
+     * pins the key, the exact size and the content type. The file always
+     * lands private: whoever asked for the form checks it, then publishes it.
      *
      * @return array{url: string, fields: array<string, string>}
      * @throws StorageException

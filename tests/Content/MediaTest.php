@@ -259,8 +259,37 @@ final class MediaTest extends AuthTestCase
         };
         $this->assertSame(400, $post($up['direct'], $png . 'extra', 'image/png'), 'the policy pins the size (EntityTooLarge)');
         $this->assertSame(204, $post($up['direct'], $png, 'image/png'));
+        $disk = $this->cms->storage->disk('media');
+        $final = (string) $this->db->table('uploads')->where('id', $up['id'])->value('path');
+        $anonymous = static function (string $url): int {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_NOBODY => true]);
+            curl_exec($ch);
+
+            return (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        };
+        // until the server has checked it, the file is nowhere public: not at its final address, not where it landed
+        $this->assertSame('incoming/' . $up['id'], $up['direct']['fields']['key'] ?? null, 'the browser uploads to a staging key');
+        $this->assertSame('private', $up['direct']['fields']['acl'] ?? 'private');
+        $this->assertFalse($disk->exists($final));
+        $this->assertSame(403, $anonymous($disk->url('incoming/' . $up['id'])), 'the staging copy is private');
+
         $media = $this->ok('POST', "/media/uploads/{$up['id']}/complete");
         $this->assertSame(['image', 5, 5], [$media['kind'], $media['width'], $media['height']]);
+        $this->assertTrue($disk->exists($final), 'checked, then copied to the key the server chose');
+        $this->assertSame(200, $anonymous($disk->url($final)), 'and published there');
+        $this->assertFalse($disk->exists('incoming/' . $up['id']), 'the staging copy is gone');
+
+        // documents are copied inside the bucket, not through PHP
+        $pdf = "%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF";
+        Settings::getInstance()->set('media_allow_document', '1', 'media');
+        $doc = $this->ok('POST', '/media/uploads', ['filename' => 'notes.pdf', 'size' => strlen($pdf)]);
+        $this->assertSame(204, $post($doc['direct'], $pdf, 'application/pdf'));
+        $docMedia = $this->ok('POST', "/media/uploads/{$doc['id']}/complete");
+        $docKey = (string) $this->db->table('media')->where('id', $docMedia['id'])->value('path');
+        $this->assertSame($pdf, $disk->get($docKey));
+        $this->assertSame(200, $anonymous($disk->url($docKey)));
+        $this->assertFalse($disk->exists('incoming/' . $doc['id']));
 
         // A disguised file is caught after the fact and removed from the bucket.
         $fake = str_pad('<?php echo 1; ?>', strlen($png));
@@ -268,7 +297,16 @@ final class MediaTest extends AuthTestCase
         $this->assertSame(204, $post($up2['direct'], $fake, 'image/png'));
         $key = $this->db->table('uploads')->where('id', $up2['id'])->value('path');
         $this->assertSame(422, $this->api('POST', "/media/uploads/{$up2['id']}/complete")->statusCode());
-        $this->assertFalse($this->cms->storage->disk('media')->exists($key));
+        $this->assertFalse($disk->exists($key), 'never published');
+        $this->assertFalse($disk->exists('incoming/' . $up2['id']), 'and the staging copy is removed');
+
+        // an abandoned upload leaves nothing behind
+        $up3 = $this->ok('POST', '/media/uploads', ['filename' => 'gone.png', 'size' => strlen($png)]);
+        $this->assertSame(204, $post($up3['direct'], $png, 'image/png'));
+        $this->db->table('uploads')->where('id', $up3['id'])->update(['expires_at' => gmdate('Y-m-d H:i:s', time() - 1)]);
+        $this->cms->container->make(MediaLibrary::class)->purgeExpired();
+        $this->assertFalse($disk->exists('incoming/' . $up3['id']));
+        $this->assertSame(204, $this->api('DELETE', "/media/{$docMedia['id']}")->statusCode());
 
         $this->assertSame(204, $this->api('DELETE', "/media/{$media['id']}")->statusCode());
     }
