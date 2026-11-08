@@ -28,7 +28,10 @@ async function a(e, t, n) {
 		},
 		body: n ? JSON.stringify(n) : void 0
 	});
-	if (!r.ok) throw Error(`${e} ${t}: ${r.status}`);
+	if (!r.ok) {
+		let n = await r.json().catch(() => null), i = Object.values(n?.errors ?? {}).flat()[0] ?? n?.detail ?? "";
+		throw Error(`${e} ${t}: ${r.status}${i ? ` (${i})` : ""}`);
+	}
 	return (await r.json())?.data;
 }
 async function o(n) {

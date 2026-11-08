@@ -8,6 +8,7 @@ use Kestello\Cms\Cms;
 use Kestello\Cms\Content\Entry;
 use Kestello\Cms\Content\Field;
 use Kestello\Cms\Media\MediaPresenter;
+use Kestello\Support\Html;
 
 /**
  * The core blocks: group, columns/column, heading, text, image, button,
@@ -319,8 +320,8 @@ final class CoreBlocks
                 $kind = 'media';
                 $value = MediaPresenter::value($raw, false, MediaPresenter::many(array_map('intval', (array) $raw)));
             } elseif ($field->type === 'rich_text') {
-                $kind = 'html';            // sanitized when the entry was saved
-                $value = $raw;
+                $kind = 'html';            // sanitized when the entry was saved, and again here: never trusted as HTML
+                $value = is_string($raw) ? Html::sanitize($raw, 'rich-text') : null;
             } else {
                 $value = is_scalar($raw) ? (string) $raw : null;
             }

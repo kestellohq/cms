@@ -36,9 +36,14 @@ final class PrerenderApiTest extends AuthTestCase
         $this->assertSame(1, $list['waiting']);
         $this->assertSame([$key], array_column($list['pages'], 'key'));
 
-        $refused = $this->api('POST', "/system/prerender/{$key}", ['html' => '<p onclick="x()">x</p>']);
+        // HTML that pages never hold is refused, and that page stops waiting (the browser keeps drawing it)
+        $contact = hash('sha256', 'contact');
+        $store->want($contact, ['url' => '/contact', 'page' => ['component' => 'x', 'props' => [], 'url' => '/contact', 'version' => 'v'], 'modules' => ['x' => '/system/prerender/modules/core/x.mjs'], 'messages' => []]);
+        $refused = $this->api('POST', "/system/prerender/{$contact}", ['html' => '<p onclick="x()">x</p>']);
         $this->assertSame(422, $refused->statusCode(), $refused->content());
+        $this->assertStringContainsString('onclick', $refused->content(), 'the answer says what was refused');
         $this->assertSame([], $purged->tags);
+        $this->assertSame([$key], array_column($this->json($this->api('GET', '/system/prerender?limit=10'))['data']['pages'], 'key'));
 
         $saved = $this->api('POST', "/system/prerender/{$key}", ['html' => '<main>About</main>', 'title' => 'About']);
         $this->assertSame(200, $saved->statusCode(), $saved->content());

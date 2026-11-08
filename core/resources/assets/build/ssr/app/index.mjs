@@ -31,6 +31,24 @@ function createLeaveGuards() {
 function leavesPage(from, to, { method = "get", preserveState = false } = {}) {
 	return String(method).toLowerCase() === "get" && !preserveState && (from.origin !== to.origin || from.pathname !== to.pathname);
 }
+// core/resources/js/app/same-site.js
+/**
+* Did a navigation end on another site? fetch() follows redirects, so a link
+* to /shop that the site redirects to https://shop.example answers from
+* there. That answer is never read as a page of this site (its component and
+* props would be drawn here): the browser goes there instead.
+*
+* @param {{ redirected?: boolean, url?: string }} response
+* @param {string} origin this site's origin (window.location.origin)
+*/
+function endedElsewhere(response, origin) {
+	if (!response?.redirected || !response.url) return false;
+	try {
+		return new URL(response.url).origin !== origin;
+	} catch {
+		return true;
+	}
+}
 // core/resources/js/app/stylesheets.js
 /**
 * Which stylesheets a page keeps when the app moves to another page.
@@ -277,6 +295,10 @@ var Router = class {
 			const response = await fetch(url, init);
 			if (response.status === 409 && response.headers.get("X-Kestello-Location")) {
 				window.location.href = response.headers.get("X-Kestello-Location");
+				return;
+			}
+			if (endedElsewhere(response, window.location.origin)) {
+				window.location.href = response.url;
 				return;
 			}
 			if (!response.headers.get("X-Kestello")) {

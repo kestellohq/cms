@@ -4,6 +4,12 @@ Every change people would notice is listed here, newest first. The format follow
 
 ## [Unreleased]
 
+### Security
+
+- Saved page HTML is checked by parsing it against what pages draw, not by matching patterns, so tricks such as a `>` inside a quoted attribute, entity-encoded `javascript:` links, `<meta>` redirects, frames other than the YouTube and Vimeo players, forms posting to another site, or an element taking the page's own `kestello-page` id are refused. A refused page is not asked for again and stays drawn in the browser; the admin's browser console says why it was refused.
+- Rich text is sanitized again wherever it is shown, not only when saved, and changing a text field into rich text sanitizes the values already stored. Before, markup typed into a plain text field was shown as HTML once the field became rich text.
+- Moving between pages without a reload goes to another site in full when the site redirects there, instead of reading that site's answer as a page.
+
 ### Fixed
 
 - Backspace in an empty quote source, table caption or image caption no longer removes the whole block; only the block's first field does that.
