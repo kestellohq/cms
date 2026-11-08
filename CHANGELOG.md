@@ -4,6 +4,10 @@ Every change people would notice is listed here, newest first. The format follow
 
 ## [Unreleased]
 
+### Security
+
+- Direct uploads to an S3 bucket land at a private staging key (`incoming/<upload id>`). Kestello checks the file there, then copies it to the key it chose and makes it public. Before, the browser uploaded straight to the final key as a public file, so an unchecked file, or one that was never finished, could be read at its permanent address. With a bucket policy instead of object ACLs, keep `incoming/` out of public reads.
+
 ### Fixed
 
 - Backspace in an empty quote source, table caption or image caption no longer removes the whole block; only the block's first field does that.

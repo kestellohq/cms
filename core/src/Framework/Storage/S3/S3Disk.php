@@ -252,7 +252,7 @@ final class S3Disk implements Disk, \Kestello\Contracts\Storage\DirectUploads
         $key = StoragePath::file($path);
         $fields = ['key' => $key, 'Content-Type' => $contentType];
         if ($this->usesAcl()) {
-            $fields['acl'] = $this->defaultVisibility() === 'public' ? 'public-read' : 'private';
+            $fields['acl'] = 'private';     // unchecked: the caller publishes it after checking (DirectUploads)
         }
         $conditions = [['bucket' => (string) $this->config['bucket']], ['content-length-range', $size, $size]];
 

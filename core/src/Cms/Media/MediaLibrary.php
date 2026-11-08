@@ -21,7 +21,9 @@ use Kestello\Support\Translator;
  *
  *   start()     declare name and size; the extension is checked before any bytes arrive
  *   chunk()     send the bytes in order, in chunk_size pieces (resumable), or POST them
- *               straight to the bucket with the presigned form (mode "direct")
+ *               straight to the bucket with the presigned form (mode "direct"), to a
+ *               private staging key (incoming/<upload id>) that complete() checks and
+ *               then copies to the library's key
  *   complete()  the content is sniffed and must agree with the extension, images are
  *               checked against the pixel limit, the "media.scan" filter can refuse it,
  *               then it is stored under a random key and becomes a Media row
@@ -237,7 +239,7 @@ final class MediaLibrary
         if ($row['mode'] === 'direct') {
             $direct ??= $this->directDisk($this->uploadDisk($row));
             if ($direct !== null) {
-                $out['direct'] = $direct->presignedPost((string) $row['path'], max(60, (int) strtotime($row['expires_at'] . ' UTC') - time()), (int) $row['size'], (string) $row['mime']);
+                $out['direct'] = $direct->presignedPost(self::stagingKey($row), max(60, (int) strtotime($row['expires_at'] . ' UTC') - time()), (int) $row['size'], (string) $row['mime']);
             }
         }
 
@@ -332,29 +334,26 @@ final class MediaLibrary
                 is_resource($stream) && fclose($stream);
                 $checksum = hash_file('sha256', $tmp) ?: null;
             } else {
+                // the browser uploaded to a private staging key; only a checked file
+                // reaches the key the server chose, and only then is it public
                 $disk = $this->directDisk($this->uploadDisk($row)) ?? throw MediaException::conflict('Direct uploads are no longer set up for this site.');
+                $storage = $this->uploadDisk($row);
+                $staged = self::stagingKey($row);
                 try {
-                    $actual = $this->uploadDisk($row)->size((string) $row['path']);
+                    $actual = $storage->size($staged);
                 } catch (\Kestello\Contracts\Storage\FileNotFound) {
                     throw MediaException::conflict('The file has not arrived in storage yet.');
                 }
                 if ($actual !== (int) $row['size']) {
-                    $this->uploadDisk($row)->delete((string) $row['path']);
                     throw MediaException::invalid(['size' => ['The stored file has a different size than announced.']]);
                 }
-                $head = $disk->readRange((string) $row['path'], 0, self::SNIFF_BYTES);
-                try {
-                    [$width, $height] = $this->inspect($row, $head, null);
-                } catch (MediaException $e) {
-                    $this->uploadDisk($row)->delete((string) $row['path']);
-                    throw $e;
-                }
+                [$width, $height] = $this->inspect($row, $disk->readRange($staged, 0, self::SNIFF_BYTES), null);
                 $checksum = null;
                 $storedSize = (int) $row['size'];
                 if (($this->types()->forExtension((string) $row['ext'])['kind'] ?? null) === 'image') {
                     // images come back through PHP once: orientation, metadata, statistics
                     $tmp = $this->tempPath((string) $row['id']);
-                    $in = $this->uploadDisk($row)->readStream((string) $row['path']);
+                    $in = $storage->readStream($staged);
                     $out = fopen($tmp, 'wb');
                     stream_copy_to_stream($in, $out);
                     is_resource($in) && fclose($in);
@@ -362,21 +361,29 @@ final class MediaLibrary
                     $prepared = $this->prepareImage($row, $tmp);
                     if ($prepared !== null) {
                         [$width, $height, $meta] = [$prepared['width'], $prepared['height'], $prepared['meta']];
-                        if ($prepared['changed']) {
-                            $stream = fopen($tmp, 'rb');
-                            $this->uploadDisk($row)->putStream((string) $row['path'], $stream, ['content_type' => $row['mime'], 'visibility' => 'public', 'cache_control' => 'public, max-age=31536000, immutable']);
-                            is_resource($stream) && fclose($stream);
-                        }
                     }
                     clearstatcache(true, $tmp);
                     $storedSize = (int) filesize($tmp);
                     $checksum = hash_file('sha256', $tmp) ?: null;
+                    $stream = fopen($tmp, 'rb');
+                    $storage->putStream((string) $row['path'], $stream, ['content_type' => $row['mime'], 'visibility' => 'public', 'cache_control' => 'public, max-age=31536000, immutable']);
+                    is_resource($stream) && fclose($stream);
                     @unlink($tmp);
+                } else {
+                    // other files are copied inside the bucket, never through PHP
+                    $storage->copy($staged, (string) $row['path']);
+                    try {
+                        $storage->setVisibility((string) $row['path'], 'public');
+                    } catch (\Kestello\Contracts\Storage\StorageException) {
+                        // a bucket without object ACLs: its bucket policy decides what is public
+                    }
                 }
+                $storage->delete($staged);
             }
         } catch (MediaException $e) {
             if ($e->kind === 'invalid') {
-                $this->forgetUpload($row, deleteDirect: false);
+                // refused: the staging copy goes too, it was never published
+                $this->forgetUpload($row, deleteDirect: true);
             }
             throw $e;
         }
@@ -496,13 +503,24 @@ final class MediaLibrary
         return count($rows);
     }
 
+    /**
+     * Where the browser puts a direct upload: private, apart from the library,
+     * and named by the upload, never by anything the uploader chose.
+     *
+     * @param array<string, mixed> $row
+     */
+    public static function stagingKey(array $row): string
+    {
+        return 'incoming/' . $row['id'];
+    }
+
     /** @param array<string, mixed> $row */
     private function forgetUpload(array $row, bool $deleteDirect): void
     {
         @unlink($this->tempPath((string) $row['id']));
-        if ($deleteDirect && $row['mode'] === 'direct' && !QueryBuilder::table('media')->where('disk', $row['disk'])->where('path', $row['path'])->exists()) {
+        if ($deleteDirect && $row['mode'] === 'direct') {
             try {
-                $this->cms->storage->disk((string) $row['disk'])->delete((string) $row['path']);
+                $this->cms->storage->disk((string) $row['disk'])->delete(self::stagingKey($row));
             } catch (\Throwable) {
                 // the disk may be gone or unreachable; the row still goes
             }
