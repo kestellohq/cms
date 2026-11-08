@@ -6,7 +6,9 @@ import { KAlert, KButton } from '@kestello/ui';
 /**
  * An update that stopped halfway (PHP was stopped by the host, the server
  * restarted). The site puts it back by itself on the next request; this
- * shows up when that did not work three times, with a way to try again.
+ * shows up when that did not work three times, with a way to try again,
+ * or when an update has been running for unusually long (most likely its
+ * check outlived an updater the server stopped: nothing to try until it ends).
  */
 const props = defineProps({
     /** stopped_update from GET /updates or GET /plugins */
@@ -17,21 +19,28 @@ const props = defineProps({
 
 const api = useApi();
 const busy = ref(false);
-const what = computed(() => (props.stopped.owner === 'core' ? 'Kestello' : props.stopped.owner.replace(/^(plugin|theme):/, '')));
+const what = computed(() => props.stopped.name || (props.stopped.owner === 'core' ? 'Kestello' : props.stopped.owner.replace(/^(plugin|theme):/, '')));
 const describe = computed(() =>
-    props.stopped.kind === 'switch-back'
-        ? __('Switching {name} back from {to} to {from} started {date} and did not finish.', {
+    props.stopped.running
+        ? __('The update of {name} from {from} to {to} started {date} and is still running on the server.', {
               name: what.value,
               from: props.stopped.from,
               to: props.stopped.to,
               date: formatDateTime(props.stopped.started_at),
           })
-        : __('The update of {name} from {from} to {to} started {date} and stopped before it finished.', {
-              name: what.value,
-              from: props.stopped.from,
-              to: props.stopped.to,
-              date: formatDateTime(props.stopped.started_at),
-          }),
+        : props.stopped.kind === 'switch-back'
+          ? __('Switching {name} back from {to} to {from} started {date} and did not finish.', {
+                name: what.value,
+                from: props.stopped.from,
+                to: props.stopped.to,
+                date: formatDateTime(props.stopped.started_at),
+            })
+          : __('The update of {name} from {from} to {to} started {date} and stopped before it finished.', {
+                name: what.value,
+                from: props.stopped.from,
+                to: props.stopped.to,
+                date: formatDateTime(props.stopped.started_at),
+            }),
 );
 
 async function retry() {
@@ -48,7 +57,17 @@ async function retry() {
 </script>
 
 <template>
-    <KAlert tone="danger" :title="stopped.gave_up ? __('An update stopped halfway and was not put back') : __('An update stopped halfway')">
+    <KAlert v-if="stopped.running" tone="warning" :title="__('An update is taking unusually long')">
+        <p>{{ describe }}</p>
+        <p>
+            {{
+                __(
+                    'Visitors see the maintenance page until it ends. When the server stops an update, its last check can keep running for a few minutes; the site puts everything back as soon as it ends. If this message is still here in an hour, ask your host to restart PHP for this site.',
+                )
+            }}
+        </p>
+    </KAlert>
+    <KAlert v-else tone="danger" :title="stopped.gave_up ? __('An update stopped halfway and was not put back') : __('An update stopped halfway')">
         <p>{{ describe }}</p>
         <p v-if="stopped.gave_up">
             {{

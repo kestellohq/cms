@@ -61,6 +61,20 @@
     "file": "assets/SecretModal-P_5ZDoo_.css",
     "src": "_SecretModal-P_5ZDoo_.css"
   },
+  "_StoppedUpdate-C7TpnMPX.js": {
+    "file": "chunks/StoppedUpdate-C7TpnMPX.js",
+    "name": "StoppedUpdate",
+    "imports": [
+      "__plugin-vue_export-helper-BDNMzG2s.js"
+    ],
+    "css": [
+      "assets/StoppedUpdate-DKpXGE5b.css"
+    ]
+  },
+  "_StoppedUpdate-DKpXGE5b.css": {
+    "file": "assets/StoppedUpdate-DKpXGE5b.css",
+    "src": "_StoppedUpdate-DKpXGE5b.css"
+  },
   "__plugin-vue_export-helper-BDNMzG2s.js": {
     "file": "chunks/_plugin-vue_export-helper-BDNMzG2s.js",
     "name": "_plugin-vue_export-helper"
@@ -89,19 +103,9 @@
     "file": "chunks/file-hint-DPdYkAbP.js",
     "name": "file-hint"
   },
-  "_switch-back-BAlEdKs_.css": {
-    "file": "assets/switch-back-BAlEdKs_.css",
-    "src": "_switch-back-BAlEdKs_.css"
-  },
-  "_switch-back-Kj9fwwHl.js": {
-    "file": "chunks/switch-back-Kj9fwwHl.js",
-    "name": "switch-back",
-    "imports": [
-      "__plugin-vue_export-helper-BDNMzG2s.js"
-    ],
-    "css": [
-      "assets/switch-back-BAlEdKs_.css"
-    ]
+  "_switch-back-B5qzJWd2.js": {
+    "file": "chunks/switch-back-B5qzJWd2.js",
+    "name": "switch-back"
   },
   "_tabs-Bj_u5MsD.js": {
     "file": "chunks/tabs-Bj_u5MsD.js",
@@ -217,15 +221,16 @@
     ]
   },
   "resources/js/pages/admin/appearance/Themes.vue": {
-    "file": "pages/admin/appearance/Themes-CKGuvp_B.js",
+    "file": "pages/admin/appearance/Themes-Z-KFLWwx.js",
     "name": "pages/admin/appearance/Themes",
     "src": "resources/js/pages/admin/appearance/Themes.vue",
     "isEntry": true,
     "imports": [
+      "_switch-back-B5qzJWd2.js",
       "__plugin-vue_export-helper-BDNMzG2s.js"
     ],
     "css": [
-      "assets/Themes-DNeqUz4-.css"
+      "assets/Themes-C4nTFygN.css"
     ]
   },
   "resources/js/pages/admin/content-types/Edit.vue": {
@@ -415,12 +420,13 @@
     "isEntry": true
   },
   "resources/js/pages/admin/system/Plugins.vue": {
-    "file": "pages/admin/system/Plugins-BSMxAq1P.js",
+    "file": "pages/admin/system/Plugins-BwDTCkFs.js",
     "name": "pages/admin/system/Plugins",
     "src": "resources/js/pages/admin/system/Plugins.vue",
     "isEntry": true,
     "imports": [
-      "_switch-back-Kj9fwwHl.js",
+      "_StoppedUpdate-C7TpnMPX.js",
+      "_switch-back-B5qzJWd2.js",
       "__plugin-vue_export-helper-BDNMzG2s.js"
     ],
     "css": [
@@ -462,12 +468,13 @@
     ]
   },
   "resources/js/pages/admin/system/Updates.vue": {
-    "file": "pages/admin/system/Updates-DjwiGlAl.js",
+    "file": "pages/admin/system/Updates-DKke_ltz.js",
     "name": "pages/admin/system/Updates",
     "src": "resources/js/pages/admin/system/Updates.vue",
     "isEntry": true,
     "imports": [
-      "_switch-back-Kj9fwwHl.js",
+      "_StoppedUpdate-C7TpnMPX.js",
+      "_switch-back-B5qzJWd2.js",
       "__plugin-vue_export-helper-BDNMzG2s.js"
     ],
     "css": [

@@ -141,13 +141,15 @@ final class Kernel
 
         // An update PHP stopped halfway: put it back before anything else runs (for core this
         // request already runs the old release; plugins stay unloaded until it is done).
-        if ((new UpdateJournal($this->paths->storage()))->pending() !== null) {
+        $journal = new UpdateJournal($this->paths->storage());
+        if ($journal->pending() !== null) {
             $this->recoverUpdate($app, $uri);
             return;
         }
 
         // before the database: during a restore it is being rebuilt
         $maintenance = new \Kestello\Cms\System\Maintenance($this->paths->storage());
+        self::holdDuringUpdate($journal, $maintenance);
         $bypass = (string) ($_SERVER['HTTP_X_KESTELLO_BYPASS'] ?? '');
         if ($maintenance->blocks($uri, isset($_COOKIE[Session::NAME]), $bypass)) {
             $this->maintenancePage($maintenance);
@@ -221,6 +223,18 @@ final class Kernel
             return;
         }
         $this->maintenancePage(new \Kestello\Cms\System\Maintenance($this->paths->storage()));
+    }
+
+    /**
+     * While an update is running, or stopped and was not put back, visitors
+     * never see the site halfway, however long it takes: the maintenance the
+     * update turned on outlasts its 30 minutes. Signed-in people still get in.
+     */
+    public static function holdDuringUpdate(UpdateJournal $journal, \Kestello\Cms\System\Maintenance $maintenance): void
+    {
+        if ($journal->current() !== null) {
+            $maintenance->hold('an update has not finished');
+        }
     }
 
     /** A path on this site to send the visitor back to; never one a browser would read as another host ("//x", "/\\x"). */

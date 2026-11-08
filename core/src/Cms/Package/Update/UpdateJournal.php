@@ -27,6 +27,13 @@ final class UpdateJournal
     /** Automatic tries to put the site back before it waits for someone. */
     public const int MAX_ATTEMPTS = 3;
 
+    /**
+     * Seconds after which a running update is unusually long: it checks the
+     * site within minutes (ProcessProbe). Most likely the server stopped the
+     * updater and its check is still running (it holds the lock until it ends).
+     */
+    public const int LONG = 900;
+
     public function __construct(private readonly string $storage) {}
 
     /**
@@ -76,6 +83,17 @@ final class UpdateJournal
         $entry = $this->stopped();
 
         return $entry !== null && (int) $entry['attempts'] < self::MAX_ATTEMPTS ? $entry : null;
+    }
+
+    /** @return array<string, mixed>|null an update that has held the lock for longer than LONG */
+    public function runningLong(?int $now = null): ?array
+    {
+        if (!is_file($this->file()) || !Files::lockHeld($this->storage)) {
+            return null;
+        }
+        $entry = $this->current();
+
+        return $entry !== null && (int) ($entry['started_at'] ?? 0) < ($now ?? time()) - self::LONG ? $entry : null;
     }
 
     /** Count one more try; returns how many there were. */

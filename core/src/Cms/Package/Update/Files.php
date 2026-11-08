@@ -67,6 +67,11 @@ final class Files
     /**
      * One update (of anything) at a time.
      *
+     * A process the update starts (the health check, ProcessProbe) inherits
+     * the lock: the update counts as running until that check ends too. So
+     * when the server stops the updater, putting it back waits for a check
+     * that is still changing the database instead of racing it.
+     *
      * @template T
      * @param callable(): T $fn
      * @return T

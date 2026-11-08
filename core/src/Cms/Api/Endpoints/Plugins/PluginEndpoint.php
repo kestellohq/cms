@@ -70,19 +70,25 @@ abstract class PluginEndpoint extends Endpoint
      */
     protected function stoppedUpdate(): ?array
     {
-        $entry = $this->recovery()->journal()->stopped();
+        $journal = $this->recovery()->journal();
+        $entry = $journal->stopped();
+        $running = $entry === null;
+        $entry ??= $journal->runningLong();
         if ($entry === null) {
             return null;
         }
 
         return [
             'owner' => $entry['owner'],
+            'name' => UpdateRecovery::displayName($this->cms(), (string) $entry['owner']),
             'kind' => $entry['kind'] ?? 'update',
             'from' => $entry['from'],
             'to' => $entry['to'],
             'started_at' => (int) ($entry['started_at'] ?? 0),
             'attempts' => (int) $entry['attempts'],
-            'gave_up' => (int) $entry['attempts'] >= UpdateJournal::MAX_ATTEMPTS,
+            'gave_up' => !$running && (int) $entry['attempts'] >= UpdateJournal::MAX_ATTEMPTS,
+            // still holding the update lock after UpdateJournal::LONG: most likely a check that outlived its updater
+            'running' => $running,
         ];
     }
 

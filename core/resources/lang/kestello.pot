@@ -741,6 +741,10 @@ msgid "An organization or business"
 msgstr ""
 
 #: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "An update is taking unusually long"
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
 msgid "An update stopped halfway"
 msgstr ""
 
@@ -8418,6 +8422,7 @@ msgstr ""
 msgid "Switch back to Kestello {v}?"
 msgstr ""
 
+#: core/resources/js/pages/admin/appearance/Themes.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Switch back to {v}"
@@ -8433,6 +8438,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "Switch {plugin} back to {v}?"
+msgstr ""
+
+#: core/resources/js/pages/admin/appearance/Themes.vue
+msgid "Switch {theme} back to {v}?"
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
@@ -8453,6 +8462,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "Switching {plugin} back to {v} did not finish. The audit log says why."
+msgstr ""
+
+#: core/resources/js/pages/admin/appearance/Themes.vue
+msgid "Switching {theme} back to {v} did not finish. Site → Updates and the audit log say why."
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -9040,6 +9053,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Resources/EntryResource.php
 msgid "The type's fields; single-entry answers only"
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "The update of {name} from {from} to {to} started {date} and is still running on the server."
 msgstr ""
 
 #: core/resources/js/components/updates/StoppedUpdate.vue
@@ -9781,6 +9798,7 @@ msgstr ""
 msgid "Updated a theme"
 msgstr ""
 
+#: core/resources/js/pages/admin/appearance/Themes.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "Updated from {v} on {date}."
 msgstr ""
@@ -10082,6 +10100,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "Visitors and search engines following an old link land on the same page here. A redirect only applies where nothing else lives at that address."
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "Visitors see the maintenance page until it ends. When the server stops an update, its last check can keep running for a few minutes; the site puts everything back as soon as it ends. If this message is still here in an hour, ask your host to restart PHP for this site."
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -11590,6 +11612,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
 msgid "{theme} was updated."
+msgstr ""
+
+#: core/resources/js/pages/admin/appearance/Themes.vue
+msgid "{theme} {v} is back, with the database from before the update."
+msgstr ""
+
+#: core/resources/js/pages/admin/appearance/Themes.vue
+msgid "{theme} {v} is still on the server. Switching back also puts the database back as it was before the update, on {date}: anything changed on the site since then is lost from the site. A backup of the site as it is now is made first, under Site → Backups. Visitors see a short maintenance page."
 msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue

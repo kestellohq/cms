@@ -88,6 +88,23 @@ final class UpdateRecovery
         }));
     }
 
+    /** What people call $owner: Kestello, or the plugin's or theme's name (its folder name once it is gone). */
+    public static function displayName(Cms $cms, string $owner): string
+    {
+        if ($owner === 'core') {
+            return 'Kestello';
+        }
+        [$kind, $slug] = explode(':', $owner, 2) + [1 => ''];
+        try {
+            $ext = $cms->extensions();
+            $package = ($kind === 'theme' ? $ext->themes() : $ext->plugins())[$slug] ?? null;
+        } catch (Throwable) {
+            $package = null;
+        }
+
+        return $package !== null && $package->manifest->name !== '' ? $package->manifest->name : $slug;
+    }
+
     /**
      * Whether $owner can go back to the version before its last update, and to what.
      *

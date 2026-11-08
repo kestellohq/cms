@@ -323,6 +323,7 @@ final class UpdateRecoveryTest extends AuthTestCase
         (new \Kestello\Cms\Health\HealthModule())->boot($this->cms);
         $check = $this->cms->health->run(fresh: true, only: ['core.update-stopped'])['checks'][0];
         $this->assertSame(['critical', '/admin/system/updates'], [$check['status'], $check['action']['url'] ?? null], json_encode($check));
+        $this->assertStringContainsString('The update of Ledger from 1.0.0 to 1.1.0', $check['message'] ?? '', 'the name people know, not the folder');
 
         $this->journal()->retry();
         $this->assertNotNull($this->journal()->pending(), 'Try again: the next request tries again');
@@ -399,6 +400,32 @@ final class UpdateRecoveryTest extends AuthTestCase
         $this->assertSame(['from before the update'], array_column($this->db->table('p_ledger_lines')->get(), 'label'));
     }
 
+    public function testTheThemesScreenSwitchesADeveloperThemeBack(): void
+    {
+        $theme = function (string $v): string {
+            $dir = $this->root . "/src/theme-{$v}/look";
+            mkdir($dir, 0777, true);
+            file_put_contents($dir . '/theme.json', json_encode(['slug' => 'look', 'name' => 'Look', 'version' => $v, 'requires' => ['core' => '^0.1']]));
+            file_put_contents($dir . '/functions.php', "<?php\n");
+
+            return $dir;
+        };
+        $this->cms->extensions()->install($theme('1.0.0'), PackageType::Theme);
+        $this->assertTrue($this->cms->container->make(Updater::class)->update(PackageBuilder::build($theme('1.1.0'), $this->root . '/dist/look')['zip'], ['allow_unsigned' => true])['ok']);
+
+        $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
+        $themes = json_decode($this->api('GET', '/themes')->content(), true)['data']['themes'];
+        $look = array_values(array_filter($themes, static fn(array $t): bool => $t['slug'] === 'look'))[0];
+        $this->assertSame(['1.1.0', '1.0.0'], [$look['version'], $look['switch_back']['to'] ?? null], json_encode($look));
+        $this->assertStringNotContainsString($this->root, json_encode($look['switch_back']), 'no server paths in the answer');
+
+        $done = $this->api('POST', '/plugins/switch-back', ['owner' => 'theme:look']);
+        $this->assertSame(200, $done->statusCode(), $done->content());
+        $this->assertTrue($this->recovery()->recover()['ok']);
+        $this->assertSame('1.0.0', json_decode((string) file_get_contents($this->root . '/content/themes/look/theme.json'), true)['version']);
+        $this->assertNull($this->recovery()->switchBackOption('theme:look', '1.0.0'), 'nothing further back');
+    }
+
     public function testOnlyPeopleWhoMayUpdateCanSwitchBackOrRetry(): void
     {
         $this->createUser(['username' => 'ed', 'email' => 'ed@example.test', 'role' => 'editor']);
@@ -417,7 +444,7 @@ final class UpdateRecoveryTest extends AuthTestCase
         $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
 
         $data = json_decode($this->api('GET', '/updates')->content(), true)['data'];
-        $this->assertSame(['core', '0.2.0', true], [$data['stopped_update']['owner'], $data['stopped_update']['to'], $data['stopped_update']['gave_up']]);
+        $this->assertSame(['core', 'Kestello', '0.2.0', true], [$data['stopped_update']['owner'], $data['stopped_update']['name'], $data['stopped_update']['to'], $data['stopped_update']['gave_up']]);
         $this->assertStringNotContainsString($this->root, json_encode($data['stopped_update']));
         $this->assertSame(409, $this->api('POST', '/updates/core/switch-back')->statusCode());
 
@@ -436,6 +463,81 @@ final class UpdateRecoveryTest extends AuthTestCase
         $this->assertTrue($this->cms->container->make(Updater::class)->update($this->ledger('1.1.0'), ['allow_unsigned' => true])['ok']);
 
         $this->assertSame('1.0.0', $this->recovery()->switchBackOption('plugin:ledger', '1.1.0')['to'] ?? null);
+    }
+
+    public function testACheckThatOutlivesItsUpdaterIsWaitedForThenPutBack(): void
+    {
+        // the server stops the updater, not the health check it started: that check may still change the database
+        $storage = $this->root . '/storage';
+        $this->journal()->begin(['kind' => 'update', 'owner' => 'plugin:ledger', 'from' => '1.0.0', 'to' => '1.1.0', 'backup' => 'x', 'target' => $this->root . '/content/plugins/ledger'], UpdateJournal::SWITCHING);
+        $updater = proc_open([PHP_BINARY, __DIR__ . '/fixtures/check-outlives-updater.php', $storage, '2'], [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'a'], 2 => ['file', '/dev/null', 'a']], $pipes);
+        do {
+            usleep(20_000);
+            $status = proc_get_status($updater);
+        } while ($status['running']);
+        proc_close($updater);
+        $this->assertSame(9, $status['termsig'], 'the updater was killed');
+
+        $this->assertTrue(Files::lockHeld($storage), 'the check inherited the lock');
+        $this->assertNull($this->journal()->pending(), 'nothing is put back while the check runs');
+        $this->assertNotNull($this->journal()->runningLong(time() + UpdateJournal::LONG + 1), 'after a while, it shows as unusually long');
+        $this->assertNull($this->journal()->runningLong(), 'not right away');
+
+        $deadline = microtime(true) + 10;
+        while (Files::lockHeld($storage) && microtime(true) < $deadline) {
+            usleep(50_000);
+        }
+        $this->assertNotNull($this->journal()->pending(), 'once the check ends, the next request puts the update back');
+    }
+
+    public function testTheHealthCheckOfAnUpdateHasATimeLimitOfItsOwn(): void
+    {
+        $command = (new \Kestello\Cms\Package\Update\ProcessProbe($this->root, '/usr/bin/php'))->command('plugin:ledger');
+        $this->assertSame(['/usr/bin/php', '-d', 'max_execution_time=120', $this->root . '/bin/cms', 'update:probe', 'plugin:ledger'], $command);
+    }
+
+    public function testVisitorsStayOutWhileAnUpdateHasNotFinishedHoweverLongItTakes(): void
+    {
+        $storage = $this->root . '/storage';
+        $maintenance = new Maintenance($storage);
+        Kernel::holdDuringUpdate($this->journal(), $maintenance);
+        $this->assertNull($maintenance->current(), 'no update, no maintenance');
+
+        $bypass = $maintenance->on(Maintenance::VISITORS, 'update ledger', 30);
+        $file = $storage . '/framework/maintenance.json';
+        $data = json_decode((string) file_get_contents($file), true);
+        file_put_contents($file, json_encode(['expires_at' => time() - 60] + $data));
+        $this->assertNull($maintenance->current(), 'the update\'s 30 minutes ran out');
+
+        $this->journal()->begin(['kind' => 'update', 'owner' => 'plugin:ledger', 'from' => '1.0.0', 'to' => '1.1.0', 'backup' => 'x', 'target' => $this->root . '/content/plugins/ledger'], UpdateJournal::SWITCHING);
+        Kernel::holdDuringUpdate($this->journal(), $maintenance);
+        $this->assertNotNull($maintenance->current(), 'still updating: visitors still get the maintenance page');
+        $this->assertFalse($maintenance->blocks('/', false, $bypass), 'the update\'s own check still gets through');
+        $this->assertTrue($maintenance->blocks('/', false));
+
+        $maintenance->off();
+        Kernel::holdDuringUpdate($this->journal(), $maintenance);
+        $this->assertSame(Maintenance::VISITORS, $maintenance->current()['mode'] ?? null, 'turned back on when someone removed it');
+    }
+
+    public function testTheUpdatesScreenSaysWhenAnUpdateRunsUnusuallyLong(): void
+    {
+        $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
+        $this->journal()->begin(['kind' => 'update', 'owner' => 'core', 'from' => '0.1.0', 'to' => '0.2.0', 'backup' => 'x', 'target' => $this->root . '/core/releases/0.2.0'], UpdateJournal::SWITCHING);
+        $file = $this->root . '/storage/framework/update.json';
+        file_put_contents($file, json_encode(['started_at' => time() - UpdateJournal::LONG - 60] + json_decode((string) file_get_contents($file), true)));
+        $this->core('0.1.0');
+        (new \Kestello\Cms\Health\HealthModule())->boot($this->cms);
+
+        Files::locked($this->root . '/storage', function (): void {
+            $stopped = json_decode($this->api('GET', '/updates')->content(), true)['data']['stopped_update'];
+            $this->assertSame([true, false, 'Kestello'], [$stopped['running'], $stopped['gave_up'], $stopped['name']], json_encode($stopped));
+            $check = $this->cms->health->run(fresh: true, only: ['core.update-stopped'])['checks'][0];
+            $this->assertSame('recommended', $check['status'], json_encode($check));
+            $this->assertStringContainsString('is still running', $check['message']);
+            $this->assertSame(409, $this->api('POST', '/updates/recover')->statusCode(), 'nothing to try again while it runs');
+        });
+        $this->assertFalse(json_decode($this->api('GET', '/updates')->content(), true)['data']['stopped_update']['running'], 'once it lets go, it is a stopped update');
     }
 
     public function testTheVisitorIsSentBackToAPageOnThisSiteOnly(): void
