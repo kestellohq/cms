@@ -21,6 +21,7 @@ namespace Kestello\Cms\View\Prerender;
  *
  *   storage/framework/prerender/queue/<key>.json  waiting: {url, page, modules, messages}
  *   storage/framework/prerender/html/<key>.json   saved:   {url, body, title}
+ *   storage/framework/prerender/refused/<key>.json refused: {url, reason}, never asked for again
  */
 final class PrerenderStore
 {
@@ -58,7 +59,7 @@ final class PrerenderStore
      */
     public function want(string $key, array $item): void
     {
-        if (preg_match(self::KEY_PATTERN, $key) !== 1 || is_file($this->file('queue', $key)) || is_file($this->file('html', $key))) {
+        if (preg_match(self::KEY_PATTERN, $key) !== 1 || is_file($this->file('queue', $key)) || is_file($this->file('html', $key)) || is_file($this->file('refused', $key))) {
             return;
         }
         $this->write($this->file('queue', $key), $item);
@@ -108,6 +109,10 @@ final class PrerenderStore
         }
         $problem = self::refuse($body);
         if ($problem !== null) {
+            // never asked for again (until its data changes, which gives a new key): the page stays drawn in the browser
+            $this->write($this->file('refused', $key), ['url' => (string) ($queued['url'] ?? '/'), 'reason' => $problem]);
+            @unlink($this->file('queue', $key));
+            $this->prune('refused', self::MAX_SAVED);
             throw new \InvalidArgumentException($problem);
         }
         $url = (string) ($queued['url'] ?? '/');
@@ -133,24 +138,29 @@ final class PrerenderStore
     }
 
     /**
-     * Why HTML sent for a page is refused, or null. Vue never writes a
-     * <script> or an on…= handler into rendered HTML, so either means the
-     * HTML did not come from the renderer.
+     * Why HTML sent for a page is refused, or null.
+     *
+     * The HTML is parsed, not matched with patterns, and must hold only what
+     * Vue draws for pages: allowlisted elements, no event handlers, safe
+     * addresses (checked after the parser decodes entities), the video
+     * players the embed block makes, forms posting to this site, and no id
+     * the page shell itself uses. Anything else refuses the whole page; it is
+     * then drawn in the browser as before, so a refusal never breaks a page.
      */
     public static function refuse(string $html): ?string
     {
         if ($html === '' || strlen($html) > self::MAX_BYTES) {
             return 'The HTML is empty or larger than ' . intdiv(self::MAX_BYTES, 1000) . ' kB.';
         }
-        if (preg_match('/<\s*script\b/i', $html) === 1) {
-            return 'The HTML holds a script.';
+        $doc = \Dom\HTMLDocument::createFromString('<!DOCTYPE html><html><head></head><body>' . $html . '</body></html>', LIBXML_NOERROR);
+        $body = $doc->body;
+        if ($body === null || $doc->head?->childNodes->length !== 0) {
+            return 'The HTML holds elements that belong in the page head.';
         }
-        // attributes inside tags only: text that mentions "onclick=" is fine
-        if (preg_match_all('/<[a-z][^>]*>/i', $html, $tags) > 0) {
-            foreach ($tags[0] as $tag) {
-                if (preg_match('/[\s"\'\/]on[a-z]+\s*=|(?:href|src|action|formaction)\s*=\s*["\']?\s*javascript:/i', $tag) === 1) {
-                    return 'The HTML holds an event handler or a javascript: address.';
-                }
+        foreach ($body->getElementsByTagName('*') as $el) {
+            $problem = SavedHtmlRules::element($el);
+            if ($problem !== null) {
+                return $problem;
             }
         }
 
