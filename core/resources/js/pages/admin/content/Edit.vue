@@ -9,6 +9,7 @@ import ReviewPanel from '../../../components/content/ReviewPanel.vue';
 import SharePreviews from '../../../components/content/SharePreviews.vue';
 import StudioPublish from '../../../components/content/StudioPublish.vue';
 import { isNewEntry } from '../../../components/content/entry-state.js';
+import { checkSeo } from '../../../components/content/seo-checks.js';
 
 defineOptions({ layout: 'Admin' });
 
@@ -32,6 +33,10 @@ const base = `/content/${typeName.value}/entries`;
 
 // ── the visual editor: the page itself, full screen, for types with a blocks field ──
 const visualField = computed(() => fields.value.find((f) => f.type === 'blocks' && f.width !== 'sidebar') ?? null);
+// search checks on the unsaved values, shown in the editor's Checks tab with the page's
+const seoIssues = computed(() =>
+    checkSeo({ title: form.title, excerpt: form.excerpt, seo: form.data?.seo, hasSeo: fields.value.some((f) => f.name === 'seo' && f.type === 'group') }, __),
+);
 const MODE = 'kestello.editor.mode';
 const readMode = () => {
     try {
@@ -623,6 +628,7 @@ const err = (key) => (Array.isArray(errors.value[key]) ? errors.value[key][0] : 
             :document-label="type.singular"
             :start-tab="isNew ? 'block' : 'document'"
             :below-label="belowLabel"
+            :extra-issues="seoIssues"
             :disabled="readOnly"
             :errors="visualErrors"
             @save="save(isNew ? 'draft' : null)"

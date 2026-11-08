@@ -226,6 +226,10 @@ msgstr ""
 msgid "A pattern can't contain a synced pattern."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "A person"
+msgstr ""
+
 #: core/resources/js/ui/KExtension.vue
 msgid "A plugin"
 msgstr ""
@@ -252,6 +256,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
 msgid "A short summary field"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "A square logo, or a photo for a person, at least 112 pixels wide."
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreBlocks.php
@@ -308,10 +316,6 @@ msgstr ""
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Access tokens"
-msgstr ""
-
-#: core/resources/js/ui/builder/BuilderBar.vue
-msgid "Accessibility checks"
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
@@ -726,6 +730,10 @@ msgstr ""
 
 #: core/src/Cms/Blocks/CoreSectionBlocks.php
 msgid "An image beside text. They stack on phones, the image first."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "An organization or business"
 msgstr ""
 
 #: core/src/Cms/Content/Models/ContentModels.php
@@ -1238,6 +1246,10 @@ msgstr ""
 msgid "Cancelled"
 msgstr ""
 
+#: core/src/Cms/Site/Seo.php
+msgid "Canonical address"
+msgstr ""
+
 #: core/resources/js/pages/admin/media/Index.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 #: core/src/Cms/Blocks/CoreListBlocks.php
@@ -1408,7 +1420,7 @@ msgid "Checked"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderInspector.vue
-msgid "Checked on the preview as it is now, including the theme around it."
+msgid "Checked on the preview as it is now, including the theme around it, and on its search settings."
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
@@ -1419,6 +1431,7 @@ msgstr ""
 msgid "Checking…"
 msgstr ""
 
+#: core/resources/js/ui/builder/BuilderBar.vue
 #: core/resources/js/ui/builder/BuilderInspector.vue
 msgid "Checks"
 msgstr ""
@@ -4274,6 +4287,10 @@ msgstr ""
 msgid "Left edge"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Left empty, the site name is used."
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Let scripts and other apps use the API as you, limited to the permissions you pick. Treat a token like a password."
 msgstr ""
@@ -4420,6 +4437,10 @@ msgstr ""
 
 #: core/src/Cms/Auth/AuthController.php
 msgid "Login"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Logo or photo"
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
@@ -4928,6 +4949,7 @@ msgstr ""
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
 #: core/resources/js/pages/admin/users/Index.vue
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Name"
 msgstr ""
 
@@ -5732,6 +5754,10 @@ msgstr ""
 msgid "Only editors see it. Such as “Main” or “Footer links”."
 msgstr ""
 
+#: core/src/Cms/Site/Seo.php
+msgid "Only for text first published at another address, such as an article you also wrote elsewhere. Search engines then list that address instead of this page. Leave empty otherwise."
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Only formatting changed."
 msgstr ""
@@ -6394,6 +6420,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Profile sections"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Profiles on other sites"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Queue.vue
@@ -7342,6 +7372,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Search engines move the old address's ranking to the new one."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Search engines show this as who is behind the site."
 msgstr ""
 
 #: core/resources/js/ui/KFinder.vue
@@ -8817,6 +8851,10 @@ msgstr ""
 msgid "The site as it is now is backed up first, and put back by itself if the restore fails."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "The site belongs to"
+msgstr ""
+
 #: core/src/Framework/Core/ErrorWords.php
 msgid "The site couldn’t show this page."
 msgstr ""
@@ -8859,6 +8897,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "The site's changes and any draft go. The current version stays in the history."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "The site's profiles elsewhere, such as LinkedIn, Mastodon or GitHub: one https:// address per line. They tell search engines these belong to the same organization or person."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -10458,6 +10500,30 @@ msgstr ""
 msgid "ZIP files. Off by default: archives can hide anything."
 msgstr ""
 
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_aioseop_description"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_aioseop_title"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_seopress_titles_desc"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_seopress_titles_title"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_yoast_wpseo_metadesc"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_yoast_wpseo_title"
+msgstr ""
+
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/builder/useCatalog.js
 msgid "a field"
@@ -10691,6 +10757,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "people use it"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "rank_math_description"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "rank_math_title"
 msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php

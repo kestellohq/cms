@@ -111,7 +111,7 @@ const inline = computed(() => Object.keys(editable.value[selected.value] ?? {}))
             </template>
             <div v-show="rightTab === 'document'" class="k-builder__doc"><slot name="document" /></div>
             <template v-if="rightTab === 'checks'">
-                <p class="k-pane__help">{{ __('Checked on the preview as it is now, including the theme around it.') }}</p>
+                <p class="k-pane__help">{{ __('Checked on the preview as it is now, including the theme around it, and on its search settings.') }}</p>
                 <p v-if="!issues.length" class="k-builder__ok"><KIcon name="check-circle" />{{ __('No problems found.') }}</p>
                 <ul v-else class="k-issues">
                     <li v-for="(issue, i) in issues" :key="i" :class="`is-${issue.tone}`">

@@ -127,10 +127,23 @@ final class SiteSettings
                     'seo_separator' => Schema::enum(\Kestello\Cms\Site\SeoTitle::SEPARATORS)->optional()->description('What {sep} becomes.'),
                     'seo_image' => Schema::int()->min(0)->format('media')->optional()
                         ->description('Shown in link previews of pages that have no image of their own.'),
+                    'seo_publisher_type' => Schema::enum(['organization' => 'An organization or business', 'person' => 'A person'])->optional()
+                        ->description('Search engines show this as who is behind the site.'),
+                    'seo_publisher_name' => Schema::string()->max(150)->optional()->description('Left empty, the site name is used.'),
+                    'seo_publisher_logo' => Schema::int()->min(0)->format('media')->optional()
+                        ->description('A square logo, or a photo for a person, at least 112 pixels wide.'),
+                    'seo_profiles' => Schema::string()->max(4000)->format('multiline')->optional()
+                        ->description('The site\'s profiles elsewhere, such as LinkedIn, Mastodon or GitHub: one https:// address per line. They tell search engines these belong to the same organization or person.'),
                 ]),
-                'labels' => ['seo_title_pattern' => 'Page titles', 'seo_home_pattern' => 'Home page title', 'seo_separator' => 'Separator', 'seo_image' => 'Default sharing image'],
+                'labels' => [
+                    'seo_title_pattern' => 'Page titles', 'seo_home_pattern' => 'Home page title', 'seo_separator' => 'Separator', 'seo_image' => 'Default sharing image',
+                    'seo_publisher_type' => 'The site belongs to', 'seo_publisher_name' => 'Name', 'seo_publisher_logo' => 'Logo or photo', 'seo_profiles' => 'Profiles on other sites',
+                ],
                 'secrets' => [],
-                'defaults' => ['seo_title_pattern' => \Kestello\Cms\Site\SeoTitle::PAGE, 'seo_home_pattern' => \Kestello\Cms\Site\SeoTitle::HOME, 'seo_separator' => \Kestello\Cms\Site\SeoTitle::SEPARATOR, 'seo_image' => 0],
+                'defaults' => [
+                    'seo_title_pattern' => \Kestello\Cms\Site\SeoTitle::PAGE, 'seo_home_pattern' => \Kestello\Cms\Site\SeoTitle::HOME, 'seo_separator' => \Kestello\Cms\Site\SeoTitle::SEPARATOR, 'seo_image' => 0,
+                    'seo_publisher_type' => 'organization', 'seo_publisher_name' => '', 'seo_publisher_logo' => 0, 'seo_profiles' => '',
+                ],
             ] + $core,
             'mail' => [
                 'label' => 'Email',

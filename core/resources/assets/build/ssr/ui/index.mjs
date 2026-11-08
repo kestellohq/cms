@@ -4595,10 +4595,11 @@ function useCanvas$1(b, { api, props, emit, root }) {
 	watch(b.selected, () => {
 		linkOpen.value = false;
 	});
-	const issues = ref([]);
+	const pageIssues = ref([]);
+	const issues = computed(() => [...pageIssues.value, ...props.extraIssues ?? []]);
 	const bodyHidden = ref(false);
 	function runChecks() {
-		issues.value = checkPage(frame.value?.contentDocument, {
+		pageIssues.value = checkPage(frame.value?.contentDocument, {
 			kind: props.kind,
 			owns: b.owns,
 			t: __
@@ -6979,7 +6980,7 @@ var _sfc_main$51 = {
 				}, null, _parent));
 				_push(`${ssrInterpolate(unref(__)("Hide both panels"))}<kbd>${ssrInterpolate(unref(K)("Mod+Shift+\\"))}</kbd></button><span class="k-menu__sep" role="separator"></span><button type="button" class="k-menu__item" role="menuitem">`);
 				_push(ssrRenderComponent(_sfc_main$14, { name: "check-circle" }, null, _parent));
-				_push(`${ssrInterpolate(unref(__)("Accessibility checks"))}`);
+				_push(`${ssrInterpolate(unref(__)("Checks"))}`);
 				if (unref(issues).length) _push(`<span class="k-menu__count">${ssrInterpolate(unref(issues).length)}</span>`);
 				else _push(`<!---->`);
 				_push(`</button><button type="button" class="k-menu__item" role="menuitem">`);
@@ -7920,7 +7921,7 @@ var _sfc_main$44 = {
 			ssrRenderSlot(_ctx.$slots, "document", {}, null, _push, _parent);
 			_push(`</div>`);
 			if (unref(rightTab) === "checks") {
-				_push(`<!--[--><p class="k-pane__help">${ssrInterpolate(unref(__)("Checked on the preview as it is now, including the theme around it."))}</p>`);
+				_push(`<!--[--><p class="k-pane__help">${ssrInterpolate(unref(__)("Checked on the preview as it is now, including the theme around it, and on its search settings."))}</p>`);
 				if (!unref(issues).length) {
 					_push(`<p class="k-builder__ok">`);
 					_push(ssrRenderComponent(_sfc_main$14, { name: "check-circle" }, null, _parent));
@@ -8546,6 +8547,10 @@ var _sfc_main$5 = {
 		belowLabel: {
 			type: String,
 			default: ""
+		},
+		extraIssues: {
+			type: Array,
+			default: () => []
 		}
 	}, {
 		"modelValue": {

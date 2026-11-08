@@ -166,7 +166,7 @@ const disabled = () => props.disabled;
                             closeMenu();
                         "
                     >
-                        <KIcon name="check-circle" />{{ __('Accessibility checks') }}<span v-if="issues.length" class="k-menu__count">{{ issues.length }}</span>
+                        <KIcon name="check-circle" />{{ __('Checks') }}<span v-if="issues.length" class="k-menu__count">{{ issues.length }}</span>
                     </button>
                     <button
                         type="button"

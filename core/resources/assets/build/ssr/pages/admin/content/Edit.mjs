@@ -866,6 +866,46 @@ _sfc_main$1.setup = (props, ctx) => {
 * @param {{ id?: number } | null} entry the entry as last saved
 */
 var isNewEntry = (routeId, entry) => routeId === "new" && !entry?.id;
+/**
+* @param {{ title?: string, excerpt?: string|null, seo?: { title?: string, description?: string, noindex?: boolean, canonical?: string } | null, hasSeo?: boolean }} entry
+* @param {Function} t the translation function
+*/
+function checkSeo(entry, t) {
+	if (!entry?.hasSeo) return [];
+	const seo = entry.seo ?? {};
+	const out = [];
+	const warn = (message) => out.push({
+		tone: "warning",
+		id: null,
+		message
+	});
+	const length = (s) => [...String(s ?? "").trim()].length;
+	if (seo.noindex) warn(t("Hidden from search engines: this page will not appear in search results."));
+	const searchTitle = String(seo.title ?? "").trim();
+	const title = searchTitle || String(entry.title ?? "").trim();
+	if (length(title) > 60) warn(searchTitle ? t("The search title is {n} characters long. Search results show about {max}; the rest is cut off.", {
+		n: length(title),
+		max: 60
+	}) : t("The title is {n} characters long. Search results show about {max}: add a shorter search title under Search and sharing.", {
+		n: length(title),
+		max: 60
+	}));
+	const description = String(seo.description ?? "").trim();
+	if (!seo.noindex && !description && !String(entry.excerpt ?? "").trim()) warn(t("No search description. Search engines will pick lines from the page; write one under Search and sharing."));
+	if (length(description) > 160) warn(t("The search description is {n} characters long. Search results show about {max}.", {
+		n: length(description),
+		max: 160
+	}));
+	const canonical = String(seo.canonical ?? "").trim();
+	if (canonical) {
+		let host = canonical;
+		try {
+			host = new URL(canonical).host;
+		} catch {}
+		warn(t("The canonical address points to {host}: search engines will list that page instead of this one.", { host }));
+	}
+	return out;
+}
 // core/resources/js/pages/admin/content/Edit.vue
 var MODE = "kestello.editor.mode";
 var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
@@ -886,6 +926,12 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 		const sideFields = computed(() => fields.value.filter((f) => f.width === "sidebar" && shown.value[f.name] !== false));
 		const base = `/content/${typeName.value}/entries`;
 		const visualField = computed(() => fields.value.find((f) => f.type === "blocks" && f.width !== "sidebar") ?? null);
+		const seoIssues = computed(() => checkSeo({
+			title: form.title,
+			excerpt: form.excerpt,
+			seo: form.data?.seo,
+			hasSeo: fields.value.some((f) => f.name === "seo" && f.type === "group")
+		}, __));
 		const readMode = () => {
 			try {
 				return localStorage.getItem(MODE);
@@ -1458,10 +1504,10 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 			_push(`<!--[-->`);
 			_push(ssrRenderComponent(unref(Head), { title: title.value }, null, _parent));
 			if (studio.value && type.value && (isNew.value || entry.value)) {
-				_push(`<div class="k-studio" role="region"${ssrRenderAttr("aria-label", unref(__)("Visual editor"))} data-v-3959f855>`);
-				if (err("title")) _push(`<p id="k-studio-title-error" class="k-studio__error" role="alert" data-v-3959f855>${ssrInterpolate(unref(__)("Title"))}: ${ssrInterpolate(err("title"))}</p>`);
+				_push(`<div class="k-studio" role="region"${ssrRenderAttr("aria-label", unref(__)("Visual editor"))} data-v-e7875ed0>`);
+				if (err("title")) _push(`<p id="k-studio-title-error" class="k-studio__error" role="alert" data-v-e7875ed0>${ssrInterpolate(unref(__)("Title"))}: ${ssrInterpolate(err("title"))}</p>`);
 				else _push(`<!---->`);
-				_push(`<div class="k-studio__alerts" data-v-3959f855></div>`);
+				_push(`<div class="k-studio__alerts" data-v-e7875ed0></div>`);
 				_push(ssrRenderComponent(unref(KBuilder), {
 					modelValue: visualTree.value,
 					"onUpdate:modelValue": ($event) => visualTree.value = $event,
@@ -1476,6 +1522,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 					"document-label": type.value.singular,
 					"start-tab": isNew.value ? "block" : "document",
 					"below-label": belowLabel.value,
+					"extra-issues": seoIssues.value,
 					disabled: readOnly.value,
 					errors: visualErrors.value,
 					onSave: ($event) => save(isNew.value ? "draft" : null),
@@ -1493,12 +1540,12 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 								default: withCtx((_, _push, _parent, _scopeId) => {
 									if (_push) {
 										_push(ssrRenderComponent(unref(KIcon), { name: "arrow-left" }, null, _parent, _scopeId));
-										_push(`<span class="k-sr-only" data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Back to {list}", { list: type.value.plural }))}</span>`);
+										_push(`<span class="k-sr-only" data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Back to {list}", { list: type.value.plural }))}</span>`);
 									} else return [createVNode(unref(KIcon), { name: "arrow-left" }), createVNode("span", { class: "k-sr-only" }, toDisplayString(unref(__)("Back to {list}", { list: type.value.plural })), 1)];
 								}),
 								_: 1
 							}, _parent, _scopeId));
-							_push(`<label class="k-sr-only" for="k-studio-title" data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Title"))}</label><input id="k-studio-title"${ssrRenderAttr("value", form.title)} class="k-studio__title"${ssrRenderAttr("placeholder", unref(__)("Add a title"))} maxlength="255" autocomplete="off" data-lpignore="true" data-1p-ignore${ssrIncludeBooleanAttr(readOnly.value) ? " readonly" : ""}${ssrRenderAttr("aria-invalid", err("title") ? "true" : void 0)}${ssrRenderAttr("aria-describedby", err("title") ? "k-studio-title-error" : void 0)} data-v-3959f855${_scopeId}>`);
+							_push(`<label class="k-sr-only" for="k-studio-title" data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Title"))}</label><input id="k-studio-title"${ssrRenderAttr("value", form.title)} class="k-studio__title"${ssrRenderAttr("placeholder", unref(__)("Add a title"))} maxlength="255" autocomplete="off" data-lpignore="true" data-1p-ignore${ssrIncludeBooleanAttr(readOnly.value) ? " readonly" : ""}${ssrRenderAttr("aria-invalid", err("title") ? "true" : void 0)}${ssrRenderAttr("aria-describedby", err("title") ? "k-studio-title-error" : void 0)} data-v-e7875ed0${_scopeId}>`);
 						} else return [
 							createVNode(unref(Link), {
 								href: `/admin/content/${typeName.value}`,
@@ -1535,13 +1582,13 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 					}),
 					end: withCtx((_, _push, _parent, _scopeId) => {
 						if (_push) {
-							_push(`<!-- one quiet line: "● Draft · Saved 4 minutes ago"; the dot carries the status colour --><span class="k-studio__state" aria-live="polite" data-v-3959f855${_scopeId}>`);
-							if (entry.value) _push(`<span class="${ssrRenderClass([`is-${status.value}`, "k-studio__status"])}" data-v-3959f855${_scopeId}>${ssrInterpolate(STATUS[status.value]?.label)}</span>`);
+							_push(`<!-- one quiet line: "● Draft · Saved 4 minutes ago"; the dot carries the status colour --><span class="k-studio__state" aria-live="polite" data-v-e7875ed0${_scopeId}>`);
+							if (entry.value) _push(`<span class="${ssrRenderClass([`is-${status.value}`, "k-studio__status"])}" data-v-e7875ed0${_scopeId}>${ssrInterpolate(STATUS[status.value]?.label)}</span>`);
 							else _push(`<!---->`);
-							if (saving.value) _push(`<span class="k-studio__note" data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Saving…"))}</span>`);
-							else if (dirty.value) _push(`<span class="k-studio__note is-dirty" data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Unsaved"))}</span>`);
+							if (saving.value) _push(`<span class="k-studio__note" data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Saving…"))}</span>`);
+							else if (dirty.value) _push(`<span class="k-studio__note is-dirty" data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Unsaved"))}</span>`);
 							else if (entry.value) {
-								_push(`<span class="k-studio__note" data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Saved"))}`);
+								_push(`<span class="k-studio__note" data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Saved"))}`);
 								_push(ssrRenderComponent(unref(KTime), {
 									class: "k-studio__wide",
 									value: entry.value.updated_at
@@ -1571,7 +1618,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 								onClick: preview
 							}, {
 								default: withCtx((_, _push, _parent, _scopeId) => {
-									if (_push) _push(`<span class="k-studio__wide" data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Preview"))}</span>`);
+									if (_push) _push(`<span class="k-studio__wide" data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Preview"))}</span>`);
 									else return [createVNode("span", { class: "k-studio__wide" }, toDisplayString(unref(__)("Preview")), 1)];
 								}),
 								_: 1
@@ -1659,7 +1706,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						];
 					}),
 					document: withCtx((_, _push, _parent, _scopeId) => {
-						if (_push) _push(`<div id="k-studio-doc" class="k-studio__doc" data-v-3959f855${_scopeId}></div>`);
+						if (_push) _push(`<div id="k-studio-doc" class="k-studio__doc" data-v-e7875ed0${_scopeId}></div>`);
 						else return [createVNode("div", {
 							id: "k-studio-doc",
 							class: "k-studio__doc"
@@ -1669,7 +1716,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				}, [mainFields.value.length || type.value.excerpt ? {
 					name: "below",
 					fn: withCtx((_, _push, _parent, _scopeId) => {
-						if (_push) _push(`<div id="k-studio-below" class="k-studio__below" data-v-3959f855${_scopeId}></div>`);
+						if (_push) _push(`<div id="k-studio-below" class="k-studio__below" data-v-e7875ed0${_scopeId}></div>`);
 						else return [createVNode("div", {
 							id: "k-studio-below",
 							class: "k-studio__below"
@@ -1679,7 +1726,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				} : void 0]), _parent));
 				_push(`</div>`);
 			} else _push(`<!---->`);
-			_push(`<div class="k-editor-head" style="${ssrRenderStyle(!studio.value ? null : { display: "none" })}" data-v-3959f855>`);
+			_push(`<div class="k-editor-head" style="${ssrRenderStyle(!studio.value ? null : { display: "none" })}" data-v-e7875ed0>`);
 			_push(ssrRenderComponent(unref(Link), {
 				href: `/admin/content/${typeName.value}`,
 				class: "k-link k-editor-head__back"
@@ -1692,7 +1739,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				}),
 				_: 1
 			}, _parent));
-			_push(`<span class="k-editor-head__state" aria-live="polite" data-v-3959f855>`);
+			_push(`<span class="k-editor-head__state" aria-live="polite" data-v-e7875ed0>`);
 			if (entry.value) _push(ssrRenderComponent(unref(KBadge), { tone: STATUS[status.value]?.tone }, {
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) _push(`${ssrInterpolate(STATUS[status.value]?.label)}`);
@@ -1701,13 +1748,13 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				_: 1
 			}, _parent));
 			else _push(`<!---->`);
-			if (dirty.value) _push(`<span class="k-muted" data-v-3959f855>${ssrInterpolate(unref(__)("Unsaved changes"))}</span>`);
+			if (dirty.value) _push(`<span class="k-muted" data-v-e7875ed0>${ssrInterpolate(unref(__)("Unsaved changes"))}</span>`);
 			else if (entry.value) {
-				_push(`<span class="k-muted" data-v-3959f855>${ssrInterpolate(unref(__)("Saved"))} `);
+				_push(`<span class="k-muted" data-v-e7875ed0>${ssrInterpolate(unref(__)("Saved"))} `);
 				_push(ssrRenderComponent(unref(KTime), { value: entry.value.updated_at }, null, _parent));
 				_push(`</span>`);
 			} else _push(`<!---->`);
-			if (dirty.value && autosavedAt.value) _push(`<span class="k-muted" data-v-3959f855>· ${ssrInterpolate(unref(__)("backup kept {when}", { when: unref(formatRelative)(autosavedAt.value) }))}</span>`);
+			if (dirty.value && autosavedAt.value) _push(`<span class="k-muted" data-v-e7875ed0>· ${ssrInterpolate(unref(__)("backup kept {when}", { when: unref(formatRelative)(autosavedAt.value) }))}</span>`);
 			else _push(`<!---->`);
 			_push(`</span>`);
 			if (visualField.value) _push(ssrRenderComponent(unref(KButton), {
@@ -1737,7 +1784,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				_: 1
 			}, _parent));
 			else _push(`<!---->`);
-			if (entry.value?.path && status.value === "published") _push(`<a${ssrRenderAttr("href", entry.value.path)} class="k-link" target="_blank" rel="noopener" data-v-3959f855>${ssrInterpolate(unref(__)("View on site"))}</a>`);
+			if (entry.value?.path && status.value === "published") _push(`<a${ssrRenderAttr("href", entry.value.path)} class="k-link" target="_blank" rel="noopener" data-v-e7875ed0>${ssrInterpolate(unref(__)("View on site"))}</a>`);
 			else _push(`<!---->`);
 			_push(`</div>`);
 			if (unref(types).data.value && !type.value) _push(ssrRenderComponent(unref(KAlert), { tone: "danger" }, {
@@ -1764,7 +1811,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 					}, {
 						default: withCtx((_, _push, _parent, _scopeId) => {
 							if (_push) {
-								_push(`${ssrInterpolate(unref(__)("Restore it to edit or publish it again."))} <div class="k-alert-actions" data-v-3959f855${_scopeId}>`);
+								_push(`${ssrInterpolate(unref(__)("Restore it to edit or publish it again."))} <div class="k-alert-actions" data-v-e7875ed0${_scopeId}>`);
 								_push(ssrRenderComponent(unref(KButton), {
 									size: "sm",
 									icon: "arrow-counter-clockwise",
@@ -1804,7 +1851,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 					}, {
 						default: withCtx((_, _push, _parent, _scopeId) => {
 							if (_push) {
-								_push(`${ssrInterpolate(unref(__)("Load their version (your changes here are lost), or save yours over it."))} <div class="k-alert-actions" data-v-3959f855${_scopeId}>`);
+								_push(`${ssrInterpolate(unref(__)("Load their version (your changes here are lost), or save yours over it."))} <div class="k-alert-actions" data-v-e7875ed0${_scopeId}>`);
 								_push(ssrRenderComponent(unref(KButton), {
 									size: "sm",
 									onClick: reloadTheirs
@@ -1851,7 +1898,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 					}, {
 						default: withCtx((_, _push, _parent, _scopeId) => {
 							if (_push) {
-								_push(`${ssrInterpolate(unref(__)("They were kept when you left the editor without saving."))} <div class="k-alert-actions" data-v-3959f855${_scopeId}>`);
+								_push(`${ssrInterpolate(unref(__)("They were kept when you left the editor without saving."))} <div class="k-alert-actions" data-v-e7875ed0${_scopeId}>`);
 								_push(ssrRenderComponent(unref(KButton), {
 									size: "sm",
 									variant: "primary",
@@ -1895,25 +1942,25 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 					}, _parent));
 					else _push(`<!---->`);
 				}, alertsTarget.value ?? "body", !alertsTarget.value, _parent);
-				_push(`<div class="k-editor" style="${ssrRenderStyle(!studio.value ? null : { display: "none" })}" data-v-3959f855><div class="k-editor__main" data-v-3959f855><div class="${ssrRenderClass([{ "has-error": err("title") }, "k-editor__title"])}" data-v-3959f855><label class="k-sr-only" for="k-entry-title" data-v-3959f855>${ssrInterpolate(unref(__)("Title"))}</label><textarea id="k-entry-title" rows="1" class="k-editor__title-input" maxlength="255" autocomplete="off" data-lpignore="true" data-1p-ignore${ssrRenderAttr("placeholder", unref(__)("Title"))}${ssrIncludeBooleanAttr(readOnly.value) ? " readonly" : ""}${ssrRenderAttr("aria-invalid", err("title") ? "true" : void 0)} data-v-3959f855>${ssrInterpolate(form.title)}</textarea>`);
-				if (err("title")) _push(`<p class="k-field__error" data-v-3959f855>${ssrInterpolate(err("title"))}</p>`);
+				_push(`<div class="k-editor" style="${ssrRenderStyle(!studio.value ? null : { display: "none" })}" data-v-e7875ed0><div class="k-editor__main" data-v-e7875ed0><div class="${ssrRenderClass([{ "has-error": err("title") }, "k-editor__title"])}" data-v-e7875ed0><label class="k-sr-only" for="k-entry-title" data-v-e7875ed0>${ssrInterpolate(unref(__)("Title"))}</label><textarea id="k-entry-title" rows="1" class="k-editor__title-input" maxlength="255" autocomplete="off" data-lpignore="true" data-1p-ignore${ssrRenderAttr("placeholder", unref(__)("Title"))}${ssrIncludeBooleanAttr(readOnly.value) ? " readonly" : ""}${ssrRenderAttr("aria-invalid", err("title") ? "true" : void 0)} data-v-e7875ed0>${ssrInterpolate(form.title)}</textarea>`);
+				if (err("title")) _push(`<p class="k-field__error" data-v-e7875ed0>${ssrInterpolate(err("title"))}</p>`);
 				else _push(`<!---->`);
 				if (prefix.value !== null) {
-					_push(`<div class="k-editor__slug" data-v-3959f855><span class="k-muted" data-v-3959f855>${ssrInterpolate(prefix.value)}</span>`);
-					if (editingSlug.value) _push(`<!--[--><label class="k-sr-only" for="k-entry-slug" data-v-3959f855>${ssrInterpolate(unref(__)("Slug"))}</label><input id="k-entry-slug"${ssrRenderAttr("value", form.slug)} class="k-input k-editor__slug-input" maxlength="191" spellcheck="false" autocomplete="off" data-lpignore="true" data-1p-ignore data-v-3959f855><!--]-->`);
+					_push(`<div class="k-editor__slug" data-v-e7875ed0><span class="k-muted" data-v-e7875ed0>${ssrInterpolate(prefix.value)}</span>`);
+					if (editingSlug.value) _push(`<!--[--><label class="k-sr-only" for="k-entry-slug" data-v-e7875ed0>${ssrInterpolate(unref(__)("Slug"))}</label><input id="k-entry-slug"${ssrRenderAttr("value", form.slug)} class="k-input k-editor__slug-input" maxlength="191" spellcheck="false" autocomplete="off" data-lpignore="true" data-1p-ignore data-v-e7875ed0><!--]-->`);
 					else {
-						_push(`<!--[--><span class="k-editor__slug-value" data-v-3959f855>${ssrInterpolate(shownSlug.value || "…")}</span>`);
-						if (!readOnly.value) _push(`<button type="button" class="k-link-btn k-editor__slug-edit" data-v-3959f855>${ssrInterpolate(unref(__)("Edit"))}</button>`);
+						_push(`<!--[--><span class="k-editor__slug-value" data-v-e7875ed0>${ssrInterpolate(shownSlug.value || "…")}</span>`);
+						if (!readOnly.value) _push(`<button type="button" class="k-link-btn k-editor__slug-edit" data-v-e7875ed0>${ssrInterpolate(unref(__)("Edit"))}</button>`);
 						else _push(`<!---->`);
 						_push(`<!--]-->`);
 					}
-					if (!live.value && !editingSlug.value) _push(`<span class="k-muted k-small" data-v-3959f855>· ${ssrInterpolate(unref(__)("follows the title until published"))}</span>`);
+					if (!live.value && !editingSlug.value) _push(`<span class="k-muted k-small" data-v-e7875ed0>· ${ssrInterpolate(unref(__)("follows the title until published"))}</span>`);
 					else _push(`<!---->`);
 					_push(`</div>`);
 				} else _push(`<!---->`);
-				if (err("slug")) _push(`<p class="k-field__error" data-v-3959f855>${ssrInterpolate(err("slug"))}</p>`);
+				if (err("slug")) _push(`<p class="k-field__error" data-v-e7875ed0>${ssrInterpolate(err("slug"))}</p>`);
 				else _push(`<!---->`);
-				_push(`</div><div class="k-fields k-editor__fields" data-v-3959f855><!--[-->`);
+				_push(`</div><div class="k-fields k-editor__fields" data-v-e7875ed0><!--[-->`);
 				ssrRenderList(mainFields.value, (f) => {
 					_push(ssrRenderComponent(unref(KContentField), {
 						key: f.name,
@@ -1933,7 +1980,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 					class: "k-editor__excerpt"
 				}, {
 					default: withCtx(({ id, describedBy, invalid }, _push, _parent, _scopeId) => {
-						if (_push) _push(`<textarea${ssrRenderAttr("id", id)} class="k-input k-textarea" rows="3" maxlength="1000"${ssrIncludeBooleanAttr(readOnly.value) ? " readonly" : ""}${ssrRenderAttr("aria-invalid", invalid ? "true" : void 0)}${ssrRenderAttr("aria-describedby", describedBy)} data-v-3959f855${_scopeId}>${ssrInterpolate(form.excerpt)}</textarea>`);
+						if (_push) _push(`<textarea${ssrRenderAttr("id", id)} class="k-input k-textarea" rows="3" maxlength="1000"${ssrIncludeBooleanAttr(readOnly.value) ? " readonly" : ""}${ssrRenderAttr("aria-invalid", invalid ? "true" : void 0)}${ssrRenderAttr("aria-describedby", describedBy)} data-v-e7875ed0${_scopeId}>${ssrInterpolate(form.excerpt)}</textarea>`);
 						else return [withDirectives(createVNode("textarea", {
 							id,
 							"onUpdate:modelValue": ($event) => form.excerpt = $event,
@@ -1956,7 +2003,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				else _push(`<!---->`);
 				_push(`</div>`);
 				if (belowTarget.value) ssrRenderTeleport(_push, (_push) => {
-					_push(`<div class="k-fields k-studio__belowfields" data-v-3959f855><!--[-->`);
+					_push(`<div class="k-fields k-studio__belowfields" data-v-e7875ed0><!--[-->`);
 					ssrRenderList(mainFields.value, (f) => {
 						_push(ssrRenderComponent(unref(KContentField), {
 							key: `studio-${f.name}`,
@@ -1975,7 +2022,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						error: err("excerpt")
 					}, {
 						default: withCtx(({ id, describedBy, invalid }, _push, _parent, _scopeId) => {
-							if (_push) _push(`<textarea${ssrRenderAttr("id", id)} class="k-input k-textarea" rows="3" maxlength="1000"${ssrIncludeBooleanAttr(readOnly.value) ? " readonly" : ""}${ssrRenderAttr("aria-invalid", invalid ? "true" : void 0)}${ssrRenderAttr("aria-describedby", describedBy)} data-v-3959f855${_scopeId}>${ssrInterpolate(form.excerpt)}</textarea>`);
+							if (_push) _push(`<textarea${ssrRenderAttr("id", id)} class="k-input k-textarea" rows="3" maxlength="1000"${ssrIncludeBooleanAttr(readOnly.value) ? " readonly" : ""}${ssrRenderAttr("aria-invalid", invalid ? "true" : void 0)}${ssrRenderAttr("aria-describedby", describedBy)} data-v-e7875ed0${_scopeId}>${ssrInterpolate(form.excerpt)}</textarea>`);
 							else return [withDirectives(createVNode("textarea", {
 								id,
 								"onUpdate:modelValue": ($event) => form.excerpt = $event,
@@ -2019,19 +2066,19 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						version: entry.value?.version ?? null
 					}, null, _parent));
 					else _push(`<!---->`);
-					_push(`<aside class="k-editor__side"${ssrRenderAttr("aria-label", unref(__)("Publishing"))} data-v-3959f855>`);
+					_push(`<aside class="k-editor__side"${ssrRenderAttr("aria-label", unref(__)("Publishing"))} data-v-e7875ed0>`);
 					if (!docTarget.value || studioExtras.value && !readOnly.value) _push(ssrRenderComponent(unref(KCard), { title: live.value ? unref(__)("Published") : status.value === "scheduled" ? unref(__)("Scheduled") : status.value === "pending" ? unref(__)("In review") : unref(__)("Publish") }, createSlots({
 						default: withCtx((_, _push, _parent, _scopeId) => {
 							if (_push) {
 								if (!docTarget.value) {
-									_push(`<div class="k-form" data-v-3959f855${_scopeId}>`);
+									_push(`<div class="k-form" data-v-e7875ed0${_scopeId}>`);
 									_push(ssrRenderComponent(unref(KField), {
 										label: live.value ? unref(__)("Published on") : unref(__)("Publish on"),
 										help: future.value ? unref(__)("Goes live automatically at this time ({zone}).", { zone: unref(zone) }) : unref(__)("Leave empty to publish now. Times are in {zone}.", { zone: unref(zone) }),
 										error: err("published_at")
 									}, {
 										default: withCtx(({ id, describedBy }, _push, _parent, _scopeId) => {
-											if (_push) _push(`<input${ssrRenderAttr("id", id)}${ssrRenderAttr("value", publishAt.value)} type="datetime-local" class="k-input"${ssrIncludeBooleanAttr(readOnly.value || !can.value.publish) ? " disabled" : ""}${ssrRenderAttr("aria-describedby", describedBy)} data-v-3959f855${_scopeId}>`);
+											if (_push) _push(`<input${ssrRenderAttr("id", id)}${ssrRenderAttr("value", publishAt.value)} type="datetime-local" class="k-input"${ssrIncludeBooleanAttr(readOnly.value || !can.value.publish) ? " disabled" : ""}${ssrRenderAttr("aria-describedby", describedBy)} data-v-e7875ed0${_scopeId}>`);
 											else return [withDirectives(createVNode("input", {
 												id,
 												"onUpdate:modelValue": ($event) => publishAt.value = $event,
@@ -2049,9 +2096,9 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 										_: 1
 									}, _parent, _scopeId));
 									if (entry.value) {
-										_push(`<dl class="k-facts" data-v-3959f855${_scopeId}><div data-v-3959f855${_scopeId}><dt data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Created"))}</dt><dd data-v-3959f855${_scopeId}>`);
+										_push(`<dl class="k-facts" data-v-e7875ed0${_scopeId}><div data-v-e7875ed0${_scopeId}><dt data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Created"))}</dt><dd data-v-e7875ed0${_scopeId}>`);
 										_push(ssrRenderComponent(unref(KTime), { value: entry.value.created_at }, null, _parent, _scopeId));
-										_push(`</dd></div><div data-v-3959f855${_scopeId}><dt data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Version"))}</dt><dd class="k-num" data-v-3959f855${_scopeId}>${ssrInterpolate(entry.value.version)}</dd></div></dl>`);
+										_push(`</dd></div><div data-v-e7875ed0${_scopeId}><dt data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Version"))}</dt><dd class="k-num" data-v-e7875ed0${_scopeId}>${ssrInterpolate(entry.value.version)}</dd></div></dl>`);
 									} else _push(`<!---->`);
 									_push(`</div>`);
 								} else _push(`<!---->`);
@@ -2091,7 +2138,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						name: "footer",
 						fn: withCtx((_, _push, _parent, _scopeId) => {
 							if (_push) {
-								_push(`<!-- in the visual editor the bar has the main actions: only the others stay here --><div class="k-publish-actions" data-v-3959f855${_scopeId}>`);
+								_push(`<!-- in the visual editor the bar has the main actions: only the others stay here --><div class="k-publish-actions" data-v-e7875ed0${_scopeId}>`);
 								if (live.value || status.value === "scheduled") {
 									_push(`<!--[-->`);
 									if (!docTarget.value) _push(ssrRenderComponent(unref(KButton), {
@@ -2193,7 +2240,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 											}),
 											_: 1
 										}, _parent, _scopeId));
-										_push(`<p class="k-muted k-small" data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Waiting for review. An editor publishes it or asks for changes, and you are told either way."))}</p><!--]-->`);
+										_push(`<p class="k-muted k-small" data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Waiting for review. An editor publishes it or asks for changes, and you are told either way."))}</p><!--]-->`);
 									}
 									_push(`<!--]-->`);
 								} else {
@@ -2238,7 +2285,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 										}, _parent, _scopeId));
 										_push(`<!--]-->`);
 									} else _push(`<!---->`);
-									if (!can.value.publish) _push(`<p class="k-muted k-small" data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Submit it when it is ready. An editor reviews it and publishes it."))}</p>`);
+									if (!can.value.publish) _push(`<p class="k-muted k-small" data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Submit it when it is ready. An editor reviews it and publishes it."))}</p>`);
 									else _push(`<!---->`);
 									_push(`<!--]-->`);
 								}
@@ -2359,7 +2406,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 					if (type.value.hierarchical || canReassign.value || entry.value || templateOptions.value.length > 1) _push(ssrRenderComponent(unref(KCard), { title: unref(__)("Details") }, {
 						default: withCtx((_, _push, _parent, _scopeId) => {
 							if (_push) {
-								_push(`<div class="k-form" data-v-3959f855${_scopeId}>`);
+								_push(`<div class="k-form" data-v-e7875ed0${_scopeId}>`);
 								if (templateOptions.value.length > 1) _push(ssrRenderComponent(unref(KField), {
 									class: "k-studio__template",
 									label: unref(__)("Template"),
@@ -2482,7 +2529,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 									}),
 									_: 1
 								}, _parent, _scopeId));
-								else if (entry.value) _push(`<dl class="k-facts" data-v-3959f855${_scopeId}><div data-v-3959f855${_scopeId}><dt data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Author"))}</dt><dd data-v-3959f855${_scopeId}>${ssrInterpolate(entry.value.author?.username ?? unref(__)("Nobody"))}</dd></div></dl>`);
+								else if (entry.value) _push(`<dl class="k-facts" data-v-e7875ed0${_scopeId}><div data-v-e7875ed0${_scopeId}><dt data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Author"))}</dt><dd data-v-e7875ed0${_scopeId}>${ssrInterpolate(entry.value.author?.username ?? unref(__)("Nobody"))}</dd></div></dl>`);
 								else _push(`<!---->`);
 								_push(`</div>`);
 							} else return [createVNode("div", { class: "k-form" }, [
@@ -2637,7 +2684,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 										taxonomy: tax,
 										disabled: readOnly.value
 									}, null, _parent, _scopeId));
-									if (err(`terms.${tax.name}`)) _push(`<p class="k-field__error" data-v-3959f855${_scopeId}>${ssrInterpolate(err(`terms.${tax.name}`))}</p>`);
+									if (err(`terms.${tax.name}`)) _push(`<p class="k-field__error" data-v-e7875ed0${_scopeId}>${ssrInterpolate(err(`terms.${tax.name}`))}</p>`);
 									else _push(`<!---->`);
 								} else return [createVNode(unref(KTermSelect), {
 									modelValue: form.terms[tax.name],
@@ -2686,16 +2733,16 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						default: withCtx((_, _push, _parent, _scopeId) => {
 							if (_push) {
 								if (unref(revisions).data.value?.length) {
-									_push(`<ol class="k-revisions" data-v-3959f855${_scopeId}><!--[-->`);
+									_push(`<ol class="k-revisions" data-v-e7875ed0${_scopeId}><!--[-->`);
 									ssrRenderList(unref(revisions).data.value, (rev) => {
-										_push(`<li class="k-revisions__item" data-v-3959f855${_scopeId}><div class="k-revisions__head" data-v-3959f855${_scopeId}>`);
+										_push(`<li class="k-revisions__item" data-v-e7875ed0${_scopeId}><div class="k-revisions__head" data-v-e7875ed0${_scopeId}>`);
 										_push(ssrRenderComponent(unref(KTime), { value: rev.created_at }, null, _parent, _scopeId));
-										_push(`<span class="k-muted" data-v-3959f855${_scopeId}>${ssrInterpolate(rev.author?.username ?? unref(__)("someone"))}</span></div><p class="k-revisions__what k-small" data-v-3959f855${_scopeId}>`);
+										_push(`<span class="k-muted" data-v-e7875ed0${_scopeId}>${ssrInterpolate(rev.author?.username ?? unref(__)("someone"))}</span></div><p class="k-revisions__what k-small" data-v-e7875ed0${_scopeId}>`);
 										if (rev.current) _push(`<!--[-->${ssrInterpolate(unref(__)("Current version"))}<!--]-->`);
 										else if (rev.changed === null) _push(`<!--[-->${ssrInterpolate(unref(__)("First saved"))}<!--]-->`);
 										else if (rev.changed.length) _push(`<!--[-->${ssrInterpolate(unref(__)("Changed {list}", { list: rev.changed.map(fieldLabel).join(", ") }))}<!--]-->`);
 										else _push(`<!--[-->${ssrInterpolate(unref(__)("No content changes"))}<!--]-->`);
-										_push(`</p><div class="k-revisions__actions" data-v-3959f855${_scopeId}>`);
+										_push(`</p><div class="k-revisions__actions" data-v-e7875ed0${_scopeId}>`);
 										_push(ssrRenderComponent(unref(KButton), {
 											size: "sm",
 											variant: "ghost",
@@ -2724,7 +2771,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 										_push(`</div></li>`);
 									});
 									_push(`<!--]--></ol>`);
-								} else _push(`<p class="k-card__body k-muted k-small" data-v-3959f855${_scopeId}>${ssrInterpolate(unref(revisions).loading.value ? unref(__)("Loading…") : unref(__)("Revisions appear after the first save."))}</p>`);
+								} else _push(`<p class="k-card__body k-muted k-small" data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(revisions).loading.value ? unref(__)("Loading…") : unref(__)("Revisions appear after the first save."))}</p>`);
 							} else return [unref(revisions).data.value?.length ? (openBlock(), createBlock("ol", {
 								key: 0,
 								class: "k-revisions"
@@ -2813,7 +2860,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 								help: unref(__)("Sent to whoever submitted it, and kept with the comments. The {item} goes back to draft.", { item: type.value.singular.toLowerCase() })
 							}, {
 								default: withCtx(({ id, describedBy }, _push, _parent, _scopeId) => {
-									if (_push) _push(`<textarea${ssrRenderAttr("id", id)} class="k-input k-textarea" rows="5" maxlength="5000"${ssrRenderAttr("aria-describedby", describedBy)} data-v-3959f855${_scopeId}>${ssrInterpolate(note.value)}</textarea>`);
+									if (_push) _push(`<textarea${ssrRenderAttr("id", id)} class="k-input k-textarea" rows="5" maxlength="5000"${ssrRenderAttr("aria-describedby", describedBy)} data-v-e7875ed0${_scopeId}>${ssrInterpolate(note.value)}</textarea>`);
 									else return [withDirectives(createVNode("textarea", {
 										id,
 										"onUpdate:modelValue": ($event) => note.value = $event,
@@ -2859,7 +2906,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						default: withCtx((_, _push, _parent, _scopeId) => {
 							if (_push) {
 								if (comparing.value) {
-									_push(`<div class="k-compare" data-v-3959f855${_scopeId}>`);
+									_push(`<div class="k-compare" data-v-e7875ed0${_scopeId}>`);
 									if (!comparing.value.current) _push(ssrRenderComponent(unref(KField), { label: unref(__)("Compare with") }, {
 										default: withCtx(({ id }, _push, _parent, _scopeId) => {
 											if (_push) _push(ssrRenderComponent(unref(KSelect), {
@@ -2883,7 +2930,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 										_: 1
 									}, _parent, _scopeId));
 									else _push(`<!---->`);
-									_push(`<p class="k-muted k-small" data-v-3959f855${_scopeId}>`);
+									_push(`<p class="k-muted k-small" data-v-e7875ed0${_scopeId}>`);
 									if (compareWith.value === "current" && !comparing.value.current) _push(`<!--[-->${ssrInterpolate(unref(__)("What changed between this version, saved by {who}, and the current version.", { who: comparing.value.author?.username ?? unref(__)("someone") }))}<!--]-->`);
 									else if (diff.value && !diff.value.against) _push(`<!--[-->${ssrInterpolate(unref(__)("The first saved version, saved by {who}.", { who: comparing.value.author?.username ?? unref(__)("someone") }))}<!--]-->`);
 									else _push(`<!--[-->${ssrInterpolate(unref(__)("What {who} changed in this save.", { who: comparing.value.author?.username ?? unref(__)("someone") }))}<!--]-->`);
@@ -2896,7 +2943,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 										_: 1
 									}, _parent, _scopeId));
 									else if (diff.value) _push(ssrRenderComponent(RevisionDiff_default, { changes: diff.value.changes }, null, _parent, _scopeId));
-									else _push(`<p class="k-muted" data-v-3959f855${_scopeId}>${ssrInterpolate(unref(__)("Comparing…"))}</p>`);
+									else _push(`<p class="k-muted" data-v-e7875ed0${_scopeId}>${ssrInterpolate(unref(__)("Comparing…"))}</p>`);
 									_push(`</div>`);
 								} else _push(`<!---->`);
 							} else return [comparing.value ? (openBlock(), createBlock("div", {
@@ -2978,7 +3025,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 						key: "0"
 					} : void 0]), _parent));
 					if (entry.value && !entry.value.trashed_at && can.value.delete) {
-						_push(`<div class="k-editor__trash" data-v-3959f855>`);
+						_push(`<div class="k-editor__trash" data-v-e7875ed0>`);
 						_push(ssrRenderComponent(unref(KButton), {
 							variant: "ghost",
 							size: "sm",
@@ -3007,5 +3054,5 @@ _sfc_main.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/admin/content/Edit.vue");
 	return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-var Edit_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-3959f855"]]);
+var Edit_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-e7875ed0"]]);
 export { Edit_default as default };
