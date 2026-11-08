@@ -15,8 +15,18 @@ final class Files
         if (@rename($from, $to)) {
             return;
         }
-        // another filesystem: copy, then remove
-        self::copyTree($from, $to);
+        // Another filesystem: copy next to the target, then rename it into place, so
+        // $to is either missing or complete, even when PHP stops halfway through.
+        $partial = $to . '.partial-' . bin2hex(random_bytes(4));
+        try {
+            self::copyTree($from, $partial);
+            if (!@rename($partial, $to)) {
+                throw new RuntimeException("Could not move {$from} to {$to}.");
+            }
+        } catch (\Throwable $e) {
+            self::removeTree($partial);
+            throw $e;
+        }
         self::removeTree($from);
     }
 
@@ -67,7 +77,7 @@ final class Files
         if (!is_dir($dir)) {
             mkdir($dir, 0775, true);
         }
-        $lock = fopen($dir . '/update.lock', 'c');
+        $lock = fopen(self::lockFile($storage), 'c');
         if ($lock === false || !flock($lock, LOCK_EX | LOCK_NB)) {
             throw ContentException::conflict('Another update is running. Try again when it has finished.');
         }
@@ -79,6 +89,37 @@ final class Files
             flock($lock, LOCK_UN);
             fclose($lock);
         }
+    }
+
+    /**
+     * Whether an update holds the lock right now. False also when the lock
+     * file is missing: nobody started one.
+     */
+    public static function lockHeld(string $storage): bool
+    {
+        $file = self::lockFile($storage);
+        if (!is_file($file)) {
+            return false;
+        }
+        $lock = @fopen($file, 'c');
+        if ($lock === false) {
+            return false;
+        }
+        try {
+            if (!flock($lock, LOCK_EX | LOCK_NB)) {
+                return true;
+            }
+            flock($lock, LOCK_UN);
+
+            return false;
+        } finally {
+            fclose($lock);
+        }
+    }
+
+    public static function lockFile(string $storage): string
+    {
+        return $storage . '/framework/update.lock';
     }
 
     /** Swapped PHP files must not come from OPcache. */

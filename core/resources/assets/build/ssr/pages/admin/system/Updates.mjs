@@ -1,7 +1,8 @@
+import { i as StoppedUpdate_default, n as switchBackOutcome, r as takeSwitchBack, t as rememberSwitchBack } from "../../../chunks/switch-back-DgZ27dDI.mjs";
 import { t as _plugin_vue_export_helper_default } from "../../../chunks/_plugin-vue_export-helper-DjkACiAr.mjs";
 import { Fragment, computed, createBlock, createCommentVNode, createSlots, createTextVNode, createVNode, openBlock, ref, renderList, toDisplayString, unref, useSSRContext, withCtx, withModifiers } from "vue";
 import { ssrInterpolate, ssrRenderAttr, ssrRenderClass, ssrRenderComponent, ssrRenderList } from "vue/server-renderer";
-import { ApiError, __, formatDateTime, formatRelative, notify, useApi } from "@kestello/sdk";
+import { ApiError, __, confirm, formatDateTime, formatRelative, notify, useApi } from "@kestello/sdk";
 import { KAlert, KBadge, KButton, KCard, KField, KIcon, KModal, KPageHeader, KTable } from "@kestello/ui";
 // core/resources/js/pages/admin/system/Updates.vue
 var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
@@ -12,7 +13,8 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 		* Updates: what runs (Kestello, plugins, themes) and applying a Kestello
 		* release, downloaded from GitHub or uploaded. A release is reviewed first; applying it backs up the database,
 		* switches to the new release, checks the site, and switches back by itself
-		* when anything is wrong.
+		* when anything is wrong. After an update, Switch back goes to the version
+		* before it, with the database from before it.
 		*/
 		const api = useApi();
 		const data = ref(null);
@@ -22,9 +24,37 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				data.value = (await api.get("/updates")).data;
 			} catch (e) {
 				loadError.value = e;
+				return;
+			}
+			const note = takeSwitchBack();
+			if (note?.owner === "core") {
+				const outcome = switchBackOutcome(note, data.value.core.version, data.value.stopped_update);
+				if (outcome === "done") notify.success(__("Kestello {v} is running again, with the database from before the update.", { v: note.version }));
+				else if (outcome === "not-done") notify.error(__("Switching back to Kestello {v} did not finish. The audit log says why.", { v: note.version }));
 			}
 		}
 		load();
+		async function switchBack() {
+			const option = data.value.core.switch_back;
+			if (!await confirm({
+				title: __("Switch back to Kestello {v}?", { v: option.to }),
+				message: __("Kestello {v} is still on the server. Switching back also puts the database back as it was before the update, on {date}: anything changed on the site since then is lost from the site. A backup of the site as it is now is made first, under Site → Backups. Visitors see a short maintenance page.", {
+					v: option.to,
+					date: formatDateTime(option.backup_at || option.updated_at)
+				}),
+				confirmLabel: __("Switch back to {v}", { v: option.to }),
+				danger: true
+			})) return;
+			busy.value = "switch-back";
+			try {
+				await api.post("/updates/core/switch-back");
+				rememberSwitchBack("core", "Kestello", option.to);
+				window.location.reload();
+			} catch (e) {
+				notify.error(e);
+				busy.value = "";
+			}
+		}
 		const packages = computed(() => [...(data.value?.plugins ?? []).map((p) => ({
 			...p,
 			key: `plugin:${p.slug}`,
@@ -172,26 +202,28 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				_: 1
 			}, _parent));
 			else _push(`<!---->`);
+			if (data.value?.stopped_update) _push(ssrRenderComponent(StoppedUpdate_default, { stopped: data.value.stopped_update }, null, _parent));
+			else _push(`<!---->`);
 			if (data.value) {
 				_push(`<!--[-->`);
 				_push(ssrRenderComponent(unref(KCard), { title: unref(__)("Kestello") }, {
 					default: withCtx((_, _push, _parent, _scopeId) => {
 						if (_push) {
-							_push(`<dl class="k-updates__facts" data-v-fe4cc94d${_scopeId}><dt data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("Version"))}</dt><dd class="k-num" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(data.value.core.version)}</dd><dt data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("PHP"))}</dt><dd class="k-num" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(data.value.php)}</dd><dt data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("On disk"))}</dt>`);
-							if (data.value.core.mode === "development") _push(`<dd data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("A development checkout: core runs from its folder directly. The first update adds release folders next to it."))}</dd>`);
+							_push(`<dl class="k-updates__facts" data-v-624d36dd${_scopeId}><dt data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("Version"))}</dt><dd class="k-num" data-v-624d36dd${_scopeId}>${ssrInterpolate(data.value.core.version)}</dd><dt data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("PHP"))}</dt><dd class="k-num" data-v-624d36dd${_scopeId}>${ssrInterpolate(data.value.php)}</dd><dt data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("On disk"))}</dt>`);
+							if (data.value.core.mode === "development") _push(`<dd data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("A development checkout: core runs from its folder directly. The first update adds release folders next to it."))}</dd>`);
 							else {
-								_push(`<dd data-v-fe4cc94d${_scopeId}><!--[-->`);
+								_push(`<dd data-v-624d36dd${_scopeId}><!--[-->`);
 								ssrRenderList(data.value.core.releases, (r, i) => {
-									_push(`<span class="k-num" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(i ? ", " : "")}${ssrInterpolate(r.version)}`);
+									_push(`<span class="k-num" data-v-624d36dd${_scopeId}>${ssrInterpolate(i ? ", " : "")}${ssrInterpolate(r.version)}`);
 									if (r.current) _push(`<!--[--> (${ssrInterpolate(unref(__)("running"))})<!--]-->`);
 									else _push(`<!---->`);
 									_push(`</span>`);
 								});
 								_push(`<!--]--></dd>`);
 							}
-							_push(`</dl><div class="k-updates__available" data-v-fe4cc94d${_scopeId}>`);
+							_push(`</dl><div class="k-updates__available" data-v-624d36dd${_scopeId}>`);
 							if (latest.value) {
-								_push(`<!--[--><p class="k-updates__headline" data-v-fe4cc94d${_scopeId}><strong data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("Kestello {v} is available.", { v: latest.value.version }))}</strong>`);
+								_push(`<!--[--><p class="k-updates__headline" data-v-624d36dd${_scopeId}><strong data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("Kestello {v} is available.", { v: latest.value.version }))}</strong>`);
 								if (latest.value.prerelease) _push(ssrRenderComponent(unref(KBadge), { tone: "warning" }, {
 									default: withCtx((_, _push, _parent, _scopeId) => {
 										if (_push) _push(`${ssrInterpolate(unref(__)("Pre-release"))}`);
@@ -200,12 +232,12 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 									_: 1
 								}, _parent, _scopeId));
 								else _push(`<!---->`);
-								_push(`</p><p class="k-muted k-small" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(latest.value.published_at ? unref(__)("Published {date}.", { date: unref(formatDateTime)(latest.value.published_at) }) : "")} <a${ssrRenderAttr("href", latest.value.page)} target="_blank" rel="noopener noreferrer" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("Release page on GitHub"))}</a></p><!-- notes_html is rendered on the server from Markdown, with raw HTML escaped -->`);
-								if (latest.value.notes_html) _push(`<div class="k-updates__notes k-prose" data-v-fe4cc94d${_scopeId}>${latest.value.notes_html ?? ""}</div>`);
+								_push(`</p><p class="k-muted k-small" data-v-624d36dd${_scopeId}>${ssrInterpolate(latest.value.published_at ? unref(__)("Published {date}.", { date: unref(formatDateTime)(latest.value.published_at) }) : "")} <a${ssrRenderAttr("href", latest.value.page)} target="_blank" rel="noopener noreferrer" data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("Release page on GitHub"))}</a></p><!-- notes_html is rendered on the server from Markdown, with raw HTML escaped -->`);
+								if (latest.value.notes_html) _push(`<div class="k-updates__notes k-prose" data-v-624d36dd${_scopeId}>${latest.value.notes_html ?? ""}</div>`);
 								else _push(`<!---->`);
 								_push(`<!--]-->`);
-							} else if (available.value && !available.value.error) _push(`<p class="k-muted k-small" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("Kestello is up to date. Last checked {date}.", { date: unref(formatRelative)(available.value.checked_at) }))}</p>`);
-							else if (!available.value) _push(`<p class="k-muted k-small" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("Kestello has not checked for new versions yet."))}</p>`);
+							} else if (available.value && !available.value.error) _push(`<p class="k-muted k-small" data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("Kestello is up to date. Last checked {date}.", { date: unref(formatRelative)(available.value.checked_at) }))}</p>`);
+							else if (!available.value) _push(`<p class="k-muted k-small" data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("Kestello has not checked for new versions yet."))}</p>`);
 							else _push(`<!---->`);
 							if (available.value?.error) _push(ssrRenderComponent(unref(KAlert), { tone: "warning" }, {
 								default: withCtx((_, _push, _parent, _scopeId) => {
@@ -215,7 +247,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 								_: 1
 							}, _parent, _scopeId));
 							else _push(`<!---->`);
-							_push(`<div class="k-updates__actions" data-v-fe4cc94d${_scopeId}>`);
+							_push(`<div class="k-updates__actions" data-v-624d36dd${_scopeId}>`);
 							if (latest.value) _push(ssrRenderComponent(unref(KButton), {
 								variant: "primary",
 								icon: "download-simple",
@@ -243,6 +275,25 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 								_: 1
 							}, _parent, _scopeId));
 							_push(`</div></div>`);
+							if (data.value.core.switch_back) {
+								_push(`<div class="k-updates__back" data-v-624d36dd${_scopeId}><p class="k-small" data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("Updated from {v} on {date}. Kestello {v} and the backup from before the update are kept, so you can go back to it.", {
+									v: data.value.core.switch_back.to,
+									date: unref(formatDateTime)(data.value.core.switch_back.updated_at)
+								}))}</p>`);
+								_push(ssrRenderComponent(unref(KButton), {
+									icon: "clock-counter-clockwise",
+									loading: busy.value === "switch-back",
+									disabled: !!busy.value || !!data.value.stopped_update,
+									onClick: switchBack
+								}, {
+									default: withCtx((_, _push, _parent, _scopeId) => {
+										if (_push) _push(`${ssrInterpolate(unref(__)("Switch back to {v}", { v: data.value.core.switch_back.to }))}`);
+										else return [createTextVNode(toDisplayString(unref(__)("Switch back to {v}", { v: data.value.core.switch_back.to })), 1)];
+									}),
+									_: 1
+								}, _parent, _scopeId));
+								_push(`</div>`);
+							} else _push(`<!---->`);
 							if (!data.value.core.writable) _push(ssrRenderComponent(unref(KAlert), { tone: "warning" }, {
 								default: withCtx((_, _push, _parent, _scopeId) => {
 									if (_push) _push(`${ssrInterpolate(unref(__)("PHP cannot write to the core folder, so Kestello can only be updated by uploading files to the server."))}`);
@@ -319,8 +370,23 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 									_: 1
 								}, 8, ["loading", "disabled"])])
 							]),
-							!data.value.core.writable ? (openBlock(), createBlock(unref(KAlert), {
+							data.value.core.switch_back ? (openBlock(), createBlock("div", {
 								key: 0,
+								class: "k-updates__back"
+							}, [createVNode("p", { class: "k-small" }, toDisplayString(unref(__)("Updated from {v} on {date}. Kestello {v} and the backup from before the update are kept, so you can go back to it.", {
+								v: data.value.core.switch_back.to,
+								date: unref(formatDateTime)(data.value.core.switch_back.updated_at)
+							})), 1), createVNode(unref(KButton), {
+								icon: "clock-counter-clockwise",
+								loading: busy.value === "switch-back",
+								disabled: !!busy.value || !!data.value.stopped_update,
+								onClick: switchBack
+							}, {
+								default: withCtx(() => [createTextVNode(toDisplayString(unref(__)("Switch back to {v}", { v: data.value.core.switch_back.to })), 1)]),
+								_: 1
+							}, 8, ["loading", "disabled"])])) : createCommentVNode("v-if", true),
+							!data.value.core.writable ? (openBlock(), createBlock(unref(KAlert), {
+								key: 1,
 								tone: "warning"
 							}, {
 								default: withCtx(() => [createTextVNode(toDisplayString(unref(__)("PHP cannot write to the core folder, so Kestello can only be updated by uploading files to the server.")), 1)]),
@@ -375,7 +441,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 								})) : createCommentVNode("v-if", true)];
 							}),
 							"cell-version": withCtx(({ row }, _push, _parent, _scopeId) => {
-								if (_push) _push(`<span class="k-num" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(row.version)}</span>`);
+								if (_push) _push(`<span class="k-num" data-v-624d36dd${_scopeId}>${ssrInterpolate(row.version)}</span>`);
 								else return [createVNode("span", { class: "k-num" }, toDisplayString(row.version), 1)];
 							}),
 							_: 1
@@ -417,7 +483,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 					}),
 					_: 1
 				}, _parent));
-				_push(`<p class="k-muted k-small k-updates__note" data-v-fe4cc94d>${ssrInterpolate(unref(__)("Plugins are updated by uploading their new version under Plugins → Manage plugins."))}</p><!--]-->`);
+				_push(`<p class="k-muted k-small k-updates__note" data-v-624d36dd>${ssrInterpolate(unref(__)("Plugins are updated, and switched back after an update, under Plugins → Manage plugins."))}</p><!--]-->`);
 			} else _push(`<!---->`);
 			_push(ssrRenderComponent(unref(KModal), {
 				open: open.value,
@@ -497,13 +563,13 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) {
 						if (!review.value) {
-							_push(`<form id="k-core-upload" class="k-form" data-v-fe4cc94d${_scopeId}><p class="k-muted k-small" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("Choose a kestello-core zip, for a site that cannot reach GitHub. Nothing changes yet: you see the version, who signed it and what it would affect first."))}</p>`);
+							_push(`<form id="k-core-upload" class="k-form" data-v-624d36dd${_scopeId}><p class="k-muted k-small" data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("Choose a kestello-core zip, for a site that cannot reach GitHub. Nothing changes yet: you see the version, who signed it and what it would affect first."))}</p>`);
 							_push(ssrRenderComponent(unref(KField), {
 								label: unref(__)("Release zip"),
 								error: uploadErrors.value.file ?? ""
 							}, {
 								default: withCtx(({ id }, _push, _parent, _scopeId) => {
-									if (_push) _push(`<input${ssrRenderAttr("id", id)} type="file" accept=".zip,application/zip" class="k-input" required data-v-fe4cc94d${_scopeId}>`);
+									if (_push) _push(`<input${ssrRenderAttr("id", id)} type="file" accept=".zip,application/zip" class="k-input" required data-v-624d36dd${_scopeId}>`);
 									else return [createVNode("input", {
 										id,
 										type: "file",
@@ -517,11 +583,11 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 							}, _parent, _scopeId));
 							_push(`</form>`);
 						} else {
-							_push(`<div class="k-updates__review" data-v-fe4cc94d${_scopeId}><p data-v-fe4cc94d${_scopeId}><span class="k-num" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(release.value.from)}</span> `);
+							_push(`<div class="k-updates__review" data-v-624d36dd${_scopeId}><p data-v-624d36dd${_scopeId}><span class="k-num" data-v-624d36dd${_scopeId}>${ssrInterpolate(release.value.from)}</span> `);
 							_push(ssrRenderComponent(unref(KIcon), { name: "arrow-right" }, null, _parent, _scopeId));
-							_push(` <strong class="k-num" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(release.value.version)}</strong></p><p class="${ssrRenderClass([`is-${signature.value.tone}`, "k-updates__sig"])}" data-v-fe4cc94d${_scopeId}>`);
+							_push(` <strong class="k-num" data-v-624d36dd${_scopeId}>${ssrInterpolate(release.value.version)}</strong></p><p class="${ssrRenderClass([`is-${signature.value.tone}`, "k-updates__sig"])}" data-v-624d36dd${_scopeId}>`);
 							_push(ssrRenderComponent(unref(KIcon), { name: signature.value.icon }, null, _parent, _scopeId));
-							_push(` ${ssrInterpolate(signature.value.text)}</p><p class="k-muted k-small" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("The database is backed up, visitors see a short maintenance page, and the site is checked on the new release: database changes, every active plugin, the home page. If anything is wrong, {v} and the database come back.", { v: release.value.from }))}</p>`);
+							_push(` ${ssrInterpolate(signature.value.text)}</p><p class="k-muted k-small" data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("The database is backed up, visitors see a short maintenance page, and the site is checked on the new release: database changes, every active plugin, the home page. If anything is wrong, {v} and the database come back.", { v: release.value.from }))}</p>`);
 							if (failed.value) _push(ssrRenderComponent(unref(KAlert), {
 								tone: "danger",
 								title: unref(__)("The update was not applied")
@@ -530,14 +596,14 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 									if (_push) {
 										_push(`<!--[-->`);
 										ssrRenderList(failed.value.problems, (p) => {
-											_push(`<p class="k-updates__problem" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(p)}</p>`);
+											_push(`<p class="k-updates__problem" data-v-624d36dd${_scopeId}>${ssrInterpolate(p)}</p>`);
 										});
 										_push(`<!--]-->`);
-										if (failed.value.rolled_back) _push(`<p data-v-fe4cc94d${_scopeId}>${ssrInterpolate(unref(__)("Kestello {v} and the database were put back. The site runs as before.", { v: failed.value.from }))}</p>`);
+										if (failed.value.rolled_back) _push(`<p data-v-624d36dd${_scopeId}>${ssrInterpolate(unref(__)("Kestello {v} and the database were put back. The site runs as before.", { v: failed.value.from }))}</p>`);
 										else {
 											_push(`<!--[-->`);
 											ssrRenderList(failed.value.rollback_problems, (p) => {
-												_push(`<p data-v-fe4cc94d${_scopeId}>${ssrInterpolate(p)}</p>`);
+												_push(`<p data-v-624d36dd${_scopeId}>${ssrInterpolate(p)}</p>`);
 											});
 											_push(`<!--]-->`);
 										}
@@ -568,7 +634,7 @@ var _sfc_main = /*@__PURE__*/ Object.assign({ layout: "Admin" }, {
 									if (_push) {
 										_push(`<!--[-->`);
 										ssrRenderList(release.value.problems, (p) => {
-											_push(`<p class="k-updates__problem" data-v-fe4cc94d${_scopeId}>${ssrInterpolate(p)}</p>`);
+											_push(`<p class="k-updates__problem" data-v-624d36dd${_scopeId}>${ssrInterpolate(p)}</p>`);
 										});
 										_push(`<!--]-->`);
 									} else return [(openBlock(true), createBlock(Fragment, null, renderList(release.value.problems, (p) => {
@@ -662,5 +728,5 @@ _sfc_main.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/admin/system/Updates.vue");
 	return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-var Updates_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-fe4cc94d"]]);
+var Updates_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-624d36dd"]]);
 export { Updates_default as default };

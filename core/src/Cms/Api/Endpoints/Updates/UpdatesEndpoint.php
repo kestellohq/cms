@@ -31,15 +31,16 @@ abstract class UpdatesEndpoint extends PluginEndpoint
     {
         $plugins = [];
         foreach ($this->extensions()->plugins() as $slug => $p) {
-            $plugins[] = ['slug' => $slug, 'name' => $p->manifest->name, 'version' => $p->version(), 'active' => $this->extensions()->isPluginEnabled($slug)];
+            $plugins[] = ['slug' => $slug, 'name' => $p->manifest->name, 'version' => $p->version(), 'active' => $this->extensions()->isPluginEnabled($slug), 'switch_back' => $this->recovery()->switchBackOption($p->owner(), $p->version())];
         }
         $themes = [];
         foreach ($this->extensions()->themes() as $slug => $t) {
-            $themes[] = ['slug' => $slug, 'name' => $t->manifest->name, 'version' => $t->version(), 'active' => $slug === $this->extensions()->configuredTheme()];
+            $themes[] = ['slug' => $slug, 'name' => $t->manifest->name, 'version' => $t->version(), 'active' => $slug === $this->extensions()->configuredTheme(), 'switch_back' => $this->recovery()->switchBackOption($t->owner(), $t->version())];
         }
 
         return [
-            'core' => $this->core()->status(),
+            'core' => $this->core()->status() + ['switch_back' => $this->recovery()->switchBackOption('core', $this->core()->running())],
+            'stopped_update' => $this->stoppedUpdate(),
             'php' => PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION,
             'plugins' => $plugins,
             'themes' => $themes,

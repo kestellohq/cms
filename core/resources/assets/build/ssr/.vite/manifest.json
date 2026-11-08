@@ -65,13 +65,23 @@
     "file": "chunks/device-DTfRdqhB.mjs",
     "name": "device"
   },
-  "_events-DFJBVCyy.mjs": {
-    "file": "chunks/events-DFJBVCyy.mjs",
+  "_events-z0wVOOcI.mjs": {
+    "file": "chunks/events-z0wVOOcI.mjs",
     "name": "events"
   },
   "_file-hint-Ce4VhQ7O.mjs": {
     "file": "chunks/file-hint-Ce4VhQ7O.mjs",
     "name": "file-hint"
+  },
+  "_switch-back-DgZ27dDI.mjs": {
+    "file": "chunks/switch-back-DgZ27dDI.mjs",
+    "name": "switch-back",
+    "imports": [
+      "__plugin-vue_export-helper-DjkACiAr.mjs"
+    ],
+    "css": [
+      "assets/switch-back-BAlEdKs_.css"
+    ]
   },
   "_tabs-D4NgJFOQ.mjs": {
     "file": "chunks/tabs-D4NgJFOQ.mjs",
@@ -122,7 +132,7 @@
     "src": "resources/js/pages/admin/Dashboard.vue",
     "isEntry": true,
     "imports": [
-      "_events-DFJBVCyy.mjs"
+      "_events-z0wVOOcI.mjs"
     ]
   },
   "resources/js/pages/admin/NotFound.vue": {
@@ -345,7 +355,7 @@
     "src": "resources/js/pages/admin/system/Audit.vue",
     "isEntry": true,
     "imports": [
-      "_events-DFJBVCyy.mjs"
+      "_events-z0wVOOcI.mjs"
     ]
   },
   "resources/js/pages/admin/system/Backups.vue": {
@@ -390,10 +400,11 @@
     "src": "resources/js/pages/admin/system/Plugins.vue",
     "isEntry": true,
     "imports": [
+      "_switch-back-DgZ27dDI.mjs",
       "__plugin-vue_export-helper-DjkACiAr.mjs"
     ],
     "css": [
-      "assets/Plugins-anIrp92a.css"
+      "assets/Plugins-BjrRi7av.css"
     ]
   },
   "resources/js/pages/admin/system/Queue.vue": {
@@ -415,7 +426,7 @@
     "isEntry": true,
     "imports": [
       "_device-DTfRdqhB.mjs",
-      "_events-DFJBVCyy.mjs"
+      "_events-z0wVOOcI.mjs"
     ]
   },
   "resources/js/pages/admin/system/Storage.vue": {
@@ -436,10 +447,11 @@
     "src": "resources/js/pages/admin/system/Updates.vue",
     "isEntry": true,
     "imports": [
+      "_switch-back-DgZ27dDI.mjs",
       "__plugin-vue_export-helper-DjkACiAr.mjs"
     ],
     "css": [
-      "assets/Updates-BSVCNffN.css"
+      "assets/Updates-CQNAnzjW.css"
     ]
   },
   "resources/js/pages/admin/system/webhooks/Edit.vue": {

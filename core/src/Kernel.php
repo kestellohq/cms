@@ -38,6 +38,8 @@ use Kestello\Cms\Extension\SuspensionList;
 use Kestello\Cms\Frontend\FrontendModule;
 use Kestello\Cms\Installer\InstallerController;
 use Kestello\Cms\Installer\InstallerRoutes;
+use Kestello\Cms\Package\Update\UpdateJournal;
+use Kestello\Cms\Package\Update\UpdateRecovery;
 use Kestello\Cms\Platform\ArrayPlatformStore;
 use Kestello\Cms\Platform\CoreDrivers;
 use Kestello\Cms\Platform\DriverRegistry;
@@ -137,6 +139,13 @@ final class Kernel
             return;
         }
 
+        // An update PHP stopped halfway: put it back before anything else runs (for core this
+        // request already runs the old release; plugins stay unloaded until it is done).
+        if ((new UpdateJournal($this->paths->storage()))->pending() !== null) {
+            $this->recoverUpdate($app, $uri);
+            return;
+        }
+
         // before the database: during a restore it is being rebuilt
         $maintenance = new \Kestello\Cms\System\Maintenance($this->paths->storage());
         $bypass = (string) ($_SERVER['HTTP_X_KESTELLO_BYPASS'] ?? '');
@@ -183,6 +192,46 @@ final class Kernel
 
         $app->run();
         \Kestello\Cms\System\WebRunner::afterResponse($cms);
+    }
+
+    /**
+     * Put back (or finish) an update that stopped halfway, then send the
+     * visitor to the page they asked for. Anything else gets the
+     * maintenance page and tries again.
+     */
+    private function recoverUpdate(Application $app, string $uri): void
+    {
+        $result = null;
+        try {
+            $app->bootstrap();
+            $this->connectDatabase($app);
+            $cms = $this->bootExtensions($app, recovery: true);
+            $result = $cms->container->make(UpdateRecovery::class)->recover();
+            if (!$result['ok']) {
+                error_log('[kestello] putting back an update that stopped: ' . implode(' ', $result['problems']));
+            }
+        } catch (Throwable $e) {
+            error_log('[kestello] putting back an update that stopped: ' . $e->getMessage());
+        }
+
+        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        if (($result['ok'] ?? false) && ($method === 'GET' || $method === 'HEAD')) {
+            header('Cache-Control: no-store');
+            header('Location: ' . self::sameSiteLocation($uri, (string) ($_SERVER['QUERY_STRING'] ?? '')), true, 302);
+            return;
+        }
+        $this->maintenancePage(new \Kestello\Cms\System\Maintenance($this->paths->storage()));
+    }
+
+    /** A path on this site to send the visitor back to; never one a browser would read as another host ("//x", "/\\x"). */
+    public static function sameSiteLocation(string $path, string $query = ''): string
+    {
+        if (preg_match('#^/(?![/\\\\])[^\x00-\x20]*$#', $path) !== 1) {
+            return '/';
+        }
+        $query = preg_replace('/[\x00-\x20]/', '', $query) ?? '';
+
+        return $path . ($query !== '' ? '?' . $query : '');
     }
 
     /**
@@ -320,14 +369,26 @@ final class Kernel
         $app->bootstrap();
         $cms = null;
 
+        $pending = null;
         if (InstallerController::isInstalled($this->paths)) {
+            // an update that stopped halfway, or update:recover: plugins stay unloaded
+            $pending = (new UpdateJournal($this->paths->storage()))->pending();
+            $safe = in_array('--safe', $argv, true) || $pending !== null || ($argv[1] ?? '') === 'update:recover';
             try {
                 $this->connectDatabase($app);
-                $cms = $this->bootExtensions($app, recovery: in_array('--safe', $argv, true));
-                $cms->events->dispatch(new KernelBooted(console: true, recoveryMode: in_array('--safe', $argv, true)));
+                $cms = $this->bootExtensions($app, recovery: $safe);
+                $cms->events->dispatch(new KernelBooted(console: true, recoveryMode: $safe));
             } catch (Throwable $e) {
                 fwrite(STDERR, "\033[33mWarning: extensions not booted: {$e->getMessage()}\033[0m" . PHP_EOL);
             }
+        }
+        if ($pending !== null && ($argv[1] ?? '') !== 'update:recover') {
+            if ($cms === null) {
+                return 1;
+            }
+            fwrite(STDERR, "An update of {$pending['owner']} stopped halfway. Putting it back first; run the command again afterwards." . PHP_EOL);
+
+            return \Kestello\Cms\Console\Package\UpdateRecoverCommand::report($cms->container->make(UpdateRecovery::class)->recover(), static fn(string $line) => fwrite(STDERR, $line . PHP_EOL));
         }
 
         $root = $this->paths->root();
@@ -411,7 +472,8 @@ final class Kernel
                 \Kestello\Cms\Console\Backup\BackupRestoreCommand::class, \Kestello\Cms\Console\Backup\BackupDeleteCommand::class,
                 \Kestello\Cms\Console\Package\PackageVerifyCommand::class,
                 \Kestello\Cms\Console\Package\PackageUpdateCommand::class, \Kestello\Cms\Console\Package\UpdateProbeCommand::class,
-                \Kestello\Cms\Console\Package\CoreUpdateCommand::class, \Kestello\Cms\Console\Package\CoreCheckCommand::class] as $command) {
+                \Kestello\Cms\Console\Package\CoreUpdateCommand::class, \Kestello\Cms\Console\Package\CoreCheckCommand::class,
+                \Kestello\Cms\Console\Package\UpdateRecoverCommand::class] as $command) {
                 $console->register(new $command());
             }
             $console->register(new PluginUninstallCommand($extensions));

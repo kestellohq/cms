@@ -138,6 +138,19 @@ final class CoreHealthChecks
                 : HealthResult::good('The database is reachable.', $details);
         }, 'reliability');
 
+        $h->check('core.update-stopped', 'Updates', static function () use ($cms): HealthResult {
+            $stopped = (new \Kestello\Cms\Package\Update\UpdateJournal($cms->paths->storage()))->stopped();
+            if ($stopped === null) {
+                return HealthResult::good('No update stopped halfway.');
+            }
+            $details = ['owner' => $stopped['owner'], 'from' => $stopped['from'], 'to' => $stopped['to'], 'attempts' => $stopped['attempts']];
+
+            return HealthResult::critical(
+                "The update of {$stopped['owner']} from {$stopped['from']} to {$stopped['to']} stopped halfway and was not put back. Visitors see the maintenance page until it is.",
+                $details,
+                ['Open Updates', '/admin/system/updates'],
+            );
+        });
         $h->check('core.drivers', 'Infrastructure drivers', static function () use ($cms): HealthResult {
             $degraded = $cms->drivers->degraded();
             $details = [];

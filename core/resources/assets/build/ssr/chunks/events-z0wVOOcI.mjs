@@ -62,6 +62,12 @@ var AUDIT_LABELS = {
 	"backup.settings": __("Changed backup settings"),
 	"core.updated": __("Updated Kestello"),
 	"core.update_failed": __("Kestello update failed"),
+	"update.put_back": __("Put back an update that stopped halfway"),
+	"update.finished": __("Finished an update that stopped halfway"),
+	"update.switched_back": __("Switched back to the version before an update"),
+	"update.switch_back_started": __("Started switching back to the version before an update"),
+	"update.recovery_failed": __("Putting back an update that stopped failed"),
+	"update.recovery_retried": __("Asked to try again putting back an update"),
 	"media.uploaded": __("Uploaded a file"),
 	"media.updated": __("Changed a file"),
 	"media.deleted": __("Deleted a file"),
@@ -95,7 +101,9 @@ var AUDIT_LABELS = {
 var AUDIT_WARN = /* @__PURE__ */ new Set([
 	"auth.login_failed",
 	"package.update_failed",
-	"core.update_failed"
+	"core.update_failed",
+	"update.put_back",
+	"update.recovery_failed"
 ]);
 /** @param {string} event */
 var auditLabel = (event) => AUDIT_LABELS[event] ?? event;
