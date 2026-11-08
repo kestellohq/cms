@@ -12,6 +12,15 @@ Every change people would notice is listed here, newest first. The format follow
 - `config/`, `storage/`, `core/` and `content/` each carry a deny-all `.htaccess`, also added by the installer, and Site Health warns when files in `storage/` can be downloaded from the web.
 - Server-only rendering bundles stay private however their path is written, including on case-insensitive disks.
 - Starting two uploads at once can no longer go past a storage quota.
+- Changing your email address takes effect only once you open a link sent to the new address, and your old address is told a change was asked for. Before, the address changed at once, so an account could take an address its owner never confirmed. `GET /me` shows a waiting address as `pending_email`.
+- Password reset links stop working when an account's email address changes, whether you confirm a new one or an administrator sets it.
+- Wrong second-factor codes are limited to 20 an hour per account, from anywhere (it was 100), and after 5 the account's owner is emailed that someone has their password.
+- Creating a theme asks for a recent sign-in, like activating one, since it can switch the live theme.
+- A media file's details list only the entries you may open; the others are counted. Before, anyone who could upload saw the titles of drafts that used a file.
+- The people list for author and user fields no longer includes each person's role.
+- Saved page HTML is checked by parsing it against what pages draw, not by matching patterns, so tricks such as a `>` inside a quoted attribute, entity-encoded `javascript:` links, `<meta>` redirects, frames other than the YouTube and Vimeo players, forms posting to another site, or an element taking the page's own `kestello-page` id are refused. A refused page is not asked for again and stays drawn in the browser; the admin's browser console says why it was refused.
+- Rich text is sanitized again wherever it is shown, not only when saved, and changing a text field into rich text sanitizes the values already stored. Before, markup typed into a plain text field was shown as HTML once the field became rich text.
+- Moving between pages without a reload goes to another site in full when the site redirects there, instead of reading that site's answer as a page.
 
 ### Fixed
 
@@ -23,6 +32,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Changed
 
+- Built Vue pages are no longer committed to git. CI builds them for its checks, and the release workflow builds them from the tagged sources into both zips, so the release zips are unchanged. After cloning, run `npm run build` once; pull requests no longer carry hashed build files.
 - PHPStan and PHP CS Fixer are installed with `composer install` (the only `require-dev` packages, locked in `composer.lock`) instead of `tools/fetch.sh`. Sites are not affected: Kestello still requires nothing at runtime, and `vendor/` never ships.
 - A folder moved to another disk during an update or restore is copied next to its new place and renamed into it, so a stopped copy never leaves half a folder behind.
 - The old plugin or theme folder set aside by an update is always kept, whatever its date; before, it could be pruned right away when the plugin had been installed long ago.

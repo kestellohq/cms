@@ -27,6 +27,7 @@ You need Docker, Composer and Node.js 22.12 or newer.
 cp .env.example .env
 docker compose up -d
 npm ci
+npm run build
 composer install
 ```
 

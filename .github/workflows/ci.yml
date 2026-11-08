@@ -70,7 +70,7 @@ jobs:
         run: php bin/cms ide:helpers --check
 
   build:
-    name: Built assets are current
+    name: The assets build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -84,11 +84,11 @@ jobs:
 
       - run: npm run build
 
-      - name: Nothing changed
+      - name: Nothing built is tracked
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git status --short
-            echo "::error::The committed build is out of date. Run npm run build and commit the result."
+            echo "::error::The build changed tracked files. Built assets are not committed: check .gitignore."
             exit 1
           fi
 
@@ -174,6 +174,15 @@ jobs:
           ini-values: apc.enable_cli=1, memory_limit=1G
           coverage: none
           tools: none
+
+      # the tests serve and zip the built pages, which are not committed
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Build the assets
+        run: npm ci && npm run build
 
       - name: Tests (SQLite, MySQL or MariaDB, PostgreSQL, Redis)
         run: php bin/cms test

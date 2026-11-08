@@ -49,6 +49,7 @@ final class MediaResource extends Resource
         ];
         if (array_key_exists('usage', $this->row)) {
             $out['usage'] = $this->row['usage'];
+            $out['usage_hidden'] = (int) ($this->row['usage_hidden'] ?? 0);
         }
 
         return $out;
@@ -71,7 +72,8 @@ final class MediaResource extends Resource
             ])->nullable()->description('How the image was cropped, turned and flipped, or null when it is the original'),
             'original' => Schema::object(['url' => Schema::string()->nullable(), 'width' => Schema::int(), 'height' => Schema::int()])->nullable()
                 ->description('An edited image\'s original, for people who may edit it (single-item answers only); the URL expires'),
-            'usage' => Schema::any()->nullable()->optional()->description('Where it is used; single-item answers only'),
+            'usage' => Schema::any()->nullable()->optional()->description('Where it is used; single-item answers only, and only entries the viewer may open'),
+            'usage_hidden' => Schema::int()->optional()->description('How many other entries use it (ones the viewer may not open)'),
         ];
     }
 }

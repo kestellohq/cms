@@ -162,6 +162,45 @@ final class ContentModelsTest extends AuthTestCase
         $this->assertSame(['organiser'], $links(), 'the link is kept under the new name');
     }
 
+    public function testTextTurnedIntoRichTextIsSanitized(): void
+    {
+        $model = $this->createEvent();
+        $unsafe = '<p>Hi</p><img src="x" onerror="alert(1)"><iframe src="https://evil.test"></iframe>';
+        $event = $this->entry(['subtitle' => $unsafe, 'speakers' => [['name' => $unsafe]]]);
+        $this->assertSame($unsafe, $this->stored($event['id'])['subtitle'], 'plain text is stored as typed');
+
+        $def = $model['definition'];
+        $def['fields'][0] = ['id' => 'aaaa0001', 'name' => 'subtitle', 'type' => 'rich_text'];
+        $def['fields'][3]['children'][0] = ['id' => 'aaaa0005', 'name' => 'name', 'type' => 'rich_text'];
+        $this->assertSame(200, $this->api('PATCH', "/content-models/{$model['id']}", ['definition' => $def, 'confirm' => true])->statusCode());
+
+        $stored = $this->stored($event['id']);
+        foreach ([$stored['subtitle'], $stored['speakers'][0]['name']] as $html) {
+            $this->assertStringContainsString('<p>Hi</p>', $html);
+            $this->assertStringNotContainsString('onerror', $html);
+            $this->assertStringNotContainsString('<iframe', $html);
+        }
+    }
+
+    public function testRichTextIsSanitizedWhenShownEvenIfStoredUnsafe(): void
+    {
+        $model = $this->createEvent();
+        $def = $model['definition'];
+        $def['fields'][0] = ['id' => 'aaaa0001', 'name' => 'subtitle', 'type' => 'rich_text'];
+        $this->assertSame(200, $this->api('PATCH', "/content-models/{$model['id']}", ['definition' => $def, 'confirm' => true])->statusCode());
+        $this->reboot();
+        $event = $this->entry(['subtitle' => '<p>Safe</p>']);
+        // written around the field (a restored revision, a plugin, an import): the page still never trusts it
+        QueryBuilder::table('entries')->where('id', $event['id'])->update(['data' => Json::encode(['subtitle' => '<p>Hi</p><img src="x" onerror="alert(1)">'])]);
+
+        // the page's props, before Vue renders them (rich text goes into v-html)
+        $payload = $this->visit('/events/' . $event['slug'])->payload();
+        $this->assertInstanceOf(\Kestello\Cms\View\PageResponse::class, $payload);
+        $page = Json::encode($payload->props);
+        $this->assertStringContainsString('Hi', $page);
+        $this->assertStringNotContainsString('onerror', $page);
+    }
+
     public function testRenamesKeepValuesAndRemovalsNeedConfirmation(): void
     {
         $model = $this->createEvent();

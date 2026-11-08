@@ -129,6 +129,10 @@ final class UpdateUser extends Endpoint
         if ($changes !== []) {
             QueryBuilder::table('users')->where('id', $id)->update($changes + ['updated_at' => date('Y-m-d H:i:s')]);
         }
+        if (isset($changes['email'])) {
+            // reset links already mailed went to the old address
+            \Kestello\Cms\Auth\EmailChanges::addressChanged($id);
+        }
         if ($password !== null) {
             $this->accounts->changePassword($id, $password, 'admin');
         }

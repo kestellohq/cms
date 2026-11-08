@@ -739,7 +739,7 @@ final class MediaLibrary
      * Entries that use each file.
      *
      * @param list<int> $ids
-     * @return array<int, list<array{id: int, type: string, title: string, status: string, field: string}>>
+     * @return array<int, list<array{id: int, type: string, title: string, status: string, field: string, author_id: ?int}>>
      */
     public function usage(array $ids): array
     {
@@ -748,15 +748,41 @@ final class MediaLibrary
         }
         $rows = QueryBuilder::table('media_usage')->join('entries', 'entries.id', '=', 'media_usage.entry_id')
             ->whereIn('media_usage.media_id', $ids)
-            ->select('media_usage.media_id', 'media_usage.field', 'entries.id', 'entries.type', 'entries.title', 'entries.status', 'entries.deleted_at')
+            ->select('media_usage.media_id', 'media_usage.field', 'entries.id', 'entries.type', 'entries.title', 'entries.status', 'entries.deleted_at', 'entries.author_id')
             ->orderBy('entries.title')->get();
         $out = [];
         foreach ($rows as $r) {
             $r = (array) $r;
-            $out[(int) $r['media_id']][] = ['id' => (int) $r['id'], 'type' => (string) $r['type'], 'title' => (string) $r['title'], 'status' => $r['deleted_at'] !== null ? 'trash' : (string) $r['status'], 'field' => (string) $r['field']];
+            $out[(int) $r['media_id']][] = ['id' => (int) $r['id'], 'type' => (string) $r['type'], 'title' => (string) $r['title'], 'status' => $r['deleted_at'] !== null ? 'trash' : (string) $r['status'], 'field' => (string) $r['field'],
+                'author_id' => $r['author_id'] === null ? null : (int) $r['author_id']];
         }
 
         return $out;
+    }
+
+    /**
+     * The entries of usage() this person may open, and how many others use the file.
+     * Someone who may upload but not edit others' entries never learns their titles.
+     *
+     * @param list<array{id: int, type: string, title: string, status: string, field: string, author_id: ?int}> $rows
+     * @return array{0: list<array{id: int, type: string, title: string, status: string, field: string}>, 1: int}
+     */
+    public function visibleUsage(array $rows, Principal $p): array
+    {
+        $shown = [];
+        $hidden = 0;
+        foreach ($rows as $r) {
+            $type = $this->cms->content->get($r['type']);
+            $own = $r['author_id'] !== null && $r['author_id'] === $p->userId;
+            if ($type !== null && $p->can($type->capability('edit')) && ($own || $p->can($type->capability('edit_others')))) {
+                unset($r['author_id']);
+                $shown[] = $r;
+            } else {
+                $hidden++;
+            }
+        }
+
+        return [$shown, $hidden];
     }
 
     /**

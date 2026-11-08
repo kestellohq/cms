@@ -44,8 +44,11 @@ async function saveAccount() {
     savingAccount.value = true;
     accountErrors.value = {};
     try {
-        await api.patch('/me', { email: account.email.trim(), bio: account.bio });
-        notify.success(__('Your profile was saved.'));
+        const email = account.email.trim();
+        const changed = email !== me.data.value?.email;
+        await api.patch('/me', { email, bio: account.bio });
+        // a new address is only used once its link is opened: say where to look
+        notify.success(changed ? __('Check {email} for a link to confirm it.', { email }) : __('Your profile was saved.'));
         await me.reload({ silent: true });
     } catch (e) {
         accountErrors.value = fieldErrors(e) ?? {};
@@ -334,10 +337,13 @@ const codesLeft = (n) => __('{n, plural, one {# recovery code left} other {# rec
                 <KField
                     v-slot="{ id, invalid }"
                     :label="__('Email')"
-                    :help="__('Password resets go here. Changing it asks for your password.')"
+                    :help="__('Password resets go here. Changing it asks for your password, and the new address must confirm it.')"
                     :error="accountErrors.email ?? ''"
                 >
                     <KInput :id="id" v-model="account.email" type="email" autocomplete="email" :invalid="invalid" />
+                    <p v-if="me.data.value?.pending_email" class="k-muted">
+                        {{ __('Waiting for {email} to be confirmed: open the link sent there.', { email: me.data.value.pending_email }) }}
+                    </p>
                 </KField>
                 <KField
                     v-slot="{ id }"

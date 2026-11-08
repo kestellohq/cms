@@ -82,7 +82,8 @@ abstract class MediaEndpoint extends Endpoint
                 $row['original'] = ['url' => $editor->originalUrl($m), 'width' => (int) $m->meta['original']['width'], 'height' => (int) $m->meta['original']['height']];
             }
             if ($usage) {
-                $row['usage'] = $used[(int) $m->getKey()] ?? [];
+                // entries this person can't open are counted, not named
+                [$row['usage'], $row['usage_hidden']] = $library->visibleUsage($used[(int) $m->getKey()] ?? [], $request->principal);
             }
             $out[] = new MediaResource($row);
         }

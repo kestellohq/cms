@@ -90,7 +90,7 @@ What to reach for:
 | Components | `@kestello/ui`: `KPageHeader`, `KCard`, `KTable`, `KField`, `KInput`, `KSelect`, `KSwitch`, `KButton`, `KModal`, `KTabs`, `KEmpty`, `KSchemaForm`, … (`core/resources/js/ui/index.js`) |
 | Translation | `__()` from `@kestello/sdk`, or `useI18n('<slug>')` in plugins; plural messages in a computed property |
 
-Rebuild: `npm run build:core` for core, `node core/build/build.mjs <package dir>` for a package. Commit `assets/build/`.
+Rebuild: `npm run build:core` for core, `node core/build/build.mjs <package dir>` for a package. A package commits its `assets/build/`; core's build is not committed.
 
 ## 3. Design rules
 
