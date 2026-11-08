@@ -114,6 +114,7 @@ final class PageRenderer
         }
 
         $extraJs = [];
+        /** @var list<string> $extraCss the stylesheets of the blocks on the page */
         $extraCss = [];
         foreach ($data['preload'] ?? [] as $name) {
             $more = $this->registry->get($name);
@@ -134,9 +135,12 @@ final class PageRenderer
             $preload .= '<link rel="modulepreload" href="' . self::e($file['url']) . '"' . ($hash !== null ? ' integrity="' . self::e($hash) . '"' : '') . ">\n";
         }
 
+        // the page's own stylesheets are swapped on navigation; those of the blocks
+        // on it are kept (data-kestello-keep), as the browser loads each block once
         $styles = '';
         foreach (array_values(array_unique([...($entry['css'] ?? []), ...$extraCss])) as $url) {
-            $styles .= '<link rel="stylesheet" href="' . self::e($url) . "\" data-kestello-css>\n";
+            $keep = in_array($url, $extraCss, true) ? ' data-kestello-keep' : '';
+            $styles .= '<link rel="stylesheet" href="' . self::e($url) . "\" data-kestello-css{$keep}>\n";
         }
 
         $siteName = (string) ($data['props']['site']['name'] ?? 'Kestello');

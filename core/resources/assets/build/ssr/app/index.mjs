@@ -31,6 +31,36 @@ function createLeaveGuards() {
 function leavesPage(from, to, { method = "get", preserveState = false } = {}) {
 	return String(method).toLowerCase() === "get" && !preserveState && (from.origin !== to.origin || from.pathname !== to.pathname);
 }
+// core/resources/js/app/stylesheets.js
+/**
+* Which stylesheets a page keeps when the app moves to another page.
+*
+* Every stylesheet Kestello adds is a <link data-kestello-css>. Two kinds:
+*
+* - a page's and its layout's, which belong to that page and are swapped on
+*   navigation;
+* - a block's or an extension's (data-kestello-keep), added once when the
+*   component first loads. Components are loaded once and cached, so their
+*   stylesheet would never come back if it were dropped: these stay.
+*
+* A stylesheet both kinds use is kept.
+*/
+/** The stylesheets of registered components, in order, without repeats. */
+function stylesFor(registry, ...names) {
+	const urls = [];
+	for (const name of names) for (const url of registry?.[name]?.css ?? []) if (!urls.includes(url)) urls.push(url);
+	return urls;
+}
+/**
+* The links to drop when the next page needs `wanted`.
+*
+* @param {{ href: string, keep: boolean }[]} links the data-kestello-css links on the page
+* @param {string[]} wanted the next page's and layout's stylesheets
+* @returns {string[]} their hrefs
+*/
+function staleStylesheets(links, wanted) {
+	return links.filter((link) => !link.keep && !wanted.includes(link.href)).map((link) => link.href);
+}
 // core/resources/js/app/document-title.js
 /**
 * The text of a page's <title>, the same as the server writes it
@@ -660,17 +690,16 @@ var Head = defineComponent({
 		return () => null;
 	}
 });
-function stylesFor(registry, ...names) {
-	const urls = [];
-	for (const name of names) for (const url of registry[name]?.css ?? []) if (!urls.includes(url)) urls.push(url);
-	return urls;
-}
-/** Add stylesheets without waiting (extension components). */
+/**
+* Add a block's or an extension's stylesheets without waiting. They are kept
+* on every later page (stylesheets.js), also when the page already had them.
+*/
 function addStylesheets(urls) {
-	const have = new Set([...document.querySelectorAll("link[rel=\"stylesheet\"]")].map((l) => l.getAttribute("href")));
+	const have = new Map([...document.querySelectorAll("link[rel=\"stylesheet\"]")].map((l) => [l.getAttribute("href"), l]));
 	for (const url of urls) {
+		const link = have.get(url) ?? document.createElement("link");
+		link.dataset.kestelloKeep = "";
 		if (have.has(url)) continue;
-		const link = document.createElement("link");
 		link.rel = "stylesheet";
 		link.href = url;
 		link.dataset.kestelloCss = "";
@@ -690,7 +719,11 @@ async function syncStylesheets(registry, component, layout) {
 		setTimeout(resolve, 3e3);
 		document.head.appendChild(link);
 	})));
-	for (const [url, link] of existing) if (!wanted.includes(url)) link.remove();
+	const links = [...existing].map(([href, link]) => ({
+		href,
+		keep: "kestelloKeep" in link.dataset
+	}));
+	for (const href of staleStylesheets(links, wanted)) existing.get(href)?.remove();
 }
 function showRawResponse(html) {
 	document.open();

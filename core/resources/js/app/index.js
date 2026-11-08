@@ -28,6 +28,7 @@ import {
 } from 'vue';
 import { designAttrs } from '../shared/block-design.js';
 import { createLeaveGuards, leavesPage } from './leave-guards.js';
+import { staleStylesheets, stylesFor } from './stylesheets.js';
 import { documentTitle } from './document-title.js';
 
 const ROUTER = Symbol('kestello.router');
@@ -600,22 +601,16 @@ export const Head = defineComponent({
 
 // ── stylesheets ──────────────────────────────────────────────────────
 
-function stylesFor(registry, ...names) {
-    const urls = [];
-    for (const name of names) {
-        for (const url of registry[name]?.css ?? []) {
-            if (!urls.includes(url)) urls.push(url);
-        }
-    }
-    return urls;
-}
-
-/** Add stylesheets without waiting (extension components). */
+/**
+ * Add a block's or an extension's stylesheets without waiting. They are kept
+ * on every later page (stylesheets.js), also when the page already had them.
+ */
 function addStylesheets(urls) {
-    const have = new Set([...document.querySelectorAll('link[rel="stylesheet"]')].map((l) => l.getAttribute('href')));
+    const have = new Map([...document.querySelectorAll('link[rel="stylesheet"]')].map((l) => [l.getAttribute('href'), l]));
     for (const url of urls) {
+        const link = have.get(url) ?? document.createElement('link');
+        link.dataset.kestelloKeep = '';
         if (have.has(url)) continue;
-        const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = url;
         link.dataset.kestelloCss = '';
@@ -645,9 +640,8 @@ async function syncStylesheets(registry, component, layout) {
             ),
     );
 
-    for (const [url, link] of existing) {
-        if (!wanted.includes(url)) link.remove();
-    }
+    const links = [...existing].map(([href, link]) => ({ href, keep: 'kestelloKeep' in link.dataset }));
+    for (const href of staleStylesheets(links, wanted)) existing.get(href)?.remove();
 }
 
 function showRawResponse(html) {
