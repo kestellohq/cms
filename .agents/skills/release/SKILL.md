@@ -34,7 +34,7 @@ Before 1.0, a minor release may break the public API; the changelog says how to 
 
 1. Branch: `git switch develop && git pull && git switch -c release/X.Y.Z`.
 2. Prepare: `npm run release:prepare -- X.Y.Z` (`tools/release/prepare.mjs`). It writes `X.Y.Z` to `core/VERSION`, turns `## [Unreleased]` into `## [X.Y.Z] - YYYY-MM-DD` under a fresh empty Unreleased section, updates the compare links at the bottom of the changelog, and runs `i18n:extract` and `ide:helpers`.
-3. Rebuild and check: `npm run build`, then `npm run check` and the PHP database matrix ([testing](../testing/SKILL.md)).
+3. Check: `npm run build` (so the PHP tests see current pages; nothing built is committed), then `npm run check` and the PHP database matrix ([testing](../testing/SKILL.md)).
 4. Commit `chore(release): X.Y.Z` and open a pull request from `release/X.Y.Z` into `main`.
 5. Only fixes land on the release branch from here, each with its changelog line.
 6. When green and approved, merge into `main` with a **merge commit** (not squash).

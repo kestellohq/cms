@@ -7,6 +7,9 @@
 #   kestello-core-X.Y.Z.zip   the signed update that installed sites apply (core:release)
 #   kestello.stub.php         API stubs for plugin and theme developers
 #
+# The built Vue pages are not in git: they are built here, from the tagged sources, and go
+# into both zips.
+#
 # Repository secret KESTELLO_RELEASE_KEY: the key file from
 #   php bin/cms package:keygen --out=kestello-release.key --name="Kestello releases"
 # pasted whole. Its public half is in core/config/release.php, which sites trust.
@@ -48,6 +51,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: lts/*
+          cache: npm
 
       - name: The tag matches core/VERSION and is on main
         id: version
@@ -66,6 +70,9 @@ jobs:
           case "$version" in *-*) prerelease=true ;; *) prerelease=false ;; esac
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
+
+      - name: Build the assets (they are not committed; both zips carry them)
+        run: npm ci && npm run build
 
       - name: Release notes from CHANGELOG.md
         run: node tools/release/notes.mjs "${{ steps.version.outputs.version }}" > "$RUNNER_TEMP/notes.md"

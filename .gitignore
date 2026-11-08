@@ -55,6 +55,10 @@ storage/plugins/
 .phpstan/
 .eslintcache
 
+# Built Vue pages: made by `npm run build`, and by CI for every check and release zip
+core/resources/assets/build/
+content/themes/*/assets/build/
+
 # Core release folders and the pointer (written by core updates)
 core/releases/
 core/current.php
