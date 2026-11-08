@@ -18,7 +18,7 @@ Kestello is a self-hosted PHP CMS with zero PHP dependencies. Core is built on t
 | `core/src/Kernel.php` | Boots the app for HTTP (`handleHttp()`) and the CLI (`handleConsole()`). |
 | `core/database/migrations/` | Core migrations. |
 | `core/resources/js/` | The browser side: `app/` (`@kestello/app`), `sdk/` (`@kestello/sdk`), `ui/` (`@kestello/ui`), `pages/` (admin pages, blocks, field inputs), `components/`. |
-| `core/resources/assets/build/` | Built Vue pages. Committed: production runs no Node. |
+| `core/resources/assets/build/` | Built Vue pages. Not committed: CI and the release workflow build them, and the release zips carry them, so production runs no Node. |
 | `core/resources/lang/kestello.pot` | Core's translation template. |
 | `core/build/` | Vite build (`build.mjs`, `preset.mjs`). Dev only. |
 | `content/themes/base/` | The theme every site ships with. Other folders under `content/` are site data and ignored by Git. |
@@ -51,7 +51,7 @@ The facade's properties are listed in the doc comment of `core/src/Cms/Cms.php` 
 - A controller returns `Page::render('<component>', $props)` (`core/src/Cms/View/Page.php`). The component is a Vue SFC: `Home` resolves in the active theme's `resources/js/pages/`, `@hello/Greeting` in the hello plugin's, `@core/admin/Dashboard` in core.
 - The first visit gets an HTML shell with the page JSON; later navigation fetches JSON only. Shared props come from `$cms->pages->share()`.
 - Admin pages are registered with `$cms->admin->page()` and never render server forms. Every screen reads and writes through `/api/v1`, so anything the admin does an integration can do.
-- Vue files are prebuilt by `npm run build` (or `node core/build/build.mjs <target>`). Rebuild and commit `assets/build/` whenever you change a `.vue` or `.js` file under `resources/js`.
+- Vue files are prebuilt by `npm run build` (or `node core/build/build.mjs <target>`). Rebuild after changing a `.vue` or `.js` file under `resources/js`. Core's build is not committed; a plugin's or theme's `assets/build/` is, since its zip ships it.
 
 ## Owners and naming
 

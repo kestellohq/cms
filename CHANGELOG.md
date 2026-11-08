@@ -20,6 +20,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Changed
 
+- Built Vue pages are no longer committed to git. CI builds them for its checks, and the release workflow builds them from the tagged sources into both zips, so the release zips are unchanged. After cloning, run `npm run build` once; pull requests no longer carry hashed build files.
 - PHPStan and PHP CS Fixer are installed with `composer install` (the only `require-dev` packages, locked in `composer.lock`) instead of `tools/fetch.sh`. Sites are not affected: Kestello still requires nothing at runtime, and `vendor/` never ships.
 - A folder moved to another disk during an update or restore is copied next to its new place and renamed into it, so a stopped copy never leaves half a folder behind.
 - The old plugin or theme folder set aside by an update is always kept, whatever its date; before, it could be pruned right away when the plugin had been installed long ago.
