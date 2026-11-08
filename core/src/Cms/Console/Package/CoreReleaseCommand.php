@@ -25,7 +25,7 @@ final class CoreReleaseCommand extends Command
             $built = CoreRelease::build((string) ($this->argument($arguments, 0) ?? $this->paths->core()), $out);
             $key = $this->option($options, 'key');
             if (is_string($key) && $key !== '') {
-                PackageSignature::sign($built['zip'], SignKey::read($key));
+                PackageSignature::sign($built['zip'], SignKey::read($key), PackageSignature::CORE);
                 file_put_contents($built['zip'] . '.sha256', hash_file('sha256', $built['zip']) . '  ' . basename($built['zip']) . "\n");
             }
         } catch (\Throwable $e) {

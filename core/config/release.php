@@ -19,8 +19,9 @@ return [
 
     // the public halves of the keys official releases are signed with, from
     //   php bin/cms package:keygen --out=<file> --name="Kestello releases"
-    // A core release is applied from the admin only when one of these (or a key in
-    // app.packages.trusted_keys) signed it. Rotate by adding the new key a release before
-    // signing with it, and removing the old one a release after.
+    // A core release is applied from the admin only when one of these signed it
+    // (core:release --key). Keys in app.packages.trusted_keys sign plugins and themes,
+    // never core. Rotate by adding the new key a release before signing with it, and
+    // removing the old one a release after.
     'keys' => [],
 ];

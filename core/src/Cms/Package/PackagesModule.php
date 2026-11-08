@@ -53,7 +53,6 @@ final class PackagesModule extends Provider
         });
         $container->singleton(CoreUpdater::class, static fn(Container $c): CoreUpdater => new CoreUpdater(
             self::cms(),
-            $c->make(PackageInstaller::class),
             $c->make(Backups::class),
             $c->make(HealthProbe::class),
             releaseKeys: UpdateChecker::releaseKeys(self::cms()->config->get('release.keys', [])),

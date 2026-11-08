@@ -352,6 +352,30 @@ final class ImageTest extends AuthTestCase
         }
     }
 
+    public function testImagickDecodesOnlyTheFirstFrameWithinLimits(): void
+    {
+        if (!extension_loaded('imagick')) {
+            $this->assertSame([], array_intersect(['imagick'], $this->engines()), 'no Imagick here');
+            return;
+        }
+        $gif = new \Imagick();
+        foreach (['red', 'blue', 'green', 'black'] as $color) {
+            $frame = new \Imagick();
+            $frame->newImage(64, 48, new \ImagickPixel($color), 'gif');
+            $gif->addImage($frame);
+        }
+        $path = $this->root . '/many-frames.gif';
+        $gif->writeImages($path, true);
+
+        $handle = (new \Kestello\Cms\Media\Image\ImagickEngine())->open($path);
+        $this->assertSame([64, 48], [$handle->width(), $handle->height()]);
+        $this->assertSame($path . '[0]', \Kestello\Cms\Media\Image\ImagickEngine::firstFrame($path), 'frames after the first are never decoded');
+        foreach (\Kestello\Cms\Media\Image\ImagickEngine::limits() as $type => $limit) {
+            $this->assertSame($limit, (int) \Imagick::getResourceLimit($type), "resource {$type} is limited");
+        }
+        @unlink($path);
+    }
+
     public function testSvgIsSanitizedToDrawingOnly(): void
     {
         $evil = <<<'SVG'

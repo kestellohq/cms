@@ -16,7 +16,6 @@ use Kestello\Cms\Cms;
 use Kestello\Cms\Extension\DatabaseStateStore;
 use Kestello\Cms\Extension\ExtensionManager;
 use Kestello\Cms\Extension\SuspensionList;
-use Kestello\Cms\Package\PackageInstaller;
 use Kestello\Cms\Package\PackagesModule;
 use Kestello\Cms\Package\Update\CoreUpdater;
 use Kestello\Cms\Package\Update\HealthProbe;
@@ -64,7 +63,7 @@ $cms->container->instance(HealthProbe::class, new class ($db) implements HealthP
 
 $c = $cms->container;
 if ($kind === 'core') {
-    $result = (new CoreUpdater($cms, $c->make(PackageInstaller::class), $c->make(\Kestello\Cms\Backup\Backups::class), $c->make(HealthProbe::class), $running))->update($zip, ['allow_unsigned' => true]);
+    $result = (new CoreUpdater($cms, $c->make(\Kestello\Cms\Backup\Backups::class), $c->make(HealthProbe::class), $running))->update($zip, ['allow_unsigned' => true]);
 } else {
     $result = $c->make(Updater::class)->update($zip, ['allow_unsigned' => true]);
 }

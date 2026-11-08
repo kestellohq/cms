@@ -202,6 +202,7 @@ final class InstallerController
                 @mkdir($dir, 0755, true);
             }
         }
+        \Kestello\Cms\Health\PrivateFolders::protect($paths->root());
 
         return $folders;
     }

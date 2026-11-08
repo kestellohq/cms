@@ -6,6 +6,12 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Security
 
+- Core updates are accepted only when signed with a key in `release.keys`. Before, a key trusted for plugins and themes (`app.packages.trusted_keys`) could sign a core release too. Core and packages also sign under different domains, so a package signature never passes as a core one. Release zips must be signed with `core:release --key`.
+- Images are decoded one frame at a time, within limits on memory, disk, pixels and time. Before, an animated GIF had every frame expanded first, so a small file with thousands of frames could fill memory or disk.
+- PDF thumbnails are drawn at a lower resolution when the page is very large, so a PDF that claims a huge page can't make Ghostscript draw a giant image.
+- `config/`, `storage/`, `core/` and `content/` each carry a deny-all `.htaccess`, also added by the installer, and Site Health warns when files in `storage/` can be downloaded from the web.
+- Server-only rendering bundles stay private however their path is written, including on case-insensitive disks.
+- Starting two uploads at once can no longer go past a storage quota.
 - Changing your email address takes effect only once you open a link sent to the new address, and your old address is told a change was asked for. Before, the address changed at once, so an account could take an address its owner never confirmed. `GET /me` shows a waiting address as `pending_email`.
 - Password reset links stop working when an account's email address changes, whether you confirm a new one or an administrator sets it.
 - Wrong second-factor codes are limited to 20 an hour per account, from anywhere (it was 100), and after 5 the account's owner is emailed that someone has their password.
