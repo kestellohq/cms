@@ -26,14 +26,14 @@ Thank you for helping. This file is the rulebook for everyone who changes Kestel
 
 ## Setting up
 
-You need Docker, Node.js 22.12 or newer and Git.
+You need Docker, Composer, Node.js 22.12 or newer and Git.
 
 ```sh
 git clone https://github.com/kestellohq/cms.git kestello && cd kestello
 cp .env.example .env
 docker compose up -d
 npm ci
-npm run tools        # downloads PHP CS Fixer and PHPStan (pinned, checksum-verified)
+composer install     # PHP CS Fixer and PHPStan, the only (dev) requirements
 ```
 
 Open http://localhost:8080 and finish the installer. `npm run check` runs every check CI runs, apart from the database matrix.
@@ -174,7 +174,7 @@ A hotfix works the same way from `hotfix/X.Y.Z`, branched from `main`.
 | `npm run build` | Rebuilds the Vue pages. Built files are committed. |
 | `npm run check` | Everything above that checks, in one go. |
 
-PHP CS Fixer and PHPStan are official PHARs pinned by version and SHA-256 in `tools/tools.lock`; `tools/fetch.sh` downloads and verifies them into `tools/bin/`. To upgrade one, change its version, URL and checksum there in a `build(deps):` commit. Moving to PER Coding Style 3.0 is a one-line change in `.php-cs-fixer.dist.php` (`@PER-CS3x0`), followed by `npm run format` in its own commit.
+PHP CS Fixer and PHPStan are the only entries in `require-dev` (`php-cs-fixer/shim` and `phpstan/phpstan`, both single PHARs with no dependencies of their own), locked in `composer.lock`. They never ship: the install and update zips leave `vendor/` out. To upgrade one, run `composer update <package>` in a `build(deps):` commit. Moving to PER Coding Style 3.0 is a one-line change in `.php-cs-fixer.dist.php` (`@PER-CS3x0`), followed by `npm run format` in its own commit.
 
 ## Translations
 

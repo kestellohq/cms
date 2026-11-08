@@ -6,7 +6,7 @@ import globals from 'globals';
 
 export default [
     {
-        ignores: ['**/node_modules/**', '**/assets/build/**', '**/assets/vendor/**', 'storage/**', 'tools/bin/**', 'dist/**', 'core/releases/**'],
+        ignores: ['**/node_modules/**', '**/assets/build/**', '**/assets/vendor/**', 'storage/**', 'vendor/**', 'dist/**', 'core/releases/**'],
     },
     {
         // as in .gitignore: content/ holds the local site's own plugins and themes, apart from these

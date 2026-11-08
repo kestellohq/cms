@@ -13,7 +13,7 @@ Kestello brings its own small libraries for what a CMS needs: a database layer, 
 - **Plugins cannot clash with each other either.** A plugin may only declare classes in its own namespace, and the plugin check enforces it. A plugin that needs a library prefixes it into that namespace first (with a tool such as PHP-Scoper or Strauss).
 - **The sensitive parts use what PHP provides.** Passwords use `password_hash`, signatures and encryption use libsodium, databases use PDO, and HTTP uses curl with certificate checks on.
 
-The cost is more code to maintain ourselves, which is why every part has tests. Composer still works: `composer.json` has no requirements and maps the `Kestello\` namespace for your editor and tools.
+The cost is more code to maintain ourselves, which is why every part has tests. Composer still works: `composer.json` requires nothing at runtime, maps the `Kestello\` namespace for your editor and tools, and its `require-dev` holds the two development tools (PHPStan and PHP CS Fixer), which never ship.
 
 ## Requirements
 
@@ -21,12 +21,13 @@ PHP 8.4 or newer (with `json`, `mbstring`, `pdo` and `sodium`), and MySQL 8, Mar
 
 ## Run it locally
 
-You need Docker and Node.js 22.12 or newer.
+You need Docker, Composer and Node.js 22.12 or newer.
 
 ```bash
 cp .env.example .env
 docker compose up -d
 npm ci
+composer install
 ```
 
 Open http://localhost:8080 and follow the installer. The development commands (`npm run format`, `npm run lint`, `npm test` and the PHP tests) are described in [CONTRIBUTING.md](CONTRIBUTING.md).
