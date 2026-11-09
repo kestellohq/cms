@@ -17,6 +17,7 @@ use Kestello\Framework\Support\Semver;
 final readonly class Manifest
 {
     private const string SLUG = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
+    private const string GITHUB = '#^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]{1,100}$#';
     private const string NAMESPACE = '/^[A-Z][A-Za-z0-9_]*(?:\\\\[A-Z][A-Za-z0-9_]*)*\\\\$/';
 
     /**
@@ -27,6 +28,8 @@ final readonly class Manifest
      * @param array<string, mixed>  $permissions  declared permissions (disclosure)
      * @param array<string, mixed>  $raw          the full decoded manifest
      * @param list<string>          $stylesheets  global stylesheets for pages rendered in this theme
+     * @param array{github: string}|array{url: string, license: bool}|null $updates where new versions come from (UpdateSource)
+     * @param list<string>          $signingKeys  key ids that may sign this package's next versions (key rotation)
      */
     public function __construct(
         public PackageType $type,
@@ -46,6 +49,8 @@ final readonly class Manifest
         public array $permissions,
         public array $raw,
         public array $stylesheets = [],
+        public ?array $updates = null,
+        public array $signingKeys = [],
     ) {}
 
     /**
@@ -191,6 +196,20 @@ final readonly class Manifest
             }
         }
 
+        $updates = null;
+        if (array_key_exists('updates', $d)) {
+            [$updates, $problem] = self::updates($d['updates']);
+            if ($problem !== null) {
+                $errors[] = $problem;
+            }
+        }
+
+        $signingKeys = $d['signing_keys'] ?? [];
+        if (!is_array($signingKeys) || !array_is_list($signingKeys) || count($signingKeys) > 10 || array_filter($signingKeys, static fn(mixed $k): bool => is_string($k) && preg_match('/^[a-f0-9]{16}$/', $k) === 1) !== $signingKeys) {
+            $errors[] = 'signing_keys must be a list of key ids (16 hex characters, as package:keygen prints them)';
+            $signingKeys = [];
+        }
+
         if ($errors !== []) {
             throw ManifestException::invalid($file, $errors);
         }
@@ -217,6 +236,52 @@ final readonly class Manifest
             permissions: $permissions,
             raw: $d,
             stylesheets: array_values($stylesheets),
+            updates: $updates,
+            signingKeys: array_values(array_unique($signingKeys)),
         );
+    }
+
+    /**
+     * "updates": {"github": "owner/name"} or {"url": "https://…", "license": true}.
+     *
+     * @return array{0: array{github: string}|array{url: string, license: bool}|null, 1: ?string}
+     */
+    private static function updates(mixed $u): array
+    {
+        if (!is_array($u)) {
+            return [null, 'updates must be an object: {"github": "owner/name"} or {"url": "https://…"}'];
+        }
+        $unknown = array_diff(array_keys($u), ['github', 'url', 'license']);
+        if ($unknown !== []) {
+            return [null, 'updates has unknown keys: ' . implode(', ', $unknown)];
+        }
+        if (isset($u['github']) === isset($u['url'])) {
+            return [null, 'updates needs exactly one of "github" or "url"'];
+        }
+        if (isset($u['github'])) {
+            if (!is_string($u['github']) || preg_match(self::GITHUB, $u['github']) !== 1 || array_key_exists('license', $u)) {
+                return [null, 'updates.github must be a repository like "acme/events" (GitHub releases take no license key)'];
+            }
+
+            return [['github' => $u['github']], null];
+        }
+        $url = $u['url'];
+        if (!is_string($url) || strlen($url) > 500 || !self::isFeedUrl($url)) {
+            return [null, 'updates.url must be an https address with no user name, password or fragment'];
+        }
+        if (array_key_exists('license', $u) && !is_bool($u['license'])) {
+            return [null, 'updates.license must be true or false'];
+        }
+
+        return [['url' => $url, 'license' => $u['license'] ?? false], null];
+    }
+
+    private static function isFeedUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+
+        return is_array($parts) && ($parts['scheme'] ?? '') === 'https' && ($parts['host'] ?? '') !== ''
+            && !isset($parts['user']) && !isset($parts['pass']) && !isset($parts['fragment'])
+            && (!isset($parts['port']) || $parts['port'] === 443);
     }
 }

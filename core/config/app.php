@@ -41,10 +41,15 @@ return [
     // health: auto (a fresh PHP process when proc_open works, else HTTP) | process | http
     // php: the PHP CLI binary for the process check (null: found from the running PHP)
     // health_url: where the server reaches the site for the HTTP check (null: app.url)
+    // check_every: hours between checks of the sources plugins and themes name for
+    //   their updates ("updates" in their manifest); 0 turns the scheduled check off
+    // prereleases: offer plugin and theme pre-releases (1.2.0-beta.1) too
     'updates' => [
         'health' => 'auto',
         'php' => null,
         'health_url' => null,
+        'check_every' => 12,
+        'prereleases' => false,
     ],
 
     // Saved page HTML, for sites without the Node renderer below: pages go out as

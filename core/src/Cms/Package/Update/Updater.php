@@ -109,6 +109,10 @@ final class Updater
         if ($cmp < 0 && !($options['allow_downgrade'] ?? false)) {
             return ["This is {$check['name']} {$check['version']}, older than the installed {$from}."];
         }
+        $pin = ($options['allow_unsigned'] ?? false) ? null : $this->installer->pins()->problem($this->installer->owner($check), $check['signature']);
+        if ($pin !== null) {
+            return ["{$check['name']} {$check['version']} {$pin}."];
+        }
         $candidate = new Package(Manifest::load($staged['package'], $staged['type']), $staged['package']);
 
         return array_map(static fn(string $p): string => "{$check['name']} {$check['version']} {$p}.", $this->cms->extensions()->updateProblems($candidate));
@@ -164,6 +168,7 @@ final class Updater
             $maintenance->off();
             $ext->discover(true);
             $this->pruneOld($slug, $aside);
+            $this->installer->pins()->remember($owner, $check['signature'], $check['signing_keys']);
             (new UpdateHistory($storage))->add(['owner' => $owner, 'from' => $from, 'to' => $to, 'backup' => $backup, 'aside' => $aside, 'actor' => $options['actor'] ?? null]);
             $journal->clear();
             $this->cms->audit->record('package.updated', [$type->value, $slug], ['from' => $from, 'to' => $to, 'signature' => $check['signature']['status'], 'backup' => $backup], $options['actor'] ?? null);
