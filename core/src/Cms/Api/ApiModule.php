@@ -44,6 +44,7 @@ final class ApiModule extends Provider
         Endpoints\Content\ListAssignees::class,
         Endpoints\Content\SaveAutosave::class,
         Endpoints\Content\PreviewEntryBlocks::class,
+        Endpoints\Content\CheckEntryChecklist::class,
         Endpoints\Content\ListTaxonomies::class,
         Endpoints\Content\ListTerms::class,
         Endpoints\Content\CreateTerm::class,

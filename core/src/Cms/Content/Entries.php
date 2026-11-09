@@ -334,6 +334,15 @@ final class Entries
 
         $slug = $this->slug($type, $entry, $input, $title, $parentId, $new, $errors);
 
+        // The type's checklist, when the entry is about to become public (not when it already is).
+        if (in_array($status, ['published', 'scheduled'], true) && ($new || !in_array((string) $entry->status, ['published', 'scheduled'], true)) && $type->getChecklist() !== []) {
+            $counts = array_map(static fn(array $c): int => count($c['ids']) + count($c['names']), $terms);
+            $missing = $this->content->checks->blocking($type, ['title' => $title, 'excerpt' => $excerpt, 'data' => $data, 'terms' => $this->termCounts($type, $new ? null : $entry, $counts)]);
+            foreach ($missing as $label) {
+                $errors['checklist'][] = Translator::get('Before publishing: {item}.', ['item' => $label]);
+            }
+        }
+
         if ($expected !== null && !$new && $expected !== (int) $entry->version) {
             throw ContentException::conflict('Someone else saved this ' . strtolower($type->singular()) . ' since you opened it. Reload to see their changes.');
         }
@@ -399,6 +408,51 @@ final class Entries
                 QueryBuilder::table('autosaves')->where('entry_id', $entry->getKey())->where('user_id', $p->userId)->delete();
             }
         });
+    }
+
+    /**
+     * An entry as its type's checklist sees it: what is saved, with the unsaved values in
+     * $input (title, excerpt, data, terms as taxonomy => list) laid over it. For the editor.
+     *
+     * @param array<string, mixed> $input
+     * @return array{title: string, excerpt: ?string, data: array<string, mixed>, terms: array<string, int>}
+     */
+    public function checklistEntry(ContentType $type, ?Entry $entry, array $input): array
+    {
+        $saved = static fn(string $key): mixed => $entry?->getAttribute($key);
+        $data = (array) ($saved('data') ?? []);
+        if (is_array($input['data'] ?? null)) {
+            $data = array_replace($data, $input['data']);
+        }
+        $given = [];
+        foreach (is_array($input['terms'] ?? null) ? $input['terms'] : [] as $tax => $values) {
+            $given[(string) $tax] = is_array($values) ? count($values) : 0;
+        }
+
+        return [
+            'title' => array_key_exists('title', $input) ? trim((string) $input['title']) : (string) $saved('title'),
+            'excerpt' => array_key_exists('excerpt', $input) ? ($input['excerpt'] === null ? null : (string) $input['excerpt']) : (($e = $saved('excerpt')) === null ? null : (string) $e),
+            'data' => $data,
+            'terms' => $this->termCounts($type, $entry, $given),
+        ];
+    }
+
+    /**
+     * How many terms of each of the type's taxonomies the entry has: $given where the save
+     * sets them, what is saved otherwise.
+     *
+     * @param array<string, int> $given
+     * @return array<string, int>
+     */
+    private function termCounts(ContentType $type, ?Entry $entry, array $given): array
+    {
+        $saved = $entry === null || $entry->getKey() === null ? [] : ($this->terms->idsFor([(int) $entry->getKey()])[(int) $entry->getKey()] ?? []);
+        $out = [];
+        foreach ($this->content->taxonomiesFor($type->name) as $tax) {
+            $out[$tax->name] = $given[$tax->name] ?? count($saved[$tax->name] ?? []);
+        }
+
+        return $out;
     }
 
     /**
