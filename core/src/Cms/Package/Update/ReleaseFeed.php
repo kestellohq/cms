@@ -10,8 +10,10 @@ use Kestello\Framework\Support\Semver;
  * Versions from a GitHub repository's releases (GET /repos/{repo}/releases): Kestello's own
  * (prefix "kestello-core") and those of plugins and themes that name a repository (prefix: the slug).
  *
- * A release counts when it is published (not a draft), its tag is v<version>, and it carries
- * <prefix>-<version>.zip and <prefix>-<version>.zip.sha256 downloaded from that repository.
+ * A release counts when it is published (not a draft), its tag is v<version> or <prefix>-v<version>
+ * (a repository holding several packages, such as kestellohq/plugins: meilisearch-v1.2.0), and it
+ * carries <prefix>-<version>.zip and <prefix>-<version>.zip.sha256 downloaded from that repository.
+ * Another package's releases in the same repository are left out by their tags and zip names.
  * Anything else is left out, never guessed at.
  *
  * @internal
@@ -33,8 +35,8 @@ final class ReleaseFeed
             if (!is_array($release) || ($release['draft'] ?? true) !== false || !is_string($release['tag_name'] ?? null)) {
                 continue;
             }
-            $version = substr($release['tag_name'], 1);
-            if (!str_starts_with($release['tag_name'], 'v') || !self::isVersion($version)) {
+            $version = self::tagVersion($release['tag_name'], $prefix);
+            if ($version === null) {
                 continue;
             }
             $assets = [];
@@ -62,6 +64,18 @@ final class ReleaseFeed
         usort($out, static fn(array $a, array $b): int => Semver::compare($b['version'], $a['version']));
 
         return $out;
+    }
+
+    /** The version a tag names: v<version>, or <prefix>-v<version>; null for any other tag. */
+    public static function tagVersion(string $tag, string $prefix): ?string
+    {
+        foreach (['v', "{$prefix}-v"] as $start) {
+            if (str_starts_with($tag, $start) && self::isVersion(substr($tag, strlen($start)))) {
+                return substr($tag, strlen($start));
+            }
+        }
+
+        return null;
     }
 
     /**
