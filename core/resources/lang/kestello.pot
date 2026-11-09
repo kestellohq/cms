@@ -1098,6 +1098,7 @@ msgid "Backup schedule saved."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
+#: core/resources/js/ui/KFileInput.vue
 msgid "Backup zip"
 msgstr ""
 
@@ -1371,6 +1372,7 @@ msgstr ""
 
 #: core/resources/js/components/content/StudioPublish.vue
 #: core/resources/js/pages/admin/system/Platform.vue
+#: core/resources/js/ui/KFileInput.vue
 msgid "Change"
 msgstr ""
 
@@ -1569,6 +1571,7 @@ msgid "Choose a field type."
 msgstr ""
 
 #: core/resources/js/pages/fields/MediaPicker.vue
+#: core/resources/js/ui/KFileInput.vue
 #: core/resources/js/ui/KMediaPicker.vue
 msgid "Choose a file"
 msgstr ""
@@ -2686,6 +2689,10 @@ msgstr ""
 
 #: core/resources/js/ui/builder/BuilderLayers.vue
 msgid "Drop here to add at the end"
+msgstr ""
+
+#: core/resources/js/ui/KFileInput.vue
+msgid "Drop one file at a time."
 msgstr ""
 
 #: core/resources/js/components/forms/FormBuilder.vue
@@ -7036,6 +7043,7 @@ msgstr ""
 #: core/resources/js/pages/admin/appearance/Styles.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Fleet.vue
+#: core/resources/js/ui/KFileInput.vue
 #: core/resources/js/ui/builder/BuilderInspector.vue
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Remove"
@@ -9697,6 +9705,14 @@ msgstr ""
 msgid "This field needs a value."
 msgstr ""
 
+#: core/resources/js/ui/KFileInput.vue
+msgid "This file can't be used here. Choose one of these: {types}."
+msgstr ""
+
+#: core/resources/js/ui/KFileInput.vue
+msgid "This file is {size}. The limit is {max}."
+msgstr ""
+
 #: core/resources/js/pages/admin/forms/Submissions.vue
 msgid "This form doesn't keep submissions; they are only emailed."
 msgstr ""
@@ -9814,6 +9830,7 @@ msgstr ""
 msgid "This theme lays out entries with its own pages. Add a template to lay them out with blocks instead."
 msgstr ""
 
+#: core/resources/js/ui/KFileInput.vue
 #: core/resources/js/ui/KUploadZone.vue
 msgid "This type of file is not allowed here."
 msgstr ""
@@ -11339,6 +11356,10 @@ msgstr ""
 
 #: core/resources/js/pages/auth/Login.vue
 msgid "or"
+msgstr ""
+
+#: core/resources/js/ui/KFileInput.vue
+msgid "or drop it here."
 msgstr ""
 
 #: core/resources/js/ui/KUploadZone.vue

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
 import { ApiError, confirm, formatBytes, notify, useApi, __ } from '@kestello/sdk';
-import { KAlert, KBadge, KButton, KCard, KField, KInput, KModal, KPageHeader, KSelect, KSwitch, KTable, KTime } from '@kestello/ui';
+import { KAlert, KBadge, KButton, KCard, KField, KFileInput, KInput, KModal, KPageHeader, KSelect, KSwitch, KTable, KTime } from '@kestello/ui';
 
 defineOptions({ layout: 'Admin' });
 
@@ -324,8 +324,8 @@ const rowsText = (n) => __('{n, plural, one {# row} other {# rows}}', { n });
             <p class="k-muted k-small k-backups__note">
                 {{ __('A backup zip from another Kestello site, on any database. It is checked, then listed here to restore.') }}
             </p>
-            <KField v-slot="{ id }" :label="__('Backup zip')" :error="uploadErrors.file ?? ''">
-                <input :id="id" type="file" accept=".zip,application/zip" class="k-input" required @change="uploadFile = $event.target.files?.[0] ?? null" />
+            <KField v-slot="{ id, describedBy }" :label="__('Backup zip')" :error="uploadErrors.file ?? ''">
+                <KFileInput :id="id" v-model="uploadFile" accept=".zip,application/zip" :described-by="describedBy" required />
             </KField>
         </form>
         <template #footer>

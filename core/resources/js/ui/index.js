@@ -9,6 +9,7 @@ export { default as KCard } from './KCard.vue';
 export { default as KDialogs } from './KDialogs.vue';
 export { default as KEmpty } from './KEmpty.vue';
 export { default as KField } from './KField.vue';
+export { default as KFileInput } from './KFileInput.vue';
 export { default as KIcon } from './KIcon.vue';
 export { default as KInput } from './KInput.vue';
 export { default as KKeyValue } from './KKeyValue.vue';
