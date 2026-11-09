@@ -6,6 +6,7 @@ import { KAlert, KBadge, KBuilder, KButton, KCard, KContentField, KField, KIcon,
 import RevisionDiff from '../../../components/content/RevisionDiff.vue';
 import LinkedFrom from '../../../components/content/LinkedFrom.vue';
 import ReviewPanel from '../../../components/content/ReviewPanel.vue';
+import PublishChecklist from '../../../components/content/PublishChecklist.vue';
 import SharePreviews from '../../../components/content/SharePreviews.vue';
 import StudioPublish from '../../../components/content/StudioPublish.vue';
 import { isNewEntry } from '../../../components/content/entry-state.js';
@@ -988,6 +989,14 @@ const err = (key) => (Array.isArray(errors.value[key]) ? errors.value[key][0] : 
                             </dl>
                         </div>
                     </KCard>
+
+                    <PublishChecklist
+                        v-if="type.checklist && !readOnly && !live"
+                        :type-name="typeName"
+                        :entry-id="entry?.id ?? null"
+                        :form="form"
+                        :error="err('checklist')"
+                    />
 
                     <KCard v-for="f in sideFields" :key="`side-${f.name}`" class="k-editor__side-field">
                         <KContentField v-model="form.data[f.name]" :field="f" :errors="errors" path="data" :disabled="readOnly" />

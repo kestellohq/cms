@@ -7,7 +7,7 @@ namespace PHPSTORM_META {
     // $container->make(Foo::class) returns a Foo
     override(\Kestello\Framework\Core\Container::make(0), map(['' => '@']));
 
-    registerArgumentsSet('kestello_capabilities', 'read', 'admin.access', 'content.access', 'profile.manage', 'users.read', 'users.manage', 'roles.manage', 'menus.manage', 'media.upload', 'media.manage', 'settings.manage', 'audit.read', 'security.manage', 'webhooks.manage', 'system.manage');
+    registerArgumentsSet('kestello_capabilities', 'read', 'admin.access', 'content.access', 'profile.manage', 'users.read', 'users.manage', 'roles.manage', 'menus.manage', 'media.upload', 'media.manage', 'settings.manage', 'audit.read', 'security.manage', 'webhooks.manage', 'system.manage', 'fleet.manage');
     registerArgumentsSet('kestello_widget_areas', 'dashboard');
     registerArgumentsSet('kestello_slots', 'users.edit.panels', 'profile.tabs');
     registerArgumentsSet('kestello_columns', 'users.list', 'entries.list');

@@ -4,6 +4,7 @@ import { Head, Link, usePage, useRouter } from '@kestello/app';
 import { ApiError, clone, confirm, notify, useApi, __ } from '@kestello/sdk';
 import { KAlert, KButton, KCard, KField, KIcon, KInput, KModal, KSelect, KSwitch } from '@kestello/ui';
 import FieldList from '../../../components/content-types/FieldList.vue';
+import ChecklistEditor from '../../../components/content-types/ChecklistEditor.vue';
 
 defineOptions({ layout: 'Admin' });
 
@@ -287,6 +288,10 @@ async function copyPhp() {
                             <KInput :id="fid" v-model.number="def.menu_order" type="number" min="0" max="1000" />
                         </KField>
                     </div>
+                </KCard>
+
+                <KCard v-if="isType" :title="__('Before publishing')">
+                    <ChecklistEditor v-model="def.checklist" :checks="meta?.checks ?? []" :taxonomies="meta?.taxonomies ?? []" :errors="errors" />
                 </KCard>
 
                 <div class="k-editor__trash">

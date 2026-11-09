@@ -1,8 +1,8 @@
-# Translation template for Kestello 0.1.0-rc.1 (domain "core").
+# Translation template for Kestello 0.1.0-rc.2 (domain "core").
 # Made by `bin/cms i18n:extract`. Messages use ICU MessageFormat: keep {placeholders} and plural cases.
 msgid ""
 msgstr ""
-"Project-Id-Version: Kestello 0.1.0-rc.1\n"
+"Project-Id-Version: Kestello 0.1.0-rc.2\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -25,6 +25,7 @@ msgid "(no content)"
 msgstr ""
 
 #: core/resources/js/components/content/LinkedFrom.vue
+#: core/resources/js/pages/admin/Dashboard.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/content/Index.vue
 #: core/resources/js/pages/admin/media/Index.vue
@@ -389,6 +390,10 @@ msgstr ""
 msgid "Add a block after"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
+msgid "Add a check"
+msgstr ""
+
 #: core/resources/js/components/content-types/FieldSettings.vue
 msgid "Add a choice"
 msgstr ""
@@ -420,6 +425,10 @@ msgstr ""
 
 #: core/resources/js/components/content-types/ConditionsEditor.vue
 msgid "Add a rule"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Add a site"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -488,6 +497,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/users/Index.vue
 msgid "Add person"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Add site"
 msgstr ""
 
 #: core/resources/js/components/content-types/FieldList.vue
@@ -584,6 +597,7 @@ msgstr ""
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Audit.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Security.vue
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
@@ -901,6 +915,10 @@ msgstr ""
 msgid "Asks GitHub whether a new Kestello version is out (config/release.php). It only tells you; Updates installs."
 msgstr ""
 
+#: core/src/Cms/Fleet/FleetModule.php
+msgid "Asks every site in the fleet for its report."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Api.vue
 msgid "Asks for your password again if you have not entered it recently."
 msgstr ""
@@ -917,6 +935,10 @@ msgstr ""
 msgid "Assigned to"
 msgstr ""
 
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Assigned to you"
+msgstr ""
+
 #: core/resources/js/components/content/ReviewPanel.vue
 #: core/resources/js/pages/admin/content/Index.vue
 msgid "Assigned to {name}"
@@ -928,6 +950,10 @@ msgstr ""
 
 #: core/src/Cms/Forms/Forms.php
 msgid "At least one address."
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "At least {min} words"
 msgstr ""
 
 #: core/resources/js/pages/auth/CompleteRegistration.vue
@@ -943,6 +969,10 @@ msgstr ""
 #: core/src/Cms/Content/Models/ContentModels.php
 #: core/src/Cms/Forms/Forms.php
 msgid "At most {max} fields."
+msgstr ""
+
+#: core/src/Cms/Content/Models/ContentModels.php
+msgid "At most {max} items."
 msgstr ""
 
 #: core/src/Cms/Content/Terms.php
@@ -1105,6 +1135,15 @@ msgstr ""
 msgid "Before an update"
 msgstr ""
 
+#: core/resources/js/components/content/PublishChecklist.vue
+#: core/resources/js/pages/admin/content-types/Edit.vue
+msgid "Before publishing"
+msgstr ""
+
+#: core/src/Cms/Content/Entries.php
+msgid "Before publishing: {item}."
+msgstr ""
+
 #: core/resources/js/pages/admin/content-types/Edit.vue
 msgid "Behavior"
 msgstr ""
@@ -1224,6 +1263,10 @@ msgstr ""
 msgid "Buttons side by side. They wrap onto the next line when there is no room."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "By hand"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "By title"
 msgstr ""
@@ -1278,6 +1321,7 @@ msgstr ""
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/roles/Index.vue
 #: core/resources/js/pages/admin/system/Backups.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Platform.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
@@ -1432,6 +1476,10 @@ msgstr ""
 msgid "Changes here apply on {screen} only; the rest follows desktop."
 msgstr ""
 
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Changes requested"
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Changes saved {when}"
 msgstr ""
@@ -1449,6 +1497,7 @@ msgstr ""
 msgid "Characters"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Check"
 msgstr ""
@@ -1458,6 +1507,7 @@ msgid "Check again"
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Check now"
 msgstr ""
@@ -1478,6 +1528,7 @@ msgstr ""
 msgid "Check {email} for a link to confirm it."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Checked"
 msgstr ""
@@ -1490,6 +1541,7 @@ msgstr ""
 msgid "Checking your site…"
 msgstr ""
 
+#: core/resources/js/components/content/PublishChecklist.vue
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "Checking…"
 msgstr ""
@@ -1915,6 +1967,10 @@ msgstr ""
 #: core/resources/js/ui/builder/BuilderDesign.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Corners"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Could be better"
 msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
@@ -2549,6 +2605,7 @@ msgstr ""
 msgid "Documents"
 msgstr ""
 
+#: core/resources/js/components/content/PublishChecklist.vue
 #: core/resources/js/components/content/StudioPublish.vue
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "Done"
@@ -2990,6 +3047,10 @@ msgstr ""
 msgid "Everything on the site is replaced with the backup from {date}: content, settings, people and files. Everyone is signed out, you too."
 msgstr ""
 
+#: core/resources/js/components/content/PublishChecklist.vue
+msgid "Everything required is done."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "Everything that could come over did. Below is what changed on the way."
 msgstr ""
@@ -3256,6 +3317,10 @@ msgstr ""
 msgid "Finishing"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "First 16 hex characters of the key's SHA-256"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreListBlocks.php
 msgid "First column is headings"
 msgstr ""
@@ -3274,6 +3339,15 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Styles.vue
 msgid "Fix"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+#: core/src/Cms/Fleet/FleetModule.php
+msgid "Fleet"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Fleet token"
 msgstr ""
 
 #: core/resources/js/components/media/ImageEditor.vue
@@ -3525,6 +3599,10 @@ msgstr ""
 msgid "Gone (410)"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Good"
+msgstr ""
+
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "Good afternoon, {name}"
 msgstr ""
@@ -3583,8 +3661,36 @@ msgstr ""
 msgid "Handwriting"
 msgstr ""
 
+#: core/src/Cms/Content/Checklist.php
+msgid "Has a featured image"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has a minimum number of words"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has a search description"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has a term of a taxonomy"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has a term of {taxonomy}"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has an excerpt"
+msgstr ""
+
 #: core/src/Cms/Api/Schema.php
 msgid "Has an invalid format."
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has at least one of the {terms}"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/ListSecuritySessions.php
@@ -3908,6 +4014,10 @@ msgstr ""
 msgid "In the trash"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "In use"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "Inactive"
 msgstr ""
@@ -4070,6 +4180,10 @@ msgstr ""
 msgid "Its sub-items move up a level."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Its token keeps working on that site until you revoke it there, under Your profile → Access tokens or System → Security."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "JPEG quality"
 msgstr ""
@@ -4162,6 +4276,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
 #: core/resources/js/pages/admin/content-types/Index.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Kestello"
 msgstr ""
@@ -4184,6 +4299,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Audit.vue
 msgid "Kestello updates"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Kestello updates signed by"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Updates.vue
@@ -4210,6 +4329,10 @@ msgstr ""
 msgid "Key prefix. Empty = derived from this site, so sites sharing a server never collide."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Key {id}, no longer trusted"
+msgstr ""
+
 #: core/resources/js/components/updates/PackageUpdates.vue
 msgid "Key …{last4}"
 msgstr ""
@@ -4217,6 +4340,10 @@ msgstr ""
 #: core/resources/js/ui/builder/BuilderBar.vue
 #: core/resources/js/ui/builder/BuilderShortcuts.vue
 msgid "Keyboard shortcuts"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "Keys allowed to sign its next version; empty when it was installed without a signature"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Index.vue
@@ -4296,6 +4423,10 @@ msgstr ""
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Last active"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Last backup"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
@@ -4420,6 +4551,7 @@ msgstr ""
 msgid "Letters, numbers, dashes and underscores. They can sign in with it."
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Level"
 msgstr ""
@@ -4640,6 +4772,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
 msgid "Made in the admin, no code"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Made on that site by an administrator under Your profile → Access tokens, with only the fleet permission. It is kept encrypted here and never shown again."
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
@@ -4979,6 +5115,7 @@ msgid "Must be a list of items."
 msgstr ""
 
 #: core/src/Cms/Content/Entries.php
+#: core/src/Cms/Content/Models/ContentModels.php
 msgid "Must be a list."
 msgstr ""
 
@@ -5076,6 +5213,7 @@ msgstr ""
 #: core/resources/js/pages/admin/forms/Index.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/admin/roles/Index.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Security.vue
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
@@ -5119,6 +5257,7 @@ msgstr ""
 #: core/resources/js/components/content-types/FieldList.vue
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/admin/Dashboard.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Needs attention"
 msgstr ""
@@ -5145,6 +5284,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Never"
 msgstr ""
@@ -5420,6 +5560,7 @@ msgid "No plugins installed"
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
+#: core/resources/js/pages/admin/system/Security.vue
 msgid "No plugins or themes installed."
 msgstr ""
 
@@ -5444,6 +5585,10 @@ msgid "No redirects yet"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue
+msgid "No release key"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
 msgid "No role is expected to use two-step sign-in. {n} of {total} people use it anyway."
 msgstr ""
 
@@ -5457,6 +5602,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "No sessions."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "No signature on record"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "No sites in the fleet yet"
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Submissions.vue
@@ -5563,6 +5716,10 @@ msgstr ""
 msgid "None."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "None. The admin installs no plugin or theme zips; a developer can still install them from the command line."
+msgstr ""
+
 #: core/src/Cms/Content/Entries.php
 msgid "Not a date."
 msgstr ""
@@ -5576,6 +5733,7 @@ msgstr ""
 msgid "Not an indexed field."
 msgstr ""
 
+#: core/resources/js/components/content/PublishChecklist.vue
 #: core/resources/js/ui/builder/useDocument.js
 msgid "Not available"
 msgstr ""
@@ -5637,6 +5795,7 @@ msgstr ""
 msgid "Not used in any entry yet."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Schedule.vue
 msgid "Not yet"
 msgstr ""
@@ -5838,6 +5997,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "On disk"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "On each site you look after, sign in as an administrator and create a token under Your profile → Access tokens, with only the fleet permission ticked. Then add the site here with its address and that token."
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -6116,6 +6279,10 @@ msgstr ""
 msgid "Output of {name}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Over a week old"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreSectionBlocks.php
 msgid "Over the image, so text stays readable. Has no effect until an image is chosen."
 msgstr ""
@@ -6331,6 +6498,10 @@ msgstr ""
 msgid "People"
 msgstr ""
 
+#: core/resources/js/components/content/ReviewPanel.vue
+msgid "People to mention"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "People with the role {roles} are expected to use two-step sign-in. These have not turned it on yet. They can, under Your profile."
 msgstr ""
@@ -6446,11 +6617,16 @@ msgid "Please tick this box."
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
+#: core/resources/js/pages/admin/system/Security.vue
 msgid "Plugin"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Plugin and theme folders were not restored: the backup was made on another site, and code from elsewhere is only restored from the command line (bin/cms backup:restore --with-code)."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Plugin or theme"
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
@@ -6477,11 +6653,16 @@ msgid "Plugins add features to the site. Each one declares what it may do, and o
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 msgid "Plugins and themes"
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
 msgid "Plugins and themes that say where their updates come from are updated here. Others are updated by uploading the new version under Plugins → Manage plugins, where you can also switch back after an update."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Plugins, themes and updates"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -6758,8 +6939,13 @@ msgstr ""
 msgid "Recent activity"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Recommended"
+msgstr ""
+
+#: core/resources/js/components/content/PublishChecklist.vue
+msgid "Recommended, not done"
 msgstr ""
 
 #: core/resources/js/pages/admin/users/Edit.vue
@@ -6849,6 +7035,7 @@ msgstr ""
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/admin/appearance/Styles.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/ui/builder/BuilderInspector.vue
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Remove"
@@ -6899,6 +7086,10 @@ msgstr ""
 msgid "Remove {block}"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
+msgid "Remove {check}"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Styles.vue
 msgid "Remove {family}"
 msgstr ""
@@ -6915,8 +7106,13 @@ msgstr ""
 msgid "Remove {item} {n}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/ui/KPicker.vue
 msgid "Remove {name}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Remove {name} from the fleet?"
 msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
@@ -7049,13 +7245,23 @@ msgstr ""
 msgid "Request changes"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/resources/js/components/content-types/FieldList.vue
 #: core/resources/js/components/content-types/FieldSettings.vue
+#: core/resources/js/components/content/PublishChecklist.vue
 msgid "Required"
+msgstr ""
+
+#: core/resources/js/components/content-types/ChecklistEditor.vue
+msgid "Required items hold publishing back until they are done; recommended ones are advice in the editor. Drafts and submissions for review are never held back."
 msgstr ""
 
 #: core/resources/js/components/content-types/FieldSettings.vue
 msgid "Required to publish"
+msgstr ""
+
+#: core/resources/js/components/content/PublishChecklist.vue
+msgid "Required, not done"
 msgstr ""
 
 #: core/src/Cms/Content/Models/ContentModels.php
@@ -8058,6 +8264,10 @@ msgstr ""
 msgid "Signature"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Signed by"
+msgstr ""
+
 #: core/resources/js/components/updates/signature.js
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "Signed by {name}, a publisher this site trusts."
@@ -8117,6 +8327,7 @@ msgstr ""
 msgid "Single-entry answers only"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/builder/useCatalog.js
@@ -8126,6 +8337,7 @@ msgstr ""
 msgid "Site"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Health.vue
 #: core/src/Cms/Admin/AdminModule.php
 msgid "Site Health"
@@ -8693,6 +8905,7 @@ msgstr ""
 msgid "Task"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/resources/js/components/content-types/FieldSettings.vue
 #: core/resources/js/pages/admin/content-types/Index.vue
 #: core/resources/js/pages/admin/menus/Index.vue
@@ -8839,6 +9052,10 @@ msgstr ""
 msgid "The address in {field}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "The admin installs unsigned plugins and themes too (app.packages.admin_unsigned in config/app.php). That suits a development site; switch it off on a live one."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "The admin, emails and the text your theme shows on its own use this language. Language packs add more."
 msgstr ""
@@ -8900,6 +9117,7 @@ msgstr ""
 msgid "The database is backed up, visitors see a short maintenance page, and the site is checked with the new version. If anything is wrong, {v} and the database come back."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Content/CheckEntryChecklist.php
 #: core/src/Cms/Api/Endpoints/Content/PreviewEntryBlocks.php
 msgid "The entry being edited; empty for one not saved yet."
 msgstr ""
@@ -9026,6 +9244,10 @@ msgstr ""
 
 #: core/resources/js/components/media/ImageEditor.vue
 msgid "The original is back."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "The other Kestello sites you look after, in one list: which version each runs, what needs updating, Site Health and the last backup. Each site is asked every hour with a token made on it that can read this and nothing else."
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderCanvas.vue
@@ -9156,6 +9378,10 @@ msgstr ""
 msgid "The site's changes and any draft go. The current version stays in the history."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "The site's home page, starting with https://."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "The site's profiles elsewhere, such as LinkedIn, Mastodon or GitHub: one https:// address per line. They tell search engines these belong to the same organization or person."
 msgstr ""
@@ -9272,6 +9498,7 @@ msgid "Their username"
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
+#: core/resources/js/pages/admin/system/Security.vue
 msgid "Theme"
 msgstr ""
 
@@ -9344,6 +9571,10 @@ msgstr ""
 msgid "These changed on this site after the last import, so the WordPress version did not replace them."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "These come from the server's config files, never from the admin, so a stolen password cannot add a publisher."
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "These lines were skipped:"
 msgstr ""
@@ -9394,6 +9625,10 @@ msgstr ""
 
 #: core/resources/js/ui/KBlockSettings.vue
 msgid "This block's settings are locked by the layout."
+msgstr ""
+
+#: core/src/Cms/Content/Models/ContentModels.php
+msgid "This check is already on the list."
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -9690,6 +9925,10 @@ msgstr ""
 msgid "Trust the provider's two-step check"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Trusted publishers"
+msgstr ""
+
 #: core/resources/js/components/updates/StoppedUpdate.vue
 #: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/fields/Blocks.vue
@@ -9784,6 +10023,10 @@ msgstr ""
 msgid "Type"
 msgstr ""
 
+#: core/resources/js/components/content/ReviewPanel.vue
+msgid "Type @ and a name to tell someone."
+msgstr ""
+
 #: core/resources/js/ui/KFinder.vue
 msgid "Type a few letters of a title, file name, person or screen."
 msgstr ""
@@ -9870,6 +10113,10 @@ msgstr ""
 
 #: core/src/Cms/Content/FieldFilters.php
 msgid "Unknown operator \"{op}\". Use one of: {list}."
+msgstr ""
+
+#: core/src/Cms/Content/Models/ContentModels.php
+msgid "Unknown taxonomy {t}."
 msgstr ""
 
 #: core/resources/js/components/content/SharePreviews.vue
@@ -9993,6 +10240,14 @@ msgstr ""
 #: core/resources/js/pages/admin/system/Updates.vue
 #: core/src/Cms/Package/PackagesModule.php
 msgid "Updates"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Updates from"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Updates of Kestello from GitHub cannot be applied from the admin."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Plugins.vue
@@ -10217,6 +10472,7 @@ msgstr ""
 #: core/resources/js/components/content/StudioPublish.vue
 #: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/content/Edit.vue
+#: core/resources/js/pages/admin/system/Security.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Version"
 msgstr ""
@@ -10312,12 +10568,20 @@ msgstr ""
 msgid "Waiting"
 msgstr ""
 
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Waiting for review"
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Waiting for review. An editor publishes it or asks for changes, and you are told either way."
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Waiting for {email} to be confirmed: open the link sent there."
+msgstr ""
+
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Waiting on you"
 msgstr ""
 
 #: core/resources/js/components/content-types/field-labels.js
@@ -10444,6 +10708,10 @@ msgstr ""
 msgid "When a page moved"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Content/ListWaiting.php
+msgid "When it started waiting on you"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "When someone signs in with a provider that confirmed their email, connect it to the account with that address. Leave off unless you trust every provider you use."
 msgstr ""
@@ -10478,6 +10746,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Resources/MediaResource.php
 msgid "Where it is used; single-item answers only, and only entries the viewer may open"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "Where new versions come from"
 msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
@@ -10606,6 +10878,7 @@ msgstr ""
 msgid "WordPress export file"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/resources/js/ui/builder/BuilderDetails.vue
 msgid "Words"
 msgstr ""
@@ -10856,8 +11129,20 @@ msgstr ""
 msgid "and everything below"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "and {n} more"
+msgstr ""
+
 #: core/resources/js/components/content-types/ConditionsEditor.vue
 msgid "any of these holds"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "app.packages.admin_unsigned: the admin installs unsigned zips too"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "app.packages.trusted_keys"
 msgstr ""
 
 #: core/resources/js/ui/builder/DesignScale.vue
@@ -10886,6 +11171,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "categories and tags"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Content/ListWaiting.php
+msgid "changes_requested: yours, sent back; assigned: assigned to you; review: in review, yours to publish"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Platform.vue
@@ -11012,6 +11301,10 @@ msgstr ""
 msgid "light"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Fleet/AddFleetSite.php
+msgid "made on that site, with only the \"fleet\" scope"
+msgstr ""
+
 #: core/resources/js/ui/KTermSelect.vue
 msgid "new"
 msgstr ""
@@ -11022,6 +11315,14 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/GetMe.php
 msgid "null for a browser session (no narrowing)"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Content/CheckEntryChecklist.php
+msgid "null: the check is not available (its plugin is off, or its taxonomy no longer applies)"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "null: the key is no longer trusted"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Import.vue
@@ -11085,6 +11386,10 @@ msgstr ""
 msgid "redis://user:pass@host:6379/0 or rediss://… (overrides the fields below)"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "release.keys: what Kestello's own updates must be signed with"
+msgstr ""
+
 #: core/resources/js/pages/admin/roles/Index.vue
 msgid "removed"
 msgstr ""
@@ -11131,6 +11436,10 @@ msgstr ""
 msgid "synced"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Content/CheckEntryChecklist.php
+msgid "taxonomy => list of term ids or new names"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Templates.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "template"
@@ -11146,6 +11455,18 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Platform.vue
 msgid "the defaults"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Fleet/AddFleetSite.php
+msgid "the home page, https only"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Fleet/FleetEndpoint.php
+msgid "the last report the site gave (GET /fleet/report on that site)"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Fleet/FleetEndpoint.php
+msgid "the token itself is never shown again"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -11174,6 +11495,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Webhooks/CreateWebhook.php
 msgid "whsec_…, shown only now"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Fleet/FleetEndpoint.php
+msgid "why the last check failed; the last good report is kept"
 msgstr ""
 
 #: core/src/Cms/Forms/Forms.php
@@ -11255,6 +11580,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
 msgid "{category} · synced"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "{check} (not available: is its plugin active?)"
+msgstr ""
+
+#: core/src/Cms/Content/Models/ContentModels.php
+msgid "{check} is not available: is its plugin active?"
 msgstr ""
 
 #: core/src/Cms/Health/HealthAlertNotification.php
@@ -11451,9 +11784,19 @@ msgstr ""
 msgid "{n, plural, one {# field} other {# fields}}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# installed, up to date} other {# installed, up to date}}"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Import.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {# item} other {# items}} could not be imported. The reason is next to each."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# license problem} other {# license problems}}"
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Index.vue
@@ -11501,6 +11844,11 @@ msgstr ""
 msgid "{n, plural, one {# unsaved change} other {# unsaved changes}}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# update} other {# updates}}"
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderLibrary.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {Browse # pattern} other {Browse # patterns}}"
@@ -11514,6 +11862,11 @@ msgstr ""
 #: core/resources/js/pages/admin/content/Edit.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {One problem needs attention.} other {# problems need attention.}}"
+msgstr ""
+
+#: core/resources/js/components/content/PublishChecklist.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {Publishing waits for # required item.} other {Publishing waits for # required items.}}"
 msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
@@ -11589,6 +11942,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Queue.vue
 msgid "{name} progress"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "{name} was added, but could not be checked: {error}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "{name} was added."
 msgstr ""
 
 #: core/resources/js/pages/admin/users/Edit.vue
@@ -11836,6 +12197,10 @@ msgstr ""
 msgid "{value}, as on {screen}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "{version} is out"
+msgstr ""
+
 #: core/resources/js/components/updates/PackageUpdates.vue
 msgid "{v} available"
 msgstr ""
@@ -11898,6 +12263,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "{who} linked a sign-in account"
+msgstr ""
+
+#: core/src/Cms/Content/ReviewNotification.php
+msgid "{who} mentioned you on the {item} \"{title}\""
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue

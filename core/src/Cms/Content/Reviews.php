@@ -28,6 +28,9 @@ use Kestello\Framework\Events\EventDispatcher;
  *   $reviews->comment($entry, 'Can we use the newer photo?', $principal);
  *   $reviews->requestChanges($entry, 'The second paragraph needs a source.', $principal);
  *   $reviews->assign($entry, $editorId, $principal);
+ *   $reviews->waitingFor($principal);   // sent back to you, assigned to you, in review for you
+ *
+ * A comment that names someone as @username tells them, when they may open the entry.
  *
  * @api
  */
@@ -40,6 +43,12 @@ final class Reviews
 
     /** At most this many people hear about one submission. */
     private const int MAX_REVIEWERS = 50;
+
+    /** At most this many people are told about one comment by name. */
+    public const int MAX_MENTIONS = 10;
+
+    /** Why an entry waits on someone, most urgent first. */
+    public const array WAITING = ['changes_requested', 'assigned', 'review'];
 
     public function __construct(
         private readonly ContentRegistry $content,
@@ -91,12 +100,171 @@ final class Reviews
         $id = $this->record($entry, 'comment', $body, $p->userId);
         $this->events?->dispatch(new EntryCommented((int) $entry->getKey(), (string) $entry->type, $id, $p->userId));
 
-        // The author, the assignee and everyone who wrote on it before, except the writer.
+        // Everyone named, then the author, the assignee and everyone who wrote on it before; never the writer, never twice.
+        $author = $entry->author_id === null ? null : (int) $entry->author_id;
+        $named = $this->mentionedIn($body, $author, $type);
         $people = QueryBuilder::table('entry_comments')->where('entry_id', $entry->getKey())->whereIn('kind', ['comment', 'changes_requested', 'submitted'])->whereNotNull('user_id')->distinct()->pluck('user_id');
-        $to = array_merge([$entry->author_id, $this->assigneeOf($entry)], $people);
-        $this->notify($to, $p->userId, new CommentNotification('comment', (int) $entry->getKey(), $type->singular(), (string) $entry->title, self::username($p->userId), $body, $this->editUrl($entry), $this->siteUrl));
+        $to = array_values(array_diff(array_map('intval', array_filter(array_merge([$author, $this->assigneeOf($entry)], $people))), $named));
+        $writer = self::username($p->userId);
+        $this->notify($named, $p->userId, new CommentNotification('mentioned', (int) $entry->getKey(), $type->singular(), (string) $entry->title, $writer, $body, $this->editUrl($entry), $this->siteUrl));
+        $this->notify($to, $p->userId, new CommentNotification('comment', (int) $entry->getKey(), $type->singular(), (string) $entry->title, $writer, $body, $this->editUrl($entry), $this->siteUrl));
 
         return $id;
+    }
+
+    /**
+     * The usernames a comment names with @, in order, once each: "@maria" and "(@maria)" do,
+     * an email address doesn't. At most MAX_MENTIONS.
+     *
+     * @return list<string>
+     */
+    public static function mentions(string $body): array
+    {
+        preg_match_all('/(?<![A-Za-z0-9_.@-])@([A-Za-z0-9_-]{3,50})(?![A-Za-z0-9_-])/', $body, $m);
+        $out = [];
+        foreach ($m[1] as $name) {
+            $key = strtolower($name);
+            $out[$key] ??= $name;
+        }
+
+        return array_slice(array_values($out), 0, self::MAX_MENTIONS);
+    }
+
+    /**
+     * The people named in a comment who may open the entry (active accounts whose role may
+     * edit entries of its type, and other people's too when it isn't theirs).
+     *
+     * @return list<int>
+     */
+    private function mentionedIn(string $body, ?int $authorId, ContentType $type): array
+    {
+        $names = array_map('strtolower', self::mentions($body));
+        if ($names === []) {
+            return [];
+        }
+        $others = $this->roles->rolesWith($type->capability('edit_others'));
+        $ids = [];
+        foreach ($this->assignable($type) as $person) {
+            if (!in_array(strtolower($person['username']), $names, true)) {
+                continue;
+            }
+            $own = $authorId === $person['id'];
+            if ($own || in_array($this->roleOf($person['id']), $others, true)) {
+                $ids[] = $person['id'];
+            }
+        }
+
+        return $ids;
+    }
+
+    private function roleOf(int $userId): ?string
+    {
+        $role = QueryBuilder::table('users')->where('id', $userId)->value('role');
+
+        return $role === null ? null : (string) $role;
+    }
+
+    // ── what waits on you ────────────────────────────────────────────
+
+    /**
+     * Entries waiting on this person, most urgent first, each once under the first reason that fits:
+     *
+     *   changes_requested  theirs, sent back to draft by a reviewer, not submitted again
+     *   assigned           assigned to them and not published yet
+     *   review             in review, and theirs to publish (not their own)
+     *
+     * Only types they may edit, and entries they may open; trashed entries are left out.
+     *
+     * @return list<array{id: int, type: string, type_label: string, title: string, status: string, reason: string, since: ?string}>
+     */
+    public function waitingFor(Principal $p, int $limit = 20): array
+    {
+        if ($p->userId === null) {
+            return [];
+        }
+        $types = [];
+        foreach ($this->content->types() as $t) {
+            if ($p->can($t->capability('edit'))) {
+                $types[$t->name] = $t;
+            }
+        }
+        if ($types === []) {
+            return [];
+        }
+        $columns = ['id', 'type', 'title', 'status', 'author_id', 'updated_at'];
+        $found = [];
+
+        // sent back: their drafts whose latest review step asks for changes
+        $drafts = QueryBuilder::table('entries')->where('author_id', $p->userId)->where('status', 'draft')->whereIn('type', array_keys($types))->whereNull('deleted_at')
+            ->orderByDesc('updated_at')->limit(200)->select(...$columns)->get();
+        $steps = $this->latestSteps(array_map('intval', array_column($drafts, 'id')));
+        foreach ($drafts as $row) {
+            $step = $steps[(int) $row['id']] ?? null;
+            if ($step !== null && $step['kind'] === 'changes_requested') {
+                $found[] = [$row, 'changes_requested', $step['created_at']];
+            }
+        }
+
+        // assigned to them
+        $assigned = QueryBuilder::table('entry_assignees')->where('user_id', $p->userId)->orderByDesc('assigned_at')->limit(200)->select('entry_id', 'assigned_at')->get();
+        $since = array_column($assigned, 'assigned_at', 'entry_id');
+        if ($since !== []) {
+            $rows = QueryBuilder::table('entries')->whereIn('id', array_map('intval', array_keys($since)))->whereIn('status', Entry::UNPUBLISHED)->whereIn('type', array_keys($types))->whereNull('deleted_at')
+                ->select(...$columns)->get();
+            foreach ($rows as $row) {
+                $found[] = [$row, 'assigned', $since[$row['id']] ?? null];
+            }
+        }
+
+        // in review, for those who may publish other people's entries of the type
+        $reviewable = array_keys(array_filter($types, static fn(ContentType $t): bool => $p->can($t->capability('publish')) && $p->can($t->capability('edit_others'))));
+        if ($reviewable !== []) {
+            $rows = QueryBuilder::table('entries')->where('status', 'pending')->whereIn('type', $reviewable)->whereNull('deleted_at')
+                ->where(static fn(QueryBuilder $q) => $q->whereNull('author_id')->orWhere('author_id', '!=', $p->userId))
+                ->orderBy('updated_at')->limit(200)->select(...$columns)->get();
+            foreach ($rows as $row) {
+                $found[] = [$row, 'review', $row['updated_at']];
+            }
+        }
+
+        $out = [];
+        foreach ($found as [$row, $reason, $at]) {
+            $id = (int) $row['id'];
+            $type = $types[(string) $row['type']];
+            $entry = (new Entry())->forceFill(['author_id' => $row['author_id'] === null ? null : (int) $row['author_id']]);
+            if (isset($out[$id]) || !$this->entries->can($p, $type, 'view', $entry)) {
+                continue;
+            }
+            $out[$id] = [
+                'id' => $id, 'type' => $type->name, 'type_label' => $type->singular(), 'title' => (string) $row['title'], 'status' => (string) $row['status'],
+                'reason' => $reason, 'since' => \Kestello\Framework\Database\Orm\Caster::present($at),
+            ];
+            if (count($out) >= $limit) {
+                break;
+            }
+        }
+
+        return array_values($out);
+    }
+
+    /**
+     * The latest review step (submitted, changes_requested, approved) of each entry.
+     *
+     * @param list<int> $entryIds
+     * @return array<int, array{kind: string, created_at: mixed}>
+     */
+    private function latestSteps(array $entryIds): array
+    {
+        if ($entryIds === []) {
+            return [];
+        }
+        $out = [];
+        $rows = QueryBuilder::table('entry_comments')->whereIn('entry_id', $entryIds)->whereIn('kind', ['submitted', 'changes_requested', 'approved'])->orderByDesc('id')->select('entry_id', 'kind', 'created_at')->get();
+        foreach ($rows as $r) {
+            $out[(int) $r['entry_id']] ??= ['kind' => (string) $r['kind'], 'created_at' => $r['created_at']];
+        }
+
+        return $out;
     }
 
     /** Your own comments; people who may edit others' entries can remove any. Review steps stay. */

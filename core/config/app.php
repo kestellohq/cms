@@ -37,6 +37,13 @@ return [
         'admin_unsigned' => false,
     ],
 
+    // Site → Fleet: watch other Kestello sites (version, updates, health, backups, license
+    // problems) from this one, with a token made on each with only the "fleet" scope. Every site
+    // can be watched; only the site that watches needs this on.
+    'fleet' => [
+        'enabled' => false,
+    ],
+
     // The update pipeline's health check after new files are in place.
     // health: auto (a fresh PHP process when proc_open works, else HTTP) | process | http
     // php: the PHP CLI binary for the process check (null: found from the running PHP)
