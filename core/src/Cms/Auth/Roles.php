@@ -43,6 +43,7 @@ final class Roles
         'security.manage' => 'See everyone\'s sign-ins, sessions and access tokens, and end them',
         'webhooks.manage' => 'Set up webhooks that send site events to other services',
         'system.manage' => 'Manage infrastructure, background jobs, scheduled tasks and Site Health',
+        'fleet.manage' => 'Watch other Kestello sites from Site → Fleet, with their fleet tokens',
     ];
 
     /**
