@@ -206,6 +206,26 @@ final class RegistrationTest extends AuthTestCase
         $this->assertSame([['spam@example.test', null]], $seen);
     }
 
+    public function testSignUpNeverHandsOutARoleAsGoodAsAdministrator(): void
+    {
+        $this->open();
+        $roles = $this->cms->auth->roles;
+        $roles->role('manager', 'Manager', ['read', 'users.manage']);
+        $roles->capability('shop.payouts', 'Send shop payouts', [], sensitive: true);
+        $roles->role('cashier', 'Cashier', ['read', 'shop.payouts']);
+        $roles->role('customer', 'Customer', ['read', 'profile.manage']);
+
+        foreach (['manager', 'cashier'] as $i => $role) {
+            $this->cms->config->set('auth.default_role', $role);
+            $this->assertSame('user', $this->registrations()->complete($this->signUp("r{$i}@example.test"), self::NEW_PASSWORD, '203.0.113.1')['user']['role'], $role);
+        }
+
+        $this->assertFalse($roles->selfServe('admin'));
+        $this->assertFalse($roles->selfServe('nobody'), 'unknown roles neither');
+        $this->assertTrue($roles->selfServe('customer'));
+        $this->assertTrue($roles->selfServe('user'));
+    }
+
     public function testRequestsAreRateLimitedPerAddress(): void
     {
         $this->open();
