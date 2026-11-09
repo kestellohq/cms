@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { Head } from '@kestello/app';
 import { ApiError, confirm, notify, useApi, __ } from '@kestello/sdk';
-import { KBadge, KButton, KCard, KField, KInput, KModal, KPageHeader, KSelect, KTable, KTabs, KTime } from '@kestello/ui';
+import { KBadge, KButton, KCard, KField, KFileInput, KInput, KModal, KPageHeader, KSelect, KTable, KTabs, KTime } from '@kestello/ui';
 
 defineOptions({ layout: 'Admin' });
 
@@ -193,8 +193,8 @@ const sourceHelp = computed(
 const importing = ref(false);
 const csv = ref('');
 const importResult = ref(null);
-async function readFile(event) {
-    const file = event.target.files?.[0];
+const csvFile = ref(null);
+async function readFile(file) {
     if (file) csv.value = await file.text();
 }
 async function runImport() {
@@ -429,7 +429,7 @@ async function exportCsv() {
                 }}
             </p>
             <KField v-slot="{ id }" :label="__('File')">
-                <input :id="id" type="file" accept=".csv,text/csv,text/plain" @change="readFile" />
+                <KFileInput :id="id" v-model="csvFile" accept=".csv,text/csv,text/plain" @update:model-value="readFile" />
             </KField>
             <KField v-slot="{ id, describedBy }" :label="__('Or paste the lines')" :help="__('Such as: /old-page,/new-page')">
                 <textarea

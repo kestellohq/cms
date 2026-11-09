@@ -40,13 +40,17 @@ final class AuthController
 
     public function login(Request $request): Response
     {
-        $form = LoginRequest::fromRequest($request);
-        if (!$form->validate()) {
-            return Response::redirect('/login');
+        $identifier = trim((string) $request->input('email', ''));
+        $password = (string) $request->input('password', '');
+        $missing = array_filter([
+            'email' => $identifier === '' ? ['Enter your email address or username.'] : null,
+            'password' => $password === '' ? ['Enter your password.'] : null,
+        ]);
+        if ($missing !== []) {
+            return $this->back('/login', $missing, ['email' => $identifier]);
         }
 
-        $identifier = trim((string) $request->input('email', ''));
-        $result = $this->service(LoginService::class)->attempt($identifier, (string) $request->input('password', ''), $request->ip());
+        $result = $this->service(LoginService::class)->attempt($identifier, $password, $request->ip());
 
         return match ($result->status) {
             LoginResult::SUCCESS => $this->welcome($result),

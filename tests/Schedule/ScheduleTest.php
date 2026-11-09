@@ -224,4 +224,15 @@ final class ScheduleTest extends TestCase
         $this->assertSame(['slow' => 'ok', 'late' => 'skipped'], $results);
         $this->assertNull(ScheduleRunner::remaining(), 'budget cleared after the run');
     }
+
+    public function testTheFirstRunDropsAHealthReportThatSaysTheSchedulerNeverRan(): void
+    {
+        $this->cache->put(\Kestello\Cms\Health\SiteHealth::CACHE_KEY, ['stale'], 300);
+        $this->runner->run(via: 'cli');
+        $this->assertNull($this->cache->get(\Kestello\Cms\Health\SiteHealth::CACHE_KEY), 'the Overview re-runs the checks');
+
+        $this->cache->put(\Kestello\Cms\Health\SiteHealth::CACHE_KEY, ['fresh'], 300);
+        $this->runner->run(via: 'cli');
+        $this->assertSame(['fresh'], $this->cache->get(\Kestello\Cms\Health\SiteHealth::CACHE_KEY), 'later runs keep the cache');
+    }
 }

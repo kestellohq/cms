@@ -223,7 +223,7 @@ final class BlocksTest extends AuthTestCase
         $this->assertContains(['path' => 'entry.title', 'label' => 'Title'], $list['bindings']);
         $button = $list['blocks'][array_search('core/button', $names, true)];
         $link = $button['fields'][array_search('link', array_column($button['fields'], 'name'), true)];
-        $this->assertSame('Such as /about or https://example.com.', $link['help'], 'a link field says what it takes, under the box');
+        $this->assertSame("Type a page's title to find it, or an address such as /about or https://example.com.", $link['help'], 'a link field says what it takes, under the box');
         $this->assertArrayNotHasKey('placeholder', (array) $link['options'], 'not as text that vanishes on typing');
     }
 

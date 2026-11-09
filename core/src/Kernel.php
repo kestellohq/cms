@@ -464,7 +464,7 @@ final class Kernel
         $console->register(new Make\MakePluginCommand($this->paths));
         $console->register(new Make\MakeThemeCommand($this->paths));
         foreach ([Make\MakeControllerCommand::class, Make\MakeModelCommand::class, Make\MakeMigrationCommand::class,
-            Make\MakeMiddlewareCommand::class, Make\MakeCommandCommand::class, Make\MakeRequestCommand::class] as $generator) {
+            Make\MakeMiddlewareCommand::class, Make\MakeCommandCommand::class] as $generator) {
             $console->register(new $generator($this->paths));
         }
 

@@ -135,6 +135,7 @@ export function startCanvas(router, win = window) {
         }
         router.page.props = placeTree(props, design, { ...data, blocks });
         editing.setEditable(data.editable);
+        overlay.setHolders(data.holders, data.emptyHint);
         nextTick(() => {
             editing.mark();
             reportRect();

@@ -68,7 +68,7 @@ final class CoreHooks
             '?ExternalIdentity $identity' => 'Who is signing in with a provider, or null for email sign-up.',
         ];
         $hooks->filter('auth.can_register', '0.1.0', 'bool', 'Whether someone may create an account, by email sign-up or by signing in with a provider.', $who, $auth);
-        $hooks->filter('auth.default_role', '0.1.0', 'string', 'The role of an account someone creates for themselves. admin and unknown roles become user.', $who, $auth);
+        $hooks->filter('auth.default_role', '0.1.0', 'string', 'The role of an account someone creates for themselves. admin, roles with a sensitive capability and unknown roles become user.', $who, $auth);
         $hooks->filter('auth.redirect_after_login', '0.1.0', 'string', 'Where to go after signing in with a provider or finishing email sign-up. The result must stay on this site.', ['array $user' => 'The user who signed in.'], $auth);
 
         $hooks->filter('media.scan', '0.1.0', '?string', 'Check an uploaded file, for example with a virus scanner. Return a message to reject the upload.', ['array $file' => 'filename, mime, size, path, disk and key.'], 'Media');

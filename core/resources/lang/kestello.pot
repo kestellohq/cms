@@ -1,8 +1,8 @@
-# Translation template for Kestello 0.1.0-rc.2 (domain "core").
+# Translation template for Kestello 0.1.0-rc.3 (domain "core").
 # Made by `bin/cms i18n:extract`. Messages use ICU MessageFormat: keep {placeholders} and plural cases.
 msgid ""
 msgstr ""
-"Project-Id-Version: Kestello 0.1.0-rc.2\n"
+"Project-Id-Version: Kestello 0.1.0-rc.3\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1098,6 +1098,7 @@ msgid "Backup schedule saved."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
+#: core/resources/js/ui/KFileInput.vue
 msgid "Backup zip"
 msgstr ""
 
@@ -1371,6 +1372,7 @@ msgstr ""
 
 #: core/resources/js/components/content/StudioPublish.vue
 #: core/resources/js/pages/admin/system/Platform.vue
+#: core/resources/js/ui/KFileInput.vue
 msgid "Change"
 msgstr ""
 
@@ -1473,7 +1475,11 @@ msgid "Changed {list}"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDesign.vue
-msgid "Changes here apply on {screen} only; the rest follows desktop."
+msgid "Changes here apply on phones only. Anything not changed here follows tablet, then desktop."
+msgstr ""
+
+#: core/resources/js/ui/builder/BuilderDesign.vue
+msgid "Changes here apply on tablets, and on phones unless Phone sets its own. Anything not changed here follows desktop."
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
@@ -1569,6 +1575,7 @@ msgid "Choose a field type."
 msgstr ""
 
 #: core/resources/js/pages/fields/MediaPicker.vue
+#: core/resources/js/ui/KFileInput.vue
 #: core/resources/js/ui/KMediaPicker.vue
 msgid "Choose a file"
 msgstr ""
@@ -2688,6 +2695,10 @@ msgstr ""
 msgid "Drop here to add at the end"
 msgstr ""
 
+#: core/resources/js/ui/KFileInput.vue
+msgid "Drop one file at a time."
+msgstr ""
+
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/ui/builder/BuilderInspector.vue
 #: core/resources/js/ui/builder/BuilderToolbar.vue
@@ -2800,6 +2811,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Email sign-up proves the address with a link before the account exists."
+msgstr ""
+
+#: core/resources/js/ui/builder/useCanvas.js
+msgid "Empty. Click to select it, then add a block."
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
@@ -5572,6 +5587,10 @@ msgstr ""
 msgid "No published entries use it."
 msgstr ""
 
+#: core/resources/js/ui/KLinkInput.vue
+msgid "No published page has that title. Type an address instead, such as /about."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "No publisher is trusted on this site yet, so plugins install on the server: bin/cms plugin:install <zip>. Trusted publishers are set in config/app.php (packages.trusted_keys)."
 msgstr ""
@@ -6378,6 +6397,7 @@ msgstr ""
 msgid "Page {page} of {last} · {total} total"
 msgstr ""
 
+#: core/resources/js/ui/KLinkInput.vue
 #: core/resources/js/ui/builder/BuilderPatterns.vue
 #: core/src/Cms/Content/ContentModule.php
 msgid "Pages"
@@ -6800,6 +6820,10 @@ msgstr ""
 msgid "Published"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Content/LookupEntries.php
+msgid "Published entries with a public address, for links"
+msgstr ""
+
 #: core/resources/js/components/content/StudioPublish.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Published on"
@@ -7036,6 +7060,7 @@ msgstr ""
 #: core/resources/js/pages/admin/appearance/Styles.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Fleet.vue
+#: core/resources/js/ui/KFileInput.vue
 #: core/resources/js/ui/builder/BuilderInspector.vue
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Remove"
@@ -7799,6 +7824,7 @@ msgid "Searches the words on this page: headings, text, lists, tables and button
 msgstr ""
 
 #: core/resources/js/ui/KFinder.vue
+#: core/resources/js/ui/KLinkInput.vue
 #: core/resources/js/ui/KPicker.vue
 msgid "Searching…"
 msgstr ""
@@ -8730,10 +8756,6 @@ msgstr ""
 
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Subscript"
-msgstr ""
-
-#: core/src/Cms/Content/Fields/LinkField.php
-msgid "Such as /about or https://example.com."
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
@@ -9697,6 +9719,14 @@ msgstr ""
 msgid "This field needs a value."
 msgstr ""
 
+#: core/resources/js/ui/KFileInput.vue
+msgid "This file can't be used here. Choose one of these: {types}."
+msgstr ""
+
+#: core/resources/js/ui/KFileInput.vue
+msgid "This file is {size}. The limit is {max}."
+msgstr ""
+
 #: core/resources/js/pages/admin/forms/Submissions.vue
 msgid "This form doesn't keep submissions; they are only emailed."
 msgstr ""
@@ -9814,6 +9844,7 @@ msgstr ""
 msgid "This theme lays out entries with its own pages. Add a template to lay them out with blocks instead."
 msgstr ""
 
+#: core/resources/js/ui/KFileInput.vue
 #: core/resources/js/ui/KUploadZone.vue
 msgid "This type of file is not allowed here."
 msgstr ""
@@ -10029,6 +10060,10 @@ msgstr ""
 
 #: core/resources/js/ui/KFinder.vue
 msgid "Type a few letters of a title, file name, person or screen."
+msgstr ""
+
+#: core/src/Cms/Content/Fields/LinkField.php
+msgid "Type a page's title to find it, or an address such as /about or https://example.com."
 msgstr ""
 
 #: core/resources/js/ui/KBlockSettings.vue
@@ -10429,7 +10464,6 @@ msgid "Useful as a backup until you have checked the new disk. They take space u
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
-#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 #: core/src/Cms/Auth/Roles.php
 msgid "User"
 msgstr ""
@@ -10643,7 +10677,7 @@ msgid "What it may do"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
-msgid "What new accounts may do. Admin is never given this way."
+msgid "What new accounts may do. Administrator, and roles that may manage people, roles, security or the system, are never given this way."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -10781,7 +10815,7 @@ msgid "Where you are signed in"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
-msgid "Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people under Users."
+msgid "Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people yourself under People."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/GetMe.php
@@ -11339,6 +11373,10 @@ msgstr ""
 
 #: core/resources/js/pages/auth/Login.vue
 msgid "or"
+msgstr ""
+
+#: core/resources/js/ui/KFileInput.vue
+msgid "or drop it here."
 msgstr ""
 
 #: core/resources/js/ui/KUploadZone.vue

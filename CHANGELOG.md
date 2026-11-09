@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- Link fields find pages: type words such as "contact" into a button's **Link** and pick a published page to fill in its address, or type an address as before. Authors and contributors find every published page, not only the ones they may edit (`GET /content/lookup?linkable=1`). The field is `KLinkInput` in the UI kit for plugins.
 - **Site → Fleet** watches the other Kestello sites you look after, in one list: Kestello version and newer releases, plugin and theme updates and license problems, Site Health and the last backup. Turned on with `app.fleet.enabled`; each site is added with a token made on it with only the new `fleet` permission, which reads `GET /api/v1/fleet/report` and nothing else. Sites are asked every hour, or with **Check now**.
 - **System → Security** shows who the site trusts for code: its trusted publishers, the key Kestello's own updates must carry, a warning when the admin installs unsigned zips, and for every installed plugin and theme who signed it and where its updates come from (`GET /api/v1/security/packages`).
 - Editorial checklists: a content type can list what its entries must (required) or should (recommended) have before they are published: an excerpt, a featured image, a term of a taxonomy, a minimum number of words, a search description, or a plugin's own check (`$cms->content->checks->define()`). Set them under **Before publishing** on **System → Content types** or with `ContentType::checklist()`; the editor checks them as you type (`POST /api/v1/content/{type}/checklist`). A required item that isn't done keeps an entry from being published or scheduled; drafts and submissions for review always save.
@@ -50,6 +51,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Changed
 
+- Choosing a file in the admin (Import, Backups, Plugins, Updates, Themes and Redirects) is a drop area now, not the browser's bare file button. It shows the chosen file's name and size with **Change** and **Remove**, says straight away when a file is the wrong type or too large, and still works with the keyboard and screen readers. On **Import**, the **Read the file** button sits under the field, and the command for large exports is on one line you can copy.
 - A site running a pre-release of Kestello is offered the later pre-releases of that version and then the release (`0.1.0-rc.1`, then `rc.2`, then `0.1.0`) without `release.prereleases`. A pre-release's GitHub notes are the changelog's Unreleased section, and `release:prepare` leaves the changelog as it is for one.
 - From the admin, an update must be signed by the same key as the installed version. A plugin signed by one trusted publisher can no longer be replaced by a zip another trusted publisher signed. A publisher moving to a new key lists it under `signing_keys` in a release signed with the old one. Sites that allow unsigned packages (`app.packages.admin_unsigned`) and the command line are not limited.
 - Built Vue pages are no longer committed to git. CI builds them for its checks, and the release workflow builds them from the tagged sources into both zips, so the release zips are unchanged. After cloning, run `npm run build` once; pull requests no longer carry hashed build files.
@@ -61,6 +63,13 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- The **Accounts** settings sent people to **Users** to add someone; the menu is **People**.
+- On **Roles**, the permissions to import a site, set up webhooks and use **Site → Fleet** are listed under **Site and system** instead of **Signing in**.
+- The **Style** tab's hint for **Tablet** said its changes apply on tablets only; they also reach phones unless **Phone** sets its own, and the hint now says so.
+- In the visual editor, an empty Column, Group, Tab or other block that holds others has room and a hint ("Empty. Click to select it, then add a block.") instead of no size at all, so a new **Columns** block's columns can be clicked on the page.
+- `schedule:work` stops on Ctrl+C or SIGTERM again, after the run in progress. Where PHP has pcntl, the queue worker the scheduler runs every minute left its signal handlers behind, so the process ignored both. The worker now puts back the handlers it found and passes the signal on.
+- The Overview no longer says scheduled tasks have never run right after they ran for the first time. The first run of the scheduler drops the cached health report, so the next look re-runs the checks.
+- A token missing a scope now gets `403 insufficient_scope` as documented, not `401`. PHP turned the status of any response with a `WWW-Authenticate` header into 401, and of any response with a `Location` header into 302, because the status was set before the headers.
 - Plugins and themes run on a pre-release of Kestello: `0.1.0-rc.1` meets `"core": "^0.1"`, counting as the version it leads to. Before, strict version rules refused every package on a release candidate. Dependencies between plugins stay strict.
 - Backspace in an empty quote source, table caption or image caption no longer removes the whole block; only the block's first field does that.
 - The optional Node renderer (`app.ssr.url`) draws a page's blocks. It was only sent the page and its layouts, so pages built from blocks came out empty until the browser drew them.
@@ -71,8 +80,13 @@ Every change people would notice is listed here, newest first. The format follow
 - Downloads to a file that follow a redirect, such as core updates from GitHub releases, now hold only the final file instead of the redirect page followed by it. `HttpClient` takes a `max_bytes` option for downloads to a file and stops with `HttpTooLarge` past it.
 - A text field that asks for more than 255 characters with `->max()` now gets it, up to 2000, in the editor and when saving. Image alt text, captions, list items and table captions were cut off at 255.
 
+### Removed
+
+- The second, Laravel-style validator (`Kestello\Framework\Validation\Validator`, `FormRequest`, the `Rule` contracts) and `make:request`. It was undocumented and used only by the sign-in form. Requests are validated with `Kestello\Cms\Api\Schema`, which the API, settings and forms use. The sign-in form now says "Enter your email address or username." and "Enter your password." when a field is empty.
+
 ### Security
 
+- Signing up never gives a role that may manage people, roles, security or the system, or that holds a plugin's sensitive permission: such a role is as good as administrator. **Role for new accounts** no longer offers those roles, and an account created with one set (in the config or by the `auth.default_role` filter) becomes a **User**. Until now only the administrator role itself was kept out.
 - Kestello ships the public key its official releases are signed with (`release.keys` in `core/config/release.php`), so sites apply releases from GitHub only when that key signed them.
 - Direct uploads to an S3 bucket land at a private staging key (`incoming/<upload id>`). Kestello checks the file there, then copies it to the key it chose and makes it public. Before, the browser uploaded straight to the final key as a public file, so an unchecked file, or one that was never finished, could be read at its permanent address. With a bucket policy instead of object ACLs, keep `incoming/` out of public reads.
 - The query builder refuses a column or table name that isn't a plain name (`name`, `table.name`, `name AS alias`) instead of passing it into SQL unchanged. Raw SQL needs `new Expression(…)` or `QueryBuilder::raw()`. Plugins that passed SQL such as `'COUNT(*) as total'` to `select()` must wrap it.

@@ -301,6 +301,30 @@ final class QueueFlowTest extends TestCase
         $this->events->dispatch(new ObjectEvent(new \stdClass()));
         $this->assertSame(['listener:object@core'], FlowLog::$lines);
     }
+    public function testAStopSignalReachesWhoStartedTheWorkerAndTheirHandlerIsPutBack(): void
+    {
+        if (!function_exists('posix_kill') || !function_exists('pcntl_signal')) {
+            $this->assertTrue(true, 'no pcntl or posix: nothing is trapped');
+            return;
+        }
+        $heard = 0;
+        pcntl_signal(SIGTERM, function () use (&$heard): void {
+            $heard++;   // stands in for schedule:work
+        });
+        try {
+            $worker = new Worker($this->queue, new ArrayStore(), sleep: static function (): void {
+                posix_kill(getmypid(), SIGTERM);
+            });
+            $this->assertSame('signal', $worker->run(JobQueue::QUEUES), 'the worker stops');
+            $this->assertSame(1, $heard, 'and the command that started it hears the signal too');
+
+            posix_kill(getmypid(), SIGTERM);
+            pcntl_signal_dispatch();
+            $this->assertSame(2, $heard, 'afterwards the earlier handler is back, not the worker\'s');
+        } finally {
+            pcntl_signal(SIGTERM, SIG_DFL);
+        }
+    }
 }
 
 final class UnregisteredFlowJob implements Job

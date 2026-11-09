@@ -6,6 +6,30 @@
  */
 const ACCENT = '#2563eb';
 
+/** Block names as the catalog writes them (core/column): safe to put in a selector. */
+const BLOCK_NAME = /^[a-z0-9][a-z0-9-]*\/[a-z0-9][a-z0-9-]*$/;
+
+/**
+ * Blocks that hold others render nothing of their own while empty (a new
+ * Column, Group or Tab), so they would have no size to click. In the canvas
+ * only, an empty one gets room, a dashed edge and a hint.
+ *
+ * @param {unknown} names  the kinds of block that hold others
+ * @param {unknown} label  the hint, already translated
+ */
+export function emptyHolderRule(names, label) {
+    const kinds = Array.isArray(names) ? names.filter((n) => typeof n === 'string' && BLOCK_NAME.test(n)).slice(0, 200) : [];
+    if (!kinds.length) return '';
+    const sel = kinds.map((n) => `[data-block="${n}"]:empty`).join(', ');
+    const text = String(label ?? '')
+        .replace(/[\\"\n\r]/g, ' ')
+        .slice(0, 200);
+    return [
+        `:is(${sel}) { min-height: 4.5rem; display: flex; align-items: center; justify-content: center; outline: 1px dashed ${ACCENT}80; outline-offset: -1px; border-radius: 4px; }`,
+        `:is(${sel})::before { content: "${text}"; font: 13px/1.4 system-ui, sans-serif; color: ${ACCENT}; opacity: .8; padding: 0 1rem; text-align: center; pointer-events: none; }`,
+    ].join('\n');
+}
+
 export function createOverlay(doc = document) {
     const sheet = 'adoptedStyleSheets' in doc ? new CSSStyleSheet() : null;
     if (sheet) doc.adoptedStyleSheets = [...doc.adoptedStyleSheets, sheet];
@@ -20,10 +44,21 @@ export function createOverlay(doc = document) {
         '[data-k-field]:empty { min-height: 1.4em; min-width: 2ch; }',
     ];
 
+    let holders = '';
+    let last = {};
+    /** The kinds of block that hold others, for the empty ones' room and hint. */
+    function setHolders(names, label) {
+        const next = emptyHolderRule(names, label);
+        if (next === holders) return;
+        holders = next;
+        outline(last);
+    }
+
     /** Ids are checked by the caller (safeId), so they can go into a selector as they are. */
-    function outline({ hover, selected, also = [] }) {
+    function outline({ hover, selected, also = [] } = {}) {
+        last = { hover, selected, also };
         if (!sheet) return;
-        const rules = [];
+        const rules = holders ? [holders] : [];
         if (hover && hover !== selected) rules.push(`[data-block-id="${hover}"] { outline: 1px dashed ${ACCENT} !important; outline-offset: 2px; }`);
         if (selected) rules.push(`[data-block-id="${selected}"] { outline: 2px solid ${ACCENT} !important; outline-offset: 2px; }`);
         // the others picked with it: the same outline (never a background: that would hide the block's own)
@@ -76,5 +111,5 @@ export function createOverlay(doc = document) {
     };
 
     outline({ hover: null, selected: null });
-    return { outline, showDrop, hideDrop };
+    return { outline, setHolders, showDrop, hideDrop };
 }
