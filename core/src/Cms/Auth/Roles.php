@@ -155,6 +155,26 @@ final class Roles
     }
 
     /**
+     * Whether people may get this role by creating their own account: never
+     * administrator, nor a role that can do everything (*) or holds a
+     * sensitive capability (managing people, roles, security or the system,
+     * or a plugin's sensitive one), since that is as good as administrator.
+     */
+    public function selfServe(string $role): bool
+    {
+        if ($role === 'admin' || !$this->exists($role)) {
+            return false;
+        }
+        foreach ($this->capabilitiesFor($role) as $capability) {
+            if ($capability === '*' || ($this->capabilities[$capability]['sensitive'] ?? false)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @internal Kernel: overlay the roles edited in the admin (RoleStore::load()).
      *
      * @param array<string, array{label: string, description: ?string, custom: bool, granted: list<string>, revoked: list<string>}> $stored

@@ -73,8 +73,8 @@ final readonly class NewAccounts
         $default = $this->policy()->defaultRole;
         $role = (string) ($this->filters?->apply('auth.default_role', $default, $email, $identity) ?? $default);
 
-        // Never hand out admin through self-registration.
-        return $this->roles->exists($role) && $role !== 'admin' ? $role : 'user';
+        // Never hand out administrator, or a role as good as it, through self-registration.
+        return $this->roles->selfServe($role) ? $role : 'user';
     }
 
     /** "ana" from ana@example.com, then "ana2", "ana3"... */

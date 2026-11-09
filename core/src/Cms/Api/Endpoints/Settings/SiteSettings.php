@@ -173,7 +173,7 @@ final class SiteSettings
                         'domains' => 'Only people with an address at the domains below',
                     ])->optional()->description('Email sign-up proves the address with a link before the account exists.'),
                     'registration_domains' => Schema::string()->max(1000)->optional()->description('Separate them with commas, for example example.com, example.org.'),
-                    'default_role' => Schema::enum(self::selfServiceRoles())->optional()->description('What new accounts may do. Admin is never given this way.'),
+                    'default_role' => Schema::enum(self::selfServiceRoles())->optional()->description('What new accounts may do. Administrator, and roles that may manage people, roles, security or the system, are never given this way.'),
                     'link_by_verified_email' => Schema::bool()->optional()
                         ->description('When someone signs in with a provider that confirmed their email, connect it to the account with that address. Leave off unless you trust every provider you use.'),
                     'trust_provider_mfa' => Schema::bool()->optional()
@@ -256,8 +256,9 @@ final class SiteSettings
     private static function selfServiceRoles(): array
     {
         $roles = [];
-        foreach (Cms::instance()?->auth->roles->roles() ?? ['user' => ['label' => 'User']] as $name => $role) {
-            if ($name !== 'admin') {
+        $all = Cms::instance()?->auth->roles;
+        foreach ($all?->roles() ?? [] as $name => $role) {
+            if ($all->selfServe($name)) {
                 $roles[$name] = $role['label'];
             }
         }

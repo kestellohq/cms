@@ -10446,7 +10446,6 @@ msgid "Useful as a backup until you have checked the new disk. They take space u
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
-#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 #: core/src/Cms/Auth/Roles.php
 msgid "User"
 msgstr ""
@@ -10660,7 +10659,7 @@ msgid "What it may do"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
-msgid "What new accounts may do. Admin is never given this way."
+msgid "What new accounts may do. Administrator, and roles that may manage people, roles, security or the system, are never given this way."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
