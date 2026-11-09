@@ -28,7 +28,8 @@ use Kestello\Framework\Core\ExecutionContext;
 final class SiteHealth
 {
     public const array CATEGORIES = ['security', 'performance', 'reliability', 'configuration'];
-    private const string CACHE_KEY = 'health:report';
+    /** The cached report. Forget it when something a check reads changes for good. */
+    public const string CACHE_KEY = 'health:report';
 
     /** @var array<string, array{label: string, check: Closure(): HealthResult, category: string, owner: string}> */
     private array $checks = [];

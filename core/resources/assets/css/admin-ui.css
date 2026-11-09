@@ -4406,6 +4406,115 @@ fieldset.k-content-field > legend {
     color: var(--k-on-ink, #fff);
 }
 
+/* One file for a form (KFileInput): a drop area that becomes the chosen file. */
+.k-file {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    min-height: 56px;
+    padding: 10px 14px;
+    border: 1.5px dashed var(--k-field);
+    border-radius: var(--k-radius);
+    background: var(--k-sheet);
+    transition:
+        border-color 0.12s,
+        background-color 0.12s,
+        box-shadow 0.12s;
+}
+.k-file.has-file {
+    border-style: solid;
+    border-width: 1px;
+}
+.k-file.is-over {
+    border-color: var(--k-mark);
+    background: var(--k-mark-soft);
+}
+.k-file.has-problem {
+    border-color: var(--k-danger);
+}
+.k-file:has(.k-file__input:focus-visible) {
+    border-color: var(--k-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--k-focus) 22%, transparent);
+}
+.k-file.is-disabled {
+    opacity: 0.6;
+}
+.k-file__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+.k-file__empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    align-self: stretch;
+    cursor: pointer;
+}
+.k-file.is-disabled .k-file__empty {
+    cursor: not-allowed;
+}
+.k-file__icon {
+    flex: none;
+    font-size: 22px;
+    color: var(--k-ink-2);
+}
+.k-file__choose {
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--k-field);
+    text-underline-offset: 3px;
+}
+.k-file__empty:hover .k-file__choose {
+    text-decoration-color: currentColor;
+}
+.k-file__types {
+    margin-left: 4px;
+}
+.k-file__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+}
+.k-file__chosen {
+    flex: 1 1 12rem;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+.k-file__name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.k-file__actions {
+    display: flex;
+    gap: 14px;
+}
+.k-file__actions label {
+    cursor: pointer;
+}
+.k-file__problem {
+    flex-basis: 100%;
+    margin: 0 0 0 34px; /* under the text, past the icon */
+    color: var(--k-danger);
+    font-size: 12px;
+    font-weight: 600;
+}
+
 .k-upload {
     border: 1.5px dashed var(--k-field);
     background: var(--k-sheet);

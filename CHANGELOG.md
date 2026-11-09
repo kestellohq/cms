@@ -50,6 +50,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Changed
 
+- Choosing a file in the admin (Import, Backups, Plugins, Updates, Themes and Redirects) is a drop area now, not the browser's bare file button. It shows the chosen file's name and size with **Change** and **Remove**, says straight away when a file is the wrong type or too large, and still works with the keyboard and screen readers. On **Import**, the **Read the file** button sits under the field, and the command for large exports is on one line you can copy.
 - A site running a pre-release of Kestello is offered the later pre-releases of that version and then the release (`0.1.0-rc.1`, then `rc.2`, then `0.1.0`) without `release.prereleases`. A pre-release's GitHub notes are the changelog's Unreleased section, and `release:prepare` leaves the changelog as it is for one.
 - From the admin, an update must be signed by the same key as the installed version. A plugin signed by one trusted publisher can no longer be replaced by a zip another trusted publisher signed. A publisher moving to a new key lists it under `signing_keys` in a release signed with the old one. Sites that allow unsigned packages (`app.packages.admin_unsigned`) and the command line are not limited.
 - Built Vue pages are no longer committed to git. CI builds them for its checks, and the release workflow builds them from the tagged sources into both zips, so the release zips are unchanged. After cloning, run `npm run build` once; pull requests no longer carry hashed build files.
@@ -62,6 +63,7 @@ Every change people would notice is listed here, newest first. The format follow
 ### Fixed
 
 - `schedule:work` stops on Ctrl+C or SIGTERM again, after the run in progress. Where PHP has pcntl, the queue worker the scheduler runs every minute left its signal handlers behind, so the process ignored both. The worker now puts back the handlers it found and passes the signal on.
+- The Overview no longer says scheduled tasks have never run right after they ran for the first time. The first run of the scheduler drops the cached health report, so the next look re-runs the checks.
 - A token missing a scope now gets `403 insufficient_scope` as documented, not `401`. PHP turned the status of any response with a `WWW-Authenticate` header into 401, and of any response with a `Location` header into 302, because the status was set before the headers.
 - Plugins and themes run on a pre-release of Kestello: `0.1.0-rc.1` meets `"core": "^0.1"`, counting as the version it leads to. Before, strict version rules refused every package on a release candidate. Dependencies between plugins stay strict.
 - Backspace in an empty quote source, table caption or image caption no longer removes the whole block; only the block's first field does that.

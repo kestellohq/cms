@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import { ApiError, confirm, formatBytes, notify, useApi, __ } from '@kestello/sdk';
-import { KAlert, KBadge, KButton, KCard, KField, KPageHeader, KSelect, KSwitch, KTable, KTime } from '@kestello/ui';
+import { KAlert, KBadge, KButton, KCard, KField, KFileInput, KPageHeader, KSelect, KSwitch, KTable, KTime } from '@kestello/ui';
 
 defineOptions({ layout: 'Admin' });
 
@@ -232,24 +232,24 @@ const failedText = (n) => __('{n, plural, one {# item} other {# items}} could no
             </ol>
             <form class="k-import__upload" @submit.prevent="upload">
                 <KField
-                    v-slot="{ id }"
+                    v-slot="{ id, describedBy }"
                     :label="__('WordPress export file')"
                     :error="uploadError"
                     :help="list.max_upload ? __('Up to {size}.', { size: formatBytes(list.max_upload) }) : ''"
                 >
-                    <input
+                    <KFileInput
                         :id="id"
-                        type="file"
+                        v-model="file"
                         accept=".xml,text/xml,application/xml"
-                        class="k-input"
+                        :max-bytes="list.max_upload || 0"
+                        :described-by="describedBy"
                         required
-                        @change="
-                            file = $event.target.files?.[0] ?? null;
-                            uploadError = '';
-                        "
+                        @update:model-value="uploadError = ''"
                     />
                 </KField>
-                <KButton type="submit" variant="primary" icon="upload" :loading="busy === 'upload'" :disabled="!file">{{ __('Read the file') }}</KButton>
+                <div>
+                    <KButton type="submit" variant="primary" icon="upload" :loading="busy === 'upload'" :disabled="!file">{{ __('Read the file') }}</KButton>
+                </div>
             </form>
             <p class="k-muted k-small k-import__cli">
                 {{ __('A larger export, or a site whose old server is gone: copy the file (and wp-content/uploads) to this server and run') }}
@@ -511,23 +511,25 @@ const failedText = (n) => __('{n, plural, one {# item} other {# items}} could no
     gap: 4px;
 }
 .k-import__upload {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 12px 18px;
+    display: grid;
+    gap: 14px;
+    max-width: 40rem;
 }
 .k-import__upload :deep(.k-field) {
     margin: 0;
-    flex: 1 1 18rem;
-}
-.k-import__upload > :deep(.k-btn) {
-    height: 36px; /* the height of the input, so both share one line */
 }
 .k-import__cli {
-    margin: 16px 0 0;
+    margin: 20px 0 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--k-rule-soft);
 }
 .k-import__cli code {
-    overflow-wrap: anywhere;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 6px;
+    overflow-x: auto;
+    white-space: nowrap; /* one line to copy; scrolls on a narrow screen */
 }
 .k-import__actions {
     display: flex;

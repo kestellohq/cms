@@ -1,7 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
 import { ApiError, confirm, formatDateTime, notify, useApi, useCan, __ } from '@kestello/sdk';
-import { KAlert, KBadge, KButton, KField, KIcon, KInput, KModal, KPageHeader, KSelect, KSwitch } from '@kestello/ui';
+import { KAlert, KBadge, KButton, KField, KFileInput, KIcon, KInput, KModal, KPageHeader, KSelect, KSwitch } from '@kestello/ui';
 import { rememberSwitchBack, switchBackOutcome, takeSwitchBack } from '../../../components/updates/switch-back.js';
 
 defineOptions({ layout: 'Admin' });
@@ -345,8 +345,8 @@ async function upload() {
                     )
                 }}
             </p>
-            <KField v-slot="{ id }" :label="__('Theme zip')" :error="importErrors.file ?? ''">
-                <input :id="id" type="file" accept=".zip,application/zip" class="k-input" required @change="importFile = $event.target.files?.[0] ?? null" />
+            <KField v-slot="{ id, describedBy }" :label="__('Theme zip')" :error="importErrors.file ?? ''">
+                <KFileInput :id="id" v-model="importFile" accept=".zip,application/zip" :described-by="describedBy" required />
             </KField>
             <KSwitch v-model="importReplace" :label="__('Replace an installed theme with the same name')" />
             <KAlert v-if="importErrors.replace" tone="warning">{{ importErrors.replace }}</KAlert>
