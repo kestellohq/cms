@@ -207,11 +207,13 @@ final class Response
     public function send(): void
     {
         if (!headers_sent()) {
-            http_response_code($this->statusCode);
-
             foreach ($this->headers as $name => $value) {
                 header("{$name}: {$value}");
             }
+
+            // After the headers: PHP rewrites the status when some headers follow it
+            // (WWW-Authenticate turns a 403 into a 401, Location turns any status into a 302).
+            http_response_code($this->statusCode);
 
             foreach ($this->cookies as $cookie) {
                 setcookie(
