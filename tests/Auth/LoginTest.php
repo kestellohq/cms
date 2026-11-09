@@ -12,9 +12,27 @@ use Kestello\Cms\Auth\TwoFactor;
 use Kestello\Cms\Events\LoginFailed;
 use Kestello\Cms\Events\UserLoggedIn;
 use Kestello\Framework\Core\Request;
+use Kestello\Support\Clock;
 
 final class LoginTest extends AuthTestCase
 {
+    /**
+     * The throttles count in fixed windows that start on the clock (a minute,
+     * an hour). A test run across 15:00 split its attempts over two windows and
+     * never reached the limit, so the clock stands still, well inside one.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Clock::freeze('2027-01-01 12:00:10');
+    }
+
+    protected function tearDown(): void
+    {
+        Clock::unfreeze();
+        parent::tearDown();
+    }
+
     private function login(): LoginService
     {
         return $this->cms->container->make(LoginService::class);
