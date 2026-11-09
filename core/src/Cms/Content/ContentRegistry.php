@@ -18,6 +18,9 @@ final class ContentRegistry
 {
     public readonly FieldTypes $fields;
 
+    /** Editorial checklists: plugins define their own checks here. */
+    public readonly Checklist $checks;
+
     /** @var array<string, ContentType> */
     private array $types = [];
 
@@ -29,6 +32,7 @@ final class ContentRegistry
     public function __construct()
     {
         $this->fields = new FieldTypes();
+        $this->checks = new Checklist($this);
     }
 
     /**

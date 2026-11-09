@@ -207,6 +207,30 @@ final class PackagesTest extends AuthTestCase
         $this->assertSame(404, $this->api('DELETE', '/plugins/stock')->statusCode());
     }
 
+    public function testSecurityShowsWhoSignedEachPackage(): void
+    {
+        $this->trust();
+        $review = $this->data($this->upload($this->built()));
+        $this->assertSame(200, $this->api('POST', '/plugins/install', ['token' => $review['token'], 'activate' => true])->statusCode());
+        $keyId = $review['package']['signature']['key'];
+
+        $trust = $this->data($this->api('GET', '/security/packages'));
+        $this->assertFalse($trust['admin_unsigned']);
+        $this->assertSame([['id' => $keyId, 'name' => 'Acme Plugins']], $trust['publishers']);
+        $this->assertTrue(is_array($trust['release_keys']));
+        $stock = array_values(array_filter($trust['packages'], static fn(array $p): bool => $p['slug'] === 'stock'))[0];
+        $this->assertSame(['plugin', 'Stock', '1.0.0', true, [['id' => $keyId, 'name' => 'Acme Plugins']]], [$stock['type'], $stock['name'], $stock['version'], $stock['active'], $stock['signed_by']]);
+
+        // the server owner stops trusting the publisher: the package still names the key, without a name
+        $this->cms->config->set('app.packages.trusted_keys', []);
+        $this->cms->config->set('app.packages.admin_unsigned', true);
+        $trust = $this->data($this->api('GET', '/security/packages'));
+        $this->assertTrue($trust['admin_unsigned']);
+        $this->assertSame([], $trust['publishers']);
+        $stock = array_values(array_filter($trust['packages'], static fn(array $p): bool => $p['slug'] === 'stock'))[0];
+        $this->assertSame([['id' => $keyId, 'name' => null]], $stock['signed_by']);
+    }
+
     public function testUnsafeOrWrongPackagesAreRefused(): void
     {
         $this->trust();

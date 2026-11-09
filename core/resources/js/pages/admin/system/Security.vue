@@ -10,13 +10,17 @@ defineOptions({ layout: 'Admin' });
 
 /**
  * System → Security: who uses two-step sign-in, failed sign-ins, who is
- * signed in where, every access token, and recent account events. Each
- * list ends sessions or tokens in one step; the audit log records it.
+ * signed in where, every access token, who the site trusts for plugins,
+ * themes and updates, and recent account events. Each list ends sessions
+ * or tokens in one step; the audit log records it.
  */
 const api = useApi();
 const overview = useResource('/security');
 const sessions = useResource('/security/sessions');
 const tokens = useResource('/security/tokens');
+const trust = useResource('/security/packages');
+const KIND = { plugin: __('Plugin'), theme: __('Theme') };
+const keyNames = (keys) => keys.map((k) => k.name).join(', ');
 
 const two = computed(() => overview.data.value?.two_factor ?? null);
 const failed = computed(() => overview.data.value?.failed_sign_ins ?? null);
@@ -274,6 +278,68 @@ async function revoke(token) {
         </KTable>
     </KCard>
 
+    <KCard v-if="trust.data.value" :title="__('Plugins, themes and updates')" flush>
+        <div class="k-security-trust">
+            <KAlert v-if="trust.data.value.admin_unsigned" tone="warning">
+                {{
+                    __(
+                        'The admin installs unsigned plugins and themes too (app.packages.admin_unsigned in config/app.php). That suits a development site; switch it off on a live one.',
+                    )
+                }}
+            </KAlert>
+            <dl class="k-security-trust__facts">
+                <div>
+                    <dt>{{ __('Trusted publishers') }}</dt>
+                    <dd v-if="trust.data.value.publishers.length">{{ keyNames(trust.data.value.publishers) }}</dd>
+                    <dd v-else class="k-muted">
+                        {{ __('None. The admin installs no plugin or theme zips; a developer can still install them from the command line.') }}
+                    </dd>
+                </div>
+                <div>
+                    <dt>{{ __('Kestello updates signed by') }}</dt>
+                    <dd v-if="trust.data.value.release_keys.length">{{ keyNames(trust.data.value.release_keys) }}</dd>
+                    <dd v-else>
+                        <KBadge tone="warning">{{ __('No release key') }}</KBadge>
+                        {{ __('Updates of Kestello from GitHub cannot be applied from the admin.') }}
+                    </dd>
+                </div>
+            </dl>
+            <p class="k-muted k-small">
+                {{ __("These come from the server's config files, never from the admin, so a stolen password cannot add a publisher.") }}
+            </p>
+        </div>
+        <KTable
+            :columns="[
+                { key: 'name', label: __('Plugin or theme') },
+                { key: 'version', label: __('Version') },
+                { key: 'signed_by', label: __('Signed by') },
+                { key: 'updates', label: __('Updates from') },
+            ]"
+            :rows="trust.data.value.packages"
+            :empty="__('No plugins or themes installed.')"
+        >
+            <template #cell-name="{ row }"
+                ><strong>{{ row.name }}</strong>
+                <div class="k-muted k-small">
+                    {{ KIND[row.type] }}<template v-if="row.active"> · {{ __('In use') }}</template>
+                </div></template
+            >
+            <template #cell-signed_by="{ row }">
+                <template v-if="row.signed_by.length">
+                    <template v-for="(k, i) in row.signed_by" :key="k.id"
+                        ><template v-if="i">, </template><template v-if="k.name">{{ k.name }}</template
+                        ><KBadge v-else tone="warning">{{ __('Key {id}, no longer trusted', { id: k.id }) }}</KBadge></template
+                    >
+                </template>
+                <span v-else class="k-muted">{{ __('No signature on record') }}</span>
+            </template>
+            <template #cell-updates="{ row }">
+                <span v-if="row.updates" class="k-mono-input">{{ row.updates }}</span>
+                <span v-else class="k-muted">{{ __('By hand') }}</span>
+            </template>
+        </KTable>
+    </KCard>
+
     <KCard v-if="overview.data.value" :title="__('Recent account events')" flush>
         <template #actions>
             <Link href="/admin/system/audit?area=auth.*" class="k-small">{{ __('Open the audit log') }}</Link>
@@ -304,3 +370,36 @@ async function revoke(token) {
         </KTable>
     </KCard>
 </template>
+
+<style scoped>
+.k-security-trust {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--k-rule);
+}
+.k-security-trust > p {
+    margin: 0;
+}
+.k-security-trust__facts {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+}
+.k-security-trust__facts > div {
+    display: grid;
+    grid-template-columns: minmax(10rem, 14rem) 1fr;
+    gap: 4px 12px;
+}
+.k-security-trust__facts dt {
+    font-weight: 600;
+}
+.k-security-trust__facts dd {
+    margin: 0;
+}
+@media (max-width: 640px) {
+    .k-security-trust__facts > div {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
