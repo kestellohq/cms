@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- Plugins and themes in a repository that holds several packages can release from tags named after each package (meilisearch-v1.2.0), as well as v1.2.0. Updates from GitHub ("updates": {"github": …}) and the registry read both.
 - System → Security shows the organisation of each plugin or theme installed from the registry.
 - Plugins and themes install from the registry: registry:install <name> [--version] [--prerelease] [--activate] installs the newest version this site can run. A zip is trusted as the registry's only when its exact bytes are a listed version: signed by the key the registry's root certified for the package's organisation on its release date, not withdrawn, its key not revoked, and its manifest the version listed. The site's own trusted keys don't count for it, and the same bytes uploaded by hand count as the registry's. Registry packages are pinned to their organisation, follow root-signed moves, and take their updates from the registry (Site → Updates shows it as the source).
 - Sites fetch the registry's signed list every 12 hours (app.updates.check_every) and check it against the root keys; registry:status shows where the site's copy stands, and --refresh fetches it. Requests carry nothing that identifies the site, and an older list than one already seen is refused.
