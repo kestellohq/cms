@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Package\Update;
 
 use Closure;
+use Kestello\Cms\Package\Registry\RegistryPackages;
 use Kestello\Framework\Http\Client\HttpClient;
 use Kestello\Framework\Http\Client\HttpResponse;
 use RuntimeException;
@@ -13,7 +14,9 @@ use Throwable;
 /**
  * New versions of installed plugins and themes, from where each one's manifest says ("updates"):
  * a GitHub repository's releases, or the vendor's feed (PackageFeed), with a license key when the
- * package needs one (PackageLicenses).
+ * package needs one (PackageLicenses). A package installed from the registry takes its updates
+ * from the registry ("updates": {"registry": true}, set by PackagesModule::installedPackages()),
+ * whatever its manifest says.
  *
  *   check()            asks every package's source (or only those due), remembers each answer
  *   results()          those answers, for packages still at the version they were checked at
@@ -50,6 +53,7 @@ final class PackageUpdates
         private readonly Closure $load,
         private readonly Closure $save,
         private readonly ?Closure $now = null,
+        private readonly ?RegistryPackages $registry = null,
     ) {}
 
     /**
@@ -127,6 +131,9 @@ final class PackageUpdates
         $package = $this->package($owner);
         $choice = $this->choose($package, $this->releases($package));
         $release = $choice['offer'] ?? throw new RuntimeException("There is no update for {$package['name']} {$package['version']} right now.");
+        if (self::fromRegistry($package)) {
+            return ['path' => $this->registry()->download($package['type'], $package['slug'], $release['version']), 'version' => $release['version']];
+        }
 
         $expected = $release['sha256'];
         if ($expected === null) {
@@ -170,7 +177,7 @@ final class PackageUpdates
      */
     private function checkOne(array $package, ?array $last): array
     {
-        $result = ['checked_at' => $this->time(), 'version' => $package['version'], 'source' => isset($package['updates']['github']) ? 'github' : 'url', 'offer' => null, 'needs_core' => null, 'error' => null, 'renew_url' => null, 'links' => $last['links'] ?? []];
+        $result = ['checked_at' => $this->time(), 'version' => $package['version'], 'source' => self::fromRegistry($package) ? 'registry' : (isset($package['updates']['github']) ? 'github' : 'url'), 'offer' => null, 'needs_core' => null, 'error' => null, 'renew_url' => null, 'links' => $last['links'] ?? []];
         try {
             $releases = $this->releases($package, $result);
             $choice = $this->choose($package, $releases);
@@ -196,6 +203,12 @@ final class PackageUpdates
     private function releases(array $package, ?array &$result = null): array
     {
         $updates = $package['updates'] ?? throw new RuntimeException("{$package['name']} does not say where its updates come from.");
+        if (self::fromRegistry($package)) {
+            return array_map(static fn(array $r): array => [
+                'version' => $r['version'], 'notes' => $r['notes'], 'published_at' => $r['published_at'], 'prerelease' => $r['prerelease'],
+                'requires_core' => $r['requires_core'], 'requires_php' => $r['requires_php'], 'zip' => '', 'sha256' => $r['sha256'],
+            ], $this->registry()->releases($package['type'], $package['slug']));
+        }
         if (isset($updates['github'])) {
             $repo = (string) $updates['github'];
             $response = $this->http->get(UpdateChecker::API . "/repos/{$repo}/releases", [
@@ -310,6 +323,17 @@ final class PackageUpdates
     private static function summary(array $release): array
     {
         return ['version' => (string) $release['version'], 'notes' => (string) $release['notes'], 'published_at' => (string) $release['published_at'], 'requires_core' => $release['requires_core'] ?? null];
+    }
+
+    /** @param array{updates: array<string, mixed>|null} $package */
+    private static function fromRegistry(array $package): bool
+    {
+        return ($package['updates']['registry'] ?? false) === true;
+    }
+
+    private function registry(): RegistryPackages
+    {
+        return $this->registry ?? throw new RuntimeException('The registry is turned off on this site (registry.enabled), so packages installed from it get no updates.');
     }
 
     private static function host(string $url): string

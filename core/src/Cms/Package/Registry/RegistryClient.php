@@ -179,6 +179,41 @@ final class RegistryClient
         return Advisories::parse($this->pinned($index->advisories), $index->advisories);
     }
 
+    /**
+     * Download a file the registry pins (a package zip) to $dest, and keep it only when its size and
+     * SHA-256 are the ones given. $dest must not exist.
+     *
+     * @throws RegistryException
+     */
+    public function download(string $path, int $size, string $sha256, string $dest): void
+    {
+        $sink = @fopen($dest, 'xb') ?: throw new RegistryException("Could not write {$dest}.");
+        try {
+            $response = $this->http->get($this->url($path), [
+                'timeout' => 300,
+                'max_redirects' => 3,
+                'sink' => $sink,
+                // never more than the registry says the file is
+                'max_bytes' => $size,
+                'headers' => ['User-Agent' => self::USER_AGENT, 'Accept' => 'application/octet-stream'],
+            ]);
+            fclose($sink);
+            if ($response->status !== 200) {
+                throw new RegistryException("The registry answered HTTP {$response->status} for {$path}.");
+            }
+            clearstatcache(true, $dest);
+            if (filesize($dest) !== $size || !hash_equals($sha256, (string) hash_file('sha256', $dest))) {
+                throw new RegistryException("The download of {$path} doesn't match the registry's list, so it was thrown away. Try again later.");
+            }
+        } catch (Throwable $e) {
+            if (is_resource($sink)) {
+                fclose($sink);
+            }
+            @unlink($dest);
+            throw $e instanceof RegistryException ? $e : new RegistryException("The registry could not be reached ({$path}): {$e->getMessage()}");
+        }
+    }
+
     /** The full address of a file in the registry (a download, an image). */
     public function url(string $path): string
     {

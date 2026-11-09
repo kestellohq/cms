@@ -7,6 +7,7 @@ namespace Kestello\Cms\Api\Endpoints\Updates;
 use Kestello\Cms\Api\Endpoints\Plugins\PluginEndpoint;
 use Kestello\Cms\Extension\Package;
 use Kestello\Cms\Package\Update\CoreUpdater;
+use Kestello\Cms\Package\Update\KeyPins;
 use Kestello\Cms\Package\Update\PackageLicenses;
 use Kestello\Cms\Package\Update\PackageUpdates;
 use Kestello\Cms\Package\Update\UpdateChecker;
@@ -58,11 +59,15 @@ abstract class UpdatesEndpoint extends PluginEndpoint
      * the last check of its source found.
      *
      * @param array<string, array<string, mixed>> $checks PackageUpdates::results()
+     * source: registry, github, url, or null (updated by upload)
+     *
      * @return array{source: ?string, license: array{required: bool, set: bool, last4: ?string}, update: ?array<string, mixed>}
      */
     private function updateOf(Package $p, array $checks): array
     {
-        $updates = $p->manifest->updates;
+        $fromRegistry = $this->cms()->container->make(KeyPins::class)->organisation($p->owner()) !== null;
+        // a package installed from the registry takes its updates from the registry, whatever its manifest says
+        $updates = $fromRegistry ? null : $p->manifest->updates;
         $required = ($updates['license'] ?? false) === true;
         $check = $checks[$p->owner()] ?? null;
         if ($check !== null && $check['offer'] !== null) {
@@ -70,7 +75,7 @@ abstract class UpdatesEndpoint extends PluginEndpoint
         }
 
         return [
-            'source' => $updates === null ? null : (isset($updates['github']) ? 'github' : 'url'),
+            'source' => $fromRegistry ? 'registry' : ($updates === null ? null : (isset($updates['github']) ? 'github' : 'url')),
             'license' => ['required' => $required] + ($required ? $this->cms()->container->make(PackageLicenses::class)->describe($p->owner()) : ['set' => false, 'last4' => null]),
             'update' => $check,
         ];

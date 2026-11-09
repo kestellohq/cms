@@ -38,7 +38,8 @@ final class GetPackageTrust extends SecurityEndpoint
             'packages' => Schema::list(Schema::object([
                 'type' => Schema::enum(['plugin', 'theme']), 'slug' => Schema::string(), 'name' => Schema::string(), 'version' => Schema::string(), 'active' => Schema::bool(),
                 'signed_by' => Schema::list(Schema::object(['id' => Schema::string(), 'name' => Schema::string()->nullable()->description('null: the key is no longer trusted')]))
-                    ->description('Keys allowed to sign its next version; empty when it was installed without a signature'),
+                    ->description('Keys allowed to sign its next version besides its organisation\'s; empty when it was installed without a signature or from the registry with no hand-over keys'),
+                'organisation' => Schema::string()->nullable()->description('Installed from the registry: the organisation whose certified keys sign its next version'),
                 'updates' => Schema::string()->nullable()->description('Where new versions come from'),
             ])),
         ]);

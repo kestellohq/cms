@@ -325,7 +325,8 @@ async function revoke(token) {
                 </div></template
             >
             <template #cell-signed_by="{ row }">
-                <template v-if="row.signed_by.length">
+                <template v-if="row.organisation">{{ __('{organisation}, certified by the registry', { organisation: row.organisation }) }}</template>
+                <template v-else-if="row.signed_by.length">
                     <template v-for="(k, i) in row.signed_by" :key="k.id"
                         ><template v-if="i">, </template><template v-if="k.name">{{ k.name }}</template
                         ><KBadge v-else tone="warning">{{ __('Key {id}, no longer trusted', { id: k.id }) }}</KBadge></template

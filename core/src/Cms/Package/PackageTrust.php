@@ -39,7 +39,7 @@ final class PackageTrust
      *   admin_unsigned: bool,
      *   publishers: list<array{id: string, name: string}>,
      *   release_keys: list<array{id: string, name: string}>,
-     *   packages: list<array{type: string, slug: string, name: string, version: string, active: bool, signed_by: list<array{id: string, name: ?string}>, updates: ?string}>
+     *   packages: list<array{type: string, slug: string, name: string, version: string, active: bool, signed_by: list<array{id: string, name: ?string}>, organisation: ?string, updates: ?string}>
      * }
      */
     public function report(): array
@@ -55,7 +55,8 @@ final class PackageTrust
                 'version' => $package->version(),
                 'active' => $this->active[$owner] ?? false,
                 'signed_by' => $signedBy,
-                'updates' => self::source($package->manifest->updates),
+                'organisation' => $this->pins->organisation($owner),
+                'updates' => $this->pins->organisation($owner) !== null ? 'the registry' : self::source($package->manifest->updates),
             ];
         }
         usort($packages, static fn(array $a, array $b): int => [$a['type'], strtolower($a['name'])] <=> [$b['type'], strtolower($b['name'])]);

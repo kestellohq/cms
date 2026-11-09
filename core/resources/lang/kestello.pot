@@ -4109,6 +4109,10 @@ msgstr ""
 msgid "Installed a plugin"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "Installed from the registry: the organisation whose certified keys sign its next version"
+msgstr ""
+
 #: core/src/Cms/Api/Schema.php
 msgid "Invalid key."
 msgstr ""
@@ -4363,7 +4367,7 @@ msgid "Keyboard shortcuts"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
-msgid "Keys allowed to sign its next version; empty when it was installed without a signature"
+msgid "Keys allowed to sign its next version besides its organisation's; empty when it was installed without a signature or from the registry with no hand-over keys"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Index.vue
@@ -12142,6 +12146,10 @@ msgstr ""
 
 #: core/resources/js/ui/KBuilder.vue
 msgid "{n} words"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "{organisation}, certified by the registry"
 msgstr ""
 
 #: core/resources/js/ui/KExtension.vue

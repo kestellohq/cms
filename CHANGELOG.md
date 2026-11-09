@@ -6,6 +6,8 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- System → Security shows the organisation of each plugin or theme installed from the registry.
+- Plugins and themes install from the registry: registry:install <name> [--version] [--prerelease] [--activate] installs the newest version this site can run. A zip is trusted as the registry's only when its exact bytes are a listed version: signed by the key the registry's root certified for the package's organisation on its release date, not withdrawn, its key not revoked, and its manifest the version listed. The site's own trusted keys don't count for it, and the same bytes uploaded by hand count as the registry's. Registry packages are pinned to their organisation, follow root-signed moves, and take their updates from the registry (Site → Updates shows it as the source).
 - Sites fetch the registry's signed list every 12 hours (app.updates.check_every) and check it against the root keys; registry:status shows where the site's copy stands, and --refresh fetches it. Requests carry nothing that identifies the site, and an older list than one already seen is refused.
 - Kestello ships the two root keys of the plugin and theme registry (registry.kestello.com) in core/config/registry.php, with registry.enabled and registry.url for a mirror or no registry at all.
 - Kestello can read and check the plugin and theme registry: the root-signed key list, the signed index with its serial and expiry, and the package, organisation and advisory files it pins by hash. Nothing uses it yet; installing from the registry comes next.

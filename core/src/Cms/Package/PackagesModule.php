@@ -8,6 +8,8 @@ use Kestello\Cms\Backup\Backups;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Extension\Provider;
 use Kestello\Cms\Package\Registry\RegistryClient;
+use Kestello\Cms\Package\Registry\RegistryPackages;
+use Kestello\Cms\Package\Registry\RegistryTrust;
 use Kestello\Cms\Package\Registry\RootKeys;
 use Kestello\Cms\Package\Update\CoreUpdater;
 use Kestello\Cms\Package\Update\HealthProbe;
@@ -55,7 +57,7 @@ final class PackagesModule extends Provider
 
     public function register(Container $container): void
     {
-        $container->singleton(PackageInstaller::class, static fn(): PackageInstaller => new PackageInstaller(self::cms()));
+        $container->singleton(PackageInstaller::class, static fn(Container $c): PackageInstaller => new PackageInstaller(self::cms(), $c->make(RegistryTrust::class)));
         $container->singleton(HealthProbe::class, static function (Container $c): HealthProbe {
             $cms = self::cms();
             $mode = (string) $cms->config->get('app.updates.health', 'auto');
@@ -126,8 +128,12 @@ final class PackagesModule extends Provider
                     return is_array($value) ? $value : [];
                 },
                 static fn(array $results) => Settings::getInstance()->set(self::PACKAGE_CHECKS, (string) json_encode($results, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 'updates'),
+                registry: self::registryPackages($c),
             );
         });
+        $container->singleton(RegistryTrust::class, static fn(Container $c): RegistryTrust => new RegistryTrust(
+            static fn(): ?RegistryClient => (bool) self::cms()->config->get('registry.enabled', true) ? $c->make(RegistryClient::class) : null,
+        ));
         $container->singleton(Updater::class, static fn(Container $c): Updater => new Updater(self::cms(), $c->make(PackageInstaller::class), $c->make(Backups::class), $c->make(HealthProbe::class)));
         $container->singleton(UpdateRecovery::class, static fn(Container $c): UpdateRecovery => new UpdateRecovery(self::cms(), $c->make(Backups::class)));
     }
@@ -200,12 +206,28 @@ final class PackagesModule extends Provider
      */
     public static function installedPackages(Cms $cms): array
     {
+        $pins = $cms->container->has(KeyPins::class) ? $cms->container->make(KeyPins::class) : KeyPins::inSettings();
         $out = [];
         foreach ([...array_values($cms->extensions()->plugins()), ...array_values($cms->extensions()->themes())] as $p) {
-            $out[] = ['owner' => $p->owner(), 'type' => $p->manifest->type->value, 'slug' => $p->slug(), 'name' => $p->manifest->name, 'version' => $p->version(), 'updates' => $p->manifest->updates];
+            // a package installed from the registry takes its updates from the registry (registry-format.md §5.2)
+            $updates = $pins->organisation($p->owner()) !== null ? ['registry' => true] : $p->manifest->updates;
+            $out[] = ['owner' => $p->owner(), 'type' => $p->manifest->type->value, 'slug' => $p->slug(), 'name' => $p->manifest->name, 'version' => $p->version(), 'updates' => $updates];
         }
 
         return $out;
+    }
+
+    /** Registry versions and downloads, or null when the registry is turned off. */
+    public static function registryPackages(Container $c): ?RegistryPackages
+    {
+        $cms = self::cms();
+
+        return (bool) $cms->config->get('registry.enabled', true) ? new RegistryPackages(
+            $c->make(RegistryClient::class),
+            $cms->version(),
+            PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION,
+            $cms->paths->storage('tmp/updates'),
+        ) : null;
     }
 
     /** "updates.key.plugin.events" for the owner "plugin:events". */
