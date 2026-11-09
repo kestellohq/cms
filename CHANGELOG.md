@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- Kestello ships the two root keys of the plugin and theme registry (registry.kestello.com) in core/config/registry.php, with registry.enabled and registry.url for a mirror or no registry at all.
 - Kestello can read and check the plugin and theme registry: the root-signed key list, the signed index with its serial and expiry, and the package, organisation and advisory files it pins by hash. Nothing uses it yet; installing from the registry comes next.
 - Link fields find pages: type words such as "contact" into a button's **Link** and pick a published page to fill in its address, or type an address as before. Authors and contributors find every published page, not only the ones they may edit (`GET /content/lookup?linkable=1`). The field is `KLinkInput` in the UI kit for plugins.
 - **Site → Fleet** watches the other Kestello sites you look after, in one list: Kestello version and newer releases, plugin and theme updates and license problems, Site Health and the last backup. Turned on with `app.fleet.enabled`; each site is added with a token made on it with only the new `fleet` permission, which reads `GET /api/v1/fleet/report` and nothing else. Sites are asked every hour, or with **Check now**.
@@ -64,6 +65,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- A release key or registry root key that can't be read is now logged under its own setting, not under app.packages.trusted_keys.
 - The **Accounts** settings sent people to **Users** to add someone; the menu is **People**.
 - On **Roles**, the permissions to import a site, set up webhooks and use **Site → Fleet** are listed under **Site and system** instead of **Signing in**.
 - The **Style** tab's hint for **Tablet** said its changes apply on tablets only; they also reach phones unless **Phone** sets its own, and the hint now says so.

@@ -60,7 +60,7 @@ final class GetPackageTrust extends SecurityEndpoint
 
         return (new PackageTrust(
             PackageSignature::trustedKeys($cms->config->get('app.packages.trusted_keys', [])),
-            PackageSignature::trustedKeys($cms->config->get('release.keys', [])),
+            PackageSignature::trustedKeys($cms->config->get('release.keys', []), 'release.keys'),
             (bool) $cms->config->get('app.packages.admin_unsigned', false),
             [...array_values($extensions->plugins()), ...array_values($extensions->themes())],
             $active,
