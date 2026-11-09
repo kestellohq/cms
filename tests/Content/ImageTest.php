@@ -373,6 +373,7 @@ final class ImageTest extends AuthTestCase
         foreach (\Kestello\Cms\Media\Image\ImagickEngine::limits() as $type => $limit) {
             $this->assertSame($limit, (int) \Imagick::getResourceLimit($type), "resource {$type} is limited");
         }
+        $this->assertFalse(array_key_exists(\Imagick::RESOURCETYPE_TIME, \Kestello\Cms\Media\Image\ImagickEngine::limits()), 'no time limit: some versions count it from the process start, so long-running workers would lose Imagick');
         @unlink($path);
     }
 

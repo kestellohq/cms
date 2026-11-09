@@ -16,7 +16,9 @@ final class ImagickEngine implements ImageEngine
      * What one decode may use. Uploads are untrusted: a small file can claim a
      * huge canvas or thousands of frames. Over a limit, Imagick throws and the
      * file gets no variants. Limits apply to the whole process, so none here
-     * may stop other Imagick work (a frame count limit would).
+     * may stop other Imagick work: not a frame count, and not a time limit,
+     * which some ImageMagick versions count from the process start (a queue
+     * worker would lose Imagick after a minute). PHP's own time limits apply.
      *
      * A method, not a constant: the Imagick constants exist only where the
      * extension is loaded, and this class is loaded everywhere.
@@ -32,7 +34,6 @@ final class ImagickEngine implements ImageEngine
             Imagick::RESOURCETYPE_AREA => 100_000_000,        // pixels in one image
             Imagick::RESOURCETYPE_WIDTH => 20_000,
             Imagick::RESOURCETYPE_HEIGHT => 20_000,
-            Imagick::RESOURCETYPE_TIME => 60,                  // seconds
         ];
     }
 
