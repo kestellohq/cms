@@ -10815,7 +10815,7 @@ msgid "Where you are signed in"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
-msgid "Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people under Users."
+msgid "Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people yourself under People."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/GetMe.php

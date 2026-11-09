@@ -165,7 +165,7 @@ final class SiteSettings
             ] + $core,
             'accounts' => [
                 'label' => 'Accounts',
-                'description' => 'Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people under Users.',
+                'description' => 'Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people yourself under People.',
                 'schema' => Schema::object([
                     'registration' => Schema::enum([
                         'closed' => 'Nobody: you add people yourself',

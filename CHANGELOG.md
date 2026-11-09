@@ -63,6 +63,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- The **Accounts** settings sent people to **Users** to add someone; the menu is **People**.
 - On **Roles**, the permissions to import a site, set up webhooks and use **Site → Fleet** are listed under **Site and system** instead of **Signing in**.
 - The **Style** tab's hint for **Tablet** said its changes apply on tablets only; they also reach phones unless **Phone** sets its own, and the hint now says so.
 - In the visual editor, an empty Column, Group, Tab or other block that holds others has room and a hint ("Empty. Click to select it, then add a block.") instead of no size at all, so a new **Columns** block's columns can be clicked on the page.
