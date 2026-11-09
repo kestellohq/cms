@@ -71,6 +71,13 @@ export function useCanvas(b, { api, props, emit, root }) {
     const editable = computed(() => editableFields(b.list.value, b.defOf, { disabled: props.disabled, locks: props.kind === 'entry' }));
     const plainData = () => JSON.parse(JSON.stringify(props.canvasData ?? {}));
     const plainEditable = () => JSON.parse(JSON.stringify(editable.value));
+    /** The kinds of block that hold others: the canvas gives the empty ones room to click. */
+    const holders = () => ({
+        holders: [...(b.catalog.value?.values() ?? [])]
+            .filter((d) => d.children === true || (Array.isArray(d.children) && d.children.length))
+            .map((d) => d.name),
+        emptyHint: __('Empty. Click to select it, then add a block.'),
+    });
 
     // ── sending the tree
     let seq = 0;
@@ -102,7 +109,7 @@ export function useCanvas(b, { api, props, emit, root }) {
             const force = redraw;
             focusNext = null;
             redraw = false;
-            post({ type: 'kestello:tree', blocks, editable: plainEditable(), focus, force, seen, ...plainData() });
+            post({ type: 'kestello:tree', blocks, editable: plainEditable(), focus, force, seen, ...plainData(), ...holders() });
             sendMarks();
             setTimeout(runChecks, 400);
         } catch {
@@ -122,7 +129,7 @@ export function useCanvas(b, { api, props, emit, root }) {
     watch(
         () => JSON.stringify(props.canvasData ?? {}),
         () => {
-            if (shown) post({ type: 'kestello:tree', blocks: shown, editable: plainEditable(), seen: shownSeen, ...plainData() });
+            if (shown) post({ type: 'kestello:tree', blocks: shown, editable: plainEditable(), seen: shownSeen, ...plainData(), ...holders() });
         },
     );
 

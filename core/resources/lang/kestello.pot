@@ -1475,7 +1475,11 @@ msgid "Changed {list}"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDesign.vue
-msgid "Changes here apply on {screen} only; the rest follows desktop."
+msgid "Changes here apply on phones only. Anything not changed here follows tablet, then desktop."
+msgstr ""
+
+#: core/resources/js/ui/builder/BuilderDesign.vue
+msgid "Changes here apply on tablets, and on phones unless Phone sets its own. Anything not changed here follows desktop."
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
@@ -2807,6 +2811,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Email sign-up proves the address with a link before the account exists."
+msgstr ""
+
+#: core/resources/js/ui/builder/useCanvas.js
+msgid "Empty. Click to select it, then add a block."
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
@@ -5579,6 +5587,10 @@ msgstr ""
 msgid "No published entries use it."
 msgstr ""
 
+#: core/resources/js/ui/KLinkInput.vue
+msgid "No published page has that title. Type an address instead, such as /about."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "No publisher is trusted on this site yet, so plugins install on the server: bin/cms plugin:install <zip>. Trusted publishers are set in config/app.php (packages.trusted_keys)."
 msgstr ""
@@ -6385,6 +6397,7 @@ msgstr ""
 msgid "Page {page} of {last} · {total} total"
 msgstr ""
 
+#: core/resources/js/ui/KLinkInput.vue
 #: core/resources/js/ui/builder/BuilderPatterns.vue
 #: core/src/Cms/Content/ContentModule.php
 msgid "Pages"
@@ -6805,6 +6818,10 @@ msgstr ""
 #: core/resources/js/pages/admin/content/Terms.vue
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Published"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Content/LookupEntries.php
+msgid "Published entries with a public address, for links"
 msgstr ""
 
 #: core/resources/js/components/content/StudioPublish.vue
@@ -7807,6 +7824,7 @@ msgid "Searches the words on this page: headings, text, lists, tables and button
 msgstr ""
 
 #: core/resources/js/ui/KFinder.vue
+#: core/resources/js/ui/KLinkInput.vue
 #: core/resources/js/ui/KPicker.vue
 msgid "Searching…"
 msgstr ""
@@ -8738,10 +8756,6 @@ msgstr ""
 
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Subscript"
-msgstr ""
-
-#: core/src/Cms/Content/Fields/LinkField.php
-msgid "Such as /about or https://example.com."
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
@@ -10046,6 +10060,10 @@ msgstr ""
 
 #: core/resources/js/ui/KFinder.vue
 msgid "Type a few letters of a title, file name, person or screen."
+msgstr ""
+
+#: core/src/Cms/Content/Fields/LinkField.php
+msgid "Type a page's title to find it, or an address such as /about or https://example.com."
 msgstr ""
 
 #: core/resources/js/ui/KBlockSettings.vue

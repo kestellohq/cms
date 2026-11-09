@@ -132,6 +132,9 @@ const SECTIONS = {
     plugins: 'site',
     core: 'site',
     content_models: 'site',
+    import: 'site',
+    webhooks: 'site',
+    fleet: 'site',
 };
 const SECTION_LABELS = { general: __('Signing in'), content: __('Content'), people: __('People'), appearance: __('Appearance'), site: __('Site and system') };
 const groups = computed(() => {

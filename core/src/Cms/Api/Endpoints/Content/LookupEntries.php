@@ -14,6 +14,10 @@ use Kestello\Framework\Database\QueryBuilder;
  * Small entry records across types, for relation pickers: search by title,
  * or resolve ids to titles. Only types the caller can edit, and only their
  * own entries where they can't edit others'.
+ *
+ * With linkable, for link fields: published entries of every type with
+ * public addresses, whoever wrote them. Those pages are public anyway, and an
+ * author must be able to link to the Contact page they may not edit.
  */
 final class LookupEntries extends ContentEndpoint
 {
@@ -33,32 +37,40 @@ final class LookupEntries extends ContentEndpoint
             'types' => Schema::string()->max(400)->pattern('[a-z0-9,-]*')->optional()->description('Comma separated; all editable types when empty'),
             'ids' => Schema::string()->max(1000)->pattern('[0-9,]*')->optional()->description('Comma separated ids to resolve'),
             'limit' => Schema::int()->min(1)->max(50)->default(20),
+            'linkable' => Schema::bool()->optional()->description('Published entries with a public address, for links'),
         ]);
     }
 
     public function handle(ApiRequest $request): mixed
     {
         $p = $request->principal;
+        $linkable = (bool) $request->query('linkable', false);
         $wanted = array_filter(explode(',', (string) $request->query('types', '')));
         $types = [];
         foreach (self::cms()->content->types() as $type) {
-            if (($wanted === [] || in_array($type->name, $wanted, true)) && $p->can($type->capability('edit'))) {
+            $allowed = $linkable ? $type->getPath() !== null : $p->can($type->capability('edit'));
+            if (($wanted === [] || in_array($type->name, $wanted, true)) && $allowed) {
                 $types[$type->name] = $type;
             }
         }
         if ($types === []) {
             return [];
         }
-        $q = Entry::query()->whereIn('type', array_keys($types))->where(static function (QueryBuilder $q) use ($types, $p): void {
-            foreach ($types as $type) {
-                $q->orWhere(static function (QueryBuilder $w) use ($type, $p): void {
-                    $w->where('type', $type->name);
-                    if (!$p->can($type->capability('edit_others'))) {
-                        $w->where('author_id', $p->userId);
-                    }
-                });
-            }
-        });
+        $q = Entry::query()->whereIn('type', array_keys($types));
+        if ($linkable) {
+            $q->where('status', 'published');
+        } else {
+            $q->where(static function (QueryBuilder $q) use ($types, $p): void {
+                foreach ($types as $type) {
+                    $q->orWhere(static function (QueryBuilder $w) use ($type, $p): void {
+                        $w->where('type', $type->name);
+                        if (!$p->can($type->capability('edit_others'))) {
+                            $w->where('author_id', $p->userId);
+                        }
+                    });
+                }
+            });
+        }
         $ids = array_slice(array_values(array_unique(array_map('intval', array_filter(explode(',', (string) $request->query('ids', '')))))), 0, 100);
         if ($ids !== []) {
             $q->whereIn('id', $ids);

@@ -470,6 +470,19 @@ final class ContentApiTest extends AuthTestCase
         $this->assertSame(['ana'], array_column($this->json($this->api('GET', '/content/users?ids=1'))['data'], 'username'));
     }
 
+    public function testLinkFieldsFindEveryPublishedPageEvenOnesTheyCannotEdit(): void
+    {
+        $this->signIn('editor');
+        $this->create('page', ['title' => 'Contact us', 'slug' => 'contact', 'status' => 'published']);
+        $this->create('page', ['title' => 'Contact draft', 'slug' => 'contact-draft']);
+        $this->create('post', ['title' => 'Contact the baker', 'slug' => 'baker', 'status' => 'published']);
+
+        $this->signIn('author');
+        $found = $this->json($this->api('GET', '/content/lookup?linkable=1&search=contact'))['data'];
+        $this->assertSame(['/blog/baker', '/contact'], self::sorted(array_column($found, 'path')), 'published only, pages an author may not edit included');
+        $this->assertSame([], $this->json($this->api('GET', '/content/lookup?search=contact&types=page'))['data'], 'without linkable, still only what they may edit');
+    }
+
     /** @param list<string> $keys */
     private static function sorted(array $keys): array
     {

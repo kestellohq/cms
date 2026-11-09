@@ -24,7 +24,7 @@ final class LinkField extends FieldType
 
     public function component(): string
     {
-        return '@core/fields/Text';
+        return '@core/fields/Link';
     }
 
     public function schema(Field $field, FieldTypes $types): Schema
@@ -42,6 +42,6 @@ final class LinkField extends FieldType
 
     public function defaultHelp(Field $field): ?string
     {
-        return Translator::get('Such as /about or https://example.com.');
+        return Translator::get('Type a page\'s title to find it, or an address such as /about or https://example.com.');
     }
 }

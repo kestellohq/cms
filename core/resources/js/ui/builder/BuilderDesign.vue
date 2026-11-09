@@ -103,7 +103,9 @@ const lines = computed(() => [
                 {{
                     screen === 'base'
                         ? __('Styles set here apply on every screen size.')
-                        : __('Changes here apply on {screen} only; the rest follows desktop.', { screen: SCREEN_NAME[screen].toLowerCase() })
+                        : screen === 'tablet'
+                          ? __('Changes here apply on tablets, and on phones unless Phone sets its own. Anything not changed here follows desktop.')
+                          : __('Changes here apply on phones only. Anything not changed here follows tablet, then desktop.')
                 }}
             </p>
         </div>
