@@ -112,12 +112,20 @@ async function apply() {
 <template>
     <KCard flush class="k-pkg-updates" :title="__('Plugins and themes')">
         <template v-if="anySource" #actions>
-            <KButton size="sm" icon="arrows-clockwise" :loading="busy === 'check'" :disabled="!!busy" @click="checkAll">{{ __('Check now') }}</KButton>
+            <KButton
+                size="sm"
+                icon="arrows-clockwise"
+                :aria-label="__('Check plugins and themes for updates')"
+                :loading="busy === 'check'"
+                :disabled="!!busy"
+                @click="checkAll"
+                >{{ __('Check now') }}</KButton
+            >
         </template>
         <KTable
             :columns="[
                 { key: 'name', label: __('Name') },
-                { key: 'version', label: __('Version'), align: 'end' },
+                { key: 'version', label: __('Version'), align: 'end', width: '5.5rem' },
                 { key: 'status', label: __('Updates') },
                 { key: 'actions', label: '', align: 'end' },
             ]"
@@ -127,7 +135,7 @@ async function apply() {
         >
             <template #cell-name="{ row }">
                 {{ row.name }} <span class="k-muted k-small">{{ row.kind }}</span>
-                <KBadge v-if="row.active" tone="success">{{ __('Active') }}</KBadge>
+                <KBadge v-if="row.active" tone="success" class="k-pkg-updates__active">{{ __('Active') }}</KBadge>
             </template>
             <template #cell-version="{ row }"
                 ><span class="k-num">{{ row.version }}</span></template
@@ -198,7 +206,9 @@ async function apply() {
             </KField>
         </form>
         <template #footer>
-            <KButton v-if="licenseFor?.license.set" variant="ghost" :disabled="!!busy" @click="removeLicense">{{ __('Remove key') }}</KButton>
+            <KButton v-if="licenseFor?.license.set" variant="ghost" class="k-pkg-updates__remove" :disabled="!!busy" @click="removeLicense">{{
+                __('Remove key')
+            }}</KButton>
             <KButton :disabled="busy === 'license'" @click="licenseFor = null">{{ __('Cancel') }}</KButton>
             <KButton type="submit" form="k-license" variant="primary" :loading="busy === 'license'" :disabled="!licenseKey.trim()">{{
                 __('Save and check')
@@ -255,6 +265,12 @@ async function apply() {
 <style scoped>
 .k-pkg-updates {
     margin-top: 14px;
+}
+.k-pkg-updates__active {
+    margin-left: 6px;
+}
+.k-pkg-updates__remove {
+    margin-right: auto;
 }
 .k-pkg-updates__error {
     color: var(--k-warning);

@@ -1462,6 +1462,10 @@ msgstr ""
 msgid "Check now"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Check plugins and themes for updates"
+msgstr ""
+
 #: core/src/Cms/Webhooks/WebhookDisabledNotification.php
 msgid "Check that the receiving service is running and answers with a 2xx status, then turn the webhook on again. Its delivery log shows what each attempt got back."
 msgstr ""
