@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- **System → Security** shows who the site trusts for code: its trusted publishers, the key Kestello's own updates must carry, a warning when the admin installs unsigned zips, and for every installed plugin and theme who signed it and where its updates come from (`GET /api/v1/security/packages`).
 - Plugins and themes can say where their updates come from: `"updates": {"github": "owner/name"}` for a GitHub repository's releases, or `"updates": {"url": "https://…"}` for the vendor's own feed. Kestello checks every 12 hours (`app.updates.check_every`), and **Site → Updates** lists what is available, with the release notes, and updates through the same backup, health check and automatic rollback as an upload. Packages without `updates` still update by upload. This needs the permission once called *Update Kestello itself*, now *Update Kestello, and plugins and themes from their publishers*.
 - License keys for paid plugins and themes (`"license": true` in `updates`): an administrator enters the key on **Site → Updates** or with `package:license`. It is stored encrypted, shown only by its last four characters, and sent only to that package's own feed, in a header. When the vendor refuses it, the vendor's message and renew link are shown.
 - `package:check-updates [<plugin:slug>]` asks the sources now.

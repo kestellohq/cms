@@ -182,6 +182,7 @@ final class ApiModule extends Provider
         Endpoints\Settings\SendTestEmail::class,
         Endpoints\ListAuditLog::class,
         Endpoints\Security\GetSecurity::class,
+        Endpoints\Security\GetPackageTrust::class,
         Endpoints\Security\ListSecuritySessions::class,
         Endpoints\Security\RevokeUserSession::class,
         Endpoints\Security\RevokeUserSessions::class,

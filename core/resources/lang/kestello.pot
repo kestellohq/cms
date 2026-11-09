@@ -1224,6 +1224,10 @@ msgstr ""
 msgid "Buttons side by side. They wrap onto the next line when there is no room."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "By hand"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "By title"
 msgstr ""
@@ -3256,6 +3260,10 @@ msgstr ""
 msgid "Finishing"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "First 16 hex characters of the key's SHA-256"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreListBlocks.php
 msgid "First column is headings"
 msgstr ""
@@ -3908,6 +3916,10 @@ msgstr ""
 msgid "In the trash"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "In use"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "Inactive"
 msgstr ""
@@ -4186,6 +4198,10 @@ msgstr ""
 msgid "Kestello updates"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Kestello updates signed by"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Kestello {v} and the database were put back. The site runs as before."
 msgstr ""
@@ -4210,6 +4226,10 @@ msgstr ""
 msgid "Key prefix. Empty = derived from this site, so sites sharing a server never collide."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Key {id}, no longer trusted"
+msgstr ""
+
 #: core/resources/js/components/updates/PackageUpdates.vue
 msgid "Key …{last4}"
 msgstr ""
@@ -4217,6 +4237,10 @@ msgstr ""
 #: core/resources/js/ui/builder/BuilderBar.vue
 #: core/resources/js/ui/builder/BuilderShortcuts.vue
 msgid "Keyboard shortcuts"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "Keys allowed to sign its next version; empty when it was installed without a signature"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Index.vue
@@ -5420,6 +5444,7 @@ msgid "No plugins installed"
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
+#: core/resources/js/pages/admin/system/Security.vue
 msgid "No plugins or themes installed."
 msgstr ""
 
@@ -5444,6 +5469,10 @@ msgid "No redirects yet"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue
+msgid "No release key"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
 msgid "No role is expected to use two-step sign-in. {n} of {total} people use it anyway."
 msgstr ""
 
@@ -5457,6 +5486,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "No sessions."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "No signature on record"
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Submissions.vue
@@ -5561,6 +5594,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Index.vue
 msgid "None."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "None. The admin installs no plugin or theme zips; a developer can still install them from the command line."
 msgstr ""
 
 #: core/src/Cms/Content/Entries.php
@@ -6446,11 +6483,16 @@ msgid "Please tick this box."
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
+#: core/resources/js/pages/admin/system/Security.vue
 msgid "Plugin"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Plugin and theme folders were not restored: the backup was made on another site, and code from elsewhere is only restored from the command line (bin/cms backup:restore --with-code)."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Plugin or theme"
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
@@ -6482,6 +6524,10 @@ msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
 msgid "Plugins and themes that say where their updates come from are updated here. Others are updated by uploading the new version under Plugins → Manage plugins, where you can also switch back after an update."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Plugins, themes and updates"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -8058,6 +8104,10 @@ msgstr ""
 msgid "Signature"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Signed by"
+msgstr ""
+
 #: core/resources/js/components/updates/signature.js
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "Signed by {name}, a publisher this site trusts."
@@ -8839,6 +8889,10 @@ msgstr ""
 msgid "The address in {field}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "The admin installs unsigned plugins and themes too (app.packages.admin_unsigned in config/app.php). That suits a development site; switch it off on a live one."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "The admin, emails and the text your theme shows on its own use this language. Language packs add more."
 msgstr ""
@@ -9272,6 +9326,7 @@ msgid "Their username"
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
+#: core/resources/js/pages/admin/system/Security.vue
 msgid "Theme"
 msgstr ""
 
@@ -9342,6 +9397,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "These changed on this site after the last import, so the WordPress version did not replace them."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "These come from the server's config files, never from the admin, so a stolen password cannot add a publisher."
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -9690,6 +9749,10 @@ msgstr ""
 msgid "Trust the provider's two-step check"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Trusted publishers"
+msgstr ""
+
 #: core/resources/js/components/updates/StoppedUpdate.vue
 #: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/fields/Blocks.vue
@@ -9995,6 +10058,14 @@ msgstr ""
 msgid "Updates"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Updates from"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Security.vue
+msgid "Updates of Kestello from GitHub cannot be applied from the admin."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "Updates version {from}. The database is backed up and the site is checked after the new files are in place; if anything is wrong, version {from} and the database are put back."
 msgstr ""
@@ -10217,6 +10288,7 @@ msgstr ""
 #: core/resources/js/components/content/StudioPublish.vue
 #: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/content/Edit.vue
+#: core/resources/js/pages/admin/system/Security.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Version"
 msgstr ""
@@ -10478,6 +10550,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Resources/MediaResource.php
 msgid "Where it is used; single-item answers only, and only entries the viewer may open"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "Where new versions come from"
 msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
@@ -10860,6 +10936,14 @@ msgstr ""
 msgid "any of these holds"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "app.packages.admin_unsigned: the admin installs unsigned zips too"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "app.packages.trusted_keys"
+msgstr ""
+
 #: core/resources/js/ui/builder/DesignScale.vue
 msgid "as on {screen}"
 msgstr ""
@@ -11024,6 +11108,10 @@ msgstr ""
 msgid "null for a browser session (no narrowing)"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "null: the key is no longer trusted"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "of {total}"
 msgstr ""
@@ -11083,6 +11171,10 @@ msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
 msgid "redis://user:pass@host:6379/0 or rediss://… (overrides the fields below)"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
+msgid "release.keys: what Kestello's own updates must be signed with"
 msgstr ""
 
 #: core/resources/js/pages/admin/roles/Index.vue
