@@ -23,6 +23,9 @@ use RuntimeException;
 
 final class PlatformTest extends TestCase
 {
+    /** Long and unlikely, so "no plaintext" checks never match random sealed bytes by chance (as "pw1" once did). */
+    private const string SECRET = 'plaintext-secret-7f3a9c';
+
     private const string KEY = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
     private string $root;
@@ -201,17 +204,17 @@ final class PlatformTest extends TestCase
         $this->assertThrows(PlatformException::class, fn() => $manager->update('cache', 'remote', ['host' => 'down']), 'failing test blocks save');
         $this->assertNull($this->store->load()['cache'] ?? null);
 
-        $manager->update('cache', 'remote', ['host' => 'h1', 'password' => 'pw1'], userId: 7);
+        $manager->update('cache', 'remote', ['host' => 'h1', 'password' => self::SECRET], userId: 7);
 
         $stored = $this->store->load()['cache'];
         $this->assertSame('remote', $stored['driver']);
         $this->assertTrue($this->secrets->isSealed($stored['options']['password']), 'sealed at rest');
         $this->assertFalse(isset($stored['options']['port']), 'defaults are not stored');
-        $this->assertFalse(str_contains((string) file_get_contents($this->root . '/storage/framework/platform.php'), 'pw1'), 'compiled file has no plaintext');
+        $this->assertFalse(str_contains((string) file_get_contents($this->root . '/storage/framework/platform.php'), self::SECRET), 'compiled file has no plaintext');
 
         $described = $manager->describe('cache');
         $this->assertSame(['set' => true], $described['options']['password']);
-        $this->assertFalse(str_contains(json_encode($described), 'pw1'));
+        $this->assertFalse(str_contains(json_encode($described), self::SECRET));
 
         $event = end($this->events);
         $this->assertInstanceOf(PlatformChanged::class, $event);
@@ -220,19 +223,19 @@ final class PlatformTest extends TestCase
         // The resolved driver gets the decrypted secret.
         $this->built = [];
         $this->registry->resolve('cache');
-        $this->assertSame('pw1', $this->built[0]['password']);
+        $this->assertSame(self::SECRET, $this->built[0]['password']);
     }
 
     public function testBlankSecretKeepsTheStoredOne(): void
     {
         $manager = $this->manager();
-        $manager->update('cache', 'remote', ['host' => 'h1', 'password' => 'pw1']);
+        $manager->update('cache', 'remote', ['host' => 'h1', 'password' => self::SECRET]);
         $sealed = $this->store->load()['cache']['options']['password'];
 
         $manager->update('cache', 'remote', ['host' => 'h2', 'password' => '']);
         $this->assertSame($sealed, $this->store->load()['cache']['options']['password'], 'same ciphertext');
         $this->assertSame(['host'], end($this->events)->changed);
-        $this->assertSame('pw1', $manager->config()->effective('cache')['options']['password']);
+        $this->assertSame(self::SECRET, $manager->config()->effective('cache')['options']['password']);
     }
 
     public function testPinnedKeysCannotBeChangedButAreUsedForTesting(): void
