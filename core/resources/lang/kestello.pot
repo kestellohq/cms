@@ -427,6 +427,10 @@ msgstr ""
 msgid "Add a rule"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Add a site"
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Add a title"
 msgstr ""
@@ -493,6 +497,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/users/Index.vue
 msgid "Add person"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Add site"
 msgstr ""
 
 #: core/resources/js/components/content-types/FieldList.vue
@@ -589,6 +597,7 @@ msgstr ""
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Audit.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Security.vue
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
@@ -904,6 +913,10 @@ msgstr ""
 
 #: core/src/Cms/Package/PackagesModule.php
 msgid "Asks GitHub whether a new Kestello version is out (config/release.php). It only tells you; Updates installs."
+msgstr ""
+
+#: core/src/Cms/Fleet/FleetModule.php
+msgid "Asks every site in the fleet for its report."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Api.vue
@@ -1308,6 +1321,7 @@ msgstr ""
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/roles/Index.vue
 #: core/resources/js/pages/admin/system/Backups.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Platform.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
@@ -1493,6 +1507,7 @@ msgid "Check again"
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Check now"
 msgstr ""
@@ -1513,6 +1528,7 @@ msgstr ""
 msgid "Check {email} for a link to confirm it."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Checked"
 msgstr ""
@@ -1951,6 +1967,10 @@ msgstr ""
 #: core/resources/js/ui/builder/BuilderDesign.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Corners"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Could be better"
 msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
@@ -3321,6 +3341,15 @@ msgstr ""
 msgid "Fix"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+#: core/src/Cms/Fleet/FleetModule.php
+msgid "Fleet"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Fleet token"
+msgstr ""
+
 #: core/resources/js/components/media/ImageEditor.vue
 msgid "Flip horizontally"
 msgstr ""
@@ -3568,6 +3597,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Gone (410)"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Good"
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
@@ -4147,6 +4180,10 @@ msgstr ""
 msgid "Its sub-items move up a level."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Its token keeps working on that site until you revoke it there, under Your profile → Access tokens or System → Security."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "JPEG quality"
 msgstr ""
@@ -4239,6 +4276,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
 #: core/resources/js/pages/admin/content-types/Index.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Kestello"
 msgstr ""
@@ -4385,6 +4423,10 @@ msgstr ""
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Last active"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Last backup"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
@@ -4730,6 +4772,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
 msgid "Made in the admin, no code"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Made on that site by an administrator under Your profile → Access tokens, with only the fleet permission. It is kept encrypted here and never shown again."
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
@@ -5167,6 +5213,7 @@ msgstr ""
 #: core/resources/js/pages/admin/forms/Index.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/admin/roles/Index.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Security.vue
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
@@ -5210,6 +5257,7 @@ msgstr ""
 #: core/resources/js/components/content-types/FieldList.vue
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/admin/Dashboard.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Needs attention"
 msgstr ""
@@ -5236,6 +5284,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Never"
 msgstr ""
@@ -5559,6 +5608,10 @@ msgstr ""
 msgid "No signature on record"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "No sites in the fleet yet"
+msgstr ""
+
 #: core/resources/js/pages/admin/forms/Submissions.vue
 msgid "No spam."
 msgstr ""
@@ -5742,6 +5795,7 @@ msgstr ""
 msgid "Not used in any entry yet."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Schedule.vue
 msgid "Not yet"
 msgstr ""
@@ -5943,6 +5997,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "On disk"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "On each site you look after, sign in as an administrator and create a token under Your profile → Access tokens, with only the fleet permission ticked. Then add the site here with its address and that token."
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -6219,6 +6277,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Schedule.vue
 msgid "Output of {name}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Over a week old"
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreSectionBlocks.php
@@ -6591,6 +6653,7 @@ msgid "Plugins add features to the site. Each one declares what it may do, and o
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 msgid "Plugins and themes"
 msgstr ""
 
@@ -6972,6 +7035,7 @@ msgstr ""
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/admin/appearance/Styles.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/ui/builder/BuilderInspector.vue
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Remove"
@@ -7042,8 +7106,13 @@ msgstr ""
 msgid "Remove {item} {n}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/ui/KPicker.vue
 msgid "Remove {name}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "Remove {name} from the fleet?"
 msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
@@ -8258,6 +8327,7 @@ msgstr ""
 msgid "Single-entry answers only"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/builder/useCatalog.js
@@ -8267,6 +8337,7 @@ msgstr ""
 msgid "Site"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Health.vue
 #: core/src/Cms/Admin/AdminModule.php
 msgid "Site Health"
@@ -9175,6 +9246,10 @@ msgstr ""
 msgid "The original is back."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "The other Kestello sites you look after, in one list: which version each runs, what needs updating, Site Health and the last backup. Each site is asked every hour with a token made on it that can read this and nothing else."
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderCanvas.vue
 msgid "The page as visitors see it, with text you can edit"
 msgstr ""
@@ -9301,6 +9376,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "The site's changes and any draft go. The current version stays in the history."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "The site's home page, starting with https://."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -11050,6 +11129,10 @@ msgstr ""
 msgid "and everything below"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "and {n} more"
+msgstr ""
+
 #: core/resources/js/components/content-types/ConditionsEditor.vue
 msgid "any of these holds"
 msgstr ""
@@ -11218,6 +11301,10 @@ msgstr ""
 msgid "light"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Fleet/AddFleetSite.php
+msgid "made on that site, with only the \"fleet\" scope"
+msgstr ""
+
 #: core/resources/js/ui/KTermSelect.vue
 msgid "new"
 msgstr ""
@@ -11370,6 +11457,18 @@ msgstr ""
 msgid "the defaults"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Fleet/AddFleetSite.php
+msgid "the home page, https only"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Fleet/FleetEndpoint.php
+msgid "the last report the site gave (GET /fleet/report on that site)"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Fleet/FleetEndpoint.php
+msgid "the token itself is never shown again"
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "title"
 msgstr ""
@@ -11396,6 +11495,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Webhooks/CreateWebhook.php
 msgid "whsec_…, shown only now"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Fleet/FleetEndpoint.php
+msgid "why the last check failed; the last good report is kept"
 msgstr ""
 
 #: core/src/Cms/Forms/Forms.php
@@ -11681,9 +11784,19 @@ msgstr ""
 msgid "{n, plural, one {# field} other {# fields}}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Fleet.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# installed, up to date} other {# installed, up to date}}"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Import.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {# item} other {# items}} could not be imported. The reason is next to each."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# license problem} other {# license problems}}"
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Index.vue
@@ -11729,6 +11842,11 @@ msgstr ""
 #: core/resources/js/pages/admin/Settings.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {# unsaved change} other {# unsaved changes}}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# update} other {# updates}}"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderLibrary.vue
@@ -11824,6 +11942,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Queue.vue
 msgid "{name} progress"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "{name} was added, but could not be checked: {error}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "{name} was added."
 msgstr ""
 
 #: core/resources/js/pages/admin/users/Edit.vue
@@ -12069,6 +12195,10 @@ msgstr ""
 #: core/resources/js/ui/builder/DesignColor.vue
 #: core/resources/js/ui/builder/DesignScale.vue
 msgid "{value}, as on {screen}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Fleet.vue
+msgid "{version} is out"
 msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue

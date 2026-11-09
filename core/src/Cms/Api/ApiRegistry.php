@@ -53,6 +53,7 @@ final class ApiRegistry
         'security' => 'See everyone\'s sign-in security, and end their sessions and tokens',
         'webhooks:manage' => 'Set up webhooks and read their deliveries',
         'system' => 'Manage infrastructure, jobs and Site Health',
+        'fleet' => 'Report this site\'s version, updates, health and backups to a fleet console, and nothing else',
         'admin' => 'Everything your account can do',
     ];
 
