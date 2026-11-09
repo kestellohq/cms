@@ -25,6 +25,7 @@ msgid "(no content)"
 msgstr ""
 
 #: core/resources/js/components/content/LinkedFrom.vue
+#: core/resources/js/pages/admin/Dashboard.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/content/Index.vue
 #: core/resources/js/pages/admin/media/Index.vue
@@ -917,6 +918,10 @@ msgstr ""
 msgid "Assigned to"
 msgstr ""
 
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Assigned to you"
+msgstr ""
+
 #: core/resources/js/components/content/ReviewPanel.vue
 #: core/resources/js/pages/admin/content/Index.vue
 msgid "Assigned to {name}"
@@ -1430,6 +1435,10 @@ msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDesign.vue
 msgid "Changes here apply on {screen} only; the rest follows desktop."
+msgstr ""
+
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Changes requested"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -6331,6 +6340,10 @@ msgstr ""
 msgid "People"
 msgstr ""
 
+#: core/resources/js/components/content/ReviewPanel.vue
+msgid "People to mention"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "People with the role {roles} are expected to use two-step sign-in. These have not turned it on yet. They can, under Your profile."
 msgstr ""
@@ -9784,6 +9797,10 @@ msgstr ""
 msgid "Type"
 msgstr ""
 
+#: core/resources/js/components/content/ReviewPanel.vue
+msgid "Type @ and a name to tell someone."
+msgstr ""
+
 #: core/resources/js/ui/KFinder.vue
 msgid "Type a few letters of a title, file name, person or screen."
 msgstr ""
@@ -10312,12 +10329,20 @@ msgstr ""
 msgid "Waiting"
 msgstr ""
 
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Waiting for review"
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Waiting for review. An editor publishes it or asks for changes, and you are told either way."
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Waiting for {email} to be confirmed: open the link sent there."
+msgstr ""
+
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Waiting on you"
 msgstr ""
 
 #: core/resources/js/components/content-types/field-labels.js
@@ -10442,6 +10467,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "When a page moved"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Content/ListWaiting.php
+msgid "When it started waiting on you"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -10886,6 +10915,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "categories and tags"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Content/ListWaiting.php
+msgid "changes_requested: yours, sent back; assigned: assigned to you; review: in review, yours to publish"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Platform.vue
@@ -11898,6 +11931,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "{who} linked a sign-in account"
+msgstr ""
+
+#: core/src/Cms/Content/ReviewNotification.php
+msgid "{who} mentioned you on the {item} \"{title}\""
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
