@@ -61,6 +61,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- The Overview no longer says scheduled tasks have never run right after they ran for the first time. The first run of the scheduler drops the cached health report, so the next look re-runs the checks.
 - A token missing a scope now gets `403 insufficient_scope` as documented, not `401`. PHP turned the status of any response with a `WWW-Authenticate` header into 401, and of any response with a `Location` header into 302, because the status was set before the headers.
 - Plugins and themes run on a pre-release of Kestello: `0.1.0-rc.1` meets `"core": "^0.1"`, counting as the version it leads to. Before, strict version rules refused every package on a release candidate. Dependencies between plugins stay strict.
 - Backspace in an empty quote source, table caption or image caption no longer removes the whole block; only the block's first field does that.
