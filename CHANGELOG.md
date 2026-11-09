@@ -71,6 +71,10 @@ Every change people would notice is listed here, newest first. The format follow
 - Downloads to a file that follow a redirect, such as core updates from GitHub releases, now hold only the final file instead of the redirect page followed by it. `HttpClient` takes a `max_bytes` option for downloads to a file and stops with `HttpTooLarge` past it.
 - A text field that asks for more than 255 characters with `->max()` now gets it, up to 2000, in the editor and when saving. Image alt text, captions, list items and table captions were cut off at 255.
 
+### Removed
+
+- The second, Laravel-style validator (`Kestello\Framework\Validation\Validator`, `FormRequest`, the `Rule` contracts) and `make:request`. It was undocumented and used only by the sign-in form. Requests are validated with `Kestello\Cms\Api\Schema`, which the API, settings and forms use. The sign-in form now says "Enter your email address or username." and "Enter your password." when a field is empty.
+
 ### Security
 
 - Kestello ships the public key its official releases are signed with (`release.keys` in `core/config/release.php`), so sites apply releases from GitHub only when that key signed them.
