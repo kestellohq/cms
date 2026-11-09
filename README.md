@@ -13,7 +13,9 @@ Kestello brings its own small libraries for what a CMS needs: a database layer, 
 - **Plugins cannot clash with each other either.** A plugin may only declare classes in its own namespace, and the plugin check enforces it. A plugin that needs a library prefixes it into that namespace first (with a tool such as PHP-Scoper or Strauss).
 - **The sensitive parts use what PHP provides.** Passwords use `password_hash`, signatures and encryption use libsodium, databases use PDO, and HTTP uses curl with certificate checks on.
 
-The cost is more code to maintain ourselves, which is why every part has tests. Composer still works: `composer.json` requires nothing at runtime, maps the `Kestello\` namespace for your editor and tools, and its `require-dev` holds the two development tools (PHPStan and PHP CS Fixer), which never ship.
+The cost is more code to maintain ourselves, which is why every part has tests. Composer still works: `composer.json` requires nothing at runtime, maps the `Kestello\` namespace for your editor and tools, and its `require-dev` holds the two development tools (PHPStan and PHP CS Fixer), which never ship. A site itself loads classes with Kestello's own autoloader (`core/bootstrap.php`), so it has no `vendor/` folder.
+
+The one exception to the rule is Vue 3, for the admin and themes. It runs in the browser, not in PHP, and ships prebuilt as one pinned file in each release, so installing still needs nothing but PHP. Plugins and themes use that one copy instead of bundling their own.
 
 ## Requirements
 

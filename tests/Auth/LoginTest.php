@@ -11,6 +11,7 @@ use Kestello\Cms\Auth\Totp;
 use Kestello\Cms\Auth\TwoFactor;
 use Kestello\Cms\Events\LoginFailed;
 use Kestello\Cms\Events\UserLoggedIn;
+use Kestello\Framework\Core\Request;
 
 final class LoginTest extends AuthTestCase
 {
@@ -220,5 +221,33 @@ final class LoginTest extends AuthTestCase
         $this->assertNull(Totp::verify($secret, '005924', lastUsedStep: Totp::step(1234567890), time: 1234567890), 'replay');
         $this->assertNull(Totp::verify($secret, '12345', time: 1234567890));
         $this->assertSame('12345678901234567890', Totp::base32Decode(strtolower($secret)));
+    }
+
+    public function testTheSignInFormAsksForWhatIsMissingWithoutTryingToSignIn(): void
+    {
+        $this->createUser();
+        $failed = 0;
+        $this->cms->events->on(LoginFailed::class, function () use (&$failed) {
+            $failed++;
+        });
+        $post = function (array $body): array {
+            $this->nextRequest();
+            $request = new Request('POST', '/login', '/login', [], [], $body, [], [], ['REMOTE_ADDR' => '203.0.113.7'], '');
+            $_SESSION['_flash']['new'] = [];
+            $response = $this->cms->routes->dispatch($request);
+            $next = $_SESSION['_flash']['new'];   // what the sign-in page shows on the next request
+
+            return [$response->statusCode(), $response->headers()['Location'] ?? null, $next['_errors'] ?? null, $next['_old_input'] ?? null];
+        };
+
+        $this->assertSame(
+            [302, '/login', ['email' => ['Enter your email address or username.'], 'password' => ['Enter your password.']], ['email' => '']],
+            $post(['email' => '  ', 'password' => '']),
+        );
+        $this->assertSame(
+            [302, '/login', ['password' => ['Enter your password.']], ['email' => 'ana']],
+            $post(['email' => ' ana ', 'password' => '']),
+        );
+        $this->assertSame(0, $failed, 'nothing was tried, so nothing failed or counted towards the throttle');
     }
 }

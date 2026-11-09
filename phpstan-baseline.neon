@@ -2347,12 +2347,6 @@ parameters:
 			path: core/src/Contracts/Search/SearchQuery.php
 
 		-
-			message: '#^PHPDoc tag @param has invalid value \(Closure\(string \$message, array\<string, mixed\> \$params \= \[\], string \$domain \= ''core''\)\: void \$fail\)\: Unexpected token "\(", expected variable at offset 25 on line 2$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: core/src/Contracts/Validation/Rule.php
-
-		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$primary$#'
 			identifier: parameter.notFound
 			count: 1
@@ -3431,66 +3425,6 @@ parameters:
 			identifier: arrayValues.list
 			count: 1
 			path: core/src/Framework/Testing/TestRunner.php
-
-		-
-			message: '#^Method Kestello\\Framework\\Validation\\FormRequest\:\:flashErrorsAndInput\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Validation/FormRequest.php
-
-		-
-			message: '#^Property Kestello\\Framework\\Validation\\FormRequest\:\:\$validated is never read, only written\.$#'
-			identifier: property.onlyWritten
-			count: 1
-			path: core/src/Framework/Validation/FormRequest.php
-
-		-
-			message: '#^Unsafe usage of new static\(\)\.$#'
-			identifier: new.static
-			count: 1
-			path: core/src/Framework/Validation/FormRequest.php
-
-		-
-			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:expand\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Validation/Validator.php
-
-		-
-			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:extension\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Validation/Validator.php
-
-		-
-			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:parse\(\) has parameter \$spec with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Validation/Validator.php
-
-		-
-			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:ruleExists\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Validation/Validator.php
-
-		-
-			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:ruleUnique\(\) has parameter \$params with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Validation/Validator.php
-
-		-
-			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:validateOrFail\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Validation/Validator.php
-
-		-
-			message: '#^Method Kestello\\Framework\\Validation\\Validator\:\:validated\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Validation/Validator.php
 
 		-
 			message: '#^Parameter \#3 \$dispatch of class Kestello\\Cms\\Platform\\PlatformManager constructor expects \(Closure\(object\)\: void\)\|null, Closure\<T of object\>\(T\)\: T given\.$#'
