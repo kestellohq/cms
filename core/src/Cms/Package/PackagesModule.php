@@ -112,7 +112,7 @@ final class PackagesModule extends Provider
     public function boot(Cms $cms): void
     {
         $cms->auth->roles->capability('plugins.manage', 'Install, update, activate, deactivate and delete plugins', sensitive: true);
-        $cms->auth->roles->capability('core.update', 'Update Kestello itself', sensitive: true);
+        $cms->auth->roles->capability('core.update', 'Update Kestello, and plugins and themes from their publishers', sensitive: true);
         $cms->admin->page('system/updates', '@core/admin/system/Updates', 'Updates', 'core.update', ['label' => 'Updates', 'icon' => 'arrows-clockwise', 'group' => 'site', 'order' => 20]);
         $cms->admin->page('system/plugins', '@core/admin/system/Plugins', 'Plugins', 'plugins.manage', ['label' => 'Manage plugins', 'icon' => 'plug', 'group' => 'plugins', 'order' => 0]);
 

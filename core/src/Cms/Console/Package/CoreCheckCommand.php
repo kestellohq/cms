@@ -29,7 +29,7 @@ final class CoreCheckCommand extends Command
             return 0;
         }
         $this->output->label('Available', "{$result['latest']['version']} ({$result['latest']['page']})");
-        $this->output->line('  Apply it under System → Updates, or download the zip and run bin/cms core:update <zip>.');
+        $this->output->line('  Apply it under Site → Updates, or download the zip and run bin/cms core:update <zip>.');
 
         return 0;
     }
