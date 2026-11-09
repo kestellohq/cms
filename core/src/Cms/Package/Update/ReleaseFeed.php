@@ -7,11 +7,12 @@ namespace Kestello\Cms\Package\Update;
 use Kestello\Framework\Support\Semver;
 
 /**
- * Kestello versions from a GitHub repository's releases (GET /repos/{repo}/releases).
+ * Versions from a GitHub repository's releases (GET /repos/{repo}/releases): Kestello's own
+ * (prefix "kestello-core") and those of plugins and themes that name a repository (prefix: the slug).
  *
  * A release counts when it is published (not a draft), its tag is v<version>, and it carries
- * kestello-core-<version>.zip and kestello-core-<version>.zip.sha256 downloaded from that
- * repository. Anything else is left out, never guessed at.
+ * <prefix>-<version>.zip and <prefix>-<version>.zip.sha256 downloaded from that repository.
+ * Anything else is left out, never guessed at.
  *
  * @internal
  */
@@ -21,7 +22,7 @@ final class ReleaseFeed
      * @param mixed $json the decoded API response
      * @return list<array{version: string, name: string, notes: string, published_at: string, prerelease: bool, zip: string, sha256: string, page: string}>
      */
-    public static function parse(mixed $json, string $repository): array
+    public static function parse(mixed $json, string $repository, string $prefix = 'kestello-core'): array
     {
         if (!is_array($json) || !array_is_list($json)) {
             throw new \UnexpectedValueException('GitHub did not answer with a list of releases.');
@@ -43,13 +44,13 @@ final class ReleaseFeed
                     $assets[$asset['name']] = $url;
                 }
             }
-            $zip = "kestello-core-{$version}.zip";
+            $zip = "{$prefix}-{$version}.zip";
             if (!isset($assets[$zip], $assets["{$zip}.sha256"])) {
                 continue;
             }
             $out[] = [
                 'version' => $version,
-                'name' => is_string($release['name'] ?? null) && $release['name'] !== '' ? $release['name'] : "Kestello {$version}",
+                'name' => is_string($release['name'] ?? null) && $release['name'] !== '' ? $release['name'] : ($prefix === 'kestello-core' ? "Kestello {$version}" : $version),
                 'notes' => is_string($release['body'] ?? null) ? $release['body'] : '',
                 'published_at' => is_string($release['published_at'] ?? null) ? $release['published_at'] : '',
                 'prerelease' => ($release['prerelease'] ?? false) === true || str_contains($version, '-'),
@@ -88,7 +89,7 @@ final class ReleaseFeed
         return preg_match('/^([0-9a-f]{64})\b/i', trim($file), $m) === 1 ? strtolower($m[1]) : null;
     }
 
-    private static function isVersion(string $version): bool
+    public static function isVersion(string $version): bool
     {
         return preg_match('/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[0-9A-Za-z.-]+)?$/', $version) === 1 && Semver::isValid($version);
     }

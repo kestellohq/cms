@@ -12,9 +12,13 @@ use Kestello\Cms\Extension\ExtensionManager;
 use Kestello\Cms\Extension\PackageType;
 use Kestello\Cms\Extension\SuspensionList;
 use Kestello\Cms\Package\PackageBuilder;
+use Kestello\Cms\Package\PackageSignature;
 use Kestello\Cms\Package\PackagesModule;
 use Kestello\Cms\Package\Update\HealthProbe;
 use Kestello\Cms\Package\Update\HttpProbe;
+use Kestello\Cms\Package\Update\KeyPins;
+use Kestello\Cms\Package\Update\PackageLicenses;
+use Kestello\Cms\Package\Update\PackageUpdates;
 use Kestello\Cms\Package\Update\UpdateProbe;
 use Kestello\Cms\Package\Update\Updater;
 use Kestello\Cms\System\Maintenance;
@@ -269,5 +273,138 @@ final class UpdatesTest extends AuthTestCase
         $result = json_decode($done->content(), true)['data']['result'];
         $this->assertTrue($result['ok']);
         $this->assertSame('1.1.0', $this->installedVersion());
+    }
+
+    /**
+     * The installed ledger names a licensed feed; $sign signs 1.1.0 (with the publisher's key or another).
+     *
+     * @return array{transport: FakeTransport, zip: string, keys: array{id: string, public_key: string, secret_key: string}}
+     */
+    private function licensedFeed(bool $samePublisher = true): array
+    {
+        $updates = ['url' => 'https://updates.acme.example/ledger.json', 'license' => true];
+        $publisher = PackageSignature::generateKeys();
+        $other = PackageSignature::generateKeys();
+        $this->cms->config->set('app.packages.admin_unsigned', false);
+        $this->cms->config->set('app.packages.trusted_keys', [['name' => 'Acme', 'public_key' => $publisher['public_key']], ['name' => 'Someone else', 'public_key' => $other['public_key']]]);
+
+        $installed = $this->root . '/content/plugins/ledger/plugin.json';
+        file_put_contents($installed, json_encode(['updates' => $updates] + (array) json_decode((string) file_get_contents($installed), true)));
+        $this->boot();
+        $this->cms->container->make(KeyPins::class)->remember('plugin:ledger', ['status' => PackageSignature::SIGNED, 'key' => $publisher['id']], []);
+
+        $this->release('1.1.0', [], ['updates' => $updates]);
+        $zip = $this->zip();
+        PackageSignature::sign($zip, ($samePublisher ? $publisher : $other)['secret_key']);
+        $transport = new FakeTransport([
+            'GET https://updates.acme.example/ledger.json' => ['body' => PackageFeedTest::feed([PackageFeedTest::release('1.1.0', ['download' => 'https://cdn.acme.example/ledger-1.1.0.zip?expires=1&sig=x', 'sha256' => hash_file('sha256', $zip)])], 'ledger')],
+            'GET https://cdn.acme.example/ledger-1.1.0.zip' => ['body' => (string) file_get_contents($zip)],
+        ]);
+        $cms = $this->cms;
+        $saved = [];
+        $this->cms->container->instance(PackageUpdates::class, new PackageUpdates(
+            new HttpClient($transport, static fn(): array => ['93.184.216.34']),
+            $this->cms->container->make(PackageLicenses::class),
+            static fn(): array => PackagesModule::installedPackages($cms),
+            '0.1.0',
+            '8.4.0',
+            'https://client.example',
+            [],
+            $this->root . '/storage/tmp/updates',
+            static function () use (&$saved): array {
+                return $saved;
+            },
+            static function (array $r) use (&$saved): void {
+                $saved = $r;
+            },
+        ));
+
+        return ['transport' => $transport, 'zip' => $zip, 'keys' => $publisher];
+    }
+
+    /** @return array<string, mixed> the ledger row of GET /updates (or of another /updates answer) */
+    private function ledgerRow(array $data): array
+    {
+        return array_values(array_filter($data['plugins'], static fn(array $p): bool => $p['slug'] === 'ledger'))[0];
+    }
+
+    public function testAPaidPluginUpdatesFromItsFeedWithALicenseKey(): void
+    {
+        $feed = $this->licensedFeed();
+        $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
+
+        $row = $this->ledgerRow(json_decode($this->api('POST', '/updates/packages/check')->content(), true)['data']);
+        $this->assertSame(['url', ['required' => true, 'set' => false, 'last4' => null]], [$row['source'], $row['license']]);
+        $this->assertStringContainsString('needs a license key', (string) $row['update']['error']);
+        $this->assertSame([], $feed['transport']->sent, 'no key: the feed is not asked');
+
+        $saved = $this->api('PUT', '/updates/packages/license', ['owner' => 'plugin:ledger', 'key' => 'LIC-SECRET-4f2a']);
+        $this->assertSame(200, $saved->statusCode(), $saved->content());
+        $this->assertStringNotContainsString('LIC-SECRET', $saved->content(), 'the key is never sent back');
+        $row = $this->ledgerRow(json_decode($saved->content(), true)['data']);
+        $this->assertSame(['required' => true, 'set' => true, 'last4' => '4f2a'], $row['license']);
+        $this->assertSame('1.1.0', $row['update']['offer']['version'] ?? null, (string) json_encode($row['update']));
+        $this->assertStringContainsString('<p>Notes for 1.1.0</p>', (string) $row['update']['offer']['notes_html']);
+        $this->assertArrayNotHasKey('zip', $row['update']['offer'], 'a download address is never kept or shown');
+        $asked = $feed['transport']->sent[0];
+        $this->assertSame(['Bearer LIC-SECRET-4f2a', 'https://client.example'], [$asked->headers['Authorization'] ?? null, $asked->headers['X-Kestello-Site'] ?? null]);
+        $this->assertStringNotContainsString('LIC-SECRET', (string) $this->db->table('settings')->where('key', 'updates.license.plugin.ledger')->value('value'), 'sealed at rest');
+
+        $review = $this->api('POST', '/updates/packages/download', ['owner' => 'plugin:ledger']);
+        $this->assertSame(200, $review->statusCode(), $review->content());
+        $review = json_decode($review->content(), true)['data'];
+        $this->assertSame([true, [], '1.1.0', 'signed'], [$review['allowed'], $review['package']['problems'], $review['package']['version'], $review['package']['signature']['status']]);
+        $download = $feed['transport']->sent[array_key_last($feed['transport']->sent)];
+        $this->assertStringStartsWith('https://cdn.acme.example/', $download->url);
+        $this->assertArrayNotHasKey('Authorization', $download->headers, 'the key goes to the feed host only');
+
+        $this->assertSame(422, $this->api('POST', '/updates/packages/update', ['token' => $review['token'], 'owner' => 'theme:ledger'])->statusCode(), 'a token is for its own package');
+        $done = $this->api('POST', '/updates/packages/update', ['token' => $review['token'], 'owner' => 'plugin:ledger']);
+        $this->assertSame(200, $done->statusCode(), $done->content());
+        $this->assertTrue(json_decode($done->content(), true)['data']['result']['ok']);
+        $this->assertSame('1.1.0', $this->installedVersion());
+        $this->assertSame([$feed['keys']['id']], $this->cms->container->make(KeyPins::class)->pinned('plugin:ledger'));
+
+        $this->assertSame(200, $this->api('POST', '/updates/packages/license/remove', ['owner' => 'plugin:ledger'])->statusCode());
+        $this->assertNull($this->cms->container->make(PackageLicenses::class)->get('plugin:ledger'));
+    }
+
+    public function testAnUpdateSignedByAnotherPublisherIsRefused(): void
+    {
+        $this->licensedFeed(samePublisher: false);
+        $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
+        $this->cms->container->make(PackageLicenses::class)->set('plugin:ledger', 'LIC-1');
+
+        $review = json_decode($this->api('POST', '/updates/packages/download', ['owner' => 'plugin:ledger'])->content(), true)['data'];
+        $this->assertSame('signed', $review['package']['signature']['status'], 'by a key the site trusts');
+        $this->assertFalse($review['allowed']);
+        $this->assertStringContainsString('not signed by the publisher of the installed version', implode(' ', $review['package']['problems']));
+        $this->assertSame(422, $this->api('POST', '/updates/packages/update', ['token' => $review['token'], 'owner' => 'plugin:ledger'])->statusCode());
+        $this->assertSame('1.0.0', $this->installedVersion());
+    }
+
+    public function testARefusedKeyShowsTheVendorsRenewLinkOnlyOnItsOwnHost(): void
+    {
+        $feed = $this->licensedFeed();
+        $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
+        $this->cms->container->make(PackageLicenses::class)->set('plugin:ledger', 'LIC-EXPIRED');
+
+        foreach (['https://updates.acme.example/renew' => 'https://updates.acme.example/renew', 'https://evil.example/renew' => null, 'http://updates.acme.example/renew' => null] as $link => $shown) {
+            $feed['transport']->on('GET https://updates.acme.example/ledger.json', ['status' => 403, 'json' => ['error' => '<b>Your license expired</b> on 1 March.', 'renew_url' => $link]]);
+            $row = $this->ledgerRow(json_decode($this->api('POST', '/updates/packages/check', ['owner' => 'plugin:ledger'])->content(), true)['data']);
+            $this->assertSame('The license key for Ledger was refused: Your license expired on 1 March.', $row['update']['error']);
+            $this->assertSame($shown, $row['update']['renew_url'], $link);
+            $this->assertNull($row['update']['offer']);
+        }
+    }
+
+    public function testOnlyPackagesThatNameASourceAreChecked(): void
+    {
+        $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
+        $this->assertSame(422, $this->api('POST', '/updates/packages/download', ['owner' => 'plugin:ledger'])->statusCode());
+        $this->assertSame(404, $this->api('POST', '/updates/packages/download', ['owner' => 'plugin:nothing'])->statusCode());
+        $this->assertSame(422, $this->api('PUT', '/updates/packages/license', ['owner' => 'plugin:ledger', 'key' => 'x'])->statusCode());
+        $row = $this->ledgerRow(json_decode($this->api('GET', '/updates')->content(), true)['data']);
+        $this->assertSame([null, null], [$row['source'], $row['update']]);
     }
 }

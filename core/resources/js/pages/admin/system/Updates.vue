@@ -1,15 +1,18 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { ApiError, confirm, formatDateTime, formatRelative, notify, useApi, __ } from '@kestello/sdk';
-import { KAlert, KBadge, KButton, KCard, KField, KIcon, KModal, KPageHeader, KTable } from '@kestello/ui';
+import { KAlert, KBadge, KButton, KCard, KField, KIcon, KModal, KPageHeader } from '@kestello/ui';
+import PackageUpdates from '../../../components/updates/PackageUpdates.vue';
 import StoppedUpdate from '../../../components/updates/StoppedUpdate.vue';
+import { signatureNote } from '../../../components/updates/signature.js';
 import { rememberSwitchBack, switchBackOutcome, takeSwitchBack } from '../../../components/updates/switch-back.js';
 
 defineOptions({ layout: 'Admin' });
 
 /**
  * Updates: what runs (Kestello, plugins, themes) and applying a Kestello
- * release, downloaded from GitHub or uploaded. A release is reviewed first; applying it backs up the database,
+ * release, downloaded from GitHub or uploaded. Plugin and theme updates from
+ * their own sources are in PackageUpdates. A release is reviewed first; applying it backs up the database,
  * switches to the new release, checks the site, and switches back by itself
  * when anything is wrong. After an update, Switch back goes to the version
  * before it, with the database from before it.
@@ -60,11 +63,6 @@ async function switchBack() {
         busy.value = '';
     }
 }
-
-const packages = computed(() => [
-    ...(data.value?.plugins ?? []).map((p) => ({ ...p, key: `plugin:${p.slug}`, kind: __('Plugin') })),
-    ...(data.value?.themes ?? []).map((t) => ({ ...t, key: `theme:${t.slug}`, kind: __('Theme') })),
-]);
 
 // ── new versions on GitHub ───────────────────────────────────────────
 const available = computed(() => data.value?.available ?? null);
@@ -127,16 +125,7 @@ async function upload() {
 }
 
 const release = computed(() => review.value?.release ?? null);
-const signature = computed(() => {
-    const s = release.value?.signature;
-    if (!s) return null;
-    return {
-        signed: { icon: 'seal-check', tone: 'success', text: __('Signed by {name}, a publisher this site trusts.', { name: s.name }) },
-        untrusted: { icon: 'seal-question', tone: 'warning', text: __('Signed with a key this site does not trust ({key}).', { key: s.key }) },
-        unsigned: { icon: 'seal-question', tone: 'warning', text: __('Not signed: nobody vouches for where it came from.') },
-        tampered: { icon: 'seal-warning', tone: 'danger', text: __('Changed after it was signed. Do not apply it.') },
-    }[s.status];
-});
+const signature = computed(() => (release.value?.signature ? signatureNote(release.value.signature) : null));
 const blocked = computed(() => {
     if (!release.value || release.value.allowed) return '';
     if (release.value.signature.status === 'tampered') return __('This release was changed after it was signed, so it is refused.');
@@ -241,28 +230,7 @@ async function apply() {
             }}</KAlert>
         </KCard>
 
-        <KCard flush class="k-updates__packages">
-            <KTable
-                :columns="[
-                    { key: 'name', label: __('Plugins and themes') },
-                    { key: 'kind', label: __('Kind') },
-                    { key: 'version', label: __('Version'), align: 'end' },
-                ]"
-                :rows="packages"
-                row-key="key"
-                :empty="__('No plugins or themes installed.')"
-            >
-                <template #cell-name="{ row }">
-                    {{ row.name }} <KBadge v-if="row.active" tone="success">{{ __('Active') }}</KBadge>
-                </template>
-                <template #cell-version="{ row }"
-                    ><span class="k-num">{{ row.version }}</span></template
-                >
-            </KTable>
-        </KCard>
-        <p class="k-muted k-small k-updates__note">
-            {{ __('Plugins are updated, and switched back after an update, under Plugins → Manage plugins.') }}
-        </p>
+        <PackageUpdates v-model:data="data" />
     </template>
 
     <KModal
@@ -375,12 +343,6 @@ async function apply() {
     margin: 0;
     color: var(--k-ink-2);
     max-width: 60ch;
-}
-.k-updates__packages {
-    margin-top: 14px;
-}
-.k-updates__note {
-    margin: 8px 0 0;
 }
 .k-updates__review {
     display: grid;

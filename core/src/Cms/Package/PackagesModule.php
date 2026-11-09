@@ -10,6 +10,9 @@ use Kestello\Cms\Extension\Provider;
 use Kestello\Cms\Package\Update\CoreUpdater;
 use Kestello\Cms\Package\Update\HealthProbe;
 use Kestello\Cms\Package\Update\HttpProbe;
+use Kestello\Cms\Package\Update\KeyPins;
+use Kestello\Cms\Package\Update\PackageLicenses;
+use Kestello\Cms\Package\Update\PackageUpdates;
 use Kestello\Cms\Package\Update\ProcessProbe;
 use Kestello\Cms\Package\Update\UpdateChecker;
 use Kestello\Cms\Package\Update\UpdateProbe;
@@ -21,6 +24,7 @@ use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
 use Kestello\Framework\Http\Client\HttpClient;
 use Kestello\Framework\Settings\Settings;
+use Kestello\Support\AppKey;
 
 /**
  * Plugins screen, package installs, plugin/theme/core updates.
@@ -28,6 +32,8 @@ use Kestello\Framework\Settings\Settings;
  * Config (config/app.php):
  *   updates.health      auto (default: a PHP process when proc_open works, else HTTP) | process | http
  *   updates.php         the PHP CLI binary for the process check (default: found from the running PHP)
+ *   updates.check_every hours between checks of plugin and theme update sources (12; 0 = off)
+ *   updates.prereleases offer plugin and theme pre-releases too (false)
  *   updates.health_url  where the server reaches the site for the HTTP check (default: app.url)
  *
  * New Kestello versions come from GitHub releases (config/release.php: repository, check_every,
@@ -37,6 +43,9 @@ final class PackagesModule extends Provider
 {
     /** Settings key holding the last update check (UpdateChecker::check()). */
     public const string LAST_CHECK = 'updates.core_check';
+
+    /** Settings key holding the last answers about plugin and theme updates (PackageUpdates). */
+    public const string PACKAGE_CHECKS = 'updates.package_checks';
 
     public function register(Container $container): void
     {
@@ -68,6 +77,34 @@ final class PackagesModule extends Provider
             },
             static fn(array $result) => Settings::getInstance()->set(self::LAST_CHECK, (string) json_encode($result, JSON_UNESCAPED_SLASHES), 'updates'),
         ));
+        $container->singleton(KeyPins::class, static fn(): KeyPins => KeyPins::inSettings());
+        $container->singleton(PackageLicenses::class, static fn(): PackageLicenses => new PackageLicenses(
+            AppKey::secretStore(),
+            static fn(string $owner): ?string => Settings::getInstance()->get(self::settingsKey('license', $owner)),
+            static function (string $owner, ?string $json): void {
+                $json === null ? Settings::getInstance()->delete(self::settingsKey('license', $owner)) : Settings::getInstance()->set(self::settingsKey('license', $owner), $json, 'updates');
+            },
+        ));
+        $container->singleton(PackageUpdates::class, static function (Container $c): PackageUpdates {
+            $cms = self::cms();
+
+            return new PackageUpdates(
+                $c->make(HttpClient::class),
+                $c->make(PackageLicenses::class),
+                static fn(): array => self::installedPackages($cms),
+                $cms->version(),
+                PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION,
+                (string) $cms->config->get('app.url', ''),
+                ['check_every' => $cms->config->get('app.updates.check_every', 12), 'prereleases' => $cms->config->get('app.updates.prereleases', false)],
+                $cms->paths->storage('tmp/updates'),
+                static function (): array {
+                    $value = json_decode((string) Settings::getInstance()->get(self::PACKAGE_CHECKS, ''), true);
+
+                    return is_array($value) ? $value : [];
+                },
+                static fn(array $results) => Settings::getInstance()->set(self::PACKAGE_CHECKS, (string) json_encode($results, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 'updates'),
+            );
+        });
         $container->singleton(Updater::class, static fn(Container $c): Updater => new Updater(self::cms(), $c->make(PackageInstaller::class), $c->make(Backups::class), $c->make(HealthProbe::class)));
         $container->singleton(UpdateRecovery::class, static fn(Container $c): UpdateRecovery => new UpdateRecovery(self::cms(), $c->make(Backups::class)));
     }
@@ -91,6 +128,16 @@ final class PackagesModule extends Provider
         }, 'updates.check')->hourlyAt(17)->withoutOverlapping(30)
             ->description('Asks GitHub whether a new Kestello version is out (config/release.php). It only tells you; Updates installs.');
 
+        // new plugin and theme versions, from where each manifest says ("updates"); nothing is installed
+        $cms->schedule->call(static function () use ($cms): string {
+            $results = $cms->container->make(PackageUpdates::class)->check(dueOnly: true);
+            $offers = array_filter($results, static fn(array $r): bool => $r['offer'] !== null);
+            $errors = array_filter($results, static fn(array $r): bool => $r['error'] !== null);
+
+            return count($offers) . ' update(s) available' . ($errors !== [] ? ', ' . count($errors) . ' source(s) could not be checked' : '') . '.';
+        }, 'updates.packages')->hourlyAt(27)->withoutOverlapping(30)
+            ->description('Asks the sources plugins and themes name ("updates" in their manifest) for new versions. It only tells you; Updates installs.');
+
         // the HTTP health check's view of a package; only during an update, only with its bypass token
         $cms->routes->get('/system/update/probe', static function (Request $request) use ($cms): Response {
             $state = (new Maintenance($cms->paths->storage()))->current();
@@ -104,6 +151,27 @@ final class PackagesModule extends Provider
 
             return new Response((string) json_encode($failed !== null ? ['probe_error' => $failed] : UpdateProbe::report($cms, $owner, pages: false)), 200, ['Content-Type' => 'application/json', 'Cache-Control' => 'no-store']);
         })->name('system.update.probe');
+    }
+
+    /**
+     * The installed plugins and themes, as PackageUpdates reads them.
+     *
+     * @return list<array{owner: string, type: string, slug: string, name: string, version: string, updates: array<string, mixed>|null}>
+     */
+    public static function installedPackages(Cms $cms): array
+    {
+        $out = [];
+        foreach ([...array_values($cms->extensions()->plugins()), ...array_values($cms->extensions()->themes())] as $p) {
+            $out[] = ['owner' => $p->owner(), 'type' => $p->manifest->type->value, 'slug' => $p->slug(), 'name' => $p->manifest->name, 'version' => $p->version(), 'updates' => $p->manifest->updates];
+        }
+
+        return $out;
+    }
+
+    /** "updates.key.plugin.events" for the owner "plugin:events". */
+    public static function settingsKey(string $what, string $owner): string
+    {
+        return "updates.{$what}." . str_replace(':', '.', $owner);
     }
 
     private static function cms(): Cms

@@ -12,6 +12,7 @@ use Kestello\Cms\Extension\ManifestException;
 use Kestello\Cms\Extension\Package;
 use Kestello\Cms\Extension\PackageChecker;
 use Kestello\Cms\Extension\PackageType;
+use Kestello\Cms\Package\Update\KeyPins;
 use Kestello\Support\Zip\Zip;
 use Kestello\Support\Zip\ZipEntry;
 use Throwable;
@@ -72,8 +73,13 @@ final class PackageInstaller
                 if ($installed['active'] && !($options['replace_active'] ?? false)) {
                     throw ContentException::conflict("Deactivate {$check['name']} before replacing it, or update it.");
                 }
+                $pin = ($options['allow_unsigned'] ?? false) ? null : $this->pins()->problem($this->owner($check), $check['signature']);
+                if ($pin !== null) {
+                    throw ContentException::forbidden("{$check['name']} {$check['version']} {$pin}.");
+                }
             }
             $package = $this->extensions()->install($staged['package'], $staged['type'], $installed !== null);
+            $this->pins()->remember($this->owner($check), $check['signature'], $check['signing_keys']);
 
             return ['package' => $package, 'replaced' => $installed !== null, 'check' => $check];
         } catch (ContentException $e) {
@@ -177,6 +183,18 @@ final class PackageInstaller
         return PackageSignature::trustedKeys($this->cms->config->get('app.packages.trusted_keys', []));
     }
 
+    /** The signing keys each installed package's updates must come from. */
+    public function pins(): KeyPins
+    {
+        return $this->cms->container->has(KeyPins::class) ? $this->cms->container->make(KeyPins::class) : KeyPins::inSettings();
+    }
+
+    /** @param array<string, mixed> $check */
+    public function owner(array $check): string
+    {
+        return $check['type'] . ':' . $check['slug'];
+    }
+
     public function adminMayInstallUnsigned(): bool
     {
         return (bool) $this->cms->config->get('app.packages.admin_unsigned', false);
@@ -263,6 +281,8 @@ final class PackageInstaller
             'requires' => ['core' => $manifest->requiresCore, 'php' => $manifest->requiresPhp, 'plugins' => $manifest->dependencies],
             'permissions' => $manifest->permissions,
             'replaces' => $manifest->replaces,
+            'updates' => $manifest->updates,
+            'signing_keys' => $manifest->signingKeys,
             'code' => $hasCode,
             'signature' => $signature,
             'findings' => $findings,

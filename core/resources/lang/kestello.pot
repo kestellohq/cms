@@ -161,6 +161,10 @@ msgstr ""
 msgid "A dropdown"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "A key ending in {last4} is saved."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "A larger export, or a site whose old server is gone: copy the file (and wp-content/uploads) to this server and run"
 msgstr ""
@@ -352,10 +356,10 @@ msgstr ""
 msgid "Activated a plugin"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/appearance/Themes.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Queue.vue
-#: core/resources/js/pages/admin/system/Updates.vue
 #: core/resources/js/pages/admin/users/Index.vue
 msgid "Active"
 msgstr ""
@@ -468,6 +472,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "Add items"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Add license key"
 msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
@@ -897,6 +905,10 @@ msgstr ""
 msgid "Asks for your password again if you have not entered it recently."
 msgstr ""
 
+#: core/src/Cms/Package/PackagesModule.php
+msgid "Asks the sources plugins and themes name (\"updates\" in their manifest) for new versions. It only tells you; Updates installs."
+msgstr ""
+
 #: core/resources/js/components/audit/events.js
 msgid "Assigned an entry"
 msgstr ""
@@ -1216,6 +1228,10 @@ msgstr ""
 msgid "By title"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "By upload"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "By {author}"
 msgstr ""
@@ -1249,6 +1265,7 @@ msgid "Can sign in"
 msgstr ""
 
 #: core/resources/js/components/media/ImageEditor.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/appearance/Templates.vue
 #: core/resources/js/pages/admin/appearance/Themes.vue
@@ -1367,7 +1384,7 @@ msgstr ""
 msgid "Changed a webhook"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
+#: core/resources/js/components/updates/signature.js
 msgid "Changed after it was signed. Do not apply it."
 msgstr ""
 
@@ -1440,6 +1457,7 @@ msgstr ""
 msgid "Check again"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Check now"
 msgstr ""
@@ -1629,6 +1647,7 @@ msgstr ""
 msgid "Clockwise, in quarter turns: 0, 90, 180 or 270"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/content-types/Edit.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -4187,6 +4206,10 @@ msgstr ""
 msgid "Key prefix. Empty = derived from this site, so sites sharing a server never collide."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Key …{last4}"
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderBar.vue
 #: core/resources/js/ui/builder/BuilderShortcuts.vue
 msgid "Keyboard shortcuts"
@@ -4195,7 +4218,6 @@ msgstr ""
 #: core/resources/js/pages/admin/content-types/Index.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Storage.vue
-#: core/resources/js/pages/admin/system/Updates.vue
 msgid "Kind"
 msgstr ""
 
@@ -4400,6 +4422,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Library"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "License key"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "License key for {name}"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDesign.vue
@@ -5031,6 +5061,7 @@ msgstr ""
 
 #: core/resources/js/components/content-types/FieldSettings.vue
 #: core/resources/js/components/forms/FormBuilder.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/Dashboard.vue
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -5075,6 +5106,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Needs a captcha plugin. A hidden trap field, a minimum fill time and the limit above already stop most spam."
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Needs a license key"
 msgstr ""
 
 #: core/resources/js/components/content-types/FieldList.vue
@@ -5380,7 +5415,7 @@ msgstr ""
 msgid "No plugins installed"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 msgid "No plugins or themes installed."
 msgstr ""
 
@@ -5549,6 +5584,10 @@ msgstr ""
 msgid "Not changed on this site: the theme's version is live."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Not checked yet"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "Not configured"
 msgstr ""
@@ -5577,8 +5616,8 @@ msgstr ""
 msgid "Not running"
 msgstr ""
 
+#: core/resources/js/components/updates/signature.js
 #: core/resources/js/pages/admin/system/Plugins.vue
-#: core/resources/js/pages/admin/system/Updates.vue
 msgid "Not signed: nobody vouches for where it came from."
 msgstr ""
 
@@ -5904,6 +5943,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Search/SearchSite.php
 msgid "Only this content type"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Only updates signed by a publisher this site trusts are applied from here. A developer can apply this one on the server: bin/cms package:update <zip>."
 msgstr ""
 
 #: core/resources/js/ui/KBlockSettings.vue
@@ -6398,7 +6441,7 @@ msgstr ""
 msgid "Please tick this box."
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 msgid "Plugin"
 msgstr ""
 
@@ -6429,12 +6472,12 @@ msgstr ""
 msgid "Plugins add features to the site. Each one declares what it may do, and one that breaks is switched off on its own instead of taking the site down."
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 msgid "Plugins and themes"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
-msgid "Plugins are updated, and switched back after an update, under Plugins → Manage plugins."
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Plugins and themes that say where their updates come from are updated here. Others are updated by uploading the new version under Plugins → Manage plugins, where you can also switch back after an update."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -6585,6 +6628,7 @@ msgstr ""
 msgid "Published style changes"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Published {date}."
 msgstr ""
@@ -6818,6 +6862,10 @@ msgstr ""
 msgid "Remove column {n}"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Remove key"
+msgstr ""
+
 #: core/resources/js/ui/KRichText.vue
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Remove link"
@@ -6912,6 +6960,10 @@ msgstr ""
 msgid "Renaming keeps the stored values."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Renew"
+msgstr ""
+
 #: core/resources/js/pages/auth/ResetPassword.vue
 msgid "Repeat new password"
 msgstr ""
@@ -6956,6 +7008,7 @@ msgstr ""
 msgid "Replace them"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/ui/builder/BuilderFind.vue
 msgid "Replace with"
 msgstr ""
@@ -7143,6 +7196,7 @@ msgid "Retrying"
 msgstr ""
 
 #: core/resources/js/components/content/ReviewPanel.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "Review"
 msgstr ""
@@ -7331,6 +7385,10 @@ msgstr ""
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Save"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Save and check"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
@@ -7996,8 +8054,8 @@ msgstr ""
 msgid "Signature"
 msgstr ""
 
+#: core/resources/js/components/updates/signature.js
 #: core/resources/js/pages/admin/system/Plugins.vue
-#: core/resources/js/pages/admin/system/Updates.vue
 msgid "Signed by {name}, a publisher this site trusts."
 msgstr ""
 
@@ -8026,8 +8084,8 @@ msgstr ""
 msgid "Signed out."
 msgstr ""
 
+#: core/resources/js/components/updates/signature.js
 #: core/resources/js/pages/admin/system/Plugins.vue
-#: core/resources/js/pages/admin/system/Updates.vue
 msgid "Signed with a key this site does not trust ({key})."
 msgstr ""
 
@@ -8834,6 +8892,10 @@ msgstr ""
 msgid "The database is backed up, visitors see a short maintenance page, and the site is checked on the new release: database changes, every active plugin, the home page. If anything is wrong, {v} and the database come back."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "The database is backed up, visitors see a short maintenance page, and the site is checked with the new version. If anything is wrong, {v} and the database come back."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Content/PreviewEntryBlocks.php
 msgid "The entry being edited; empty for one not saved yet."
 msgstr ""
@@ -8894,6 +8956,10 @@ msgstr ""
 msgid "The key each answer is stored under. Starts with a letter; lowercase letters, digits and underscores."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "The key is sent only to {name}’s own update server, to look for and download new versions. It is stored encrypted and not shown again."
+msgstr ""
+
 #: core/resources/js/pages/admin/content-types/Index.vue
 msgid "The kinds of content this site has and the fields each one holds. Types you build here work like the built-in ones: the editor, the API, search and public pages all follow them."
 msgstr ""
@@ -8908,6 +8974,14 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/GetSecurity.php
 msgid "The last week"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "The license key for {name} was removed."
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "The license key for {name} was saved."
 msgstr ""
 
 #: core/resources/js/pages/admin/NotFound.vue
@@ -9147,6 +9221,7 @@ msgstr ""
 msgid "The update of {name} from {from} to {to} started {date} and stopped before it finished."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "The update was not applied"
@@ -9192,7 +9267,7 @@ msgstr ""
 msgid "Their username"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 msgid "Theme"
 msgstr ""
 
@@ -9504,6 +9579,7 @@ msgstr ""
 msgid "This type of file is not allowed here."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "This update cannot be applied"
 msgstr ""
@@ -9832,6 +9908,10 @@ msgstr ""
 msgid "Up to 100 who don't"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Up to date, checked {date}"
+msgstr ""
+
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/src/Cms/Forms/Forms.php
 msgid "Up to {count} files, {size} MB each."
@@ -9862,9 +9942,14 @@ msgstr ""
 msgid "Update to Kestello {v}?"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Update to {v}"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Update {name} to {v}?"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Plugins.vue
@@ -9900,6 +9985,7 @@ msgstr ""
 msgid "Updated their profile"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 #: core/src/Cms/Package/PackagesModule.php
 msgid "Updates"
@@ -10125,6 +10211,7 @@ msgid "Verify"
 msgstr ""
 
 #: core/resources/js/components/content/StudioPublish.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Version"
@@ -10787,6 +10874,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "backup kept {when}"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "by {author}"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -11504,6 +11595,14 @@ msgstr ""
 msgid "{name} was deleted."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "{name} {v} and the database were put back. The site runs as before."
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "{name} {v} is running."
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Styles.vue
 msgid "{name}, as a hex code"
 msgstr ""
@@ -11731,6 +11830,14 @@ msgstr ""
 #: core/resources/js/ui/builder/DesignColor.vue
 #: core/resources/js/ui/builder/DesignScale.vue
 msgid "{value}, as on {screen}"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "{v} available"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "{v} needs Kestello {core}"
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
