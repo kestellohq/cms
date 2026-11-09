@@ -10,7 +10,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { compareVersions, isPrerelease, parseVersion, releaseChangelog, releaseNotes } from './changelog.mjs';
+import { isPrerelease, notNewer, parseVersion, releaseChangelog, releaseNotes } from './changelog.mjs';
 
 const root = path.resolve(import.meta.dirname, '../..');
 const fail = (message) => {
@@ -27,7 +27,10 @@ try {
 }
 
 const current = readFileSync(path.join(root, 'core/VERSION'), 'utf8').trim();
-if (compareVersions(version, current) <= 0 && version !== current) fail(`${version} is not newer than the current ${current}`);
+execFileSync('git', ['fetch', '--quiet', '--tags', 'origin'], { cwd: root });
+const tags = execFileSync('git', ['tag', '--list', 'v*'], { cwd: root, encoding: 'utf8' }).split('\n').filter(Boolean);
+const stale = notNewer(version, tags);
+if (stale) fail(stale);
 
 const branch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
 if (branch !== `release/${version}` && branch !== `hotfix/${version}`) fail(`switch to release/${version} (or hotfix/${version}) first; this is ${branch}`);

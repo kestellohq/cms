@@ -126,6 +126,30 @@ export function releaseNotes(text, version) {
     return `${body.join('\n')}\n`;
 }
 
+/**
+ * Why `version` can't be released after the tags already made (["v0.1.0-rc.1", …]), or null.
+ * It is compared with the newest tagged release, not with core/VERSION: develop carries the
+ * version being worked towards (0.1.0), and its release candidates come before it.
+ */
+export function notNewer(version, tags) {
+    parseVersion(version);
+    const released = tags
+        .map((t) => String(t).trim())
+        .filter((t) => t.startsWith('v'))
+        .map((t) => t.slice(1))
+        .filter((v) => {
+            try {
+                parseVersion(v);
+                return true;
+            } catch {
+                return false;
+            }
+        })
+        .sort(compareVersions);
+    const newest = released.at(-1);
+    return newest !== undefined && compareVersions(version, newest) <= 0 ? `${version} is not newer than v${newest}, the newest release tagged` : null;
+}
+
 /** Does the Unreleased section list anything? (the pull request check) */
 export function unreleasedHasEntries(text) {
     const lines = text.replace(/\r\n/g, '\n').split('\n');
