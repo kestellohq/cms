@@ -680,7 +680,7 @@ final class ExtensionManager
         $problems = [];
         foreach ([...array_values($this->enabledPlugins()), ...$this->themeChain()] as $package) {
             $m = $package->manifest;
-            if (!\Kestello\Framework\Support\Semver::satisfies($version, $m->requiresCore)) {
+            if (!\Kestello\Framework\Support\Semver::satisfiesRelease($version, $m->requiresCore)) {
                 $kind = $package->type() === PackageType::Theme ? 'theme' : 'plugin';
                 $problems[] = "The {$kind} {$m->name} {$m->version} supports Kestello {$m->requiresCore}, not {$version}.";
             }

@@ -4,47 +4,6 @@ Every change people would notice is listed here, newest first. The format follow
 
 ## [Unreleased]
 
-### Security
-
-- Kestello ships the public key its official releases are signed with (`release.keys` in `core/config/release.php`), so sites apply releases from GitHub only when that key signed them.
-- Direct uploads to an S3 bucket land at a private staging key (`incoming/<upload id>`). Kestello checks the file there, then copies it to the key it chose and makes it public. Before, the browser uploaded straight to the final key as a public file, so an unchecked file, or one that was never finished, could be read at its permanent address. With a bucket policy instead of object ACLs, keep `incoming/` out of public reads.
-- The query builder refuses a column or table name that isn't a plain name (`name`, `table.name`, `name AS alias`) instead of passing it into SQL unchanged. Raw SQL needs `new Expression(…)` or `QueryBuilder::raw()`. Plugins that passed SQL such as `'COUNT(*) as total'` to `select()` must wrap it.
-- A form's "redirect after sending" path is checked like other return paths, so `/\host` (which browsers read as `//host`) and control characters are refused.
-- The server renderer (`app.ssr.url`) must be an `http` or `https` address, and its redirects are never followed, so page data only goes to the renderer itself.
-- Core updates are accepted only when signed with a key in `release.keys`. Before, a key trusted for plugins and themes (`app.packages.trusted_keys`) could sign a core release too. Core and packages also sign under different domains, so a package signature never passes as a core one. Release zips must be signed with `core:release --key`.
-- Images are decoded one frame at a time, within limits on memory, disk and pixels. Before, an animated GIF had every frame expanded first, so a small file with thousands of frames could fill memory or disk.
-- PDF thumbnails are drawn at a lower resolution when the page is very large, so a PDF that claims a huge page can't make Ghostscript draw a giant image.
-- `config/`, `storage/`, `core/` and `content/` each carry a deny-all `.htaccess`, also added by the installer, and Site Health warns when files in `storage/` can be downloaded from the web.
-- Server-only rendering bundles stay private however their path is written, including on case-insensitive disks.
-- Starting two uploads at once can no longer go past a storage quota.
-- Changing your email address takes effect only once you open a link sent to the new address, and your old address is told a change was asked for. Before, the address changed at once, so an account could take an address its owner never confirmed. `GET /me` shows a waiting address as `pending_email`.
-- Password reset links stop working when an account's email address changes, whether you confirm a new one or an administrator sets it.
-- Wrong second-factor codes are limited to 20 an hour per account, from anywhere (it was 100), and after 5 the account's owner is emailed that someone has their password.
-- Creating a theme asks for a recent sign-in, like activating one, since it can switch the live theme.
-- A media file's details list only the entries you may open; the others are counted. Before, anyone who could upload saw the titles of drafts that used a file.
-- The people list for author and user fields no longer includes each person's role.
-- Saved page HTML is checked by parsing it against what pages draw, not by matching patterns, so tricks such as a `>` inside a quoted attribute, entity-encoded `javascript:` links, `<meta>` redirects, frames other than the YouTube and Vimeo players, forms posting to another site, or an element taking the page's own `kestello-page` id are refused. A refused page is not asked for again and stays drawn in the browser; the admin's browser console says why it was refused.
-- Rich text is sanitized again wherever it is shown, not only when saved, and changing a text field into rich text sanitizes the values already stored. Before, markup typed into a plain text field was shown as HTML once the field became rich text.
-- Moving between pages without a reload goes to another site in full when the site redirects there, instead of reading that site's answer as a page.
-
-### Fixed
-
-- Backspace in an empty quote source, table caption or image caption no longer removes the whole block; only the block's first field does that.
-- The optional Node renderer (`app.ssr.url`) draws a page's blocks. It was only sent the page and its layouts, so pages built from blocks came out empty until the browser drew them.
-- The home page is shared as the site: its `og:title` is the site name, not the page's title (often "Home"), unless the page has its own title for sharing.
-- A page built from blocks is described in sentences: its automatic description puts a full stop after a heading or a button label, so it reads "Fresh bread. Baked daily." and not "Fresh bread Baked daily".
-- Moving between pages without a full reload no longer drops the styles of blocks. Going back to a page showed a cover without its text or overlay, and buttons as plain links, until the page was reloaded.
-
-### Changed
-
-- From the admin, an update must be signed by the same key as the installed version. A plugin signed by one trusted publisher can no longer be replaced by a zip another trusted publisher signed. A publisher moving to a new key lists it under `signing_keys` in a release signed with the old one. Sites that allow unsigned packages (`app.packages.admin_unsigned`) and the command line are not limited.
-- Built Vue pages are no longer committed to git. CI builds them for its checks, and the release workflow builds them from the tagged sources into both zips, so the release zips are unchanged. After cloning, run `npm run build` once; pull requests no longer carry hashed build files.
-- PHPStan and PHP CS Fixer are installed with `composer install` (the only `require-dev` packages, locked in `composer.lock`) instead of `tools/fetch.sh`. Sites are not affected: Kestello still requires nothing at runtime, and `vendor/` never ships.
-- A folder moved to another disk during an update or restore is copied next to its new place and renamed into it, so a stopped copy never leaves half a folder behind.
-- The old plugin or theme folder set aside by an update is always kept, whatever its date; before, it could be pruned right away when the plugin had been installed long ago.
-- The update screens and **Site Health** name the plugin or theme an unfinished update is about, not its folder.
-- The admin menu is easier to find your way in. Groups fold (your browser remembers which), **System** starts folded, the group of the page you are on always opens, and that page is scrolled into view. Every entry shows its icon. A new **Site** group holds **Settings**, **Updates**, **Backups**, **Import** and **Redirects**, so **System** keeps only the tools for whoever looks after the site. **Your profile** stays in the menu's footer and the finder.
-
 ### Added
 
 - Plugins and themes can say where their updates come from: `"updates": {"github": "owner/name"}` for a GitHub repository's releases, or `"updates": {"url": "https://…"}` for the vendor's own feed. Kestello checks every 12 hours (`app.updates.check_every`), and **Site → Updates** lists what is available, with the release notes, and updates through the same backup, health check and automatic rollback as an upload. Packages without `updates` still update by upload. This needs the permission once called *Update Kestello itself*, now *Update Kestello, and plugins and themes from their publishers*.
@@ -81,13 +40,53 @@ Every change people would notice is listed here, newest first. The format follow
 - Editor helpers: `.phpstorm.meta.php`, `jsconfig.json`, and `bin/cms ide:helpers --stubs` for plugins and themes developed in their own repositories.
 - An installer that works on shared hosting as uploaded: it creates the folders it writes to when a file manager left them out, serves its own scripts before the site exists, and lists server problems first with what to do about each. The last page shows the cron command for the server, and the steps cannot be skipped.
 - Every release carries `kestello-X.Y.Z.zip`, the folder to upload to install a new site, next to the signed update for existing sites. `bin/cms core:install-zip` builds it.
-- Import from WordPress under **System > Import**, or with `bin/cms import:wordpress export.xml`. Upload the export WordPress makes under Tools > Export and see what will come over before anything is written: posts, pages and their drafts, dates and authors, categories and tags, files with their alt text and captions, menus, and redirects from the old addresses. Gutenberg blocks and classic posts become blocks here when nothing is lost, and stay as HTML when something would be. The import runs in the background, or from the screen on sites without a queue worker. Running it again updates what came over instead of copying it, and keeps anything edited here since. The report names everything that was skipped, changed on the way or could not come over, with the reason, and **Try again** retries the failures. A capability, `import.run`, guards it. API: `/imports`.
+- Import from WordPress under **Site → Import**, or with `bin/cms import:wordpress export.xml`. Upload the export WordPress makes under Tools > Export and see what will come over before anything is written: posts, pages and their drafts, dates and authors, categories and tags, files with their alt text and captions, menus, and redirects from the old addresses. Gutenberg blocks and classic posts become blocks here when nothing is lost, and stay as HTML when something would be. The import runs in the background, or from the screen on sites without a queue worker. Running it again updates what came over instead of copying it, and keeps anything edited here since. The report names everything that was skipped, changed on the way or could not come over, with the reason, and **Try again** retries the failures. A capability, `import.run`, guards it. API: `/imports`.
 - `MediaLibrary::addFile()` adds a file already on the server to the media library, with the same checks as an upload, and takes a caption along with the title and alt text.
+
+### Changed
+
+- A site running a pre-release of Kestello is offered the later pre-releases of that version and then the release (`0.1.0-rc.1`, then `rc.2`, then `0.1.0`) without `release.prereleases`. A pre-release's GitHub notes are the changelog's Unreleased section, and `release:prepare` leaves the changelog as it is for one.
+- From the admin, an update must be signed by the same key as the installed version. A plugin signed by one trusted publisher can no longer be replaced by a zip another trusted publisher signed. A publisher moving to a new key lists it under `signing_keys` in a release signed with the old one. Sites that allow unsigned packages (`app.packages.admin_unsigned`) and the command line are not limited.
+- Built Vue pages are no longer committed to git. CI builds them for its checks, and the release workflow builds them from the tagged sources into both zips, so the release zips are unchanged. After cloning, run `npm run build` once; pull requests no longer carry hashed build files.
+- PHPStan and PHP CS Fixer are installed with `composer install` (the only `require-dev` packages, locked in `composer.lock`) instead of `tools/fetch.sh`. Sites are not affected: Kestello still requires nothing at runtime, and `vendor/` never ships.
+- A folder moved to another disk during an update or restore is copied next to its new place and renamed into it, so a stopped copy never leaves half a folder behind.
+- The old plugin or theme folder set aside by an update is always kept, whatever its date; before, it could be pruned right away when the plugin had been installed long ago.
+- The update screens and **Site Health** name the plugin or theme an unfinished update is about, not its folder.
+- The admin menu is easier to find your way in. Groups fold (your browser remembers which), **System** starts folded, the group of the page you are on always opens, and that page is scrolled into view. Every entry shows its icon. A new **Site** group holds **Settings**, **Updates**, **Backups**, **Import** and **Redirects**, so **System** keeps only the tools for whoever looks after the site. **Your profile** stays in the menu's footer and the finder.
 
 ### Fixed
 
+- Plugins and themes run on a pre-release of Kestello: `0.1.0-rc.1` meets `"core": "^0.1"`, counting as the version it leads to. Before, strict version rules refused every package on a release candidate. Dependencies between plugins stay strict.
+- Backspace in an empty quote source, table caption or image caption no longer removes the whole block; only the block's first field does that.
+- The optional Node renderer (`app.ssr.url`) draws a page's blocks. It was only sent the page and its layouts, so pages built from blocks came out empty until the browser drew them.
+- The home page is shared as the site: its `og:title` is the site name, not the page's title (often "Home"), unless the page has its own title for sharing.
+- A page built from blocks is described in sentences: its automatic description puts a full stop after a heading or a button label, so it reads "Fresh bread. Baked daily." and not "Fresh bread Baked daily".
+- Moving between pages without a full reload no longer drops the styles of blocks. Going back to a page showed a cover without its text or overlay, and buttons as plain links, until the page was reloaded.
 - Redirects for addresses with letters outside ASCII (`/čaj`, or a page that moved from such an address) now match: the address is stored the way browsers send it, so `/čaj`, `/%c4%8daj` and `/%C4%8Daj` are one rule.
 - Downloads to a file that follow a redirect, such as core updates from GitHub releases, now hold only the final file instead of the redirect page followed by it. `HttpClient` takes a `max_bytes` option for downloads to a file and stops with `HttpTooLarge` past it.
 - A text field that asks for more than 255 characters with `->max()` now gets it, up to 2000, in the editor and when saving. Image alt text, captions, list items and table captions were cut off at 255.
+
+### Security
+
+- Kestello ships the public key its official releases are signed with (`release.keys` in `core/config/release.php`), so sites apply releases from GitHub only when that key signed them.
+- Direct uploads to an S3 bucket land at a private staging key (`incoming/<upload id>`). Kestello checks the file there, then copies it to the key it chose and makes it public. Before, the browser uploaded straight to the final key as a public file, so an unchecked file, or one that was never finished, could be read at its permanent address. With a bucket policy instead of object ACLs, keep `incoming/` out of public reads.
+- The query builder refuses a column or table name that isn't a plain name (`name`, `table.name`, `name AS alias`) instead of passing it into SQL unchanged. Raw SQL needs `new Expression(…)` or `QueryBuilder::raw()`. Plugins that passed SQL such as `'COUNT(*) as total'` to `select()` must wrap it.
+- A form's "redirect after sending" path is checked like other return paths, so `/\host` (which browsers read as `//host`) and control characters are refused.
+- The server renderer (`app.ssr.url`) must be an `http` or `https` address, and its redirects are never followed, so page data only goes to the renderer itself.
+- Core updates are accepted only when signed with a key in `release.keys`. Before, a key trusted for plugins and themes (`app.packages.trusted_keys`) could sign a core release too. Core and packages also sign under different domains, so a package signature never passes as a core one. Release zips must be signed with `core:release --key`.
+- Images are decoded one frame at a time, within limits on memory, disk and pixels. Before, an animated GIF had every frame expanded first, so a small file with thousands of frames could fill memory or disk.
+- PDF thumbnails are drawn at a lower resolution when the page is very large, so a PDF that claims a huge page can't make Ghostscript draw a giant image.
+- `config/`, `storage/`, `core/` and `content/` each carry a deny-all `.htaccess`, also added by the installer, and Site Health warns when files in `storage/` can be downloaded from the web.
+- Server-only rendering bundles stay private however their path is written, including on case-insensitive disks.
+- Starting two uploads at once can no longer go past a storage quota.
+- Changing your email address takes effect only once you open a link sent to the new address, and your old address is told a change was asked for. Before, the address changed at once, so an account could take an address its owner never confirmed. `GET /me` shows a waiting address as `pending_email`.
+- Password reset links stop working when an account's email address changes, whether you confirm a new one or an administrator sets it.
+- Wrong second-factor codes are limited to 20 an hour per account, from anywhere (it was 100), and after 5 the account's owner is emailed that someone has their password.
+- Creating a theme asks for a recent sign-in, like activating one, since it can switch the live theme.
+- A media file's details list only the entries you may open; the others are counted. Before, anyone who could upload saw the titles of drafts that used a file.
+- The people list for author and user fields no longer includes each person's role.
+- Saved page HTML is checked by parsing it against what pages draw, not by matching patterns, so tricks such as a `>` inside a quoted attribute, entity-encoded `javascript:` links, `<meta>` redirects, frames other than the YouTube and Vimeo players, forms posting to another site, or an element taking the page's own `kestello-page` id are refused. A refused page is not asked for again and stays drawn in the browser; the admin's browser console says why it was refused.
+- Rich text is sanitized again wherever it is shown, not only when saved, and changing a text field into rich text sanitizes the values already stored. Before, markup typed into a plain text field was shown as HTML once the field became rich text.
+- Moving between pages without a reload goes to another site in full when the site redirects there, instead of reading that site's answer as a page.
 
 [Unreleased]: https://github.com/kestellohq/cms/commits/develop

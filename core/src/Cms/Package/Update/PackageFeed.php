@@ -84,7 +84,7 @@ final class PackageFeed
             if ($release['prerelease'] && !$prereleases) {
                 continue;
             }
-            if ($release['requires_core'] !== null && !Semver::satisfies($core, $release['requires_core'])) {
+            if ($release['requires_core'] !== null && !Semver::satisfiesRelease($core, $release['requires_core'])) {
                 $needsCore ??= $release;
                 continue;
             }

@@ -77,7 +77,7 @@ final class UpdateChecker
     {
         $previous = ($this->load)();
         try {
-            $latest = ReleaseFeed::newest($this->releases(), $this->running, (bool) ($this->config['prereleases'] ?? false));
+            $latest = ReleaseFeed::newest($this->offerable($this->releases()), $this->running, true);
             $result = ['checked_at' => $this->time(), 'running' => $this->running, 'latest' => $latest, 'error' => null];
         } catch (Throwable $e) {
             $kept = is_array($previous['latest'] ?? null) && ($previous['running'] ?? null) === $this->running ? $previous['latest'] : null;
@@ -193,6 +193,24 @@ final class UpdateChecker
     public static function releaseKeys(mixed $keys): array
     {
         return PackageSignature::trustedKeys($keys);
+    }
+
+    /**
+     * The releases this site may be offered: every one with release.prereleases on; otherwise
+     * releases, plus, while a pre-release runs, later pre-releases of that same version. A site
+     * testing 0.1.0-rc.1 gets rc.2, then 0.1.0, and is back to releases only from there.
+     *
+     * @param list<array{version: string, prerelease: bool}> $releases
+     * @return list<array{version: string, prerelease: bool}>
+     */
+    private function offerable(array $releases): array
+    {
+        if ((bool) ($this->config['prereleases'] ?? false)) {
+            return $releases;
+        }
+        $testing = str_contains($this->running, '-') ? explode('-', $this->running, 2)[0] : null;
+
+        return array_values(array_filter($releases, static fn(array $r): bool => !$r['prerelease'] || ($testing !== null && explode('-', $r['version'], 2)[0] === $testing)));
     }
 
     /** @return array<string, string> */

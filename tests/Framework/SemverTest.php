@@ -55,6 +55,17 @@ final class SemverTest extends TestCase
         }
     }
 
+    public function testAPreReleaseCanCountAsItsRelease(): void
+    {
+        $this->assertFalse(Semver::satisfies('0.1.0-rc.1', '^0.1'), 'strict semver');
+        foreach (['^0.1', '>=0.1.0', '~0.1.0', '0.1.0', '^0.1 || ^1.0'] as $c) {
+            $this->assertTrue(Semver::satisfiesRelease('0.1.0-rc.1', $c), $c);
+        }
+        $this->assertTrue(Semver::satisfiesRelease('1.2.0-beta.3+build.7', '^1.2'));
+        $this->assertFalse(Semver::satisfiesRelease('0.2.0-rc.1', '^0.1'));
+        $this->assertFalse(Semver::satisfiesRelease('0.1.0-rc.1', '>0.1.0'));
+    }
+
     public function testValidation(): void
     {
         $this->assertTrue(Semver::isValid('1.0.0'));

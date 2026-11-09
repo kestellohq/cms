@@ -144,7 +144,7 @@ final class DependencyResolver
 
     private function satisfies(string $version, string $constraint): bool
     {
-        // Dev builds (core VERSION "dev") satisfy everything.
-        return !Semver::isValid($version) || Semver::satisfies($version, $constraint);
+        // Dev builds (core VERSION "dev") satisfy everything; a pre-release counts as its release
+        return !Semver::isValid($version) || Semver::satisfiesRelease($version, $constraint);
     }
 }

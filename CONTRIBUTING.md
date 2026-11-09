@@ -123,7 +123,7 @@ Kestello follows [Semantic Versioning 2.0](https://semver.org/). `core/VERSION` 
 - **Patch** (`1.4.2`): fixes only. Safe to install without reading anything.
 - **Minor** (`1.5.0`): new capabilities, backwards compatible. Deprecations are announced here.
 - **Major** (`2.0.0`): breaking changes, each with migration notes in the changelog.
-- **Pre-releases**: `1.5.0-beta.1`, `1.5.0-rc.1`. Sites only get them when they opt in.
+- **Pre-releases**: `1.5.0-beta.1`, `1.5.0-rc.1`. Sites are offered a pre-release when `release.prereleases` is on, or when they already run a pre-release of the same version: a site on `0.1.0-rc.1` gets `0.1.0-rc.2`, then `0.1.0`, and only releases from there. While a pre-release of Kestello runs, plugins and themes made for its release run on it: `0.1.0-rc.1` meets `"core": "^0.1"`. Before each minor release, release candidates (`-rc.1`, `-rc.2`, …) try the release workflow and the update from one candidate to the next on real hosting.
 - **Before 1.0**, a minor release may break the public API. The changelog says how to migrate.
 
 Deprecated public API keeps working for at least one minor release and logs a deprecation notice before it is removed in the next major.
@@ -155,6 +155,8 @@ Releases are cut by maintainers, through GitHub. [.agents/skills/release/SKILL.m
 Sites see the new version on **Updates** in the admin: Kestello checks the GitHub releases of `kestellohq/cms` twice a day (`config/release.php`), downloads a release only when its SHA-256 matches the published checksum, and installs it only when one of the release keys in `core/config/release.php` signed it.
 
 A hotfix works the same way from `hotfix/X.Y.Z`, branched from `main`.
+
+A pre-release goes the same way, from `release/X.Y.Z-rc.N`. `release:prepare` then sets `core/VERSION` only and leaves the changelog alone: the GitHub release notes are the Unreleased section as it stands, under a line saying it is a pre-release. The release it leads to turns Unreleased into one `[X.Y.Z]` section with every change since the last release. Merge the back-merge pull request as usual.
 
 ## The changelog
 
