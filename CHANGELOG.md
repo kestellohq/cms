@@ -68,6 +68,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Security
 
+- Kestello ships the public key its official releases are signed with (`release.keys` in `core/config/release.php`), so sites apply releases from GitHub only when that key signed them.
 - Direct uploads to an S3 bucket land at a private staging key (`incoming/<upload id>`). Kestello checks the file there, then copies it to the key it chose and makes it public. Before, the browser uploaded straight to the final key as a public file, so an unchecked file, or one that was never finished, could be read at its permanent address. With a bucket policy instead of object ACLs, keep `incoming/` out of public reads.
 - The query builder refuses a column or table name that isn't a plain name (`name`, `table.name`, `name AS alias`) instead of passing it into SQL unchanged. Raw SQL needs `new Expression(…)` or `QueryBuilder::raw()`. Plugins that passed SQL such as `'COUNT(*) as total'` to `select()` must wrap it.
 - A form's "redirect after sending" path is checked like other return paths, so `/\host` (which browsers read as `//host`) and control characters are refused.

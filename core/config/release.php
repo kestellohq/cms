@@ -24,5 +24,7 @@ return [
     // (core:release --key). Keys in app.packages.trusted_keys sign plugins and themes,
     // never core. Rotate by adding the new key a release before signing with it, and
     // removing the old one a release after.
-    'keys' => [],
+    'keys' => [
+        ['name' => 'Kestello releases', 'public_key' => 'rKgGVVFy1ErXwOr8L5NgtK200iOD+R2r2N7mfBNk7y8='],
+    ],
 ];
