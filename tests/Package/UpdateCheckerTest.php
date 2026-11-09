@@ -81,6 +81,18 @@ final class UpdateCheckerTest extends TestCase
         $this->assertSame($this->now, $result['checked_at'], 'the next check waits its turn instead of hammering GitHub');
     }
 
+    public function testASiteRunningAPreReleaseIsOfferedTheNextOne(): void
+    {
+        $this->feed(['0.1.0-rc.2', '0.1.0-rc.1']);
+        $this->assertNull($this->checker('0.0.9')->check()['latest'], 'a release site does not get pre-releases');
+        $this->assertSame('0.1.0-rc.2', $this->checker('0.1.0-rc.1')->check()['latest']['version'] ?? null);
+
+        $this->feed(['0.2.0-beta.1', '0.1.0', '0.1.0-rc.2']);
+        $this->assertSame('0.1.0', $this->checker('0.1.0-rc.2')->check()['latest']['version'] ?? null, 'testing 0.1.0: its release, not the next minor\'s beta');
+        $this->assertNull($this->checker('0.1.0')->check()['latest'], 'once on the release, back to releases only');
+        $this->assertSame('0.2.0-beta.1', $this->checker('0.1.0', ['prereleases' => true])->check()['latest']['version'] ?? null);
+    }
+
     public function testAfterAnUpdateTheOldAnswerNoLongerOffersAVersion(): void
     {
         $this->feed(['1.1.0']);
