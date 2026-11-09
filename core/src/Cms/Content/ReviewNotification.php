@@ -17,7 +17,7 @@ use Kestello\Support\Translator;
 class ReviewNotification extends Notification
 {
     /**
-     * @param string $kind submitted, approved, changes_requested, assigned or comment
+     * @param string $kind submitted, approved, changes_requested, assigned, comment or mentioned
      * @param string $editUrl admin path of the entry ("/admin/content/post/12")
      */
     public function __construct(
@@ -53,13 +53,20 @@ class ReviewNotification extends Notification
             'approved' => Translator::get('{who} approved your {item} "{title}"', $vars),
             'changes_requested' => Translator::get('{who} asked for changes to your {item} "{title}"', $vars),
             'assigned' => Translator::get('{who} assigned the {item} "{title}" to you', $vars),
+            'mentioned' => Translator::get('{who} mentioned you on the {item} "{title}"', $vars),
             default => Translator::get('{who} commented on the {item} "{title}"', $vars),
         };
     }
 
     public function toDatabase(Recipient $to): array
     {
-        return ['title' => $this->headline(), 'body' => $this->note === null ? '' : mb_strimwidth($this->note, 0, 300, '…'), 'url' => $this->editUrl, 'icon' => $this->kind === 'comment' ? 'chat-circle' : 'check-circle'];
+        $icon = match ($this->kind) {
+            'comment' => 'chat-circle',
+            'mentioned' => 'at',
+            default => 'check-circle',
+        };
+
+        return ['title' => $this->headline(), 'body' => $this->note === null ? '' : mb_strimwidth($this->note, 0, 300, '…'), 'url' => $this->editUrl, 'icon' => $icon];
     }
 
     public function toMail(Recipient $to): MailMessage

@@ -22,6 +22,7 @@ final class ApiModule extends Provider
         Endpoints\Content\ListContentTypes::class,
         Endpoints\Content\LookupEntries::class,
         Endpoints\Content\ListContentUsers::class,
+        Endpoints\Content\ListWaiting::class,
         Endpoints\Content\ListEntries::class,
         Endpoints\Content\GetEntry::class,
         Endpoints\Content\ListLinkedFrom::class,
