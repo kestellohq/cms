@@ -50,6 +50,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Changed
 
+- Choosing a file in the admin (Import, Backups, Plugins, Updates, Themes and Redirects) is a drop area now, not the browser's bare file button. It shows the chosen file's name and size with **Change** and **Remove**, says straight away when a file is the wrong type or too large, and still works with the keyboard and screen readers. On **Import**, the **Read the file** button sits under the field, and the command for large exports is on one line you can copy.
 - A site running a pre-release of Kestello is offered the later pre-releases of that version and then the release (`0.1.0-rc.1`, then `rc.2`, then `0.1.0`) without `release.prereleases`. A pre-release's GitHub notes are the changelog's Unreleased section, and `release:prepare` leaves the changelog as it is for one.
 - From the admin, an update must be signed by the same key as the installed version. A plugin signed by one trusted publisher can no longer be replaced by a zip another trusted publisher signed. A publisher moving to a new key lists it under `signing_keys` in a release signed with the old one. Sites that allow unsigned packages (`app.packages.admin_unsigned`) and the command line are not limited.
 - Built Vue pages are no longer committed to git. CI builds them for its checks, and the release workflow builds them from the tagged sources into both zips, so the release zips are unchanged. After cloning, run `npm run build` once; pull requests no longer carry hashed build files.

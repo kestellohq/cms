@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { ApiError, confirm, formatDateTime, notify, useApi, useCan, __ } from '@kestello/sdk';
-import { KAlert, KBadge, KButton, KEmpty, KField, KIcon, KModal, KPageHeader, KSwitch } from '@kestello/ui';
+import { KAlert, KBadge, KButton, KEmpty, KField, KFileInput, KIcon, KModal, KPageHeader, KSwitch } from '@kestello/ui';
 import StoppedUpdate from '../../../components/updates/StoppedUpdate.vue';
 import { rememberSwitchBack, switchBackOutcome, takeSwitchBack } from '../../../components/updates/switch-back.js';
 
@@ -341,8 +341,8 @@ async function install() {
             <p class="k-muted k-small k-plugins__note">
                 {{ __('Choose a plugin zip. Nothing is installed yet: you see who signed it and what it declares first.') }}
             </p>
-            <KField v-slot="{ id }" :label="__('Plugin zip')" :error="uploadErrors.file ?? ''">
-                <input :id="id" type="file" accept=".zip,application/zip" class="k-input" required @change="file = $event.target.files?.[0] ?? null" />
+            <KField v-slot="{ id, describedBy }" :label="__('Plugin zip')" :error="uploadErrors.file ?? ''">
+                <KFileInput :id="id" v-model="file" accept=".zip,application/zip" :described-by="describedBy" required />
             </KField>
         </form>
         <div v-else class="k-review">

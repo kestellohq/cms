@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { ApiError, confirm, formatDateTime, formatRelative, notify, useApi, __ } from '@kestello/sdk';
-import { KAlert, KBadge, KButton, KCard, KField, KIcon, KModal, KPageHeader } from '@kestello/ui';
+import { KAlert, KBadge, KButton, KCard, KField, KFileInput, KIcon, KModal, KPageHeader } from '@kestello/ui';
 import PackageUpdates from '../../../components/updates/PackageUpdates.vue';
 import StoppedUpdate from '../../../components/updates/StoppedUpdate.vue';
 import { signatureNote } from '../../../components/updates/signature.js';
@@ -247,8 +247,8 @@ async function apply() {
                     )
                 }}
             </p>
-            <KField v-slot="{ id }" :label="__('Release zip')" :error="uploadErrors.file ?? ''">
-                <input :id="id" type="file" accept=".zip,application/zip" class="k-input" required @change="file = $event.target.files?.[0] ?? null" />
+            <KField v-slot="{ id, describedBy }" :label="__('Release zip')" :error="uploadErrors.file ?? ''">
+                <KFileInput :id="id" v-model="file" accept=".zip,application/zip" :described-by="describedBy" required />
             </KField>
         </form>
         <div v-else class="k-updates__review">
