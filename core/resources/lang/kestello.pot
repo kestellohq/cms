@@ -25,6 +25,7 @@ msgid "(no content)"
 msgstr ""
 
 #: core/resources/js/components/content/LinkedFrom.vue
+#: core/resources/js/pages/admin/Dashboard.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/content/Index.vue
 #: core/resources/js/pages/admin/media/Index.vue
@@ -387,6 +388,10 @@ msgstr ""
 
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Add a block after"
+msgstr ""
+
+#: core/resources/js/components/content-types/ChecklistEditor.vue
+msgid "Add a check"
 msgstr ""
 
 #: core/resources/js/components/content-types/FieldSettings.vue
@@ -917,6 +922,10 @@ msgstr ""
 msgid "Assigned to"
 msgstr ""
 
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Assigned to you"
+msgstr ""
+
 #: core/resources/js/components/content/ReviewPanel.vue
 #: core/resources/js/pages/admin/content/Index.vue
 msgid "Assigned to {name}"
@@ -928,6 +937,10 @@ msgstr ""
 
 #: core/src/Cms/Forms/Forms.php
 msgid "At least one address."
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "At least {min} words"
 msgstr ""
 
 #: core/resources/js/pages/auth/CompleteRegistration.vue
@@ -943,6 +956,10 @@ msgstr ""
 #: core/src/Cms/Content/Models/ContentModels.php
 #: core/src/Cms/Forms/Forms.php
 msgid "At most {max} fields."
+msgstr ""
+
+#: core/src/Cms/Content/Models/ContentModels.php
+msgid "At most {max} items."
 msgstr ""
 
 #: core/src/Cms/Content/Terms.php
@@ -1103,6 +1120,15 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Before an update"
+msgstr ""
+
+#: core/resources/js/components/content/PublishChecklist.vue
+#: core/resources/js/pages/admin/content-types/Edit.vue
+msgid "Before publishing"
+msgstr ""
+
+#: core/src/Cms/Content/Entries.php
+msgid "Before publishing: {item}."
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
@@ -1436,6 +1462,10 @@ msgstr ""
 msgid "Changes here apply on {screen} only; the rest follows desktop."
 msgstr ""
 
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Changes requested"
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Changes saved {when}"
 msgstr ""
@@ -1453,6 +1483,7 @@ msgstr ""
 msgid "Characters"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Check"
 msgstr ""
@@ -1494,6 +1525,7 @@ msgstr ""
 msgid "Checking your site…"
 msgstr ""
 
+#: core/resources/js/components/content/PublishChecklist.vue
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "Checking…"
 msgstr ""
@@ -2553,6 +2585,7 @@ msgstr ""
 msgid "Documents"
 msgstr ""
 
+#: core/resources/js/components/content/PublishChecklist.vue
 #: core/resources/js/components/content/StudioPublish.vue
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "Done"
@@ -2992,6 +3025,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Everything on the site is replaced with the backup from {date}: content, settings, people and files. Everyone is signed out, you too."
+msgstr ""
+
+#: core/resources/js/components/content/PublishChecklist.vue
+msgid "Everything required is done."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Import.vue
@@ -3591,8 +3628,36 @@ msgstr ""
 msgid "Handwriting"
 msgstr ""
 
+#: core/src/Cms/Content/Checklist.php
+msgid "Has a featured image"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has a minimum number of words"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has a search description"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has a term of a taxonomy"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has a term of {taxonomy}"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has an excerpt"
+msgstr ""
+
 #: core/src/Cms/Api/Schema.php
 msgid "Has an invalid format."
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "Has at least one of the {terms}"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/ListSecuritySessions.php
@@ -4444,6 +4509,7 @@ msgstr ""
 msgid "Letters, numbers, dashes and underscores. They can sign in with it."
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Level"
 msgstr ""
@@ -5003,6 +5069,7 @@ msgid "Must be a list of items."
 msgstr ""
 
 #: core/src/Cms/Content/Entries.php
+#: core/src/Cms/Content/Models/ContentModels.php
 msgid "Must be a list."
 msgstr ""
 
@@ -5613,6 +5680,7 @@ msgstr ""
 msgid "Not an indexed field."
 msgstr ""
 
+#: core/resources/js/components/content/PublishChecklist.vue
 #: core/resources/js/ui/builder/useDocument.js
 msgid "Not available"
 msgstr ""
@@ -6368,6 +6436,10 @@ msgstr ""
 msgid "People"
 msgstr ""
 
+#: core/resources/js/components/content/ReviewPanel.vue
+msgid "People to mention"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "People with the role {roles} are expected to use two-step sign-in. These have not turned it on yet. They can, under Your profile."
 msgstr ""
@@ -6804,8 +6876,13 @@ msgstr ""
 msgid "Recent activity"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Recommended"
+msgstr ""
+
+#: core/resources/js/components/content/PublishChecklist.vue
+msgid "Recommended, not done"
 msgstr ""
 
 #: core/resources/js/pages/admin/users/Edit.vue
@@ -6943,6 +7020,10 @@ msgstr ""
 
 #: core/resources/js/ui/KBlockList.vue
 msgid "Remove {block}"
+msgstr ""
+
+#: core/resources/js/components/content-types/ChecklistEditor.vue
+msgid "Remove {check}"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Styles.vue
@@ -7095,13 +7176,23 @@ msgstr ""
 msgid "Request changes"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/resources/js/components/content-types/FieldList.vue
 #: core/resources/js/components/content-types/FieldSettings.vue
+#: core/resources/js/components/content/PublishChecklist.vue
 msgid "Required"
+msgstr ""
+
+#: core/resources/js/components/content-types/ChecklistEditor.vue
+msgid "Required items hold publishing back until they are done; recommended ones are advice in the editor. Drafts and submissions for review are never held back."
 msgstr ""
 
 #: core/resources/js/components/content-types/FieldSettings.vue
 msgid "Required to publish"
+msgstr ""
+
+#: core/resources/js/components/content/PublishChecklist.vue
+msgid "Required, not done"
 msgstr ""
 
 #: core/src/Cms/Content/Models/ContentModels.php
@@ -8743,6 +8834,7 @@ msgstr ""
 msgid "Task"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/resources/js/components/content-types/FieldSettings.vue
 #: core/resources/js/pages/admin/content-types/Index.vue
 #: core/resources/js/pages/admin/menus/Index.vue
@@ -8954,6 +9046,7 @@ msgstr ""
 msgid "The database is backed up, visitors see a short maintenance page, and the site is checked with the new version. If anything is wrong, {v} and the database come back."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Content/CheckEntryChecklist.php
 #: core/src/Cms/Api/Endpoints/Content/PreviewEntryBlocks.php
 msgid "The entry being edited; empty for one not saved yet."
 msgstr ""
@@ -9455,6 +9548,10 @@ msgstr ""
 msgid "This block's settings are locked by the layout."
 msgstr ""
 
+#: core/src/Cms/Content/Models/ContentModels.php
+msgid "This check is already on the list."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/content/Index.vue
 msgid "This content type does not exist, or you cannot edit it."
@@ -9847,6 +9944,10 @@ msgstr ""
 msgid "Type"
 msgstr ""
 
+#: core/resources/js/components/content/ReviewPanel.vue
+msgid "Type @ and a name to tell someone."
+msgstr ""
+
 #: core/resources/js/ui/KFinder.vue
 msgid "Type a few letters of a title, file name, person or screen."
 msgstr ""
@@ -9933,6 +10034,10 @@ msgstr ""
 
 #: core/src/Cms/Content/FieldFilters.php
 msgid "Unknown operator \"{op}\". Use one of: {list}."
+msgstr ""
+
+#: core/src/Cms/Content/Models/ContentModels.php
+msgid "Unknown taxonomy {t}."
 msgstr ""
 
 #: core/resources/js/components/content/SharePreviews.vue
@@ -10384,12 +10489,20 @@ msgstr ""
 msgid "Waiting"
 msgstr ""
 
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Waiting for review"
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Waiting for review. An editor publishes it or asks for changes, and you are told either way."
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Waiting for {email} to be confirmed: open the link sent there."
+msgstr ""
+
+#: core/resources/js/pages/admin/Dashboard.vue
+msgid "Waiting on you"
 msgstr ""
 
 #: core/resources/js/components/content-types/field-labels.js
@@ -10514,6 +10627,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "When a page moved"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Content/ListWaiting.php
+msgid "When it started waiting on you"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -10682,6 +10799,7 @@ msgstr ""
 msgid "WordPress export file"
 msgstr ""
 
+#: core/resources/js/components/content-types/ChecklistEditor.vue
 #: core/resources/js/ui/builder/BuilderDetails.vue
 msgid "Words"
 msgstr ""
@@ -10972,6 +11090,10 @@ msgstr ""
 msgid "categories and tags"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Content/ListWaiting.php
+msgid "changes_requested: yours, sent back; assigned: assigned to you; review: in review, yours to publish"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Platform.vue
 msgid "config/platform.php"
 msgstr ""
@@ -11108,6 +11230,10 @@ msgstr ""
 msgid "null for a browser session (no narrowing)"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Content/CheckEntryChecklist.php
+msgid "null: the check is not available (its plugin is off, or its taxonomy no longer applies)"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
 msgid "null: the key is no longer trusted"
 msgstr ""
@@ -11221,6 +11347,10 @@ msgstr ""
 #: core/resources/js/ui/builder/BuilderLibrary.vue
 #: core/resources/js/ui/builder/BuilderPatterns.vue
 msgid "synced"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Content/CheckEntryChecklist.php
+msgid "taxonomy => list of term ids or new names"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
@@ -11347,6 +11477,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
 msgid "{category} · synced"
+msgstr ""
+
+#: core/src/Cms/Content/Checklist.php
+msgid "{check} (not available: is its plugin active?)"
+msgstr ""
+
+#: core/src/Cms/Content/Models/ContentModels.php
+msgid "{check} is not available: is its plugin active?"
 msgstr ""
 
 #: core/src/Cms/Health/HealthAlertNotification.php
@@ -11606,6 +11744,11 @@ msgstr ""
 #: core/resources/js/pages/admin/content/Edit.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {One problem needs attention.} other {# problems need attention.}}"
+msgstr ""
+
+#: core/resources/js/components/content/PublishChecklist.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {Publishing waits for # required item.} other {Publishing waits for # required items.}}"
 msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
@@ -11990,6 +12133,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "{who} linked a sign-in account"
+msgstr ""
+
+#: core/src/Cms/Content/ReviewNotification.php
+msgid "{who} mentioned you on the {item} \"{title}\""
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue

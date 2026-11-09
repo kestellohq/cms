@@ -42,6 +42,9 @@ final class ContentType
     /** @var array<string, list<string>>|null */
     private ?array $grants = null;
 
+    /** @var list<array{check: string, level: string, taxonomy?: string, min?: int}> */
+    private array $checklist = [];
+
     public function __construct(public readonly string $name, public readonly string $owner)
     {
         if (preg_match('/^[a-z][a-z0-9-]{0,31}$/', $name) !== 1) {
@@ -163,6 +166,27 @@ final class ContentType
         }
         $this->fields[] = $field;
         return $this;
+    }
+
+    /**
+     * What an entry must or should have before it is published (Checklist):
+     * checklist([['check' => 'featured_image', 'level' => 'required'], ['check' => 'words', 'min' => 300]]).
+     *
+     * @param list<array<string, mixed>> $items
+     */
+    public function checklist(array $items): self
+    {
+        if (count($items) > Checklist::MAX_ITEMS) {
+            throw new InvalidArgumentException("Content type [{$this->name}]: a checklist has at most " . Checklist::MAX_ITEMS . ' items.');
+        }
+        $this->checklist = array_values(array_map(static fn(mixed $i): array => Checklist::item(is_array($i) ? $i : []), $items));
+        return $this;
+    }
+
+    /** @return list<array{check: string, level: string, taxonomy?: string, min?: int}> */
+    public function getChecklist(): array
+    {
+        return $this->checklist;
     }
 
     /**

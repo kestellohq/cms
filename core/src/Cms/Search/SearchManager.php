@@ -116,6 +116,22 @@ final class SearchManager
         );
     }
 
+    /**
+     * The text a reader gets from an entry's fields and excerpt, the same text search
+     * indexes (without term names): for word counts.
+     *
+     * @param array<string, mixed> $data
+     */
+    public function entryText(ContentType $type, array $data, ?string $excerpt = null): string
+    {
+        $text = $type->hasExcerpt() && (string) $excerpt !== '' ? [(string) $excerpt] : [];
+        foreach ($type->getFields() as $field) {
+            $text = [...$text, ...$this->fieldText($field, $data[$field->name] ?? null)];
+        }
+
+        return trim(preg_replace('/\s+/u', ' ', implode("\n", array_filter($text, static fn($t) => $t !== ''))) ?? '');
+    }
+
     /** @return list<string> */
     private function fieldText(Field $field, mixed $value): array
     {

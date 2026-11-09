@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Content\Models;
 
+use InvalidArgumentException;
 use Kestello\Cms\Cms;
+use Kestello\Cms\Content\Checklist;
 use Kestello\Cms\Content\ContentException;
 use Kestello\Cms\Content\Entries;
 use Kestello\Cms\Content\Field;
@@ -119,7 +121,7 @@ final class ContentModels
         $type = $this->cms->content->type($name)->label($def['singular'], $def['plural'])->icon($def['icon'])->description($def['description'])
             ->hierarchical($def['hierarchical'])->excerpt($def['excerpt'])->revisions($def['revisions'])->path($def['path'])
             ->archive($def['archive'])->searchable($def['searchable'])->menuOrder($def['menu_order'])->permalink($def['permalink'])
-            ->fields(array_map($this->field(...), $def['fields']));
+            ->fields(array_map($this->field(...), $def['fields']))->checklist($def['checklist'] ?? []);
         unset($type);
     }
 
@@ -338,8 +340,55 @@ final class ContentModels
         if ($count > self::MAX_FIELDS) {
             $errors['fields'][] = Translator::get('At most {max} fields.', ['max' => self::MAX_FIELDS]);
         }
+        $def['checklist'] = $this->checklist($in['checklist'] ?? [], $errors);
 
         return [$def, $errors];
+    }
+
+    /**
+     * A type's checklist from the builder: each item a known check, at most Checklist::MAX_ITEMS,
+     * each check once (terms: once per taxonomy).
+     *
+     * @param array<string, list<string>> $errors
+     * @return list<array{check: string, level: string, taxonomy?: string, min?: int}>
+     */
+    private function checklist(mixed $in, array &$errors): array
+    {
+        if (!is_array($in) || ($in !== [] && !array_is_list($in))) {
+            $errors['checklist'][] = Translator::get('Must be a list.');
+            return [];
+        }
+        if (count($in) > Checklist::MAX_ITEMS) {
+            $errors['checklist'][] = Translator::get('At most {max} items.', ['max' => Checklist::MAX_ITEMS]);
+            return [];
+        }
+        $out = [];
+        $seen = [];
+        foreach ($in as $i => $raw) {
+            try {
+                $item = Checklist::item(is_array($raw) ? $raw : []);
+            } catch (InvalidArgumentException $e) {
+                $errors["checklist.{$i}"][] = $e->getMessage();
+                continue;
+            }
+            if (!in_array($item['check'], $this->cms->content->checks->names(), true)) {
+                $errors["checklist.{$i}"][] = Translator::get('{check} is not available: is its plugin active?', ['check' => $item['check']]);
+                continue;
+            }
+            if (isset($item['taxonomy']) && $this->cms->content->getTaxonomy($item['taxonomy']) === null) {
+                $errors["checklist.{$i}"][] = Translator::get('Unknown taxonomy {t}.', ['t' => $item['taxonomy']]);
+                continue;
+            }
+            $key = $item['check'] . ':' . ($item['taxonomy'] ?? '');
+            if (isset($seen[$key])) {
+                $errors["checklist.{$i}"][] = Translator::get('This check is already on the list.');
+                continue;
+            }
+            $seen[$key] = true;
+            $out[] = $item;
+        }
+
+        return $out;
     }
 
     /** @param array<string, true> $known @param array<string, true> $seen */
@@ -855,6 +904,14 @@ final class ContentModels
             $lines[] = "    ->revisions({$d['revisions']})";
         }
         $lines[] = "    ->menuOrder({$d['menu_order']})";
+        if (($d['checklist'] ?? []) !== []) {
+            $lines[] = '    ->checklist([';
+            foreach ($d['checklist'] as $item) {
+                $pairs = array_map(static fn(string $k, mixed $v): string => var_export($k, true) . ' => ' . var_export($v, true), array_keys($item), $item);
+                $lines[] = '        [' . implode(', ', $pairs) . '],';
+            }
+            $lines[] = '    ])';
+        }
         $lines[] = '    ->fields([';
         foreach ($d['fields'] as $f) {
             $lines[] = self::exportField($f, 2) . ',';

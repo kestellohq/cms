@@ -140,6 +140,63 @@ final class ReviewsTest extends AuthTestCase
         $this->assertNull($this->json($this->api('PUT', "/content/post/entries/{$post['id']}/assignee", ['user_id' => null]))['data']['assignee']);
     }
 
+    public function testMentionsFindTheNamedPeople(): void
+    {
+        $this->assertSame(['ann', 'bo_b'], \Kestello\Cms\Content\Reviews::mentions('@ann, (@bo_b) mail x@y.example or @ab, and @Ann again'), 'once each, not emails or names too short');
+        $this->assertCount(\Kestello\Cms\Content\Reviews::MAX_MENTIONS, \Kestello\Cms\Content\Reviews::mentions(implode(' ', array_map(static fn(int $i) => "@user{$i}", range(1, 15)))));
+
+        $this->signIn('cleo');
+        $post = $this->json($this->api('POST', '/content/post/entries', ['title' => 'Draft']))['data'];
+        $this->signIn('eddie');
+        $r = $this->api('POST', "/content/post/entries/{$post['id']}/comments", ['body' => 'Thanks @Cleo. @aria and @olga, have a look. @nobody']);
+        $this->assertSame(200, $r->statusCode(), $r->content());
+        $this->assertSame(['cleo'], $this->notified('content-comment'), "named, and once: not aria (who can't open others' posts), not olga (switched off)");
+        $this->assertStringContainsString('mentioned you on the post', (string) $this->db->table('notifications')->value('data'));
+
+        $this->signIn('cleo');
+        $this->api('POST', "/content/post/entries/{$post['id']}/comments", ['body' => '@ana could you check the dates?']);
+        $this->assertSame(['ana', 'eddie'], $this->notified('content-comment', after: 1), 'the named admin, and the earlier writer as usual');
+        $toAna = (string) $this->db->table('notifications')->where('user_id', $this->ids['ana'])->value('data');
+        $this->assertStringContainsString('mentioned you', $toAna);
+    }
+
+    public function testWhatIsWaitingOnYou(): void
+    {
+        $waiting = fn(): array => array_map(static fn(array $w) => [$w['title'], $w['reason']], $this->json($this->api('GET', '/content/waiting'))['data']);
+
+        $this->signIn('cleo');
+        $a = $this->json($this->api('POST', '/content/post/entries', ['title' => 'A', 'status' => 'pending']))['data'];
+        $b = $this->json($this->api('POST', '/content/post/entries', ['title' => 'B']))['data'];
+        $this->assertSame([], $waiting(), 'your own submission waits on others');
+
+        $this->signIn('eddie');
+        $this->assertSame([['A', 'review']], $waiting());
+        $this->api('POST', "/content/post/entries/{$a['id']}/request-changes", ['note' => 'Shorter, please.']);
+        $this->assertSame([], $waiting());
+
+        $this->signIn('cleo');
+        $this->assertSame([['A', 'changes_requested']], $waiting());
+        $this->api('PUT', "/content/post/entries/{$b['id']}/assignee", ['user_id' => $this->ids['eddie']]);
+        $this->api('PATCH', "/content/post/entries/{$a['id']}", ['status' => 'pending']);
+        $this->assertSame([], $waiting(), 'sent in again');
+
+        $this->signIn('eddie');
+        $this->assertSame([['B', 'assigned'], ['A', 'review']], $waiting(), 'assigned first, then reviews');
+        $first = $this->json($this->api('GET', '/content/waiting'))['data'][0];
+        $this->assertSame(['post', 'Post', 'draft'], [$first['type'], $first['type_label'], $first['status']]);
+        $this->assertNotNull($first['since']);
+
+        $this->signIn('aria');
+        $this->assertSame([], $waiting(), "an author can't open other people's posts");
+
+        $this->signIn('ana');
+        $this->assertSame(200, $this->api('DELETE', "/content/post/entries/{$b['id']}")->statusCode(), 'to the trash');
+        $this->signIn('eddie');
+        $this->assertSame([['A', 'review']], $waiting(), 'trashed entries wait on no one');
+        $this->api('PATCH', "/content/post/entries/{$a['id']}", ['status' => 'published']);
+        $this->assertSame([], $waiting());
+    }
+
     private function signIn(string $login): void
     {
         $this->api('DELETE', '/auth/session');

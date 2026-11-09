@@ -50,6 +50,7 @@ final class ListContentModels extends ContentModelEndpoint
             'field_types' => array_keys(ContentModels::OPTIONS),
             'options' => ContentModels::OPTIONS,
             'permalinks' => array_keys(\Kestello\Cms\Content\Permalinks::PATTERNS),
+            'checks' => $cms->content->checks->catalog(),
             'taxonomies' => array_map(static fn($t) => ['name' => $t->name, 'label' => $t->plural()], array_values($cms->content->taxonomies())),
             'types' => array_map(static fn($t) => ['name' => $t->name, 'label' => $t->plural()], array_values($cms->content->types())),
         ]]);

@@ -18,6 +18,18 @@ const schedule = system ? useResource('/system/schedule') : null;
 const users = can('users.read') ? useResource('/users', { query: { limit: 5 } }) : null;
 const audit = can('audit.read') ? useResource('/audit', { query: { limit: 7 } }) : null;
 const notifications = useResource('/me/notifications', { query: { limit: 5 } });
+const waiting = can('content.access') ? useResource('/content/waiting', { query: { limit: 8 } }) : null;
+
+// Entries waiting on you: yours sent back, assigned to you, in review for you.
+const waitingRows = computed(() => waiting?.data.value ?? []);
+const WHY = {
+    changes_requested: { label: __('Changes requested'), tone: 'warning' },
+    assigned: { label: __('Assigned to you'), tone: 'info' },
+    review: { label: __('Waiting for review'), tone: 'accent' },
+};
+// The card takes a row of its own when something waits, and the rows below move down one.
+const off = computed(() => (waitingRows.value.length ? 1 : 0));
+const at = (col, row) => `${col}${row + off.value}`;
 
 const problems = computed(() =>
     (health?.data.value?.checks ?? []).filter((c) => c.status !== 'good').sort((a, b) => (a.status === 'critical' ? 0 : 1) - (b.status === 'critical' ? 0 : 1)),
@@ -126,7 +138,7 @@ function describe(row) {
 const SPAN = { quarter: 1, half: 2, full: 4 };
 const widgetList = useExtensions('widgets', 'dashboard');
 const widgets = computed(() => {
-    let row = 4;
+    let row = 4 + off.value;
     let col = 0;
     return widgetList.value.map((w) => {
         const span = SPAN[w.size] ?? 2;
@@ -186,8 +198,25 @@ const widgets = computed(() => {
         <KStat coord="D1" :label="__('Kestello')" :value="admin.version">{{ __('Core version') }}</KStat>
     </div>
 
+    <div v-if="waitingRows.length" class="k-cells" style="--k-cols: 4">
+        <KCard coord="A2" class="k-span-all" :title="__('Waiting on you')">
+            <ul class="k-list">
+                <li v-for="row in waitingRows" :key="row.id" class="k-list__item">
+                    <div class="k-list__main">
+                        <Link :href="`/admin/content/${row.type}/${row.id}`" class="k-link"
+                            ><strong>{{ row.title || __('(untitled)') }}</strong></Link
+                        >
+                        <p class="k-muted k-small">{{ row.type_label }}</p>
+                    </div>
+                    <KBadge :tone="WHY[row.reason]?.tone ?? 'neutral'">{{ WHY[row.reason]?.label ?? row.reason }}</KBadge>
+                    <KTime v-if="row.since" :value="row.since" class="k-list__aside" />
+                </li>
+            </ul>
+        </KCard>
+    </div>
+
     <div class="k-cells" style="--k-cols: 4">
-        <KCard v-if="system" coord="A2" class="k-span-2" :title="__('Needs attention')">
+        <KCard v-if="system" :coord="at('A', 2)" class="k-span-2" :title="__('Needs attention')">
             <template #actions
                 ><Link href="/admin/system/health" class="k-link">{{ __('Site health') }}</Link></template
             >
@@ -204,7 +233,7 @@ const widgets = computed(() => {
             <p v-else class="k-muted">{{ __('Running checks…') }}</p>
         </KCard>
 
-        <KCard :coord="system ? 'C2' : 'A2'" class="k-span-2" :title="audit ? __('Recent activity') : __('Notifications')">
+        <KCard :coord="system ? at('C', 2) : at('A', 2)" class="k-span-2" :title="audit ? __('Recent activity') : __('Notifications')">
             <ul v-if="audit && audit.data.value?.length" class="k-list">
                 <li v-for="row in audit.data.value" :key="row.id" class="k-list__item">
                     <div class="k-list__main">{{ describe(row) }}</div>
@@ -223,7 +252,7 @@ const widgets = computed(() => {
             <KEmpty v-else icon="clock-counter-clockwise" :title="__('Nothing has happened yet.')" />
         </KCard>
 
-        <KCard v-if="users" coord="A3" class="k-span-2" :title="__('Newest people')" flush>
+        <KCard v-if="users" :coord="at('A', 3)" class="k-span-2" :title="__('Newest people')" flush>
             <template #actions
                 ><Link href="/admin/users" class="k-link">{{ __('All people') }}</Link></template
             >
@@ -250,7 +279,7 @@ const widgets = computed(() => {
             </KTable>
         </KCard>
 
-        <KCard v-if="audit" coord="C3" class="k-span-2" :title="__('Notifications')">
+        <KCard v-if="audit" :coord="at('C', 3)" class="k-span-2" :title="__('Notifications')">
             <ul v-if="notifications.data.value?.length" class="k-list">
                 <li v-for="item in notifications.data.value" :key="item.id" class="k-list__item">
                     <div class="k-list__main">

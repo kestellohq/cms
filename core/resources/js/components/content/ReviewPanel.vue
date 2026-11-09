@@ -1,12 +1,14 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { confirm, formatDateTime, notify, useApi, useResource, useUser, __ } from '@kestello/sdk';
 import { KButton, KCard, KField, KSelect, KTime } from '@kestello/ui';
+import { insertMention, matchPeople, mentionAt, splitMentions } from './mentions.js';
 
 /**
  * The review side of an entry: who it is assigned to, and its editorial
  * timeline (comments, with the review steps between them). Only people
- * in the admin see any of it.
+ * in the admin see any of it. Typing @ suggests people who may edit
+ * entries of this type; the ones named are told about the comment.
  */
 const props = defineProps({
     base: { type: String, required: true }, // …/content/{type}/entries/{id}
@@ -19,7 +21,7 @@ const emit = defineEmits(['assigned']);
 const api = useApi();
 const user = useUser();
 const timeline = useResource(() => `${props.base}/comments`);
-const people = useResource(() => `${props.typeBase}/assignees`, { immediate: props.canEdit });
+const people = useResource(() => `${props.typeBase}/assignees`);
 const draft = ref('');
 const posting = ref(false);
 const assignee = ref(props.entry.assignee?.id ?? '');
@@ -73,7 +75,46 @@ async function remove(c) {
         notify.error(e);
     }
 }
+// ── @mentions ────────────────────────────────────────────────────
+const box = ref(null);
+const typing = ref(null); // { start, query } while an @name is being typed
+const active = ref(0);
+const suggestions = computed(() => (typing.value ? matchPeople(people.data.value ?? [], typing.value.query) : []));
+const open = computed(() => suggestions.value.length > 0);
+
+function track() {
+    const el = box.value;
+    typing.value = el && el.selectionStart === el.selectionEnd ? mentionAt(draft.value, el.selectionStart) : null;
+    active.value = 0;
+}
+async function pick(person) {
+    const el = box.value;
+    const next = insertMention(draft.value, el.selectionStart, person.username);
+    draft.value = next.text;
+    typing.value = null;
+    await nextTick();
+    el.focus();
+    el.setSelectionRange(next.caret, next.caret);
+}
 function onKey(event) {
+    if (open.value) {
+        const n = suggestions.value.length;
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            active.value = (active.value + (event.key === 'ArrowDown' ? 1 : n - 1)) % n;
+            return;
+        }
+        if ((event.key === 'Enter' && !event.metaKey && !event.ctrlKey) || event.key === 'Tab') {
+            event.preventDefault();
+            pick(suggestions.value[active.value]);
+            return;
+        }
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            typing.value = null;
+            return;
+        }
+    }
     if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) post();
 }
 defineExpose({ reload: () => timeline.reload({ silent: true }) });
@@ -94,7 +135,12 @@ defineExpose({ reload: () => timeline.reload({ silent: true }) });
                     <span class="k-review__who">{{ c.kind === 'comment' ? name(c) : (STEP[c.kind]?.(name(c)) ?? name(c)) }}</span>
                     <KTime :value="c.created_at" class="k-muted" />
                 </p>
-                <p v-if="c.body" class="k-review__body">{{ c.body }}</p>
+                <p v-if="c.body" class="k-review__body">
+                    <template v-for="(part, i) in splitMentions(c.body)" :key="i"
+                        ><strong v-if="part.mention" class="k-review__mention">{{ part.text }}</strong
+                        ><template v-else>{{ part.text }}</template></template
+                    >
+                </p>
                 <button
                     v-if="c.kind === 'comment' && (c.user?.id === user?.id || canModerate)"
                     type="button"
@@ -111,7 +157,42 @@ defineExpose({ reload: () => timeline.reload({ silent: true }) });
 
         <form class="k-review__form" @submit.prevent="post">
             <label class="k-review__label k-small" for="k-review-new">{{ __('Add a comment') }}</label>
-            <textarea id="k-review-new" v-model="draft" class="k-input k-textarea" rows="3" maxlength="5000" @keydown="onKey"></textarea>
+            <div class="k-review__compose">
+                <textarea
+                    id="k-review-new"
+                    ref="box"
+                    v-model="draft"
+                    class="k-input k-textarea"
+                    rows="3"
+                    maxlength="5000"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-controls="k-review-people"
+                    :aria-expanded="open ? 'true' : 'false'"
+                    :aria-activedescendant="open ? `k-review-person-${active}` : undefined"
+                    aria-describedby="k-review-hint"
+                    @input="track"
+                    @click="track"
+                    @keyup.left="track"
+                    @keyup.right="track"
+                    @keydown="onKey"
+                    @blur="typing = null"
+                ></textarea>
+                <ul v-show="open" id="k-review-people" class="k-review__people" role="listbox" :aria-label="__('People to mention')">
+                    <li
+                        v-for="(person, i) in suggestions"
+                        :id="`k-review-person-${i}`"
+                        :key="person.id"
+                        role="option"
+                        class="k-review__person"
+                        :aria-selected="i === active ? 'true' : 'false'"
+                        @mousedown.prevent="pick(person)"
+                    >
+                        @{{ person.username }}
+                    </li>
+                </ul>
+            </div>
+            <p id="k-review-hint" class="k-muted k-small k-review__hint">{{ __('Type @ and a name to tell someone.') }}</p>
             <KButton type="submit" size="sm" :loading="posting" :disabled="!draft.trim()">{{ __('Comment') }}</KButton>
         </form>
     </KCard>
@@ -189,5 +270,41 @@ defineExpose({ reload: () => timeline.reload({ silent: true }) });
 }
 .k-review__form .k-textarea {
     min-height: 72px;
+    width: 100%;
+}
+.k-review__compose {
+    position: relative;
+}
+.k-review__people {
+    position: absolute;
+    z-index: 5;
+    left: 0;
+    top: 100%;
+    min-width: 12rem;
+    max-width: 100%;
+    margin: 4px 0 0;
+    padding: 4px;
+    list-style: none;
+    background: var(--k-sheet);
+    border: 1px solid var(--k-rule);
+    border-radius: var(--k-radius);
+    box-shadow: var(--k-shadow-lg);
+}
+.k-review__person {
+    padding: 6px 8px;
+    border-radius: calc(var(--k-radius) - 2px);
+    font-size: 14px;
+    cursor: pointer;
+}
+.k-review__person[aria-selected='true'],
+.k-review__person:hover {
+    background: var(--k-mark-soft);
+}
+.k-review__hint {
+    margin: 0;
+}
+.k-review__mention {
+    font-weight: 600;
+    color: var(--k-ink);
 }
 </style>

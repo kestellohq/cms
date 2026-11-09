@@ -297,6 +297,36 @@ final class ContentModelsTest extends AuthTestCase
         $this->assertStringContainsString('core', $this->cms->container->make(ContentModels::class)->skipped()['type:post']);
     }
 
+    public function testABuiltTypeCarriesItsChecklist(): void
+    {
+        $bad = $this->api('POST', '/content-models', ['kind' => 'type', 'name' => 'event', 'definition' => self::EVENT + ['checklist' => [
+            ['check' => 'nope'], ['check' => 'acme.signed'], ['check' => 'terms', 'taxonomy' => 'nothing'], ['check' => 'words', 'min' => 10], ['check' => 'words', 'min' => 20],
+        ]]]);
+        $this->assertSame(422, $bad->statusCode());
+        foreach (['checklist.0', 'checklist.1', 'checklist.2', 'checklist.4'] as $key) {
+            $this->assertStringContainsString($key, $bad->content());
+        }
+        $this->assertStringNotContainsString('checklist.3', $bad->content());
+
+        $r = $this->api('POST', '/content-models', ['kind' => 'type', 'name' => 'event', 'definition' => self::EVENT + ['checklist' => [
+            ['check' => 'words', 'min' => 3, 'level' => 'required'], ['check' => 'featured_image'],
+        ]]]);
+        $this->assertSame(200, $r->statusCode(), $r->content());
+        $this->reboot();
+        $this->assertSame([['check' => 'words', 'level' => 'required', 'min' => 3], ['check' => 'featured_image', 'level' => 'recommended']], $this->cms->content->get('event')->getChecklist());
+
+        $r = $this->api('POST', '/content/event/entries', ['title' => 'Bread week', 'status' => 'published', 'data' => ['subtitle' => 'Two']]);
+        $this->assertSame(422, $r->statusCode(), 'a built type holds publishing back too');
+        $this->assertStringContainsString('At least 3 words', $r->content());
+
+        $id = (int) QueryBuilder::table('content_models')->where('name', 'event')->value('id');
+        $php = $this->json($this->api('GET', "/content-models/{$id}"))['data']['php'];
+        $this->assertStringContainsString("->checklist([\n        ['check' => 'words', 'level' => 'required', 'min' => 3],", $php);
+        $cms = (object) ['content' => new ContentRegistry()];
+        eval(str_replace(['use Kestello\\Cms\\Content\\Field;', 'Field::'], ['', '\\Kestello\\Cms\\Content\\Field::'], $php));
+        $this->assertSame($this->cms->content->get('event')->getChecklist(), $cms->content->get('event')->getChecklist(), 'the export keeps it');
+    }
+
     public function testConditionalFieldsAreRequiredOnlyWhenShown(): void
     {
         $r = $this->api('POST', '/content-models', ['kind' => 'type', 'name' => 'venue', 'definition' => ['singular' => 'Venue', 'plural' => 'Venues', 'fields' => [
