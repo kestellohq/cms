@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- Sites fetch the registry's signed list every 12 hours (app.updates.check_every) and check it against the root keys; registry:status shows where the site's copy stands, and --refresh fetches it. Requests carry nothing that identifies the site, and an older list than one already seen is refused.
 - Kestello ships the two root keys of the plugin and theme registry (registry.kestello.com) in core/config/registry.php, with registry.enabled and registry.url for a mirror or no registry at all.
 - Kestello can read and check the plugin and theme registry: the root-signed key list, the signed index with its serial and expiry, and the package, organisation and advisory files it pins by hash. Nothing uses it yet; installing from the registry comes next.
 - Link fields find pages: type words such as "contact" into a button's **Link** and pick a published page to fill in its address, or type an address as before. Authors and contributors find every published page, not only the ones they may edit (`GET /content/lookup?linkable=1`). The field is `KLinkInput` in the UI kit for plugins.
