@@ -43,6 +43,16 @@ final class CoreVerifyCommandTest extends TestCase
         return [$code, (string) stream_get_contents($out)];
     }
 
+    public function testKestelloShipsTheKeyItsReleasesAreSignedWith(): void
+    {
+        $config = require dirname(__DIR__, 2) . '/core/config/release.php';
+        $keys = \Kestello\Cms\Package\Update\UpdateChecker::releaseKeys($config['keys']);
+
+        $this->assertSame(['Kestello releases'], array_values(array_column($keys, 'name')), 'without a key, no site could apply an official release');
+        $this->assertSame('kestellohq/cms', $config['repository']);
+        $this->assertFalse($config['prereleases'], 'sites get releases only, unless they opt in');
+    }
+
     public function testASignedReleaseWithItsKeyListedPasses(): void
     {
         $keys = PackageSignature::generateKeys();
