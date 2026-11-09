@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- **System → Security** shows who the site trusts for code: its trusted publishers, the key Kestello's own updates must carry, a warning when the admin installs unsigned zips, and for every installed plugin and theme who signed it and where its updates come from (`GET /api/v1/security/packages`).
 - Editorial checklists: a content type can list what its entries must (required) or should (recommended) have before they are published: an excerpt, a featured image, a term of a taxonomy, a minimum number of words, a search description, or a plugin's own check (`$cms->content->checks->define()`). Set them under **Before publishing** on **System → Content types** or with `ContentType::checklist()`; the editor checks them as you type (`POST /api/v1/content/{type}/checklist`). A required item that isn't done keeps an entry from being published or scheduled; drafts and submissions for review always save.
 - **Waiting on you** on the Overview: your entries sent back with changes requested, entries assigned to you, and entries in review that are yours to publish, most urgent first (`GET /api/v1/content/waiting`, `Reviews::waitingFor()`).
 - @mentions in review comments: naming someone as `@username` tells them, in the bell and by email, when they may open the entry. Typing @ in **Add a comment** suggests people who may edit entries of the type, and names are marked in the timeline.
