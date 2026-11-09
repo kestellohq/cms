@@ -62,6 +62,10 @@ final class ScheduleRunner
             \Kestello\Framework\Settings\Settings::getInstance()->reload();    // schedule:work runs for days
         } catch (\Throwable) {
         }
+        if ($this->cache->get(self::HEARTBEAT_KEY) === null) {
+            // The first run: a cached health report still says the scheduler never ran.
+            $this->cache->forget(\Kestello\Cms\Health\SiteHealth::CACHE_KEY);
+        }
         $this->cache->put(self::HEARTBEAT_KEY, ['at' => time(), 'via' => $via], 86400 * 7);
 
         try {
