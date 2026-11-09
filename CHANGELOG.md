@@ -6,7 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
-- - Link fields find pages: type words such as "contact" into a button's **Link** and pick a published page to fill in its address, or type an address as before. Authors and contributors find every published page, not only the ones they may edit (`GET /content/lookup?linkable=1`). The field is `KLinkInput` in the UI kit for plugins.
+- Link fields find pages: type words such as "contact" into a button's **Link** and pick a published page to fill in its address, or type an address as before. Authors and contributors find every published page, not only the ones they may edit (`GET /content/lookup?linkable=1`). The field is `KLinkInput` in the UI kit for plugins.
 - **Site → Fleet** watches the other Kestello sites you look after, in one list: Kestello version and newer releases, plugin and theme updates and license problems, Site Health and the last backup. Turned on with `app.fleet.enabled`; each site is added with a token made on it with only the new `fleet` permission, which reads `GET /api/v1/fleet/report` and nothing else. Sites are asked every hour, or with **Check now**.
 - **System → Security** shows who the site trusts for code: its trusted publishers, the key Kestello's own updates must carry, a warning when the admin installs unsigned zips, and for every installed plugin and theme who signed it and where its updates come from (`GET /api/v1/security/packages`).
 - Editorial checklists: a content type can list what its entries must (required) or should (recommended) have before they are published: an excerpt, a featured image, a term of a taxonomy, a minimum number of words, a search description, or a plugin's own check (`$cms->content->checks->define()`). Set them under **Before publishing** on **System → Content types** or with `ContentType::checklist()`; the editor checks them as you type (`POST /api/v1/content/{type}/checklist`). A required item that isn't done keeps an entry from being published or scheduled; drafts and submissions for review always save.
@@ -63,9 +63,9 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
-- - On **Roles**, the permissions to import a site, set up webhooks and use **Site → Fleet** are listed under **Site and system** instead of **Signing in**.
-- - The **Style** tab's hint for **Tablet** said its changes apply on tablets only; they also reach phones unless **Phone** sets its own, and the hint now says so.
-- - In the visual editor, an empty Column, Group, Tab or other block that holds others has room and a hint ("Empty. Click to select it, then add a block.") instead of no size at all, so a new **Columns** block's columns can be clicked on the page.
+- On **Roles**, the permissions to import a site, set up webhooks and use **Site → Fleet** are listed under **Site and system** instead of **Signing in**.
+- The **Style** tab's hint for **Tablet** said its changes apply on tablets only; they also reach phones unless **Phone** sets its own, and the hint now says so.
+- In the visual editor, an empty Column, Group, Tab or other block that holds others has room and a hint ("Empty. Click to select it, then add a block.") instead of no size at all, so a new **Columns** block's columns can be clicked on the page.
 - `schedule:work` stops on Ctrl+C or SIGTERM again, after the run in progress. Where PHP has pcntl, the queue worker the scheduler runs every minute left its signal handlers behind, so the process ignored both. The worker now puts back the handlers it found and passes the signal on.
 - The Overview no longer says scheduled tasks have never run right after they ran for the first time. The first run of the scheduler drops the cached health report, so the next look re-runs the checks.
 - A token missing a scope now gets `403 insufficient_scope` as documented, not `401`. PHP turned the status of any response with a `WWW-Authenticate` header into 401, and of any response with a `Location` header into 302, because the status was set before the headers.
@@ -85,7 +85,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Security
 
-- - Signing up never gives a role that may manage people, roles, security or the system, or that holds a plugin's sensitive permission: such a role is as good as administrator. **Role for new accounts** no longer offers those roles, and an account created with one set (in the config or by the `auth.default_role` filter) becomes a **User**. Until now only the administrator role itself was kept out.
+- Signing up never gives a role that may manage people, roles, security or the system, or that holds a plugin's sensitive permission: such a role is as good as administrator. **Role for new accounts** no longer offers those roles, and an account created with one set (in the config or by the `auth.default_role` filter) becomes a **User**. Until now only the administrator role itself was kept out.
 - Kestello ships the public key its official releases are signed with (`release.keys` in `core/config/release.php`), so sites apply releases from GitHub only when that key signed them.
 - Direct uploads to an S3 bucket land at a private staging key (`incoming/<upload id>`). Kestello checks the file there, then copies it to the key it chose and makes it public. Before, the browser uploaded straight to the final key as a public file, so an unchecked file, or one that was never finished, could be read at its permanent address. With a bucket policy instead of object ACLs, keep `incoming/` out of public reads.
 - The query builder refuses a column or table name that isn't a plain name (`name`, `table.name`, `name AS alias`) instead of passing it into SQL unchanged. Raw SQL needs `new Expression(…)` or `QueryBuilder::raw()`. Plugins that passed SQL such as `'COUNT(*) as total'` to `select()` must wrap it.
