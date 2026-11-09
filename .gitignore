@@ -12,6 +12,7 @@ storage/app/*
 storage/tmp/*
 storage/fonts/*
 storage/forms/*
+storage/registry/*
 !storage/*/.gitkeep
 
 # Dependencies

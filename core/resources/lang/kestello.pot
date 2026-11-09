@@ -1536,6 +1536,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/pages/admin/system/Health.vue
+#: core/src/Cms/Console/Package/RegistryStatusCommand.php
 msgid "Checked"
 msgstr ""
 
@@ -3161,6 +3162,10 @@ msgstr ""
 msgid "Features"
 msgstr ""
 
+#: core/src/Cms/Package/PackagesModule.php
+msgid "Fetches the plugin and theme registry's signed list (config/registry.php) and checks it. It only reads; nothing is installed."
+msgstr ""
+
 #: core/resources/js/components/content-types/FieldSettings.vue
 msgid "Fewest characters"
 msgstr ""
@@ -4652,6 +4657,7 @@ msgstr ""
 
 #: core/resources/js/ui/builder/useDocument.js
 #: core/src/Cms/Blocks/CoreBlocks.php
+#: core/src/Cms/Console/Package/RegistryStatusCommand.php
 msgid "List"
 msgstr ""
 
@@ -6331,6 +6337,10 @@ msgstr ""
 msgid "Package"
 msgstr ""
 
+#: core/src/Cms/Console/Package/RegistryStatusCommand.php
+msgid "Packages"
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderDesign.vue
 msgid "Padding"
 msgstr ""
@@ -7034,6 +7044,10 @@ msgstr ""
 
 #: core/resources/js/ui/builder/useDocument.js
 msgid "Redone."
+msgstr ""
+
+#: core/src/Cms/Console/Package/RegistryStatusCommand.php
+msgid "Registry"
 msgstr ""
 
 #: core/src/Cms/Console/Package/CoreVerifyCommand.php
@@ -10477,6 +10491,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Settings.vue
 msgid "Uses the saved settings, so save first."
+msgstr ""
+
+#: core/src/Cms/Console/Package/RegistryStatusCommand.php
+msgid "Valid until"
 msgstr ""
 
 #: core/resources/js/components/content-types/ConditionsEditor.vue

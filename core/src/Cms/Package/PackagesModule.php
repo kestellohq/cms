@@ -7,6 +7,8 @@ namespace Kestello\Cms\Package;
 use Kestello\Cms\Backup\Backups;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Extension\Provider;
+use Kestello\Cms\Package\Registry\RegistryClient;
+use Kestello\Cms\Package\Registry\RootKeys;
 use Kestello\Cms\Package\Update\CoreUpdater;
 use Kestello\Cms\Package\Update\HealthProbe;
 use Kestello\Cms\Package\Update\HttpProbe;
@@ -25,6 +27,7 @@ use Kestello\Framework\Core\Response;
 use Kestello\Framework\Http\Client\HttpClient;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Support\AppKey;
+use Kestello\Support\Clock;
 
 /**
  * Plugins screen, package installs, plugin/theme/core updates.
@@ -46,6 +49,9 @@ final class PackagesModule extends Provider
 
     /** Settings key holding the last answers about plugin and theme updates (PackageUpdates). */
     public const string PACKAGE_CHECKS = 'updates.package_checks';
+
+    /** Settings key holding where the site's copy of the registry stands (RegistryClient). */
+    public const string REGISTRY_STATE = 'updates.registry';
 
     public function register(Container $container): void
     {
@@ -78,6 +84,23 @@ final class PackagesModule extends Provider
             static fn(array $result) => Settings::getInstance()->set(self::LAST_CHECK, (string) json_encode($result, JSON_UNESCAPED_SLASHES), 'updates'),
         ));
         $container->singleton(KeyPins::class, static fn(): KeyPins => KeyPins::inSettings());
+        $container->singleton(RegistryClient::class, static function (Container $c): RegistryClient {
+            $cms = self::cms();
+
+            return new RegistryClient(
+                $c->make(HttpClient::class),
+                (string) $cms->config->get('registry.url', ''),
+                RootKeys::fromConfig($cms->config->get('registry.root_keys', [])),
+                $cms->paths->storage('registry'),
+                static function (): array {
+                    $value = json_decode((string) Settings::getInstance()->get(self::REGISTRY_STATE, ''), true);
+
+                    return is_array($value) ? $value : [];
+                },
+                static fn(array $state) => Settings::getInstance()->set(self::REGISTRY_STATE, (string) json_encode($state, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 'updates'),
+                static fn(): int => Clock::timestamp(),
+            );
+        });
         $container->singleton(PackageLicenses::class, static fn(): PackageLicenses => new PackageLicenses(
             AppKey::secretStore(),
             static fn(string $owner): ?string => Settings::getInstance()->get(self::settingsKey('license', $owner)),
@@ -137,6 +160,23 @@ final class PackagesModule extends Provider
             return count($offers) . ' update(s) available' . ($errors !== [] ? ', ' . count($errors) . ' source(s) could not be checked' : '') . '.';
         }, 'updates.packages')->hourlyAt(27)->withoutOverlapping(30)
             ->description('Asks the sources plugins and themes name ("updates" in their manifest) for new versions. It only tells you; Updates installs.');
+
+        // the plugin and theme registry's list: fetched as often as update sources are checked; installs nothing
+        $cms->schedule->call(static function () use ($cms): string {
+            if (!(bool) $cms->config->get('registry.enabled', true)) {
+                return 'The registry is turned off (registry.enabled).';
+            }
+            $client = $cms->container->make(RegistryClient::class);
+            $hours = max(1, (int) $cms->config->get('app.updates.check_every', 12));
+            $last = $client->status()['checked_at'];
+            if ($last !== null && Clock::timestamp() - $last < $hours * 3600 - 300) {
+                return 'Not due yet.';
+            }
+            $status = $client->refresh();
+
+            return $status['error'] ?? "The registry lists {$status['packages']} package(s).";
+        }, 'updates.registry')->hourlyAt(37)->withoutOverlapping(30)
+            ->description('Fetches the plugin and theme registry\'s signed list (config/registry.php) and checks it. It only reads; nothing is installed.');
 
         // the HTTP health check's view of a package; only during an update, only with its bypass token
         $cms->routes->get('/system/update/probe', static function (Request $request) use ($cms): Response {
