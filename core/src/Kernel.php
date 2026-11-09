@@ -38,6 +38,8 @@ use Kestello\Cms\Extension\SuspensionList;
 use Kestello\Cms\Frontend\FrontendModule;
 use Kestello\Cms\Installer\InstallerController;
 use Kestello\Cms\Installer\InstallerRoutes;
+use Kestello\Cms\Package\Update\UpdateJournal;
+use Kestello\Cms\Package\Update\UpdateRecovery;
 use Kestello\Cms\Platform\ArrayPlatformStore;
 use Kestello\Cms\Platform\CoreDrivers;
 use Kestello\Cms\Platform\DriverRegistry;
@@ -137,10 +139,19 @@ final class Kernel
             return;
         }
 
+        // An update PHP stopped halfway: put it back before anything else runs (for core this
+        // request already runs the old release; plugins stay unloaded until it is done).
+        $journal = new UpdateJournal($this->paths->storage());
+        if ($journal->pending() !== null) {
+            $this->recoverUpdate($app, $uri);
+            return;
+        }
+
         // before the database: during a restore it is being rebuilt
         $maintenance = new \Kestello\Cms\System\Maintenance($this->paths->storage());
+        self::holdDuringUpdate($journal, $maintenance);
         $bypass = (string) ($_SERVER['HTTP_X_KESTELLO_BYPASS'] ?? '');
-        if ($maintenance->blocks($uri, isset($_COOKIE['cms_session']), $bypass)) {
+        if ($maintenance->blocks($uri, isset($_COOKIE[Session::NAME]), $bypass)) {
             $this->maintenancePage($maintenance);
             return;
         }
@@ -186,6 +197,58 @@ final class Kernel
     }
 
     /**
+     * Put back (or finish) an update that stopped halfway, then send the
+     * visitor to the page they asked for. Anything else gets the
+     * maintenance page and tries again.
+     */
+    private function recoverUpdate(Application $app, string $uri): void
+    {
+        $result = null;
+        try {
+            $app->bootstrap();
+            $this->connectDatabase($app);
+            $cms = $this->bootExtensions($app, recovery: true);
+            $result = $cms->container->make(UpdateRecovery::class)->recover();
+            if (!$result['ok']) {
+                error_log('[kestello] putting back an update that stopped: ' . implode(' ', $result['problems']));
+            }
+        } catch (Throwable $e) {
+            error_log('[kestello] putting back an update that stopped: ' . $e->getMessage());
+        }
+
+        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        if (($result['ok'] ?? false) && ($method === 'GET' || $method === 'HEAD')) {
+            header('Cache-Control: no-store');
+            header('Location: ' . self::sameSiteLocation($uri, (string) ($_SERVER['QUERY_STRING'] ?? '')), true, 302);
+            return;
+        }
+        $this->maintenancePage(new \Kestello\Cms\System\Maintenance($this->paths->storage()));
+    }
+
+    /**
+     * While an update is running, or stopped and was not put back, visitors
+     * never see the site halfway, however long it takes: the maintenance the
+     * update turned on outlasts its 30 minutes. Signed-in people still get in.
+     */
+    public static function holdDuringUpdate(UpdateJournal $journal, \Kestello\Cms\System\Maintenance $maintenance): void
+    {
+        if ($journal->current() !== null) {
+            $maintenance->hold('an update has not finished');
+        }
+    }
+
+    /** A path on this site to send the visitor back to; never one a browser would read as another host ("//x", "/\\x"). */
+    public static function sameSiteLocation(string $path, string $query = ''): string
+    {
+        if (preg_match('#^/(?![/\\\\])[^\x00-\x20]*$#', $path) !== 1) {
+            return '/';
+        }
+        $query = preg_replace('/[\x00-\x20]/', '', $query) ?? '';
+
+        return $path . ($query !== '' ? '?' . $query : '');
+    }
+
+    /**
      * Package assets never get a session (public, cacheable). API requests
      * only resume an existing session cookie: bearer-token requests ignore
      * cookies entirely, and anonymous API calls must not mint sessions.
@@ -213,19 +276,39 @@ final class Kernel
 
     private function handleInstaller(Application $app, string $uri, bool $installed): void
     {
-        if (!$installed && $uri !== '/install' && !str_starts_with($uri, '/install/')) {
-            header('Location: /install');
+        $redirect = self::installerRedirect($uri, $installed);
+        if ($redirect !== null) {
+            header('Location: ' . $redirect);
             return;
         }
 
-        if ($installed && $uri !== '/install/complete') {
-            header('Location: /');
-            return;
+        if (!$installed) {
+            InstallerController::prepareFolders($this->paths); // before anything writes a log or a session
         }
 
         $app->bootstrap();
-        InstallerRoutes::register($app->router(), $this->paths, $this->isSecureRequest($app));
+        if (str_starts_with($uri, '/assets/core/')) {
+            InstallerRoutes::assets($app->router(), $this->paths);
+        } else {
+            InstallerRoutes::register($app->router(), $this->paths, $this->isSecureRequest($app));
+        }
         $app->run();
+    }
+
+    /**
+     * Where a request goes while the installer is in charge, or null to serve it.
+     * Before installation only the installer and the core assets it loads (its
+     * scripts and styles) are served; after it, only the closing page.
+     */
+    public static function installerRedirect(string $uri, bool $installed): ?string
+    {
+        if ($installed) {
+            return $uri === '/install/complete' ? null : '/';
+        }
+
+        $served = $uri === '/install' || str_starts_with($uri, '/install/') || str_starts_with($uri, '/assets/core/');
+
+        return $served ? null : '/install';
     }
 
     /**
@@ -300,14 +383,26 @@ final class Kernel
         $app->bootstrap();
         $cms = null;
 
+        $pending = null;
         if (InstallerController::isInstalled($this->paths)) {
+            // an update that stopped halfway, or update:recover: plugins stay unloaded
+            $pending = (new UpdateJournal($this->paths->storage()))->pending();
+            $safe = in_array('--safe', $argv, true) || $pending !== null || ($argv[1] ?? '') === 'update:recover';
             try {
                 $this->connectDatabase($app);
-                $cms = $this->bootExtensions($app, recovery: in_array('--safe', $argv, true));
-                $cms->events->dispatch(new KernelBooted(console: true, recoveryMode: in_array('--safe', $argv, true)));
+                $cms = $this->bootExtensions($app, recovery: $safe);
+                $cms->events->dispatch(new KernelBooted(console: true, recoveryMode: $safe));
             } catch (Throwable $e) {
                 fwrite(STDERR, "\033[33mWarning: extensions not booted: {$e->getMessage()}\033[0m" . PHP_EOL);
             }
+        }
+        if ($pending !== null && ($argv[1] ?? '') !== 'update:recover') {
+            if ($cms === null) {
+                return 1;
+            }
+            fwrite(STDERR, "An update of {$pending['owner']} stopped halfway. Putting it back first; run the command again afterwards." . PHP_EOL);
+
+            return \Kestello\Cms\Console\Package\UpdateRecoverCommand::report($cms->container->make(UpdateRecovery::class)->recover(), static fn(string $line) => fwrite(STDERR, $line . PHP_EOL));
         }
 
         $root = $this->paths->root();
@@ -342,6 +437,8 @@ final class Kernel
         $console->register(new \Kestello\Cms\Console\Schedule\ScheduleListCommand());
         $console->register(new \Kestello\Cms\Console\Schedule\ScheduleTestCommand());
         $console->register(new \Kestello\Cms\Console\Schedule\CronTokenCommand());
+        $console->register(new \Kestello\Cms\Console\Demo\DemoCommand('snapshot'));
+        $console->register(new \Kestello\Cms\Console\Demo\DemoCommand('reset'));
         $console->register(new \Kestello\Cms\Console\Storage\StorageDisksCommand());
         $console->register(new \Kestello\Cms\Console\Storage\StorageTestCommand());
         $console->register(new \Kestello\Cms\Console\Media\MediaVariantsCommand());
@@ -360,6 +457,7 @@ final class Kernel
         $console->register(new \Kestello\Cms\Console\Package\PackageBuildCommand());
         $console->register(new \Kestello\Cms\Console\Package\PackageSignCommand());
         $console->register(new \Kestello\Cms\Console\Package\CoreReleaseCommand($this->paths));
+        $console->register(new \Kestello\Cms\Console\Package\CoreInstallZipCommand($this->paths));
         $console->register(new \Kestello\Cms\Console\Package\CoreVerifyCommand($this->paths));
         $console->register(new \Kestello\Cms\Console\I18n\I18nExtractCommand($this->paths));
         $console->register(new \Kestello\Cms\Console\Ide\IdeHelpersCommand($this->paths));
@@ -385,11 +483,13 @@ final class Kernel
             $console->register(new PluginDeactivateCommand($extensions));
             $console->register(new \Kestello\Cms\Console\Extensions\ThemeExportCommand());
             $console->register(new \Kestello\Cms\Console\Extensions\ThemeImportCommand());
+            $console->register(new \Kestello\Cms\Console\ImportWordPressCommand());
             foreach ([\Kestello\Cms\Console\Backup\BackupCreateCommand::class, \Kestello\Cms\Console\Backup\BackupListCommand::class,
                 \Kestello\Cms\Console\Backup\BackupRestoreCommand::class, \Kestello\Cms\Console\Backup\BackupDeleteCommand::class,
                 \Kestello\Cms\Console\Package\PackageVerifyCommand::class,
-                \Kestello\Cms\Console\Package\PackageUpdateCommand::class, \Kestello\Cms\Console\Package\UpdateProbeCommand::class,
-                \Kestello\Cms\Console\Package\CoreUpdateCommand::class, \Kestello\Cms\Console\Package\CoreCheckCommand::class] as $command) {
+                \Kestello\Cms\Console\Package\PackageUpdateCommand::class, \Kestello\Cms\Console\Package\PackageCheckUpdatesCommand::class, \Kestello\Cms\Console\Package\PackageLicenseCommand::class, \Kestello\Cms\Console\Package\UpdateProbeCommand::class,
+                \Kestello\Cms\Console\Package\CoreUpdateCommand::class, \Kestello\Cms\Console\Package\CoreCheckCommand::class,
+                \Kestello\Cms\Console\Package\UpdateRecoverCommand::class] as $command) {
                 $console->register(new $command());
             }
             $console->register(new PluginUninstallCommand($extensions));
@@ -437,6 +537,7 @@ final class Kernel
                 return $token !== '' && $container->make(Session::class)->validateToken($token);
             },
             debug: $debug,
+            demo: (bool) $app->config()->get('app.demo', false),
         );
 
         $cms = new Cms(
@@ -535,7 +636,7 @@ final class Kernel
         );
         $container->instance(\Kestello\Framework\Storage\StorageManager::class, $cms->storage);
 
-        foreach ([new AuthModule(), new AdminModule(), new ApiModule(), new ExtensionsModule(), new \Kestello\Cms\System\SystemModule(), new \Kestello\Cms\Storage\StorageModule(), new \Kestello\Cms\Notifications\NotificationsModule(), new \Kestello\Cms\Health\HealthModule(), new \Kestello\Cms\Cache\PageCacheModule(), new \Kestello\Cms\Content\ContentModule(), new \Kestello\Cms\Media\MediaModule(), new \Kestello\Cms\Blocks\BlocksModule(), new \Kestello\Cms\Search\SearchModule(), new \Kestello\Cms\Redirects\RedirectsModule(), new \Kestello\Cms\Forms\FormsModule(), new \Kestello\Cms\Webhooks\WebhooksModule(), new \Kestello\Cms\Design\DesignModule(), new \Kestello\Cms\Backup\BackupModule(), new \Kestello\Cms\Package\PackagesModule(), new \Kestello\Cms\Site\SiteModule(), new FrontendModule()] as $module) {
+        foreach ([new AuthModule(), new AdminModule(), new ApiModule(), new ExtensionsModule(), new \Kestello\Cms\System\SystemModule(), new \Kestello\Cms\Storage\StorageModule(), new \Kestello\Cms\Notifications\NotificationsModule(), new \Kestello\Cms\Health\HealthModule(), new \Kestello\Cms\Cache\PageCacheModule(), new \Kestello\Cms\Content\ContentModule(), new \Kestello\Cms\Media\MediaModule(), new \Kestello\Cms\Blocks\BlocksModule(), new \Kestello\Cms\Search\SearchModule(), new \Kestello\Cms\Redirects\RedirectsModule(), new \Kestello\Cms\Forms\FormsModule(), new \Kestello\Cms\Webhooks\WebhooksModule(), new \Kestello\Cms\Design\DesignModule(), new \Kestello\Cms\Backup\BackupModule(), new \Kestello\Cms\Import\ImportModule(), new \Kestello\Cms\Package\PackagesModule(), new \Kestello\Cms\Site\SiteModule(), new FrontendModule(), new \Kestello\Cms\Demo\DemoModule()] as $module) {
             $extensions->addModule($module);
         }
 

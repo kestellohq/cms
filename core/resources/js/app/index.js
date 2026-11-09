@@ -28,6 +28,9 @@ import {
 } from 'vue';
 import { designAttrs } from '../shared/block-design.js';
 import { createLeaveGuards, leavesPage } from './leave-guards.js';
+import { endedElsewhere } from './same-site.js';
+import { staleStylesheets, stylesFor } from './stylesheets.js';
+import { documentTitle } from './document-title.js';
 
 const ROUTER = Symbol('kestello.router');
 const PAGE = Symbol('kestello.page');
@@ -181,6 +184,12 @@ class Router {
             if (response.status === 409 && response.headers.get('X-Kestello-Location')) {
                 // New deployment: assets changed, load the page fully.
                 window.location.href = response.headers.get('X-Kestello-Location');
+                return;
+            }
+
+            if (endedElsewhere(response, window.location.origin)) {
+                // redirected to another site: go there, never draw its answer as a page of this one
+                window.location.href = response.url;
                 return;
             }
 
@@ -583,11 +592,7 @@ export const Head = defineComponent({
     setup(props) {
         const head = inject(HEAD, null);
         const page = inject(PAGE, null);
-        const full = () => {
-            const site = page?.props?.site?.name ?? '';
-            if (props.raw || !site) return props.title || site;
-            return props.title ? `${props.title} - ${site}` : site;
-        };
+        const full = () => documentTitle(props.title, page, props.raw);
         if (head) head.title = full();
         if (isBrowser) {
             onMounted(() => {
@@ -603,22 +608,16 @@ export const Head = defineComponent({
 
 // ── stylesheets ──────────────────────────────────────────────────────
 
-function stylesFor(registry, ...names) {
-    const urls = [];
-    for (const name of names) {
-        for (const url of registry[name]?.css ?? []) {
-            if (!urls.includes(url)) urls.push(url);
-        }
-    }
-    return urls;
-}
-
-/** Add stylesheets without waiting (extension components). */
+/**
+ * Add a block's or an extension's stylesheets without waiting. They are kept
+ * on every later page (stylesheets.js), also when the page already had them.
+ */
 function addStylesheets(urls) {
-    const have = new Set([...document.querySelectorAll('link[rel="stylesheet"]')].map((l) => l.getAttribute('href')));
+    const have = new Map([...document.querySelectorAll('link[rel="stylesheet"]')].map((l) => [l.getAttribute('href'), l]));
     for (const url of urls) {
+        const link = have.get(url) ?? document.createElement('link');
+        link.dataset.kestelloKeep = '';
         if (have.has(url)) continue;
-        const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = url;
         link.dataset.kestelloCss = '';
@@ -648,9 +647,8 @@ async function syncStylesheets(registry, component, layout) {
             ),
     );
 
-    for (const [url, link] of existing) {
-        if (!wanted.includes(url)) link.remove();
-    }
+    const links = [...existing].map(([href, link]) => ({ href, keep: 'kestelloKeep' in link.dataset }));
+    for (const href of staleStylesheets(links, wanted)) existing.get(href)?.remove();
 }
 
 function showRawResponse(html) {

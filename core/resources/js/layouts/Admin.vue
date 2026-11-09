@@ -1,8 +1,11 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Link, usePage } from '@kestello/app';
+import DemoBar from '../components/demo/DemoBar.vue';
 import { setReauthHandler, requestPassword, useAdmin, useApi, useCan, useUser, __, notify } from '@kestello/sdk';
 import { KAvatar, KDialogs, KFinder, KIcon, KToasts, KAlert, KTime } from '@kestello/ui';
+import AdminNav from '../components/admin/AdminNav.vue';
+import { startPrerender } from '../prerender/background.js';
 
 /**
  * The admin app frame. Pages opt in with defineOptions({ layout: 'Admin' });
@@ -35,19 +38,7 @@ function onFinderKey(event) {
 onMounted(() => window.addEventListener('keydown', onFinderKey));
 onBeforeUnmount(() => window.removeEventListener('keydown', onFinderKey));
 
-const sheets = computed(() => admin.value.menu ?? []);
-// The one menu entry this page belongs to: the longest match wins (Categories over Content).
-const current = computed(
-    () =>
-        sheets.value
-            .flatMap((g) => g.items)
-            .filter((item) => !item.href.startsWith('https://') && isActive(item))
-            .sort((a, b) => b.match.length - a.match.length)[0] ?? null,
-);
-function isActive(item) {
-    const match = item.match.replace(/\/$/, '');
-    return match === '/admin' ? path.value === '/admin' : path.value === match || path.value.startsWith(match + '/');
-}
+const menu = computed(() => admin.value.menu ?? []);
 
 watch(
     () => page.url,
@@ -80,6 +71,7 @@ const bellOpen = ref(false);
 const unread = ref(0);
 const recent = ref([]);
 let timer = null;
+let stopPrerender = null;
 
 async function loadNotifications() {
     if (!can('profile.manage')) return;
@@ -125,9 +117,12 @@ onMounted(() => {
         if (document.visibilityState === 'visible') loadNotifications();
     }, 60000);
     document.addEventListener('click', onDocumentClick);
+    // saved page HTML: administrators' browsers draw the site's waiting pages in the background
+    if (can('system.manage')) stopPrerender = startPrerender(api);
 });
 onBeforeUnmount(() => {
     clearInterval(timer);
+    stopPrerender?.();
     document.removeEventListener('click', onDocumentClick);
 });
 </script>
@@ -142,7 +137,9 @@ onBeforeUnmount(() => {
                 <img :src="'/assets/core/brand/kestello-symbol-white.svg'" alt="" width="24" height="24" class="k-logo k-logo--dark" />
                 <div>
                     <Link href="/admin" class="k-sidebar__site">{{ site }}</Link>
-                    <span class="k-sidebar__product">Kestello {{ admin.version }}</span>
+                    <span class="k-sidebar__product"
+                        >Kestello {{ admin.version }}<template v-if="page.props.demo"> · {{ __('Demo') }}</template></span
+                    >
                 </div>
                 <a href="/" class="k-icon-btn" :title="__('View site')" :aria-label="__('View site')"><KIcon name="arrow-square-out" /></a>
             </div>
@@ -155,28 +152,7 @@ onBeforeUnmount(() => {
                 <KIcon name="magnifying-glass" /><span class="k-finder-btn__text">{{ __('Find') }}</span
                 ><kbd class="k-finder-btn__keys" aria-hidden="true">{{ isMac ? '⌘K' : 'Ctrl K' }}</kbd>
             </button>
-            <nav class="k-nav">
-                <div v-for="group in sheets" :key="group.id" class="k-nav__group">
-                    <p v-if="group.label" class="k-nav__heading">{{ group.label }}</p>
-                    <ul>
-                        <li v-for="item in group.items" :key="item.id">
-                            <a v-if="item.href.startsWith('https://')" :href="item.href" class="k-nav__link" target="_blank" rel="noopener noreferrer">
-                                <span>{{ item.label }}</span
-                                ><KIcon name="arrow-square-out" class="k-nav__external" />
-                            </a>
-                            <Link
-                                v-else
-                                :href="item.href"
-                                class="k-nav__link"
-                                :class="{ 'is-active': item === current }"
-                                :aria-current="item === current ? 'page' : undefined"
-                            >
-                                <span>{{ item.label }}</span>
-                            </Link>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <AdminNav :groups="menu" :path="path" />
             <div class="k-sidebar__footer">
                 <Link href="/admin/profile" class="k-sidebar__me" :title="__('Your profile')">
                     <KAvatar :user="user" />
@@ -247,6 +223,7 @@ onBeforeUnmount(() => {
 
             <main id="k-main" class="k-main" tabindex="-1">
                 <div class="k-flash">
+                    <DemoBar v-if="page.props.demo" :demo="page.props.demo" />
                     <KAlert v-if="page.props.recoveryMode" tone="warning" :title="__('Recovery mode')">
                         {{
                             __(

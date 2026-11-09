@@ -466,7 +466,7 @@ final class ContentApiTest extends AuthTestCase
         $this->assertSame(['Author pick'], $titles("ids={$mine['id']},{$other['id']},{$page['id']}"), 'own posts only; no pages');
 
         $users = $this->json($this->api('GET', '/content/users?search=edi'))['data'];
-        $this->assertSame([['id' => 2, 'username' => 'editor', 'role' => 'editor']], $users, 'names, never emails');
+        $this->assertSame([['id' => 2, 'username' => 'editor']], $users, 'names, never emails or roles');
         $this->assertSame(['ana'], array_column($this->json($this->api('GET', '/content/users?ids=1'))['data'], 'username'));
     }
 

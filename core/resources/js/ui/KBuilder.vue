@@ -48,6 +48,7 @@ const props = defineProps({
     documentLabel: { type: String, default: '' },
     startTab: { type: String, default: 'document' }, // the settings tab shown first: document | block (a new page opens on writing)
     belowLabel: { type: String, default: '' }, // the drawer under the canvas (slot #below)
+    extraIssues: { type: Array, default: () => [] }, // the document's own checks, shown with the page's: { tone, id: null, message }
 });
 const emit = defineEmits(['save', 'ready', 'choose-template', 'title']); // title: the entry's title was clicked on the canvas
 const root = ref(null);

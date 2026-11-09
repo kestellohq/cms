@@ -131,7 +131,7 @@ async function save() {
 }
 async function remove() {
     const m = current.value;
-    const used = m.usage?.length ?? 0;
+    const used = (m.usage?.length ?? 0) + (m.usage_hidden ?? 0);
     const ok = await confirm({
         title: __('Delete “{title}”?', { title: m.title }),
         message: used
@@ -334,7 +334,10 @@ const focusLabel = computed(() =>
                         <span class="k-muted k-small"> · {{ STATUS[u.status] ?? u.status }}</span>
                     </li>
                 </ul>
-                <p v-else class="k-muted k-small">{{ __('Not used in any entry yet.') }}</p>
+                <p v-if="current.usage_hidden" class="k-muted k-small">
+                    {{ __('And {n} entries you cannot open.', { n: current.usage_hidden }) }}
+                </p>
+                <p v-else-if="!current.usage?.length" class="k-muted k-small">{{ __('Not used in any entry yet.') }}</p>
             </section>
 
             <template v-if="current.can.edit" #footer>

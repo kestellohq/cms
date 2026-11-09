@@ -12,6 +12,37 @@ use Kestello\Contracts\Media\ImageException;
 /** Imagick: better resampling, colour profiles, CMYK. Preferred when loaded. */
 final class ImagickEngine implements ImageEngine
 {
+    /**
+     * What one decode may use. Uploads are untrusted: a small file can claim a
+     * huge canvas or thousands of frames. Over a limit, Imagick throws and the
+     * file gets no variants. Limits apply to the whole process, so none here
+     * may stop other Imagick work: not a frame count, and not a time limit,
+     * which some ImageMagick versions count from the process start (a queue
+     * worker would lose Imagick after a minute). PHP's own time limits apply.
+     *
+     * A method, not a constant: the Imagick constants exist only where the
+     * extension is loaded, and this class is loaded everywhere.
+     *
+     * @return array<int, int>
+     */
+    public static function limits(): array
+    {
+        return [
+            Imagick::RESOURCETYPE_MEMORY => 256 * 1024 * 1024,
+            Imagick::RESOURCETYPE_MAP => 512 * 1024 * 1024,
+            Imagick::RESOURCETYPE_DISK => 1024 * 1024 * 1024,
+            Imagick::RESOURCETYPE_AREA => 100_000_000,        // pixels in one image
+            Imagick::RESOURCETYPE_WIDTH => 20_000,
+            Imagick::RESOURCETYPE_HEIGHT => 20_000,
+        ];
+    }
+
+    /** The path naming only the first frame (Imagick reads "file[0]" as frame 0 of file). */
+    public static function firstFrame(string $path): string
+    {
+        return $path . '[0]';
+    }
+
     private const array FORMATS = ['jpeg' => 'JPEG', 'png' => 'PNG', 'gif' => 'GIF', 'webp' => 'WEBP', 'avif' => 'AVIF'];
 
     public function name(): string
@@ -40,15 +71,12 @@ final class ImagickEngine implements ImageEngine
     {
         try {
             $im = new Imagick();
-            $im->setResourceLimit(Imagick::RESOURCETYPE_MEMORY, 256 * 1024 * 1024);
-            $im->readImage($path);
-            if ($im->getNumberImages() > 1) {
-                $im = $im->coalesceImages();
-                $im->setIteratorIndex(0);
-                $first = $im->getImage();
-                $im->clear();
-                $im = $first;          // animations become their first frame in variants
+            foreach (self::limits() as $type => $limit) {
+                $im->setResourceLimit($type, $limit);
             }
+            // only the first frame is read: animations become their first frame in
+            // variants, and a GIF of thousands of frames never fills memory or disk
+            $im->readImage(self::firstFrame($path));
             $im->autoOrient();
             if ($im->getImageColorspace() === Imagick::COLORSPACE_CMYK) {
                 $im->transformImageColorspace(Imagick::COLORSPACE_SRGB);

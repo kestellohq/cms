@@ -38,6 +38,19 @@ final class DependencyResolverTest extends TestCase
         $this->assertContains('requires Kestello ^2.0', $problems[0]);
     }
 
+    public function testAReleaseCandidateRunsThePackagesMadeForItsRelease(): void
+    {
+        $p = self::plugin('x');
+        $this->assertSame([], (new DependencyResolver('0.1.0-rc.1', '8.4.0', ['core']))->problems($p, ['x' => $p]), 'a plugin for ^0.1 runs on 0.1.0-rc.1');
+        $next = self::plugin('y', extra: ['requires' => ['core' => '^0.2']]);
+        $this->assertNotSame([], (new DependencyResolver('0.2.0-rc.1', '8.4.0', ['core']))->problems($p, ['x' => $p]), 'but not on the next minor\'s candidate');
+        $this->assertSame([], (new DependencyResolver('0.2.0-rc.1', '8.4.0', ['core']))->problems($next, ['y' => $next]));
+
+        $dep = self::plugin('forms', '2.0.0-beta.1');
+        $seo = self::plugin('seo', extra: ['dependencies' => ['forms' => '^2.0']]);
+        $this->assertNotSame([], $this->resolver()->problems($seo, ['forms' => $dep, 'seo' => $seo]), 'plugin pre-releases stay strict');
+    }
+
     public function testDependenciesAndConflicts(): void
     {
         $forms = self::plugin('forms', '1.4.0');

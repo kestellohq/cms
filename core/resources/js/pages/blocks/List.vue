@@ -5,7 +5,7 @@ defineProps({ ordered: Boolean, items: { type: Array, default: () => [] } });
 <template>
     <div v-if="items.length" class="k-b-list">
         <component :is="ordered ? 'ol' : 'ul'">
-            <li v-for="(item, i) in items" :key="i">{{ item?.text }}</li>
+            <li v-for="(item, i) in items" :key="i" :data-k-field="`items.${i}.text`" data-placeholder="List item">{{ item?.text }}</li>
         </component>
     </div>
 </template>

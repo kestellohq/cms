@@ -128,6 +128,26 @@ final class HttpClientTest extends TestCase
         $this->assertNull($fake->sent[1]->body);
     }
 
+    public function testDownloadsToAFileHoldOnlyTheFinalBody(): void
+    {
+        $fake = new FakeTransport([
+            'GET https://api.example.com/file.zip' => ['status' => 302, 'headers' => ['Location' => 'https://other.example.org/file.zip'], 'body' => '<html>Moved</html>'],
+            'GET https://other.example.org/file.zip' => ['body' => 'PK-the-file'],
+            'GET https://api.example.com/big' => ['body' => str_repeat('x', 2048)],
+        ]);
+        $client = $this->client($fake);
+        $sink = fopen('php://temp', 'w+b');
+        fwrite($sink, 'kept:');
+
+        $response = $client->get('https://api.example.com/file.zip', ['sink' => $sink, 'max_redirects' => 3]);
+
+        rewind($sink);
+        $this->assertSame(200, $response->status);
+        $this->assertSame('kept:PK-the-file', stream_get_contents($sink), 'what a redirect said is not part of the file');
+        $big = fopen('php://temp', 'w+b');
+        $this->assertThrows(\Kestello\Framework\Http\Client\HttpTooLarge::class, fn() => $client->get('https://api.example.com/big', ['sink' => $big, 'max_bytes' => 1024]));
+    }
+
     public function testFakeTransportClosuresAndJsonErrors(): void
     {
         $fake = (new FakeTransport())->on('GET https://api.example.com/x', fn(PendingRequest $r) => new HttpResponse(500, [], 'oops', $r->url));

@@ -21,7 +21,9 @@ use Kestello\Support\Translator;
  *
  *   start()     declare name and size; the extension is checked before any bytes arrive
  *   chunk()     send the bytes in order, in chunk_size pieces (resumable), or POST them
- *               straight to the bucket with the presigned form (mode "direct")
+ *               straight to the bucket with the presigned form (mode "direct"), to a
+ *               private staging key (incoming/<upload id>) that complete() checks and
+ *               then copies to the library's key
  *   complete()  the content is sniffed and must agree with the extension, images are
  *               checked against the pixel limit, the "media.scan" filter can refuse it,
  *               then it is stored under a random key and becomes a Media row
@@ -44,6 +46,9 @@ final class MediaLibrary
 
     public function types(): MediaTypes
     {
+        if (\Kestello\Cms\Demo\Demo::on($this->cms->config)) {
+            return new MediaTypes(['image'], false);    // a public demo hosts no one's documents, and no SVG
+        }
         $s = Settings::getInstance();
         $kinds = ['image'];
         foreach (['document' => true, 'audio' => true, 'video' => true, 'archive' => false] as $kind => $default) {
@@ -57,7 +62,9 @@ final class MediaLibrary
 
     public function maxBytes(): int
     {
-        return max(1, min(5120, (int) Settings::getInstance()->get('media_max_upload_mb', 64))) * 1_048_576;
+        $max = max(1, min(5120, (int) Settings::getInstance()->get('media_max_upload_mb', 64))) * 1_048_576;
+
+        return \Kestello\Cms\Demo\Demo::on($this->cms->config) ? min($max, \Kestello\Cms\Demo\Demo::MAX_UPLOAD_BYTES) : $max;
     }
 
     public function maxPixels(): int
@@ -105,13 +112,88 @@ final class MediaLibrary
      */
     public function start(Principal $p, string $filename, int $size): array
     {
+        $direct = $this->directDisk();
+        $row = $this->reserving($p, function () use ($p, $filename, $size, $direct): array {
+            $filename = $this->check($p, $filename, $size);
+            $pending = QueryBuilder::table('uploads')->where('user_id', $p->userId)->where('expires_at', '>', gmdate('Y-m-d H:i:s'))->count();
+            if ($pending >= self::MAX_PENDING) {
+                throw MediaException::conflict('Too many unfinished uploads. Finish or cancel some first.');
+            }
+            $row = $this->newRow($p, $filename, $size, $direct !== null ? 'direct' : 'chunked');
+            QueryBuilder::table('uploads')->insert($row);
+
+            return $row;
+        });
+
+        return $this->describeUpload($row, $direct);
+    }
+
+    /** Seconds an upload waits for another of the same person's to be counted (tests shorten it). */
+    public static int $quotaLockWait = 10;
+
+    /**
+     * Run $work (check the quota, then reserve the room with an `uploads` row)
+     * as one step per person: two uploads started at once would otherwise both
+     * pass the check before either is counted.
+     *
+     * @template T
+     * @param \Closure(): T $work
+     * @return T
+     * @throws MediaException
+     */
+    private function reserving(Principal $p, \Closure $work): mixed
+    {
+        $c = $this->cms->container;
+        if ($p->userId === null || !$c->has(\Kestello\Contracts\Cache\Store::class)) {
+            return $work();
+        }
+        try {
+            return $c->make(\Kestello\Contracts\Cache\Store::class)->lock('media-quota:' . $p->userId, 30)->block(self::$quotaLockWait, $work);
+        } catch (\Kestello\Contracts\Cache\LockTimeout) {
+            throw MediaException::conflict('Another upload is starting. Try again in a moment.');
+        }
+    }
+
+    /**
+     * Add a file that is already on this server (an import's download) to the
+     * library, with the same checks, processing and audit as an upload. The
+     * file at $local is moved away: it is the library's from then on.
+     *
+     * @param array{title?: ?string, alt?: ?string, caption?: ?string} $details
+     * @throws MediaException
+     */
+    public function addFile(Principal $p, string $local, string $filename, array $details = []): Media
+    {
+        clearstatcache(true, $local);
+        $size = is_file($local) ? (int) filesize($local) : 0;
+        $row = $this->reserving($p, function () use ($p, $local, $filename, $size): array {
+            $filename = $this->check($p, $filename, $size);
+            $row = $this->newRow($p, $filename, $size, 'chunked');
+            $row['received'] = max(1, (int) ceil($size / self::CHUNK_SIZE));
+            if (!@rename($local, $this->tempPath((string) $row['id'])) && !(@copy($local, $this->tempPath((string) $row['id'])) && @unlink($local))) {
+                throw new \RuntimeException('Could not move the file into the media library.');
+            }
+            QueryBuilder::table('uploads')->insert($row);
+
+            return $row;
+        });
+
+        return $this->complete($row, $p, $details);
+    }
+
+    /**
+     * Whether $p may add a file of this name and size; the cleaned name.
+     *
+     * @throws MediaException
+     */
+    private function check(Principal $p, string $filename, int $size): string
+    {
         if (!$p->can('media.upload') || $p->userId === null) {
             throw MediaException::forbidden("You can't upload files.");
         }
         $filename = self::cleanName($filename);
-        $types = $this->types();
         $errors = [];
-        if (($e = $types->checkName($filename)) !== []) {
+        if (($e = $this->types()->checkName($filename)) !== []) {
             $errors['filename'] = $e;
         }
         if ($size < 1) {
@@ -125,33 +207,31 @@ final class MediaLibrary
         if ($errors !== []) {
             throw MediaException::invalid($errors);
         }
-        $pending = QueryBuilder::table('uploads')->where('user_id', $p->userId)->where('expires_at', '>', gmdate('Y-m-d H:i:s'))->count();
-        if ($pending >= self::MAX_PENDING) {
-            throw MediaException::conflict('Too many unfinished uploads. Finish or cancel some first.');
-        }
 
+        return $filename;
+    }
+
+    /** @return array<string, mixed> a new `uploads` row */
+    private function newRow(Principal $p, string $filename, int $size, string $mode): array
+    {
         $ext = MediaTypes::extension($filename);
-        $type = $types->forExtension($ext);
-        $direct = $this->directDisk();
-        $row = [
+
+        return [
             'id' => bin2hex(random_bytes(16)),
             'user_id' => $p->userId,
-            'mode' => $direct !== null ? 'direct' : 'chunked',
+            'mode' => $mode,
             'disk' => $this->diskName(),
             'path' => self::newKey($filename, $ext),
             'filename' => $filename,
             'ext' => $ext,
-            'mime' => $type['mime'],
+            'mime' => $this->types()->forExtension($ext)['mime'],
             'size' => $size,
             'chunk_size' => self::CHUNK_SIZE,
             'received' => 0,
-            'expires_at' => gmdate('Y-m-d H:i:s', time() + ($direct !== null ? self::DIRECT_TTL : self::CHUNKED_TTL)),
+            'expires_at' => gmdate('Y-m-d H:i:s', time() + ($mode === 'direct' ? self::DIRECT_TTL : self::CHUNKED_TTL)),
             'created_at' => gmdate('Y-m-d H:i:s'),
             'updated_at' => gmdate('Y-m-d H:i:s'),
         ];
-        QueryBuilder::table('uploads')->insert($row);
-
-        return $this->describeUpload($row, $direct);
     }
 
     /**
@@ -193,7 +273,7 @@ final class MediaLibrary
         if ($row['mode'] === 'direct') {
             $direct ??= $this->directDisk($this->uploadDisk($row));
             if ($direct !== null) {
-                $out['direct'] = $direct->presignedPost((string) $row['path'], max(60, (int) strtotime($row['expires_at'] . ' UTC') - time()), (int) $row['size'], (string) $row['mime']);
+                $out['direct'] = $direct->presignedPost(self::stagingKey($row), max(60, (int) strtotime($row['expires_at'] . ' UTC') - time()), (int) $row['size'], (string) $row['mime']);
             }
         }
 
@@ -239,7 +319,7 @@ final class MediaLibrary
      * Check the uploaded bytes and add the file to the library.
      *
      * @param array<string, mixed> $row
-     * @param array{title?: ?string, alt?: ?string} $details
+     * @param array{title?: ?string, alt?: ?string, caption?: ?string} $details
      * @throws MediaException
      */
     public function complete(array $row, Principal $p, array $details = []): Media
@@ -261,7 +341,7 @@ final class MediaLibrary
 
     /**
      * @param array<string, mixed> $row the claimed upload
-     * @param array{title?: ?string, alt?: ?string} $details
+     * @param array{title?: ?string, alt?: ?string, caption?: ?string} $details
      * @throws MediaException
      */
     private function finish(array $row, Principal $p, array $details): Media
@@ -288,29 +368,26 @@ final class MediaLibrary
                 is_resource($stream) && fclose($stream);
                 $checksum = hash_file('sha256', $tmp) ?: null;
             } else {
+                // the browser uploaded to a private staging key; only a checked file
+                // reaches the key the server chose, and only then is it public
                 $disk = $this->directDisk($this->uploadDisk($row)) ?? throw MediaException::conflict('Direct uploads are no longer set up for this site.');
+                $storage = $this->uploadDisk($row);
+                $staged = self::stagingKey($row);
                 try {
-                    $actual = $this->uploadDisk($row)->size((string) $row['path']);
+                    $actual = $storage->size($staged);
                 } catch (\Kestello\Contracts\Storage\FileNotFound) {
                     throw MediaException::conflict('The file has not arrived in storage yet.');
                 }
                 if ($actual !== (int) $row['size']) {
-                    $this->uploadDisk($row)->delete((string) $row['path']);
                     throw MediaException::invalid(['size' => ['The stored file has a different size than announced.']]);
                 }
-                $head = $disk->readRange((string) $row['path'], 0, self::SNIFF_BYTES);
-                try {
-                    [$width, $height] = $this->inspect($row, $head, null);
-                } catch (MediaException $e) {
-                    $this->uploadDisk($row)->delete((string) $row['path']);
-                    throw $e;
-                }
+                [$width, $height] = $this->inspect($row, $disk->readRange($staged, 0, self::SNIFF_BYTES), null);
                 $checksum = null;
                 $storedSize = (int) $row['size'];
                 if (($this->types()->forExtension((string) $row['ext'])['kind'] ?? null) === 'image') {
                     // images come back through PHP once: orientation, metadata, statistics
                     $tmp = $this->tempPath((string) $row['id']);
-                    $in = $this->uploadDisk($row)->readStream((string) $row['path']);
+                    $in = $storage->readStream($staged);
                     $out = fopen($tmp, 'wb');
                     stream_copy_to_stream($in, $out);
                     is_resource($in) && fclose($in);
@@ -318,21 +395,29 @@ final class MediaLibrary
                     $prepared = $this->prepareImage($row, $tmp);
                     if ($prepared !== null) {
                         [$width, $height, $meta] = [$prepared['width'], $prepared['height'], $prepared['meta']];
-                        if ($prepared['changed']) {
-                            $stream = fopen($tmp, 'rb');
-                            $this->uploadDisk($row)->putStream((string) $row['path'], $stream, ['content_type' => $row['mime'], 'visibility' => 'public', 'cache_control' => 'public, max-age=31536000, immutable']);
-                            is_resource($stream) && fclose($stream);
-                        }
                     }
                     clearstatcache(true, $tmp);
                     $storedSize = (int) filesize($tmp);
                     $checksum = hash_file('sha256', $tmp) ?: null;
+                    $stream = fopen($tmp, 'rb');
+                    $storage->putStream((string) $row['path'], $stream, ['content_type' => $row['mime'], 'visibility' => 'public', 'cache_control' => 'public, max-age=31536000, immutable']);
+                    is_resource($stream) && fclose($stream);
                     @unlink($tmp);
+                } else {
+                    // other files are copied inside the bucket, never through PHP
+                    $storage->copy($staged, (string) $row['path']);
+                    try {
+                        $storage->setVisibility((string) $row['path'], 'public');
+                    } catch (\Kestello\Contracts\Storage\StorageException) {
+                        // a bucket without object ACLs: its bucket policy decides what is public
+                    }
                 }
+                $storage->delete($staged);
             }
         } catch (MediaException $e) {
             if ($e->kind === 'invalid') {
-                $this->forgetUpload($row, deleteDirect: false);
+                // refused: the staging copy goes too, it was never published
+                $this->forgetUpload($row, deleteDirect: true);
             }
             throw $e;
         }
@@ -344,7 +429,7 @@ final class MediaLibrary
             'filename' => $row['filename'],
             'title' => self::title($details['title'] ?? null, (string) $row['filename']),
             'alt' => self::text($details['alt'] ?? null, 1000),
-            'caption' => null,
+            'caption' => self::text($details['caption'] ?? null, 2000),
             'mime' => $row['mime'],
             'ext' => $row['ext'],
             'kind' => $this->types()->forExtension((string) $row['ext'])['kind'] ?? 'document',
@@ -452,13 +537,24 @@ final class MediaLibrary
         return count($rows);
     }
 
+    /**
+     * Where the browser puts a direct upload: private, apart from the library,
+     * and named by the upload, never by anything the uploader chose.
+     *
+     * @param array<string, mixed> $row
+     */
+    public static function stagingKey(array $row): string
+    {
+        return 'incoming/' . $row['id'];
+    }
+
     /** @param array<string, mixed> $row */
     private function forgetUpload(array $row, bool $deleteDirect): void
     {
         @unlink($this->tempPath((string) $row['id']));
-        if ($deleteDirect && $row['mode'] === 'direct' && !QueryBuilder::table('media')->where('disk', $row['disk'])->where('path', $row['path'])->exists()) {
+        if ($deleteDirect && $row['mode'] === 'direct') {
             try {
-                $this->cms->storage->disk((string) $row['disk'])->delete((string) $row['path']);
+                $this->cms->storage->disk((string) $row['disk'])->delete(self::stagingKey($row));
             } catch (\Throwable) {
                 // the disk may be gone or unreachable; the row still goes
             }
@@ -661,7 +757,7 @@ final class MediaLibrary
      * Entries that use each file.
      *
      * @param list<int> $ids
-     * @return array<int, list<array{id: int, type: string, title: string, status: string, field: string}>>
+     * @return array<int, list<array{id: int, type: string, title: string, status: string, field: string, author_id: ?int}>>
      */
     public function usage(array $ids): array
     {
@@ -670,15 +766,41 @@ final class MediaLibrary
         }
         $rows = QueryBuilder::table('media_usage')->join('entries', 'entries.id', '=', 'media_usage.entry_id')
             ->whereIn('media_usage.media_id', $ids)
-            ->select('media_usage.media_id', 'media_usage.field', 'entries.id', 'entries.type', 'entries.title', 'entries.status', 'entries.deleted_at')
+            ->select('media_usage.media_id', 'media_usage.field', 'entries.id', 'entries.type', 'entries.title', 'entries.status', 'entries.deleted_at', 'entries.author_id')
             ->orderBy('entries.title')->get();
         $out = [];
         foreach ($rows as $r) {
             $r = (array) $r;
-            $out[(int) $r['media_id']][] = ['id' => (int) $r['id'], 'type' => (string) $r['type'], 'title' => (string) $r['title'], 'status' => $r['deleted_at'] !== null ? 'trash' : (string) $r['status'], 'field' => (string) $r['field']];
+            $out[(int) $r['media_id']][] = ['id' => (int) $r['id'], 'type' => (string) $r['type'], 'title' => (string) $r['title'], 'status' => $r['deleted_at'] !== null ? 'trash' : (string) $r['status'], 'field' => (string) $r['field'],
+                'author_id' => $r['author_id'] === null ? null : (int) $r['author_id']];
         }
 
         return $out;
+    }
+
+    /**
+     * The entries of usage() this person may open, and how many others use the file.
+     * Someone who may upload but not edit others' entries never learns their titles.
+     *
+     * @param list<array{id: int, type: string, title: string, status: string, field: string, author_id: ?int}> $rows
+     * @return array{0: list<array{id: int, type: string, title: string, status: string, field: string}>, 1: int}
+     */
+    public function visibleUsage(array $rows, Principal $p): array
+    {
+        $shown = [];
+        $hidden = 0;
+        foreach ($rows as $r) {
+            $type = $this->cms->content->get($r['type']);
+            $own = $r['author_id'] !== null && $r['author_id'] === $p->userId;
+            if ($type !== null && $p->can($type->capability('edit')) && ($own || $p->can($type->capability('edit_others')))) {
+                unset($r['author_id']);
+                $shown[] = $r;
+            } else {
+                $hidden++;
+            }
+        }
+
+        return [$shown, $hidden];
     }
 
     /**

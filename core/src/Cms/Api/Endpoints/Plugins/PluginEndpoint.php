@@ -11,6 +11,8 @@ use Kestello\Cms\Content\ContentException;
 use Kestello\Cms\Extension\ExtensionManager;
 use Kestello\Cms\Extension\Package;
 use Kestello\Cms\Package\PackageInstaller;
+use Kestello\Cms\Package\Update\UpdateJournal;
+use Kestello\Cms\Package\Update\UpdateRecovery;
 
 /** Base for /plugins: plugins.manage, scope admin (plugins run code on the server). @internal */
 abstract class PluginEndpoint extends Endpoint
@@ -43,6 +45,51 @@ abstract class PluginEndpoint extends Endpoint
     protected function installer(): PackageInstaller
     {
         return $this->cms()->container->make(PackageInstaller::class);
+    }
+
+    protected function recovery(): UpdateRecovery
+    {
+        return $this->cms()->container->make(UpdateRecovery::class);
+    }
+
+    /** The installed version of "plugin:slug" or "theme:slug", null when it is not installed. */
+    protected function installedVersion(string $owner): ?string
+    {
+        if (preg_match('/^(plugin|theme):(' . self::SLUG . ')$/', $owner, $m) !== 1) {
+            return null;
+        }
+        $packages = $m[1] === 'plugin' ? $this->extensions()->plugins() : $this->extensions()->themes();
+
+        return isset($packages[$m[2]]) ? $packages[$m[2]]->version() : null;
+    }
+
+    /**
+     * An update that stopped halfway, as the admin shows it (no server paths).
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function stoppedUpdate(): ?array
+    {
+        $journal = $this->recovery()->journal();
+        $entry = $journal->stopped();
+        $running = $entry === null;
+        $entry ??= $journal->runningLong();
+        if ($entry === null) {
+            return null;
+        }
+
+        return [
+            'owner' => $entry['owner'],
+            'name' => UpdateRecovery::displayName($this->cms(), (string) $entry['owner']),
+            'kind' => $entry['kind'] ?? 'update',
+            'from' => $entry['from'],
+            'to' => $entry['to'],
+            'started_at' => (int) ($entry['started_at'] ?? 0),
+            'attempts' => (int) $entry['attempts'],
+            'gave_up' => !$running && (int) $entry['attempts'] >= UpdateJournal::MAX_ATTEMPTS,
+            // still holding the update lock after UpdateJournal::LONG: most likely a check that outlived its updater
+            'running' => $running,
+        ];
     }
 
     protected function plugin(string $slug): Package
@@ -98,6 +145,7 @@ abstract class PluginEndpoint extends Endpoint
                 'replaces' => $m->replaces,
                 'requires' => ['core' => $m->requiresCore, 'php' => $m->requiresPhp, 'plugins' => $m->dependencies],
                 'required_by' => $requiredBy,
+                'switch_back' => $this->recovery()->switchBackOption($p->owner(), $p->version()),
             ];
         }
         usort($plugins, static fn(array $a, array $b): int => strcasecmp($a['name'], $b['name']));
@@ -106,6 +154,7 @@ abstract class PluginEndpoint extends Endpoint
             'plugins' => $plugins,
             'invalid' => $ext->discoveryErrors(),
             'recovery' => $ext->isRecoveryMode(),
+            'stopped_update' => $this->stoppedUpdate(),
             'policy' => [
                 'trusted' => array_values(array_column($this->installer()->trustedKeys(), 'name')),
                 'unsigned' => $this->installer()->adminMayInstallUnsigned(),

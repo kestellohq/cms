@@ -33,11 +33,11 @@ final class CompressionTest extends TestCase
     public function testPersonalResponsesAreLeftAlone(): void
     {
         // a cookie may mean a session: secrets and reflected input together leak through size (BREACH)
-        $this->assertArrayNotHasKey('Content-Encoding', Compression::apply(self::request(cookies: ['cms_session' => 'x']), self::page())->headers());
+        $this->assertArrayNotHasKey('Content-Encoding', Compression::apply(self::request(cookies: ['kestello_session' => 'x']), self::page())->headers());
         $this->assertArrayNotHasKey('Content-Encoding', Compression::apply(self::request(['Accept-Encoding' => 'gzip', 'Authorization' => 'Bearer x']), self::page())->headers());
         $this->assertArrayNotHasKey('Content-Encoding', Compression::apply(self::request(), self::page()->withCookie('a', 'b'))->headers());
         // unless the response says it is the same for everyone
-        $public = Compression::apply(self::request(cookies: ['cms_session' => 'x']), self::page(['Cache-Control' => 'public, max-age=31536000, immutable']));
+        $public = Compression::apply(self::request(cookies: ['kestello_session' => 'x']), self::page(['Cache-Control' => 'public, max-age=31536000, immutable']));
         $this->assertSame('gzip', $public->headers()['Content-Encoding'] ?? null);
     }
 

@@ -102,6 +102,16 @@ final class CoreHealthChecks
                 : HealthResult::critical('Kestello cannot write to: ' . implode(', ', $bad) . '. Check folder permissions.', $details);
         }, 'reliability');
 
+        $h->check('core.private-files', 'Private folders', static function () use ($cms): HealthResult {
+            $exposed = PrivateFolders::exposed($cms->container->make(\Kestello\Framework\Http\Client\HttpClient::class), (string) $cms->config->get('app.url', ''), $cms->paths->root(), $cms->paths->storage());
+
+            return match ($exposed) {
+                true => HealthResult::critical('Files in storage/ can be downloaded from the web, so settings, sessions, logs and backups in config/ and storage/ are probably readable too. Point the site\'s document root at the public/ folder, or on nginx deny /config, /storage, /core and /content.'),
+                false => HealthResult::good('Browsers cannot read config/, storage/, core/ or content/.'),
+                null => HealthResult::good('Could not check over the web whether private folders are hidden (the site address is not set or the server cannot reach itself).'),
+            };
+        }, 'security');
+
         $h->check('core.disk-space', 'Free disk space', static function () use ($cms): HealthResult {
             $free = @disk_free_space($cms->paths->storage());
             if ($free === false) {
@@ -138,6 +148,31 @@ final class CoreHealthChecks
                 : HealthResult::good('The database is reachable.', $details);
         }, 'reliability');
 
+        $h->check('core.update-stopped', 'Updates', static function () use ($cms): HealthResult {
+            $journal = new \Kestello\Cms\Package\Update\UpdateJournal($cms->paths->storage());
+            $stopped = $journal->stopped();
+            if ($stopped === null) {
+                $long = $journal->runningLong();
+                if ($long === null) {
+                    return HealthResult::good('No update stopped halfway.');
+                }
+                $name = \Kestello\Cms\Package\Update\UpdateRecovery::displayName($cms, (string) $long['owner']);
+
+                return HealthResult::recommended(
+                    "The update of {$name} from {$long['from']} to {$long['to']} has been running for " . max(1, intdiv(time() - (int) $long['started_at'], 60)) . ' minutes. Visitors see the maintenance page until it ends; the site puts it back by itself after that. If it does not end within the hour, ask your host to restart PHP for this site.',
+                    ['owner' => $long['owner'], 'from' => $long['from'], 'to' => $long['to'], 'running' => true],
+                    ['Open Updates', '/admin/system/updates'],
+                );
+            }
+            $name = \Kestello\Cms\Package\Update\UpdateRecovery::displayName($cms, (string) $stopped['owner']);
+            $details = ['owner' => $stopped['owner'], 'from' => $stopped['from'], 'to' => $stopped['to'], 'attempts' => $stopped['attempts']];
+
+            return HealthResult::critical(
+                "The update of {$name} from {$stopped['from']} to {$stopped['to']} stopped halfway and was not put back. Visitors see the maintenance page until it is.",
+                $details,
+                ['Open Updates', '/admin/system/updates'],
+            );
+        });
         $h->check('core.drivers', 'Infrastructure drivers', static function () use ($cms): HealthResult {
             $degraded = $cms->drivers->degraded();
             $details = [];

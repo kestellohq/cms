@@ -20,7 +20,7 @@ function submit() {
 </script>
 
 <template>
-    <AuthCard :title="__('Choose a new password')" code="K-03">
+    <AuthCard :title="__('Choose a new password')">
         <template v-if="valid">
             <FormErrors :errors="form.errors" :fields="['password', 'password_confirmation']" />
             <form class="k-auth__form" novalidate @submit.prevent="submit">

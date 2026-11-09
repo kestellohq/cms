@@ -24,7 +24,6 @@ function toggle() {
     <AuthCard
         :title="__('Two-step sign-in')"
         :description="recovery ? __('Enter one of your recovery codes. Each code works once.') : __('Enter the six-digit code from your authenticator app.')"
-        code="K-04"
     >
         <FormErrors :errors="form.errors" :fields="['code']" />
 

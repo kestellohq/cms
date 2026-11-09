@@ -28,7 +28,7 @@ Kestello is a self-hosted PHP CMS for client sites: a non-technical owner runs a
 
 ## Hard rules
 
-- **No Composer and no PHP dependencies.** Never add one. Development tools are pinned PHARs (`tools/tools.lock`) or npm dev dependencies.
+- **Zero PHP dependencies.** Never add one; `composer.json` has no `require` beyond PHP and its extensions. Development tools are `require-dev` packages (PHPStan and PHP CS Fixer, locked in `composer.lock`) or npm dev dependencies; none of them ship.
 - **Security first.** Every endpoint and admin page checks a capability on the server (`useCan()` in the browser is cosmetic). Validate input with `Schema`, escape output, bind SQL values, never send secrets to the browser. Run the [security review](.agents/skills/security-review/SKILL.md) on anything that touches auth, input, files, HTTP or packages.
 - **Extensibility first.** Core uses the same public API plugins use. Prefer adding an extension point over a special case.
 - **Every fix starts with a failing test**, and every feature comes with tests. Keep logic in small pure modules so it can be tested (in JavaScript, the SDK can't be imported in Node: put logic in a pure module beside it).
@@ -46,7 +46,7 @@ Kestello is a self-hosted PHP CMS for client sites: a non-technical owner runs a
 - Never skip hooks or checks (`--no-verify`), never edit `phpstan-baseline.neon` to hide a new finding: fix the code.
 - Never commit secrets, `.env`, `config/*.php` site config, or anything in `storage/`.
 - Don't reformat code you aren't changing. Formatting-only changes go in their own `style:` commit.
-- Built files under `*/assets/build/` are committed: run `npm run build` after changing Vue or JavaScript sources and commit the result with the change.
+- Built files under `*/assets/build/` are not committed: CI builds them for every check and for the release zips. Run `npm run build` (or `npm run build:core`) locally to see a change in the browser.
 - Ask before deleting data, dropping Docker volumes, or anything you can't undo.
 
 ## Commands
@@ -54,13 +54,14 @@ Kestello is a self-hosted PHP CMS for client sites: a non-technical owner runs a
 ```sh
 docker compose up -d          # the site at http://localhost:8080 (PHP 8.5, MySQL, PostgreSQL, Redis)
 npm ci && npm run tools       # JavaScript tools, and the pinned PHP CS Fixer and PHPStan PHARs
+npm run build                 # build the Vue pages (needed once after cloning; not committed)
 
 npm run format                # fix formatting (PHP and JS/Vue/CSS)
 npm run lint                  # check formatting, ESLint, PHPStan
 npm test                      # JavaScript tests
 npm run test:php              # PHP tests on SQLite (one folder: sh tools/php bin/cms test tests/I18n)
 npm run test:php:matrix       # PHP tests on MySQL, PostgreSQL and Redis too, like CI
-npm run build                 # rebuild the Vue pages
+npm run build                 # rebuild the Vue pages after changing them
 npm run i18n                  # refresh core/resources/lang/kestello.pot
 npm run ide                   # refresh .phpstorm.meta.php
 npm run check                 # all of the checks
@@ -88,7 +89,6 @@ The test databases and the matrix are described in [testing](.agents/skills/test
 - [ ] Tests cover the change and pass: `npm test` and `npm run test:php`.
 - [ ] `npm run lint` passes; no new PHPStan baseline entries.
 - [ ] Text people see uses `__()`; `npm run i18n` was run.
-- [ ] Vue or JavaScript changes are rebuilt (`npm run build`) and the build is committed.
 - [ ] `CHANGELOG.md` has an entry under Unreleased when people would notice the change.
 - [ ] A docs change in kestellohq/docs is ready when a guide or developer page needs one.
 - [ ] Commits follow Conventional Commits, with no AI assistant trailers.

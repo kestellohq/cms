@@ -26,9 +26,15 @@ use Kestello\Framework\Http\RateLimiter;
  * parallel requests all pass the limit before any of them is counted.
  *
  * $scope separates login, 2FA, password confirmation and password resets.
+ * The second factor has a much lower limit from everywhere (SCOPE_LIMITS):
+ * whoever reaches it already has the password, and six digits can't take
+ * 100 guesses an hour for long.
  */
 final class LoginThrottle
 {
+    /** Per-account limits from everywhere, by scope, where they differ from $accountEverywhereMax. */
+    public const array SCOPE_LIMITS = ['2fa' => 20];
+
     public function __construct(
         private readonly RateLimiter $limiter,
         private readonly int $ipMax = 5,
@@ -51,7 +57,7 @@ final class LoginThrottle
         if (!$this->limiter->hit($this->pairKey($scope, $ip, $account), $this->accountMax, $this->accountWindow)->allowed) {
             $wait = self::remaining($this->accountWindow);
         }
-        if (!$this->limiter->hit($this->accountKey($scope, $account), $this->accountEverywhereMax, $this->accountWindow)->allowed) {
+        if (!$this->limiter->hit($this->accountKey($scope, $account), $this->everywhereMax($scope), $this->accountWindow)->allowed) {
             $wait = self::remaining($this->accountWindow);
         }
 
@@ -65,9 +71,20 @@ final class LoginThrottle
             return self::remaining($this->ipWindow);
         }
         $pair = $this->limiter->attempts($this->pairKey($scope, $ip, $account), $this->accountWindow) >= $this->accountMax;
-        $everywhere = $this->limiter->attempts($this->accountKey($scope, $account), $this->accountWindow) >= $this->accountEverywhereMax;
+        $everywhere = $this->limiter->attempts($this->accountKey($scope, $account), $this->accountWindow) >= $this->everywhereMax($scope);
 
         return $pair || $everywhere ? self::remaining($this->accountWindow) : 0;
+    }
+
+    /** Failed attempts on this account in the current window, from everywhere. */
+    public function failures(string $scope, string $account): int
+    {
+        return $this->limiter->attempts($this->accountKey($scope, $account), $this->accountWindow);
+    }
+
+    private function everywhereMax(string $scope): int
+    {
+        return min($this->accountEverywhereMax, self::SCOPE_LIMITS[$scope] ?? $this->accountEverywhereMax);
     }
 
     /** A reserved attempt succeeded: it does not count against the IP, and the account starts over. */

@@ -64,9 +64,13 @@ const hasEntries = (lines) => lines.some((l) => /^\s*[-*] \S/.test(l));
  * The changelog with Unreleased released as `version` on `date` (YYYY-MM-DD): its entries
  * move under "## [version] - date", a fresh empty Unreleased section stays on top, and the
  * comparison links at the bottom are updated.
+ *
+ * Pre-releases get no section: their notes are Unreleased as it stands (releaseNotes), and the
+ * release they lead to takes every change at once, so 0.1.0 lists all of 0.1.0, not only what
+ * changed after its last release candidate.
  */
 export function releaseChangelog(text, version, date) {
-    parseVersion(version);
+    if (isPrerelease(version)) throw new Error(`${version} is a pre-release: it leaves CHANGELOG.md as it is (its notes are the Unreleased section)`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error(`"${date}" is not a date like 2026-11-06`);
     const lines = text.replace(/\r\n/g, '\n').split('\n');
     const all = sections(lines);
@@ -101,14 +105,49 @@ function trimBlank(lines) {
     return lines.slice(a, b);
 }
 
-/** One version's section, without its heading: the GitHub release notes. */
+/**
+ * One version's section, without its heading: the GitHub release notes. A pre-release has no
+ * section: its notes are the Unreleased section, under a line that says what it is.
+ */
 export function releaseNotes(text, version) {
     const lines = text.replace(/\r\n/g, '\n').split('\n');
+    if (isPrerelease(version)) {
+        const unreleased = sections(lines).find((s) => s.name === 'Unreleased');
+        const body = unreleased ? trimBlank(lines.slice(unreleased.line + 1, unreleased.end)) : [];
+        if (!hasEntries(body)) throw new Error(`The Unreleased section of CHANGELOG.md is empty, so ${version} has no notes`);
+        const { major, minor, patch } = parseVersion(version);
+        const release = `${major}.${minor}.${patch}`;
+        return `A pre-release of Kestello ${release}, for testing. Sites are offered it only with \`release.prereleases\` on, or when they already run a pre-release of ${release}.\n\n${body.join('\n')}\n`;
+    }
     const section = sections(lines).find((s) => s.name === version);
     if (!section) throw new Error(`CHANGELOG.md has no section for ${version}`);
     const body = trimBlank(lines.slice(section.line + 1, section.end));
     if (!hasEntries(body)) throw new Error(`The ${version} section of CHANGELOG.md is empty`);
     return `${body.join('\n')}\n`;
+}
+
+/**
+ * Why `version` can't be released after the tags already made (["v0.1.0-rc.1", …]), or null.
+ * It is compared with the newest tagged release, not with core/VERSION: develop carries the
+ * version being worked towards (0.1.0), and its release candidates come before it.
+ */
+export function notNewer(version, tags) {
+    parseVersion(version);
+    const released = tags
+        .map((t) => String(t).trim())
+        .filter((t) => t.startsWith('v'))
+        .map((t) => t.slice(1))
+        .filter((v) => {
+            try {
+                parseVersion(v);
+                return true;
+            } catch {
+                return false;
+            }
+        })
+        .sort(compareVersions);
+    const newest = released.at(-1);
+    return newest !== undefined && compareVersions(version, newest) <= 0 ? `${version} is not newer than v${newest}, the newest release tagged` : null;
 }
 
 /** Does the Unreleased section list anything? (the pull request check) */

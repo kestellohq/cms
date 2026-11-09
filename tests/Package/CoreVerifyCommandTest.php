@@ -43,10 +43,20 @@ final class CoreVerifyCommandTest extends TestCase
         return [$code, (string) stream_get_contents($out)];
     }
 
+    public function testKestelloShipsTheKeyItsReleasesAreSignedWith(): void
+    {
+        $config = require dirname(__DIR__, 2) . '/core/config/release.php';
+        $keys = \Kestello\Cms\Package\Update\UpdateChecker::releaseKeys($config['keys']);
+
+        $this->assertSame(['Kestello releases'], array_values(array_column($keys, 'name')), 'without a key, no site could apply an official release');
+        $this->assertSame('kestellohq/cms', $config['repository']);
+        $this->assertFalse($config['prereleases'], 'sites get releases only, unless they opt in');
+    }
+
     public function testASignedReleaseWithItsKeyListedPasses(): void
     {
         $keys = PackageSignature::generateKeys();
-        PackageSignature::sign($this->zip, $keys['secret_key']);
+        PackageSignature::sign($this->zip, $keys['secret_key'], PackageSignature::CORE);
         file_put_contents($this->zip . '.sha256', hash_file('sha256', $this->zip) . "  x.zip\n");
 
         [$code, $out] = $this->verify([['name' => 'Kestello releases', 'public_key' => $keys['public_key']]]);
@@ -66,7 +76,7 @@ final class CoreVerifyCommandTest extends TestCase
         [$code, $out] = $this->verify($entry);
         $this->assertSame([1, true], [$code, str_contains($out, 'not signed')], $out);
 
-        PackageSignature::sign($this->zip, PackageSignature::generateKeys()['secret_key']);
+        PackageSignature::sign($this->zip, PackageSignature::generateKeys()['secret_key'], PackageSignature::CORE);
         file_put_contents($this->zip . '.sha256', hash_file('sha256', $this->zip) . "  x.zip\n");
         [$code, $out] = $this->verify($entry);
         $this->assertSame([1, true], [$code, str_contains($out, 'not in core/config/release.php')], $out);

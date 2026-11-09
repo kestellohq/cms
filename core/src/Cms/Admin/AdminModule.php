@@ -30,19 +30,19 @@ final class AdminModule extends Provider
         $routes->get(BrowserCatalogue::PATH . '{locale}', static fn(Request $request, string $locale) => BrowserCatalogue::respond($locale, $request->query['v'] ?? null, ($request->query['site'] ?? '') === '1'))
             ->name('admin.translations');
 
-        $admin->page('', '@core/admin/Dashboard', 'Overview', menu: ['label' => 'Overview', 'icon' => 'squares-four', 'group' => 'main', 'order' => 0]);
+        $admin->page('', '@core/admin/Dashboard', 'Overview', menu: ['label' => 'Overview', 'icon' => 'house', 'group' => 'main', 'order' => 0]);
         $admin->page('users', '@core/admin/users/Index', 'People', 'users.read', ['label' => 'People', 'icon' => 'users', 'group' => 'people', 'order' => 10]);
         $admin->page('users/{id}', '@core/admin/users/Edit', 'Person', 'users.read', where: ['id' => AdminRegistry::ID]);
         $admin->page('roles', '@core/admin/roles/Index', 'Roles', 'roles.manage', ['label' => 'Roles', 'icon' => 'shield-check', 'group' => 'people', 'order' => 20]);
         $admin->page('profile', '@core/admin/Profile', 'Your profile', 'profile.manage', ['label' => 'Your profile', 'icon' => 'user-circle', 'group' => 'people', 'order' => 90]);
         $admin->page('system/health', '@core/admin/system/Health', 'Site Health', 'system.manage', ['label' => 'Site Health', 'icon' => 'heartbeat', 'group' => 'system', 'order' => 10]);
-        $admin->page('system/platform', '@core/admin/system/Platform', 'Infrastructure', 'system.manage', ['label' => 'Infrastructure', 'icon' => 'hard-drives', 'group' => 'system', 'order' => 20]);
-        $admin->page('system/queue', '@core/admin/system/Queue', 'Background jobs', 'system.manage', ['label' => 'Background jobs', 'icon' => 'stack', 'group' => 'system', 'order' => 30]);
-        $admin->page('system/schedule', '@core/admin/system/Schedule', 'Scheduled tasks', 'system.manage', ['label' => 'Scheduled tasks', 'icon' => 'clock-counter-clockwise', 'group' => 'system', 'order' => 40]);
-        $admin->page('system/security', '@core/admin/system/Security', 'Security', 'security.manage', ['label' => 'Security', 'icon' => 'lock-key', 'group' => 'system', 'order' => 48]);
-        $admin->page('system/audit', '@core/admin/system/Audit', 'Audit log', 'audit.read', ['label' => 'Audit log', 'icon' => 'notebook', 'group' => 'system', 'order' => 50]);
-        $admin->page('system/api', '@core/admin/system/Api', 'API', 'admin.access', ['label' => 'API', 'icon' => 'brackets-curly', 'group' => 'system', 'order' => 60]);
-        $admin->page('settings', '@core/admin/Settings', 'Settings', 'settings.manage', ['label' => 'Settings', 'icon' => 'gear', 'group' => 'system', 'order' => 90]);
+        $admin->page('system/platform', '@core/admin/system/Platform', 'Infrastructure', 'system.manage', ['label' => 'Infrastructure', 'icon' => 'hard-drives', 'group' => 'system', 'order' => 90]);
+        $admin->page('system/queue', '@core/admin/system/Queue', 'Background jobs', 'system.manage', ['label' => 'Background jobs', 'icon' => 'stack', 'group' => 'system', 'order' => 60]);
+        $admin->page('system/schedule', '@core/admin/system/Schedule', 'Scheduled tasks', 'system.manage', ['label' => 'Scheduled tasks', 'icon' => 'clock-counter-clockwise', 'group' => 'system', 'order' => 70]);
+        $admin->page('system/security', '@core/admin/system/Security', 'Security', 'security.manage', ['label' => 'Security', 'icon' => 'lock-key', 'group' => 'system', 'order' => 20]);
+        $admin->page('system/audit', '@core/admin/system/Audit', 'Audit log', 'audit.read', ['label' => 'Audit log', 'icon' => 'notebook', 'group' => 'system', 'order' => 30]);
+        $admin->page('system/api', '@core/admin/system/Api', 'API', 'admin.access', ['label' => 'API', 'icon' => 'brackets-curly', 'group' => 'system', 'order' => 55]);
+        $admin->page('settings', '@core/admin/Settings', 'Settings', 'settings.manage', ['label' => 'Settings', 'icon' => 'gear', 'group' => 'site', 'order' => 10]);
     }
 
 }

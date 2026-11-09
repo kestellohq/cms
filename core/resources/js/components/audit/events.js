@@ -30,6 +30,8 @@ export const AUDIT_LABELS = {
     'users.updated': __('Changed a person'),
     'users.deleted': __('Deleted a person'),
     'profile.updated': __('Updated their profile'),
+    'profile.email_change_requested': __('Asked to change their email'),
+    'profile.email_confirmed': __('Confirmed a new email'),
     'role.created': __('Created a role'),
     'role.updated': __('Changed a role'),
     'role.deleted': __('Deleted a role'),
@@ -62,6 +64,12 @@ export const AUDIT_LABELS = {
     'backup.settings': __('Changed backup settings'),
     'core.updated': __('Updated Kestello'),
     'core.update_failed': __('Kestello update failed'),
+    'update.put_back': __('Put back an update that stopped halfway'),
+    'update.finished': __('Finished an update that stopped halfway'),
+    'update.switched_back': __('Switched back to the version before an update'),
+    'update.switch_back_started': __('Started switching back to the version before an update'),
+    'update.recovery_failed': __('Putting back an update that stopped failed'),
+    'update.recovery_retried': __('Asked to try again putting back an update'),
     'media.uploaded': __('Uploaded a file'),
     'media.updated': __('Changed a file'),
     'media.deleted': __('Deleted a file'),
@@ -92,7 +100,7 @@ export const AUDIT_LABELS = {
     'cache.cleared': __('Cleared the cache'),
 };
 /** Events shown as warnings. */
-export const AUDIT_WARN = new Set(['auth.login_failed', 'package.update_failed', 'core.update_failed']);
+export const AUDIT_WARN = new Set(['auth.login_failed', 'package.update_failed', 'core.update_failed', 'update.put_back', 'update.recovery_failed']);
 
 /** @param {string} event */
 export const auditLabel = (event) => AUDIT_LABELS[event] ?? event;

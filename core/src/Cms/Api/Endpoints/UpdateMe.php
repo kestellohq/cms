@@ -9,13 +9,15 @@ use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
 use Kestello\Cms\Api\Endpoint;
 use Kestello\Cms\Api\Resources\UserResource;
+use Kestello\Cms\Auth\EmailChanges;
 use Kestello\Cms\Auth\Emails;
 use Kestello\Cms\Cms;
 use Kestello\Framework\Database\QueryBuilder;
 
 /**
  * Edit your own profile. Changing your email needs a recent sign-in (it is
- * where password resets go); the bio does not.
+ * where password resets go) and only takes effect once a link sent to the
+ * new address is opened (EmailChanges); the bio does not.
  */
 final class UpdateMe extends Endpoint
 {
@@ -57,6 +59,7 @@ final class UpdateMe extends Endpoint
         $id = (int) $request->userId();
         $user = QueryBuilder::table('users')->where('id', $id)->first() ?? throw ApiProblem::unauthenticated();
         $changes = [];
+        $pending = null;
 
         if ($request->has('email')) {
             $email = Emails::normalize((string) $request->input('email'));
@@ -64,10 +67,16 @@ final class UpdateMe extends Endpoint
                 if (!$request->principal->recentlyAuthenticated()) {
                     throw ApiProblem::reauthRequired();
                 }
-                if (QueryBuilder::table('users')->where('email', $email)->where('id', '!=', $id)->exists()) {
-                    throw ApiProblem::validation(['email' => ['This email is already in use.']]);
+                $cms = Cms::instance();
+                if ($cms === null || $cms->config->get('app.demo', false) || !$cms->container->has(EmailChanges::class)) {
+                    throw ApiProblem::validation(['email' => ['The email address cannot be changed on this site.']]);
                 }
-                $changes['email'] = $email;
+                // nothing changes yet: the new address gets a link, and the account takes it when the link is opened
+                $problem = $cms->container->make(EmailChanges::class)->request($user, $email);
+                if ($problem !== null) {
+                    throw ApiProblem::validation(['email' => [$problem]]);
+                }
+                $pending = $email;
             }
         }
         if ($request->has('bio')) {
@@ -77,6 +86,9 @@ final class UpdateMe extends Endpoint
         if ($changes !== []) {
             QueryBuilder::table('users')->where('id', $id)->update($changes + ['updated_at' => date('Y-m-d H:i:s')]);
             Cms::instance()?->audit->record('profile.updated', ['user', $id], ['fields' => array_keys($changes)], $id);
+        }
+        if ($pending !== null) {
+            Cms::instance()?->audit->record('profile.email_change_requested', ['user', $id], [], $id);
         }
 
         return new UserResource((array) QueryBuilder::table('users')->select(...UserResource::COLUMNS)->where('id', $id)->first());

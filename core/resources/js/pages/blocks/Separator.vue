@@ -1,5 +1,5 @@
 <script setup>
-// core/separator. The look was saved as "style" once; the server renames it (BlockRegistry::RENAMED).
+// core/separator. The prop is "look" because Vue keeps "style" for itself.
 defineProps({ look: { type: String, default: 'line' } });
 </script>
 

@@ -15,7 +15,7 @@ final class MigrationRunner
     /** @var list<string> Migration directories, in run order (core first, then site, then plugins). */
     private readonly array $paths;
 
-    /** @var array<string, Migration|string> absolute path => loaded instance or class name (process-wide). */
+    /** @var array<string, mixed> absolute path => what the file returned (process-wide). */
     private static array $loaded = [];
 
     /** @var array<string, string>|null filename => absolute path, built lazily. */
@@ -65,8 +65,8 @@ final class MigrationRunner
             $batch = $this->getNextBatch();
             $executed = [];
 
-            foreach ($pending as $file => $className) {
-                $migration = $this->load($file, $className);
+            foreach (array_keys($pending) as $file) {
+                $migration = $this->load($file);
                 $run = function () use ($migration, $file, $batch): void {
                     Schema::restrictTo($this->tablePrefix, static fn() => $migration->up());
                     $this->connection->query(
@@ -143,9 +143,7 @@ final class MigrationRunner
 
             foreach ($migrations as $row) {
                 $file = $row['migration'];
-                $className = $this->getClassNameFromFile($file);
-
-                $migration = $this->load($file, $className);
+                $migration = $this->load($file);
                 Schema::restrictTo($this->tablePrefix, static fn() => $migration->down());
 
                 $this->connection->query('DELETE FROM migrations WHERE migration = ? AND owner = ?', [$file, $this->owner]);
@@ -174,9 +172,7 @@ final class MigrationRunner
 
         foreach ($migrations as $row) {
             $file = $row['migration'];
-            $className = $this->getClassNameFromFile($file);
-
-            $migration = $this->load($file, $className);
+            $migration = $this->load($file);
             Schema::restrictTo($this->tablePrefix, static fn() => $migration->down());
 
             $this->connection->query('DELETE FROM migrations WHERE migration = ? AND owner = ?', [$file, $this->owner]);
@@ -204,10 +200,9 @@ final class MigrationRunner
             $ran[$row['migration']] = (int) $row['batch'];
         }
 
-        $files = $this->getMigrationFiles();
         $status = [];
 
-        foreach ($files as $file => $className) {
+        foreach (array_keys($this->files()) as $file) {
             $status[] = [
                 'name' => $file,
                 'ran' => isset($ran[$file]),
@@ -230,31 +225,7 @@ final class MigrationRunner
                 $table->integer('batch');
                 $table->string('owner', 100)->default('core');
             }));
-            return;
         }
-
-        // Tables created before migration ownership existed.
-        if (!$this->schema->hasColumn('migrations', 'owner')) {
-            Schema::restrictTo(null, fn() => $this->schema->table('migrations', function (Blueprint $table): void {
-                $table->string('owner', 100)->default('core');
-            }));
-        }
-    }
-
-    /**
-     * Get all migration files from the migrations directory.
-     *
-     * @return array<string, string> filename => fully qualified class name
-     */
-    private function getMigrationFiles(): array
-    {
-        $migrations = [];
-
-        foreach (array_keys($this->files()) as $file) {
-            $migrations[$file] = $this->getClassNameFromFile($file);
-        }
-
-        return $migrations;
     }
 
     /**
@@ -307,13 +278,12 @@ final class MigrationRunner
     /**
      * Get pending migrations that haven't been run yet.
      *
-     * @return array<string, string>
+     * @param array<string> $ran
+     * @return array<string, string> filename => absolute path
      */
     private function getPendingMigrations(array $ran): array
     {
-        $all = $this->getMigrationFiles();
-
-        return array_diff_key($all, array_flip($ran));
+        return array_diff_key($this->files(), array_flip($ran));
     }
 
     /**
@@ -324,9 +294,6 @@ final class MigrationRunner
         return $this->getLastBatch() + 1;
     }
 
-    /**
-     * Get the last batch number.
-     */
     /**
      * Highest batch number, overall (for numbering new batches) or for one owner (for rollback).
      */
@@ -340,46 +307,23 @@ final class MigrationRunner
     }
 
     /**
-     * Load a migration. Files may `return new class extends Migration { … };`
-     * (recommended for plugins: no class-name collisions between packages),
-     * or declare a class named after the file.
+     * Load a migration. The file returns an instance, `return new class extends Migration { … };`,
+     * so two packages can both have a "create_settings_table" migration without a class name clash.
      */
-    private function load(string $file, string $className): Migration
+    private function load(string $file): Migration
     {
         $path = $this->pathFor($file);
 
-        // Each file is included once per process; remember what it produced
-        // (an instance for anonymous migrations, a class name otherwise).
+        // Each file is included once per process; remember the instance it returned.
         if (!array_key_exists($path, self::$loaded)) {
-            $result = (static fn(string $__path): mixed => require $__path)($path);
-            self::$loaded[$path] = $result instanceof Migration ? $result : $className;
+            self::$loaded[$path] = (static fn(string $__path): mixed => require $__path)($path);
         }
 
-        $loaded = self::$loaded[$path];
-
-        if ($loaded instanceof Migration) {
-            return $loaded;
+        $migration = self::$loaded[$path];
+        if (!$migration instanceof Migration) {
+            throw new \RuntimeException("Migration \"{$file}\" must return an instance: `return new class extends Migration { ... };`.");
         }
 
-        if (!class_exists($loaded, false)) {
-            throw new \RuntimeException("Migration \"{$file}\" must return a Migration instance or declare class {$loaded}.");
-        }
-
-        return new $loaded();
-    }
-
-    /**
-     * Derive a class name from a migration filename.
-     * Convention: 2024_01_15_000001_create_users_table.php -> CreateUsersTable
-     */
-    private function getClassNameFromFile(string $file): string
-    {
-        $name = pathinfo($file, PATHINFO_FILENAME);
-
-        // Remove timestamp prefix (e.g., "2024_01_15_000001_")
-        $name = preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', $name);
-
-        // Convert snake_case to PascalCase
-        return str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));
+        return $migration;
     }
 }

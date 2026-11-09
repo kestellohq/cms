@@ -19,10 +19,46 @@ final class SsrGateway
     ) {}
 
     /**
-     * @param array<string, mixed> $page
-     * @return array{head: string, body: string, title: string}|null
+     * The renderer's /render address, or null when app.ssr.url is not an
+     * http(s) address: file_get_contents would read files or other streams
+     * (file://, php://, phar://) just as readily.
      */
-    public function render(array $page, PageRegistry $registry): ?array
+    public static function endpoint(string $url): ?string
+    {
+        $parts = parse_url(trim($url));
+        if (!is_array($parts) || !in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true) || ($parts['host'] ?? '') === '') {
+            return null;
+        }
+
+        return rtrim(trim($url), '/') . '/render';
+    }
+
+    /**
+     * The messages the browser loads before hydrating (BrowserCatalogue), so a
+     * render draws the same text: none when the site's language needs none.
+     *
+     * @param array<string, mixed> $page
+     * @return array<string, mixed>
+     */
+    public static function messages(array $page): array
+    {
+        if (($page['props']['i18n']['translations'] ?? null) === null) {
+            return [];
+        }
+
+        return \Kestello\Cms\I18n\BrowserCatalogue::messages(\Kestello\Support\Translator::locale(), site: true);
+    }
+
+    /**
+     * What the Node renderer is sent for a page: the page, the SSR build of
+     * every component it may draw (the page, its layouts and every block:
+     * without the blocks, Node drew an empty page), the runtime and the
+     * messages. Null when core or the page has no SSR build.
+     *
+     * @param array<string, mixed> $page
+     * @return array{page: array<string, mixed>, modules: array<string, string>, runtime: string, messages: array<string, mixed>}|null
+     */
+    public static function payload(array $page, PageRegistry $registry): ?array
     {
         $entry = $registry->get((string) $page['component']);
         $runtime = $registry->runtime();
@@ -30,28 +66,37 @@ final class SsrGateway
         if ($entry === null || $entry['ssr'] === null || $runtime === null || $runtime['ssr'] === null) {
             return null;
         }
-
         $modules = [(string) $page['component'] => $entry['ssr']];
-        foreach ($registry->layouts() as $layout) {
-            $ssr = $registry->get($layout)['ssr'] ?? null;
-            if ($ssr !== null) {
-                $modules[$layout] = $ssr;
-            }
+        foreach ($registry->siteSsr() as $name => $ssr) {
+            $modules[$name] ??= $ssr['path'];
         }
 
-        // the messages the browser will load before hydrating (BrowserCatalogue), so both draw the same text
-        $locale = \Kestello\Support\Translator::locale();
-        $messages = ($page['props']['i18n']['translations'] ?? null) !== null ? \Kestello\Cms\I18n\BrowserCatalogue::messages($locale, site: true) : [];
-        $body = json_encode(['page' => $page, 'modules' => $modules, 'runtime' => $runtime['ssr'], 'messages' => (object) $messages], JSON_UNESCAPED_SLASHES);
+        return ['page' => $page, 'modules' => $modules, 'runtime' => $runtime['ssr'], 'messages' => self::messages($page)];
+    }
+
+    /**
+     * @param array<string, mixed> $page
+     * @return array{head: string, body: string, title: string}|null
+     */
+    public function render(array $page, PageRegistry $registry): ?array
+    {
+        $endpoint = self::endpoint($this->url);
+        $payload = $endpoint === null ? null : self::payload($page, $registry);
+        if ($endpoint === null || $payload === null) {
+            return null;
+        }
+        $body = json_encode(['messages' => (object) $payload['messages']] + $payload, JSON_UNESCAPED_SLASHES);
         $context = stream_context_create(['http' => [
             'method' => 'POST',
             'header' => "Content-Type: application/json\r\n",
             'content' => $body,
             'timeout' => $this->timeout,
             'ignore_errors' => true,
+            'follow_location' => 0,     // the page data goes to the renderer, nowhere it points to
+            'max_redirects' => 0,
         ]]);
 
-        $response = @file_get_contents(rtrim($this->url, '/') . '/render', false, $context);
+        $response = @file_get_contents($endpoint, false, $context);
         $headers = http_get_last_response_headers() ?? [];
         $status = isset($headers[0]) && preg_match('#\s(\d{3})\s#', (string) $headers[0], $m) === 1 ? (int) $m[1] : 0;
 

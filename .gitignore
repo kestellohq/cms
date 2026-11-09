@@ -51,11 +51,13 @@ storage/plugins/
 # Local design-tool state (Impeccable mocks, critiques, captures): never part of the project
 /.impeccable/
 
-# Dev tools: pinned PHARs fetched by tools/fetch.sh, and their caches
-/tools/bin/
 .php-cs-fixer.cache
 .phpstan/
 .eslintcache
+
+# Built Vue pages: made by `npm run build`, and by CI for every check and release zip
+core/resources/assets/build/
+content/themes/*/assets/build/
 
 # Core release folders and the pointer (written by core updates)
 core/releases/

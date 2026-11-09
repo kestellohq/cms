@@ -5,7 +5,7 @@ description: How the Kestello codebase is laid out, how a request boots, and the
 
 # Kestello architecture
 
-Kestello is a self-hosted PHP CMS with no Composer dependencies. Core is built on the same public extension API that plugins and themes use, and the admin is a set of Vue pages that talk only to the REST API under `/api/v1`.
+Kestello is a self-hosted PHP CMS with zero PHP dependencies. Core is built on the same public extension API that plugins and themes use, and the admin is a set of Vue pages that talk only to the REST API under `/api/v1`.
 
 ## Repository map
 
@@ -18,7 +18,7 @@ Kestello is a self-hosted PHP CMS with no Composer dependencies. Core is built o
 | `core/src/Kernel.php` | Boots the app for HTTP (`handleHttp()`) and the CLI (`handleConsole()`). |
 | `core/database/migrations/` | Core migrations. |
 | `core/resources/js/` | The browser side: `app/` (`@kestello/app`), `sdk/` (`@kestello/sdk`), `ui/` (`@kestello/ui`), `pages/` (admin pages, blocks, field inputs), `components/`. |
-| `core/resources/assets/build/` | Built Vue pages. Committed: production runs no Node. |
+| `core/resources/assets/build/` | Built Vue pages. Not committed: CI and the release workflow build them, and the release zips carry them, so production runs no Node. |
 | `core/resources/lang/kestello.pot` | Core's translation template. |
 | `core/build/` | Vite build (`build.mjs`, `preset.mjs`). Dev only. |
 | `content/themes/base/` | The theme every site ships with. Other folders under `content/` are site data and ignored by Git. |
@@ -51,7 +51,7 @@ The facade's properties are listed in the doc comment of `core/src/Cms/Cms.php` 
 - A controller returns `Page::render('<component>', $props)` (`core/src/Cms/View/Page.php`). The component is a Vue SFC: `Home` resolves in the active theme's `resources/js/pages/`, `@hello/Greeting` in the hello plugin's, `@core/admin/Dashboard` in core.
 - The first visit gets an HTML shell with the page JSON; later navigation fetches JSON only. Shared props come from `$cms->pages->share()`.
 - Admin pages are registered with `$cms->admin->page()` and never render server forms. Every screen reads and writes through `/api/v1`, so anything the admin does an integration can do.
-- Vue files are prebuilt by `npm run build` (or `node core/build/build.mjs <target>`). Rebuild and commit `assets/build/` whenever you change a `.vue` or `.js` file under `resources/js`.
+- Vue files are prebuilt by `npm run build` (or `node core/build/build.mjs <target>`). Rebuild after changing a `.vue` or `.js` file under `resources/js`. Core's build is not committed; a plugin's or theme's `assets/build/` is, since its zip ships it.
 
 ## Owners and naming
 
@@ -64,7 +64,7 @@ Every registration is recorded with its owner: `core`, `plugin:<slug>` or `theme
 
 ## Invariants
 
-- **No Composer and no PHP dependencies.** Dev tools are pinned PHARs in `tools/` or npm dev dependencies.
+- **Zero PHP dependencies** (`composer.json` has no requirements). Dev tools are pinned PHARs in `tools/` or npm dev dependencies.
 - **Core dogfoods the extension API.** A new feature is an extension point first. If core needs a private shortcut, the public API is missing something: add it.
 - **`@api` and `@internal`.** Classes marked `@api` are the stable public API. Anything marked `@internal` may change at any time and must not be used by plugins. Everything else not marked `@internal` is public too (see "What counts as the public API" in `CONTRIBUTING.md`).
 - **Deny by default.** Endpoints need a capability and a scope or must say they are public; plugin network access and sign-in methods are limited to what the manifest declares.

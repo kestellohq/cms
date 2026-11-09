@@ -32,14 +32,17 @@ final class ExtractorTest extends TestCase
         function __($text) {}
         $logger->description($x);
         $other->label;
+        $who = Schema::enum(['closed' => 'Nobody', 'open' => 'Anyone'])->optional();
+        $tls = Schema::enum(['tls', 'ssl', 'none']);
+        $list = Other::enum(['a' => 'Not a schema']);
         PHP;
 
         $this->assertSame([
             'Save changes', "Line\nbreak", '{count, plural, one {# file} other {# files}}', 'From the translator',
             'Card', 'A card with a picture.', 'Book', 'Books', 'ISBN', 'Thirteen digits.',
             'Books on sale', 'Shop', 'Sales today', 'Shop settings', 'Currency', 'Tax rate',
-            'General', 'The basics.', 'Name',
-        ], Extractor::php($code));
+            'General', 'The basics.', 'Name', 'Nobody', 'Anyone',
+        ], Extractor::php($code), 'the labels of a labelled Schema::enum, never the values of a plain one');
     }
 
     public function testJavascriptAndVue(): void

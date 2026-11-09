@@ -6,7 +6,6 @@ import {
     documentStats,
     editableFields,
     errorFromMessage,
-    upgradeTree,
     errorTarget,
     fromPattern,
     isKind,
@@ -179,13 +178,4 @@ test('errorFromMessage reads the block trail the server writes', () => {
         'not "Text: Text:"',
     );
     assert.equal(errorFromMessage(tree, 'A tree can hold at most 500 blocks.'), null);
-});
-
-test('upgradeTree renames old props, everywhere, and leaves an up-to-date tree as it is', () => {
-    const sep = node('core/separator', { style: 'dots' });
-    const tree = [node('core/group', {}, [sep])];
-    const up = upgradeTree(tree);
-    assert.deepEqual(up[0].children[0].props, { look: 'dots' });
-    assert.equal(upgradeTree(up), up);
-    assert.equal(tree[0].children[0].props.style, 'dots', 'the old tree is left alone');
 });

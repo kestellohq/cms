@@ -1,8 +1,8 @@
-# Translation template for Kestello 0.1.0 (domain "core").
+# Translation template for Kestello 0.1.0-rc.1 (domain "core").
 # Made by `bin/cms i18n:extract`. Messages use ICU MessageFormat: keep {placeholders} and plural cases.
 msgid ""
 msgstr ""
-"Project-Id-Version: Kestello 0.1.0\n"
+"Project-Id-Version: Kestello 0.1.0-rc.1\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -161,6 +161,14 @@ msgstr ""
 msgid "A dropdown"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "A key ending in {last4} is saved."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "A larger export, or a site whose old server is gone: copy the file (and wp-content/uploads) to this server and run"
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderPatterns.vue
 msgid "A layout fills the page with sections you then change: the words, the images, the order."
 msgstr ""
@@ -179,6 +187,10 @@ msgstr ""
 
 #: core/src/Cms/Forms/Forms.php
 msgid "A name of up to 200 characters."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/GetMe.php
+msgid "A new address waiting for its confirmation link to be opened; the account keeps email until then"
 msgstr ""
 
 #: core/src/Cms/Api/Resources/EntryResource.php
@@ -222,6 +234,10 @@ msgstr ""
 msgid "A pattern can't contain a synced pattern."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "A person"
+msgstr ""
+
 #: core/resources/js/ui/KExtension.vue
 msgid "A plugin"
 msgstr ""
@@ -248,6 +264,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
 msgid "A short summary field"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "A square logo, or a photo for a person, at least 112 pixels wide."
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreBlocks.php
@@ -290,6 +310,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Audit.vue
 #: core/resources/js/ui/builder/BuilderPatterns.vue
+#: core/src/Cms/Demo/content/bakery.php
 msgid "About"
 msgstr ""
 
@@ -306,10 +327,6 @@ msgstr ""
 msgid "Access tokens"
 msgstr ""
 
-#: core/resources/js/ui/builder/BuilderBar.vue
-msgid "Accessibility checks"
-msgstr ""
-
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Account"
@@ -317,6 +334,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Account switched off"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Accounts"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue
@@ -335,10 +356,10 @@ msgstr ""
 msgid "Activated a plugin"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/appearance/Themes.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Queue.vue
-#: core/resources/js/pages/admin/system/Updates.vue
 #: core/resources/js/pages/admin/users/Index.vue
 msgid "Active"
 msgstr ""
@@ -453,6 +474,10 @@ msgstr ""
 msgid "Add items"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Add license key"
+msgstr ""
+
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "Add link"
 msgstr ""
@@ -535,6 +560,10 @@ msgstr ""
 msgid "Added here"
 msgstr ""
 
+#: core/resources/js/pages/admin/Settings.vue
+msgid "Added to every public page, never to the admin or the sign-in pages."
+msgstr ""
+
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "Added “{label}” at the end."
 msgstr ""
@@ -574,6 +603,10 @@ msgstr ""
 msgid "Addresses visitors ask for that don't exist show up here, so you can send them somewhere useful."
 msgstr ""
 
+#: core/resources/js/pages/admin/Settings.vue
+msgid "Addresses, the home page and feeds change what visitors and feed readers get. Old addresses keep working."
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderLibrary.vue
 msgid "Adds at the end of the page. You can also drag a block onto the page or the layers."
 msgstr ""
@@ -588,6 +621,10 @@ msgstr ""
 
 #: core/resources/js/layouts/Admin.vue
 msgid "Admin"
+msgstr ""
+
+#: core/resources/js/components/admin/AdminNav.vue
+msgid "Admin menu"
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
@@ -641,6 +678,10 @@ msgstr ""
 msgid "All files"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "All imports"
+msgstr ""
+
 #: core/resources/js/pages/admin/Dashboard.vue
 #: core/resources/js/pages/admin/users/Edit.vue
 msgid "All people"
@@ -666,8 +707,16 @@ msgstr ""
 msgid "Allow several files"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Allowed email domains"
+msgstr ""
+
 #: core/resources/js/pages/admin/forms/Index.vue
 msgid "Almost nothing"
+msgstr ""
+
+#: core/resources/js/pages/auth/Register.vue
+msgid "Already have an account? Sign in"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
@@ -700,6 +749,26 @@ msgstr ""
 msgid "An image beside text. They stack on phones, the image first."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "An organization or business"
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "An update is taking unusually long"
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "An update stopped halfway"
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "An update stopped halfway and was not put back"
+msgstr ""
+
+#: core/resources/js/pages/admin/media/Index.vue
+msgid "And {n} entries you cannot open."
+msgstr ""
+
 #: core/src/Cms/Content/Models/ContentModels.php
 msgid "Another field here is already called {name}."
 msgstr ""
@@ -721,6 +790,14 @@ msgstr ""
 msgid "Answers site search. Switching engines rebuilds the index in the background."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Anyone"
+msgstr ""
+
+#: core/resources/js/components/demo/DemoBar.vue
+msgid "Anyone can sign in here, so others may see what you change, and you may see theirs. Nothing is emailed."
+msgstr ""
+
 #: core/resources/js/components/content/SharePreviews.vue
 msgid "Anyone who has it can no longer open the preview."
 msgstr ""
@@ -732,6 +809,14 @@ msgstr ""
 #: core/resources/js/pages/admin/roles/Index.vue
 #: core/src/Cms/Admin/AdminRegistry.php
 msgid "Appearance"
+msgstr ""
+
+#: core/resources/js/pages/admin/Settings.vue
+msgid "Applies to new uploads. Files already in the library stay as they are."
+msgstr ""
+
+#: core/resources/js/pages/admin/Settings.vue
+msgid "Applies to the sign-up page and to every sign-in provider. People you add under People are not affected."
 msgstr ""
 
 #: core/resources/js/ui/KRichText.vue
@@ -804,12 +889,24 @@ msgstr ""
 msgid "Asked for changes"
 msgstr ""
 
+#: core/resources/js/components/audit/events.js
+msgid "Asked to change their email"
+msgstr ""
+
+#: core/resources/js/components/audit/events.js
+msgid "Asked to try again putting back an update"
+msgstr ""
+
 #: core/src/Cms/Package/PackagesModule.php
 msgid "Asks GitHub whether a new Kestello version is out (config/release.php). It only tells you; Updates installs."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Api.vue
 msgid "Asks for your password again if you have not entered it recently."
+msgstr ""
+
+#: core/src/Cms/Package/PackagesModule.php
+msgid "Asks the sources plugins and themes name (\"updates\" in their manifest) for new versions. It only tells you; Updates installs."
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
@@ -833,6 +930,7 @@ msgstr ""
 msgid "At least one address."
 msgstr ""
 
+#: core/resources/js/pages/auth/CompleteRegistration.vue
 #: core/resources/js/pages/auth/ResetPassword.vue
 msgid "At least {n} characters. A few unrelated words make a strong password you can remember."
 msgstr ""
@@ -885,6 +983,10 @@ msgstr ""
 msgid "Author"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Authors"
+msgstr ""
+
 #: core/src/Cms/Console/Package/CoreCheckCommand.php
 msgid "Available"
 msgstr ""
@@ -893,6 +995,7 @@ msgstr ""
 msgid "Back soon"
 msgstr ""
 
+#: core/resources/js/pages/auth/CompleteRegistration.vue
 #: core/resources/js/pages/auth/ForgotPassword.vue
 #: core/resources/js/pages/auth/ResetPassword.vue
 #: core/resources/js/pages/auth/TwoFactorChallenge.vue
@@ -924,6 +1027,7 @@ msgid "Back to {list}"
 msgstr ""
 
 #: core/resources/js/components/AuthCard.vue
+#: core/resources/js/pages/auth/Login.vue
 msgid "Back to {site}"
 msgstr ""
 
@@ -1071,6 +1175,10 @@ msgstr ""
 msgid "Bottom right corner"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Bring a WordPress site here: posts and pages, categories and tags, files, menus, and redirects from the old addresses. Importing the same site again updates what came over before instead of copying it."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Bring them back"
 msgstr ""
@@ -1120,6 +1228,10 @@ msgstr ""
 msgid "By title"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "By upload"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "By {author}"
 msgstr ""
@@ -1153,6 +1265,7 @@ msgid "Can sign in"
 msgstr ""
 
 #: core/resources/js/components/media/ImageEditor.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/appearance/Templates.vue
 #: core/resources/js/pages/admin/appearance/Themes.vue
@@ -1165,6 +1278,7 @@ msgstr ""
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/roles/Index.vue
 #: core/resources/js/pages/admin/system/Backups.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Platform.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Storage.vue
@@ -1186,6 +1300,10 @@ msgstr ""
 msgid "Cancelled"
 msgstr ""
 
+#: core/src/Cms/Site/Seo.php
+msgid "Canonical address"
+msgstr ""
+
 #: core/resources/js/pages/admin/media/Index.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 #: core/src/Cms/Blocks/CoreListBlocks.php
@@ -1195,6 +1313,10 @@ msgstr ""
 #: core/resources/js/ui/builder/BuilderPatterns.vue
 #: core/src/Cms/Content/ContentModule.php
 msgid "Categories"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Categories and tags"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -1262,7 +1384,7 @@ msgstr ""
 msgid "Changed a webhook"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
+#: core/resources/js/components/updates/signature.js
 msgid "Changed after it was signed. Do not apply it."
 msgstr ""
 
@@ -1280,6 +1402,10 @@ msgstr ""
 
 #: core/resources/js/components/audit/events.js
 msgid "Changed infrastructure"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Changed on the way"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
@@ -1331,8 +1457,13 @@ msgstr ""
 msgid "Check again"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Check now"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Check plugins and themes for updates"
 msgstr ""
 
 #: core/src/Cms/Webhooks/WebhookDisabledNotification.php
@@ -1343,12 +1474,16 @@ msgstr ""
 msgid "Check the delivery log below for what the service answered, fix it, then turn the webhook on again."
 msgstr ""
 
+#: core/resources/js/pages/admin/Profile.vue
+msgid "Check {email} for a link to confirm it."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Checked"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderInspector.vue
-msgid "Checked on the preview as it is now, including the theme around it."
+msgid "Checked on the preview as it is now, including the theme around it, and on its search settings."
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
@@ -1359,6 +1494,7 @@ msgstr ""
 msgid "Checking…"
 msgstr ""
 
+#: core/resources/js/ui/builder/BuilderBar.vue
 #: core/resources/js/ui/builder/BuilderInspector.vue
 msgid "Checks"
 msgstr ""
@@ -1436,6 +1572,11 @@ msgstr ""
 msgid "Choose where each kind of message reaches you."
 msgstr ""
 
+#: core/resources/js/pages/auth/CompleteRegistration.vue
+#: core/src/Cms/Auth/RegistrationController.php
+msgid "Choose your password"
+msgstr ""
+
 #: core/resources/js/components/content-types/ConditionsEditor.vue
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/fields/Select.vue
@@ -1450,6 +1591,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
 msgid "Chosen per entry: {types}"
+msgstr ""
+
+#: core/src/Cms/Demo/content/bakery.php
+msgid "Cinnamon buns, the way Margit makes them"
 msgstr ""
 
 #: core/resources/js/ui/builder/DesignColor.vue
@@ -1506,6 +1651,7 @@ msgstr ""
 msgid "Clockwise, in quarter turns: 0, 90, 180 or 270"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/content-types/Edit.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -1622,6 +1768,14 @@ msgstr ""
 msgid "Confirm your password"
 msgstr ""
 
+#: core/resources/js/components/audit/events.js
+msgid "Confirmed a new email"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Connect provider sign-ins by email"
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Connect {provider}"
 msgstr ""
@@ -1651,6 +1805,7 @@ msgid "Consent"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderPatterns.vue
+#: core/src/Cms/Demo/content/bakery.php
 msgid "Contact"
 msgstr ""
 
@@ -1687,6 +1842,10 @@ msgstr ""
 #: core/resources/js/pages/admin/system/Audit.vue
 #: core/src/Cms/Content/ContentModule.php
 msgid "Content types"
+msgstr ""
+
+#: core/resources/js/components/demo/DemoBar.vue
+msgid "Content, design, menus, forms and images can be changed. Your account, people, plugins, updates, backups and settings are locked."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
@@ -1731,6 +1890,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Health.vue
 msgid "Copy debug info"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Copy files from the old site"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderToolbar.vue
@@ -1780,8 +1943,18 @@ msgstr ""
 msgid "Create a content type for things like events, products or team members, with exactly the fields they need."
 msgstr ""
 
+#: core/resources/js/pages/auth/CompleteRegistration.vue
+msgid "Create account"
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Create an access token"
+msgstr ""
+
+#: core/resources/js/pages/auth/Login.vue
+#: core/resources/js/pages/auth/Register.vue
+#: core/src/Cms/Auth/RegistrationController.php
+msgid "Create an account"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
@@ -1848,6 +2021,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/roles/Index.vue
 msgid "Created {role}. Pick what it may do, then save."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Credit posts by {name} to"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Health.vue
@@ -1955,6 +2132,10 @@ msgstr ""
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/ui/builder/BuilderDesign.vue
 msgid "Default"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Default sharing image"
 msgstr ""
 
 #: core/resources/js/components/content-types/FieldSettings.vue
@@ -2218,7 +2399,7 @@ msgid "Deletes API tokens that expired over 30 days ago."
 msgstr ""
 
 #: core/src/Cms/System/CoreTasks.php
-msgid "Deletes audit entries past retention and expired password-reset tokens."
+msgid "Deletes audit entries past retention, and expired password-reset, sign-up and email-change links."
 msgstr ""
 
 #: core/src/Cms/System/CoreTasks.php
@@ -2240,6 +2421,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 msgid "Deliveries"
+msgstr ""
+
+#: core/resources/js/layouts/Admin.vue
+msgid "Demo"
 msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
@@ -2365,6 +2550,7 @@ msgid "Documents"
 msgstr ""
 
 #: core/resources/js/components/content/StudioPublish.vue
+#: core/resources/js/pages/admin/system/Import.vue
 msgid "Done"
 msgstr ""
 
@@ -2468,6 +2654,10 @@ msgstr ""
 msgid "Each page gets its own copy to change freely."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Earlier imports"
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/forms/Index.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -2531,11 +2721,14 @@ msgstr ""
 #: core/resources/js/pages/admin/users/Edit.vue
 #: core/resources/js/pages/admin/users/Index.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+#: core/src/Cms/Demo/content/bakery.php
 msgid "Email"
 msgstr ""
 
 #: core/resources/js/components/content-types/field-labels.js
+#: core/resources/js/pages/auth/CompleteRegistration.vue
 #: core/resources/js/pages/auth/ForgotPassword.vue
+#: core/resources/js/pages/auth/Register.vue
 msgid "Email address"
 msgstr ""
 
@@ -2546,6 +2739,10 @@ msgstr ""
 #: core/resources/js/pages/auth/Login.vue
 #: core/src/Cms/Api/Endpoints/Auth/CreateSession.php
 msgid "Email or username"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Email sign-up proves the address with a link before the account exists."
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
@@ -2598,6 +2795,10 @@ msgstr ""
 
 #: core/src/Cms/Redirects/Redirects.php
 msgid "Enter where visitors should go."
+msgstr ""
+
+#: core/resources/js/pages/auth/Register.vue
+msgid "Enter your email address. We will send you a link to choose your password."
 msgstr ""
 
 #: core/resources/js/pages/fields/Blocks.vue
@@ -2765,6 +2966,18 @@ msgstr ""
 msgid "Everything"
 msgstr ""
 
+#: core/resources/js/components/demo/DemoBar.vue
+msgid "Everything goes back to how it was in about a minute."
+msgstr ""
+
+#: core/resources/js/components/demo/DemoBar.vue
+msgid "Everything goes back to how it was in {n} minutes."
+msgstr ""
+
+#: core/resources/js/components/demo/DemoBar.vue
+msgid "Everything goes back to how it was shortly."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Everything needed to move the site. Files on remote storage (S3 and the like) are not copied."
 msgstr ""
@@ -2775,6 +2988,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Everything on the site is replaced with the backup from {date}: content, settings, people and files. Everyone is signed out, you too."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Everything that could come over did. Below is what changed on the way."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue
@@ -2809,6 +3026,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
+#: core/src/Cms/Console/ImportWordPressCommand.php
 msgid "Export"
 msgstr ""
 
@@ -2824,6 +3042,7 @@ msgstr ""
 msgid "Extra lines for robots.txt, after the built-in ones (admin and API are always excluded, and the sitemap is listed)."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Queue.vue
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
@@ -2925,6 +3144,7 @@ msgstr ""
 msgid "File uploads need submissions to be kept (Settings: keep submissions)."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Storage.vue
 #: core/src/Cms/Console/Backup/BackupRestoreCommand.php
@@ -2946,6 +3166,10 @@ msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
 msgid "Files in storage/sessions. No device list."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Files linked from posts"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Storage.vue
@@ -3020,8 +3244,16 @@ msgstr ""
 msgid "Finished"
 msgstr ""
 
+#: core/resources/js/components/audit/events.js
+msgid "Finished an update that stopped halfway"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Queue.vue
 msgid "Finished with failures"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Finishing"
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreListBlocks.php
@@ -3106,6 +3338,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Index.vue
 msgid "For you and in notification emails. Visitors don't see it."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Forget"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Forget this import?"
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -3235,6 +3475,10 @@ msgstr ""
 
 #: core/src/Cms/Design/ThemeStyles.php
 msgid "Geometric sans-serif"
+msgstr ""
+
+#: core/resources/js/pages/auth/CompleteRegistration.vue
+msgid "Get a new link"
 msgstr ""
 
 #: core/src/Cms/Content/Terms.php
@@ -3400,6 +3644,10 @@ msgstr ""
 msgid "Helps whoever assigns roles."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Here"
+msgstr ""
+
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "Here is what changed since you were last here."
 msgstr ""
@@ -3441,12 +3689,24 @@ msgstr ""
 msgid "History"
 msgstr ""
 
+#: core/src/Cms/Demo/content/bakery.php
+msgid "Home"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Home page title"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "How many"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "How many of the newest entries feed readers get."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/MediaResource.php
+msgid "How many other entries use it (ones the viewer may not open)"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/RevokeUserSessions.php
@@ -3471,6 +3731,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "How visitors find their way around. Build a menu here; your theme decides where each one appears."
+msgstr ""
+
+#: core/src/Cms/Demo/content/bakery.php
+msgid "How we feed our sourdough starter"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "How your pages appear in search results, browser tabs and link previews."
 msgstr ""
 
 #: core/resources/js/pages/admin/Settings.vue
@@ -3551,6 +3819,10 @@ msgstr ""
 msgid "Images"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Images and documents are downloaded from {url} into the media library, with their alt text and captions. Leave this off when the old site is offline; images then keep pointing at it."
+msgstr ""
+
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Images and files for your pages and posts. Drop files anywhere on this page to upload them."
 msgstr ""
@@ -3561,6 +3833,8 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
+#: core/resources/js/pages/admin/system/Import.vue
+#: core/src/Cms/Import/ImportModule.php
 msgid "Import"
 msgstr ""
 
@@ -3568,16 +3842,41 @@ msgstr ""
 msgid "Import a theme"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Import from WordPress"
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Import redirects"
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
+#: core/resources/js/pages/admin/system/Import.vue
 msgid "Imported"
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
 msgid "Imported redirects"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Imported, with some things left behind"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Importing"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Importing {site}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "In WordPress"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "In WordPress, open Tools → Export, choose All content and download the export file."
 msgstr ""
 
 #: core/src/Cms/Design/DesignBlocks.php
@@ -3721,6 +4020,7 @@ msgstr ""
 msgid "Italics"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Item"
 msgstr ""
@@ -3756,6 +4056,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Api.vue
 msgid "Its parameters, a form to try it and the code to call it appear here."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Its report goes. What it imported stays, and importing the same site again still updates instead of copying."
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Index.vue
@@ -3840,6 +4144,14 @@ msgstr ""
 msgid "Keeps that many automatic backups; the oldest go first. Backups made by hand stay until you delete them."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Kept as edited"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Kept as edited here"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 msgid "Kept for 30 days. A failed delivery is tried again after 1, 5 and 30 minutes, then 2, 6 and 12 hours."
 msgstr ""
@@ -3883,11 +4195,23 @@ msgid "Kestello {v} is available."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Updates.vue
+msgid "Kestello {v} is running again, with the database from before the update."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Updates.vue
 msgid "Kestello {v} is running."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Updates.vue
+msgid "Kestello {v} is still on the server. Switching back also puts the database back as it was before the update, on {date}: anything changed on the site since then is lost from the site. A backup of the site as it is now is made first, under Site → Backups. Visitors see a short maintenance page."
 msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
 msgid "Key prefix. Empty = derived from this site, so sites sharing a server never collide."
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Key …{last4}"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderBar.vue
@@ -3898,7 +4222,6 @@ msgstr ""
 #: core/resources/js/pages/admin/content-types/Index.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Storage.vue
-#: core/resources/js/pages/admin/system/Updates.vue
 msgid "Kind"
 msgstr ""
 
@@ -4085,6 +4408,10 @@ msgstr ""
 msgid "Left edge"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Left empty, the site name is used."
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Let scripts and other apps use the API as you, limited to the permissions you pick. Treat a token like a password."
 msgstr ""
@@ -4099,6 +4426,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Library"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "License key"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "License key for {name}"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDesign.vue
@@ -4153,6 +4488,10 @@ msgstr ""
 
 #: core/src/Cms/Blocks/CoreListBlocks.php
 msgid "Links"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Links between posts"
 msgstr ""
 
 #: core/resources/js/components/content-types/FieldSettings.vue
@@ -4227,6 +4566,10 @@ msgstr ""
 
 #: core/src/Cms/Auth/AuthController.php
 msgid "Login"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Logo or photo"
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
@@ -4359,6 +4702,10 @@ msgstr ""
 msgid "Matches username or email"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Me, the person importing"
+msgstr ""
+
 #: core/resources/js/components/content-types/field-labels.js
 #: core/resources/js/pages/admin/media/Index.vue
 #: core/resources/js/pages/admin/system/Audit.vue
@@ -4407,6 +4754,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/admin/system/Audit.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/src/Cms/Content/ContentModule.php
 msgid "Menus"
 msgstr ""
@@ -4422,6 +4770,7 @@ msgstr ""
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/forms/Index.vue
+#: core/src/Cms/Demo/content/bakery.php
 msgid "Message"
 msgstr ""
 
@@ -4716,6 +5065,7 @@ msgstr ""
 
 #: core/resources/js/components/content-types/FieldSettings.vue
 #: core/resources/js/components/forms/FormBuilder.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/Dashboard.vue
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -4730,6 +5080,7 @@ msgstr ""
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
 #: core/resources/js/pages/admin/users/Index.vue
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Name"
 msgstr ""
 
@@ -4759,6 +5110,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Needs a captcha plugin. A hidden trap field, a minimum fill time and the limit above already stop most spam."
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Needs a license key"
 msgstr ""
 
 #: core/resources/js/components/content-types/FieldList.vue
@@ -4799,7 +5154,12 @@ msgid "Never seen"
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Submissions.vue
+#: core/resources/js/pages/admin/system/Import.vue
 msgid "New"
+msgstr ""
+
+#: core/src/Cms/Demo/content/bakery.php
+msgid "New Saturday hours"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Index.vue
@@ -4911,6 +5271,10 @@ msgstr ""
 
 #: core/resources/js/ui/KMediaGrid.vue
 msgid "No alt text"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "No background worker runs on this site, so this screen imports while it stays open. Closing it pauses the import; opening it again carries on."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Storage.vue
@@ -5055,7 +5419,7 @@ msgstr ""
 msgid "No plugins installed"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 msgid "No plugins or themes installed."
 msgstr ""
 
@@ -5166,6 +5530,10 @@ msgstr ""
 msgid "Nobody matches these filters."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Nobody: you add people yourself"
+msgstr ""
+
 #: core/resources/js/pages/fields/Select.vue
 #: core/resources/js/ui/builder/BuilderDesign.vue
 msgid "None"
@@ -5220,12 +5588,20 @@ msgstr ""
 msgid "Not changed on this site: the theme's version is live."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Not checked yet"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "Not configured"
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Not found"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Not imported"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Index.vue
@@ -5244,13 +5620,17 @@ msgstr ""
 msgid "Not running"
 msgstr ""
 
+#: core/resources/js/components/updates/signature.js
 #: core/resources/js/pages/admin/system/Plugins.vue
-#: core/resources/js/pages/admin/system/Updates.vue
 msgid "Not signed: nobody vouches for where it came from."
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Submissions.vue
 msgid "Not spam"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Not started"
 msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
@@ -5464,6 +5844,10 @@ msgstr ""
 msgid "On its own (use parts for header and footer)"
 msgstr ""
 
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "On the server, the same is done with: bin/cms update:recover"
+msgstr ""
+
 #: core/resources/js/pages/admin/content-types/Edit.vue
 #: core/resources/js/pages/admin/content-types/Index.vue
 msgid "One"
@@ -5517,6 +5901,10 @@ msgstr ""
 msgid "Only editors see it. Such as “Main” or “Footer links”."
 msgstr ""
 
+#: core/src/Cms/Site/Seo.php
+msgid "Only for text first published at another address, such as an article you also wrote elsewhere. Search engines then list that address instead of this page. Leave empty otherwise."
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Only formatting changed."
 msgstr ""
@@ -5537,6 +5925,10 @@ msgstr ""
 msgid "Only packages signed by {publishers} install from here. A developer can install this one on the server: bin/cms plugin:install <zip>."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Only people with an address at the domains below"
+msgstr ""
+
 #: core/resources/js/pages/admin/content-types/Edit.vue
 msgid "Only possible when nothing uses it any more. This can't be undone."
 msgstr ""
@@ -5555,6 +5947,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Search/SearchSite.php
 msgid "Only this content type"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Only updates signed by a publisher this site trusts are applied from here. A developer can apply this one on the server: bin/cms package:update <zip>."
 msgstr ""
 
 #: core/resources/js/ui/KBlockSettings.vue
@@ -5664,6 +6060,7 @@ msgstr ""
 msgid "Optional. Themes may show it next to what you publish."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/ui/builder/BuilderBar.vue
 msgid "Options"
 msgstr ""
@@ -5701,6 +6098,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Other accounts you can sign in with instead of your password."
+msgstr ""
+
+#: core/src/Cms/Demo/content/bakery.php
+msgid "Our spring rye is back"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDetails.vue
@@ -5789,6 +6190,14 @@ msgstr ""
 msgid "Page order"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Page titles"
+msgstr ""
+
+#: core/resources/js/pages/admin/Settings.vue
+msgid "Page titles show in the browser tab and as the headline in search results. The sharing image shows when someone posts a link to the site. Each entry can set its own under Search and sharing."
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Styles.vue
 msgid "Page to preview"
 msgstr ""
@@ -5857,6 +6266,7 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/users/Index.vue
+#: core/resources/js/pages/auth/CompleteRegistration.vue
 #: core/resources/js/pages/auth/Login.vue
 #: core/resources/js/ui/KDialogs.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -5881,7 +6291,7 @@ msgid "Password resets and notifications go here."
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
-msgid "Password resets go here. Changing it asks for your password."
+msgid "Password resets go here. Changing it asks for your password, and the new address must confirm it."
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderToolbar.vue
@@ -6035,7 +6445,7 @@ msgstr ""
 msgid "Please tick this box."
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 msgid "Plugin"
 msgstr ""
 
@@ -6066,12 +6476,12 @@ msgstr ""
 msgid "Plugins add features to the site. Each one declares what it may do, and one that breaks is switched off on its own instead of taking the site down."
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 msgid "Plugins and themes"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
-msgid "Plugins are updated by uploading their new version under Plugins → Manage plugins."
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Plugins and themes that say where their updates come from are updated here. Others are updated by uploading the new version under Plugins → Manage plugins, where you can also switch back after an update."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -6096,6 +6506,10 @@ msgstr ""
 
 #: core/src/Cms/Content/ContentModule.php
 msgid "Posts"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Posts and pages"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Updates.vue
@@ -6163,6 +6577,10 @@ msgstr ""
 msgid "Profile sections"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Profiles on other sites"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Queue.vue
 msgid "Progress"
 msgstr ""
@@ -6214,6 +6632,7 @@ msgstr ""
 msgid "Published style changes"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Published {date}."
 msgstr ""
@@ -6235,6 +6654,10 @@ msgstr ""
 msgid "Publishing"
 msgstr ""
 
+#: core/resources/js/components/audit/events.js
+msgid "Put back an update that stopped halfway"
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderInspector.vue
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Put in a group"
@@ -6242,6 +6665,18 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Put the form on a page with the Form block."
+msgstr ""
+
+#: core/src/Cms/Demo/DemoModule.php
+msgid "Puts the demo back to its snapshot every hour."
+msgstr ""
+
+#: core/resources/js/components/audit/events.js
+msgid "Putting back an update that stopped failed"
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "Putting {name} and the database back as they were failed {n} times. Visitors see the maintenance page until it works. The reasons are in the audit log."
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderPatterns.vue
@@ -6281,6 +6716,10 @@ msgstr ""
 
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Read out by screen readers."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Read the file"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Styles.vue
@@ -6352,6 +6791,10 @@ msgstr ""
 msgid "Redirect added."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Redirect old addresses"
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Redirect removed."
 msgstr ""
@@ -6362,8 +6805,13 @@ msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Audit.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/src/Cms/Redirects/RedirectsModule.php
 msgid "Redirects"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Redirects from old addresses"
 msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
@@ -6416,6 +6864,10 @@ msgstr ""
 
 #: core/resources/js/pages/fields/Table.vue
 msgid "Remove column {n}"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Remove key"
 msgstr ""
 
 #: core/resources/js/ui/KRichText.vue
@@ -6512,8 +6964,16 @@ msgstr ""
 msgid "Renaming keeps the stored values."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Renew"
+msgstr ""
+
 #: core/resources/js/pages/auth/ResetPassword.vue
 msgid "Repeat new password"
+msgstr ""
+
+#: core/resources/js/pages/auth/CompleteRegistration.vue
+msgid "Repeat password"
 msgstr ""
 
 #: core/resources/js/components/content-types/field-labels.js
@@ -6552,6 +7012,7 @@ msgstr ""
 msgid "Replace them"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/ui/builder/BuilderFind.vue
 msgid "Replace with"
 msgstr ""
@@ -6570,6 +7031,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Replies go to"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Report"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Audit.vue
@@ -6735,6 +7200,7 @@ msgid "Retrying"
 msgstr ""
 
 #: core/resources/js/components/content/ReviewPanel.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "Review"
 msgstr ""
@@ -6806,6 +7272,10 @@ msgstr ""
 #: core/resources/js/pages/admin/users/Edit.vue
 #: core/resources/js/pages/admin/users/Index.vue
 msgid "Role"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Role for new accounts"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/GetSecurity.php
@@ -6919,6 +7389,10 @@ msgstr ""
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Save"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Save and check"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
@@ -7060,6 +7534,7 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 #: core/src/Cms/Site/Seo.php
 msgid "Search and sharing"
 msgstr ""
@@ -7085,6 +7560,10 @@ msgstr ""
 msgid "Search engines move the old address's ranking to the new one."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Search engines show this as who is behind the site."
+msgstr ""
+
 #: core/resources/js/ui/KFinder.vue
 msgid "Search failed. Try again."
 msgstr ""
@@ -7099,6 +7578,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Search the media library"
+msgstr ""
+
+#: core/src/Cms/Site/Seo.php
+msgid "Search title"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Index.vue
@@ -7181,6 +7664,10 @@ msgstr ""
 msgid "Send it back as \"version\" when saving, to detect edits made meanwhile"
 msgstr ""
 
+#: core/resources/js/pages/auth/Register.vue
+msgid "Send link"
+msgstr ""
+
 #: core/resources/js/pages/auth/ForgotPassword.vue
 msgid "Send reset link"
 msgstr ""
@@ -7247,6 +7734,11 @@ msgstr ""
 msgid "Separate several with commas."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Separate them with commas, for example example.com, example.org."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Separator"
 msgstr ""
@@ -7371,6 +7863,10 @@ msgstr ""
 msgid "Shared memory of this server's PHP workers. Fastest; not shared with cron or other servers."
 msgstr ""
 
+#: core/src/Cms/Site/Seo.php
+msgid "Sharing image"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreListBlocks.php
 msgid "Short points, each with an icon, such as what is included."
 msgstr ""
@@ -7435,6 +7931,10 @@ msgstr ""
 msgid "Shown as"
 msgstr ""
 
+#: core/src/Cms/Site/Seo.php
+msgid "Shown as the title in search results and link previews, instead of the title on the page. Left empty, the title is used."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Terms.vue
 msgid "Shown at {path}/{slug}. Leave empty to make one from the name."
 msgstr ""
@@ -7445,6 +7945,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Shown by the captcha plugin you installed."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Shown in link previews of pages that have no image of their own."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -7475,6 +7979,10 @@ msgstr ""
 msgid "Shown under the title in search results and link previews. Left empty, the excerpt or the first lines are used."
 msgstr ""
 
+#: core/src/Cms/Site/Seo.php
+msgid "Shown when the page is shared on social media or in a chat. Left empty, the first image of the page is used."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Shows the first page of each PDF as its picture, when the server has Ghostscript."
 msgstr ""
@@ -7493,6 +8001,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Sign in again"
+msgstr ""
+
+#: core/resources/js/pages/auth/Login.vue
+msgid "Sign in as {username} with the password {password}. Everyone shares this account, and the site resets every hour."
 msgstr ""
 
 #: core/resources/js/layouts/Admin.vue
@@ -7546,8 +8058,8 @@ msgstr ""
 msgid "Signature"
 msgstr ""
 
+#: core/resources/js/components/updates/signature.js
 #: core/resources/js/pages/admin/system/Plugins.vue
-#: core/resources/js/pages/admin/system/Updates.vue
 msgid "Signed by {name}, a publisher this site trusts."
 msgstr ""
 
@@ -7576,8 +8088,8 @@ msgstr ""
 msgid "Signed out."
 msgstr ""
 
+#: core/resources/js/components/updates/signature.js
 #: core/resources/js/pages/admin/system/Plugins.vue
-#: core/resources/js/pages/admin/system/Updates.vue
 msgid "Signed with a key this site does not trust ({key})."
 msgstr ""
 
@@ -7605,9 +8117,12 @@ msgstr ""
 msgid "Single-entry answers only"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/builder/useCatalog.js
+#: core/src/Cms/Admin/AdminRegistry.php
 #: core/src/Cms/Console/Backup/BackupRestoreCommand.php
+#: core/src/Cms/Console/ImportWordPressCommand.php
 msgid "Site"
 msgstr ""
 
@@ -7644,8 +8159,16 @@ msgstr ""
 msgid "Size (%)"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Skip the two-step code when the provider says it already asked for a second factor."
+msgstr ""
+
 #: core/resources/js/layouts/Admin.vue
 msgid "Skip to content"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Skipped"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -7662,6 +8185,10 @@ msgstr ""
 
 #: core/src/Cms/Blocks/CoreListBlocks.php
 msgid "Social links"
+msgstr ""
+
+#: core/src/Cms/Demo/content/bakery.php
+msgid "Soda bread for a quiet Sunday"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDesign.vue
@@ -7819,6 +8346,14 @@ msgstr ""
 msgid "Start writing"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Started"
+msgstr ""
+
+#: core/resources/js/components/audit/events.js
+msgid "Started switching back to the version before an update"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Themes.vue
 msgid "Starting look"
 msgstr ""
@@ -7829,6 +8364,7 @@ msgid "State"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Index.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Queue.vue
 #: core/resources/js/pages/admin/users/Edit.vue
 #: core/resources/js/pages/admin/users/Index.vue
@@ -7839,6 +8375,7 @@ msgstr ""
 msgid "Step"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Queue.vue
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "Stop"
@@ -7858,6 +8395,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Stop this email"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Stopped"
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
@@ -8023,6 +8564,16 @@ msgstr ""
 msgid "Suspended"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Updates.vue
+msgid "Switch back to Kestello {v}?"
+msgstr ""
+
+#: core/resources/js/pages/admin/appearance/Themes.vue
+#: core/resources/js/pages/admin/system/Plugins.vue
+#: core/resources/js/pages/admin/system/Updates.vue
+msgid "Switch back to {v}"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Themes.vue
 msgid "Switch the site to it now"
 msgstr ""
@@ -8031,8 +8582,36 @@ msgstr ""
 msgid "Switch theme (now {mode})"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Plugins.vue
+msgid "Switch {plugin} back to {v}?"
+msgstr ""
+
+#: core/resources/js/pages/admin/appearance/Themes.vue
+msgid "Switch {theme} back to {v}?"
+msgstr ""
+
+#: core/resources/js/components/audit/events.js
+msgid "Switched back to the version before an update"
+msgstr ""
+
 #: core/resources/js/components/audit/events.js
 msgid "Switched theme"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Updates.vue
+msgid "Switching back to Kestello {v} did not finish. The audit log says why."
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "Switching {name} back from {to} to {from} started {date} and did not finish."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Plugins.vue
+msgid "Switching {plugin} back to {v} did not finish. The audit log says why."
+msgstr ""
+
+#: core/resources/js/pages/admin/appearance/Themes.vue
+msgid "Switching {theme} back to {v} did not finish. Site → Updates and the audit log say why."
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -8264,6 +8843,10 @@ msgstr ""
 msgid "The admin, emails and the text your theme shows on its own use this language. Language packs add more."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "The background worker is importing. You can leave this screen."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "The background worker is moving them. You can leave this screen."
 msgstr ""
@@ -8313,6 +8896,10 @@ msgstr ""
 msgid "The database is backed up, visitors see a short maintenance page, and the site is checked on the new release: database changes, every active plugin, the home page. If anything is wrong, {v} and the database come back."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "The database is backed up, visitors see a short maintenance page, and the site is checked with the new version. If anything is wrong, {v} and the database come back."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Content/PreviewEntryBlocks.php
 msgid "The entry being edited; empty for one not saved yet."
 msgstr ""
@@ -8353,6 +8940,14 @@ msgstr ""
 msgid "The https:// URL the receiving service gave you."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "The import stopped by itself"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "The import was stopped"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Queue.vue
 msgid "The job and its error are removed. This cannot be undone."
 msgstr ""
@@ -8363,6 +8958,10 @@ msgstr ""
 
 #: core/resources/js/components/content-types/FieldSettings.vue
 msgid "The key each answer is stored under. Starts with a letter; lowercase letters, digits and underscores."
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "The key is sent only to {name}’s own update server, to look for and download new versions. It is stored encrypted and not shown again."
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Index.vue
@@ -8379,6 +8978,14 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/GetSecurity.php
 msgid "The last week"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "The license key for {name} was removed."
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "The license key for {name} was saved."
 msgstr ""
 
 #: core/resources/js/pages/admin/NotFound.vue
@@ -8497,6 +9104,10 @@ msgstr ""
 msgid "The site as it is now is backed up first, and put back by itself if the restore fails."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "The site belongs to"
+msgstr ""
+
 #: core/src/Framework/Core/ErrorWords.php
 msgid "The site couldn’t show this page."
 msgstr ""
@@ -8515,6 +9126,10 @@ msgstr ""
 
 #: core/src/Framework/Core/ErrorWords.php
 msgid "The site is being updated. Try again in a few minutes."
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "The site is putting it back. Reload the page in a moment."
 msgstr ""
 
 #: core/resources/js/pages/admin/Settings.vue
@@ -8539,6 +9154,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "The site's changes and any draft go. The current version stays in the history."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "The site's profiles elsewhere, such as LinkedIn, Mastodon or GitHub: one https:// address per line. They tell search engines these belong to the same organization or person."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -8574,6 +9193,14 @@ msgstr ""
 msgid "The theme's version is open as a draft. Yours stays live until you publish."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "The title of every page. {title} is the page's title (or its search title), {site} the site name, {tagline} the tagline and {sep} the separator."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "The title of the home page, with the same placeholders."
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "The title, date, image or another field of the entry being viewed, or of each entry in a list."
 msgstr ""
@@ -8590,6 +9217,15 @@ msgstr ""
 msgid "The type's fields; single-entry answers only"
 msgstr ""
 
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "The update of {name} from {from} to {to} started {date} and is still running on the server."
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "The update of {name} from {from} to {to} started {date} and stopped before it finished."
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "The update was not applied"
@@ -8635,7 +9271,7 @@ msgstr ""
 msgid "Their username"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/Updates.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 msgid "Theme"
 msgstr ""
 
@@ -8702,6 +9338,10 @@ msgstr ""
 
 #: core/resources/js/ui/builder/useMulti.js
 msgid "These blocks are locked by the layout and can't be removed."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "These changed on this site after the last import, so the WordPress version did not replace them."
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -8830,6 +9470,11 @@ msgstr ""
 msgid "This form is closed."
 msgstr ""
 
+#: core/resources/js/components/demo/DemoBar.vue
+#: core/resources/js/pages/auth/Login.vue
+msgid "This is a demo"
+msgstr ""
+
 #: core/src/Cms/Redirects/Redirects.php
 msgid "This is not a valid regular expression."
 msgstr ""
@@ -8852,6 +9497,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/roles/Index.vue
 msgid "This is your own role, so you cannot change it. Ask an administrator."
+msgstr ""
+
+#: core/resources/js/pages/auth/CompleteRegistration.vue
+msgid "This link is invalid or has expired."
 msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
@@ -8934,6 +9583,7 @@ msgstr ""
 msgid "This type of file is not allowed here."
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "This update cannot be applied"
 msgstr ""
@@ -8977,6 +9627,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "To find it again later, such as: before the redesign."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "To import"
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
@@ -9032,6 +9686,12 @@ msgstr ""
 msgid "Trashed"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Trust the provider's two-step check"
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/KBuilder.vue
 msgid "Try again"
@@ -9148,6 +9808,10 @@ msgstr ""
 msgid "Typed or bookmarked"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Unchanged"
+msgstr ""
+
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/ui/builder/BuilderBar.vue
 #: core/resources/js/ui/builder/useDocument.js
@@ -9248,6 +9912,10 @@ msgstr ""
 msgid "Up to 100 who don't"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Up to date, checked {date}"
+msgstr ""
+
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/src/Cms/Forms/Forms.php
 msgid "Up to {count} files, {size} MB each."
@@ -9262,6 +9930,10 @@ msgstr ""
 msgid "Up to {size} per file."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Up to {size}."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Update"
 msgstr ""
@@ -9274,13 +9946,22 @@ msgstr ""
 msgid "Update to Kestello {v}?"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Update to {v}"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "Update {name} to {v}?"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "Update {plugin}?"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Updated"
 msgstr ""
 
 #: core/resources/js/components/audit/events.js
@@ -9295,10 +9976,20 @@ msgstr ""
 msgid "Updated a theme"
 msgstr ""
 
+#: core/resources/js/pages/admin/appearance/Themes.vue
+#: core/resources/js/pages/admin/system/Plugins.vue
+msgid "Updated from {v} on {date}."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Updates.vue
+msgid "Updated from {v} on {date}. Kestello {v} and the backup from before the update are kept, so you can go back to it."
+msgstr ""
+
 #: core/resources/js/components/audit/events.js
 msgid "Updated their profile"
 msgstr ""
 
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 #: core/src/Cms/Package/PackagesModule.php
 msgid "Updates"
@@ -9336,6 +10027,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Upload images and documents here, then use them in your pages and posts."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Upload it here. Nothing is imported until you have seen what will come over."
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreBlocks.php
@@ -9392,6 +10087,10 @@ msgstr ""
 
 #: core/src/Cms/Menus/Menus.php
 msgid "Use a web address (https://…), mailto:, tel:, a path starting with / or an #anchor."
+msgstr ""
+
+#: core/resources/js/pages/auth/Register.vue
+msgid "Use an address at {domains}."
 msgstr ""
 
 #: core/resources/js/components/content-types/FieldSettings.vue
@@ -9475,6 +10174,7 @@ msgid "Useful as a backup until you have checked the new disk. They take space u
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 #: core/src/Cms/Auth/Roles.php
 msgid "User"
 msgstr ""
@@ -9515,6 +10215,7 @@ msgid "Verify"
 msgstr ""
 
 #: core/resources/js/components/content/StudioPublish.vue
+#: core/resources/js/components/updates/PackageUpdates.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Version"
@@ -9573,12 +10274,28 @@ msgstr ""
 msgid "Visible to people who manage accounts."
 msgstr ""
 
+#: core/src/Cms/Demo/content/bakery.php
+msgid "Visit us"
+msgstr ""
+
 #: core/resources/js/ui/KBlockSettings.vue
 msgid "Visitors"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Visitors and search engines following an old link land on the same page here. A redirect only applies where nothing else lives at that address."
+msgstr ""
+
+#: core/resources/js/components/updates/StoppedUpdate.vue
+msgid "Visitors see the maintenance page until it ends. When the server stops an update, its last check can keep running for a few minutes; the site puts everything back as soon as it ends. If this message is still here in an hour, ask your host to restart PHP for this site."
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Visitors to {from} will see the \"not found\" page."
+msgstr ""
+
+#: core/resources/js/pages/admin/Settings.vue
+msgid "Visitors who are signed in always get fresh pages. Saving content refreshes the pages it appears on."
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -9597,6 +10314,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Waiting for review. An editor publishes it or asks for changes, and you are told either way."
+msgstr ""
+
+#: core/resources/js/pages/admin/Profile.vue
+msgid "Waiting for {email} to be confirmed: open the link sent there."
 msgstr ""
 
 #: core/resources/js/components/content-types/field-labels.js
@@ -9628,6 +10349,7 @@ msgid "Weights"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Audit.vue
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "What"
 msgstr ""
@@ -9654,6 +10376,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "What it may do"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "What new accounts may do. Admin is never given this way."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -9684,12 +10410,20 @@ msgstr ""
 msgid "What visitors and search engines see."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "What was imported stays. Try again carries on with the rest."
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "What will use it, so you recognise it later."
 msgstr ""
 
 #: core/src/Cms/Api/Resources/EntryResource.php
 msgid "What you may do with it: update, publish, delete, …"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "What {sep} becomes."
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -9708,6 +10442,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "When a page moved"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "When someone signs in with a provider that confirmed their email, connect it to the account with that address. Leave off unless you trust every provider you use."
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
@@ -9739,7 +10477,7 @@ msgid "Where it is used"
 msgstr ""
 
 #: core/src/Cms/Api/Resources/MediaResource.php
-msgid "Where it is used; single-item answers only"
+msgid "Where it is used; single-item answers only, and only entries the viewer may open"
 msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
@@ -9770,6 +10508,10 @@ msgstr ""
 msgid "Where you are signed in"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people under Users."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/GetMe.php
 msgid "Whether the role should use it"
 msgstr ""
@@ -9793,6 +10535,10 @@ msgstr ""
 #: core/resources/js/pages/admin/system/Audit.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Who"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Who can create an account"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue
@@ -9823,6 +10569,11 @@ msgstr ""
 msgid "Whole numbers only"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "Whose name each post carries here. People are matched by email address, then by username."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Why"
 msgstr ""
@@ -9849,6 +10600,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Withdraw (back to draft)"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "WordPress export file"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDetails.vue
@@ -9989,6 +10744,7 @@ msgid "Your current codes stop working."
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Index.vue
+#: core/src/Cms/Demo/content/bakery.php
 msgid "Your name"
 msgstr ""
 
@@ -10050,6 +10806,30 @@ msgstr ""
 msgid "ZIP files. Off by default: archives can hide anything."
 msgstr ""
 
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_aioseop_description"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_aioseop_title"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_seopress_titles_desc"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_seopress_titles_title"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_yoast_wpseo_metadesc"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "_yoast_wpseo_title"
+msgstr ""
+
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/builder/useCatalog.js
 msgid "a field"
@@ -10098,6 +10878,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "backup kept {when}"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "by {author}"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -10240,8 +11024,16 @@ msgstr ""
 msgid "null for a browser session (no narrowing)"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "of {total}"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "of {total} moved"
+msgstr ""
+
+#: core/resources/js/components/admin/AdminNav.vue
+msgid "opens in a new tab"
 msgstr ""
 
 #: core/resources/js/pages/auth/Login.vue
@@ -10279,6 +11071,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "people use it"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "rank_math_description"
+msgstr ""
+
+#: core/src/Cms/Import/WordPress/SeoMeta.php
+msgid "rank_math_title"
 msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
@@ -10631,6 +11431,11 @@ msgstr ""
 msgid "{n, plural, one {# attempt} other {# attempts}}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# comment is} other {# comments are}} not imported: visitor comments are not part of Kestello."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Api.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {# endpoint} other {# endpoints}}"
@@ -10646,6 +11451,11 @@ msgstr ""
 msgid "{n, plural, one {# field} other {# fields}}"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Import.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# item} other {# items}} could not be imported. The reason is next to each."
+msgstr ""
+
 #: core/resources/js/pages/admin/forms/Index.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {# new} other {# new}}"
@@ -10654,6 +11464,11 @@ msgstr ""
 #: core/resources/js/pages/admin/system/Security.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{n, plural, one {# person} other {# people}}"
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{n, plural, one {# post} other {# posts}}"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Terms.vue
@@ -10782,6 +11597,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/users/Edit.vue
 msgid "{name} was deleted."
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "{name} {v} and the database were put back. The site runs as before."
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "{name} {v} is running."
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Styles.vue
@@ -10944,6 +11767,14 @@ msgstr ""
 msgid "{plugin} was updated to {v}."
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Plugins.vue
+msgid "{plugin} {v} is back, with the database from before the update."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Plugins.vue
+msgid "{plugin} {v} is still on the server. Switching back also puts the database back as it was before the update, on {date}: anything changed on the site since then is lost from the site. A backup of the site as it is now is made first, under Site → Backups. Visitors see a short maintenance page."
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "{provider} was disconnected."
 msgstr ""
@@ -10958,6 +11789,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "{rows} rows in {tables} tables came back. Everyone was signed out, you too: sign in with an account from the backup."
+msgstr ""
+
+#: core/resources/js/pages/admin/system/Import.vue
+msgid "{site} is here"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
@@ -10980,6 +11815,14 @@ msgstr ""
 msgid "{theme} was updated."
 msgstr ""
 
+#: core/resources/js/pages/admin/appearance/Themes.vue
+msgid "{theme} {v} is back, with the database from before the update."
+msgstr ""
+
+#: core/resources/js/pages/admin/appearance/Themes.vue
+msgid "{theme} {v} is still on the server. Switching back also puts the database back as it was before the update, on {date}: anything changed on the site since then is lost from the site. A backup of the site as it is now is made first, under Site → Backups. Visitors see a short maintenance page."
+msgstr ""
+
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "{title}, level {level}. Alt and arrow keys move it."
 msgstr ""
@@ -10991,6 +11834,14 @@ msgstr ""
 #: core/resources/js/ui/builder/DesignColor.vue
 #: core/resources/js/ui/builder/DesignScale.vue
 msgid "{value}, as on {screen}"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "{v} available"
+msgstr ""
+
+#: core/resources/js/components/updates/PackageUpdates.vue
+msgid "{v} needs Kestello {core}"
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue

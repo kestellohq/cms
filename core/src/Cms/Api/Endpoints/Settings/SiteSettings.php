@@ -117,6 +117,34 @@ final class SiteSettings
                 'secrets' => [],
                 'defaults' => array_combine(array_map(static fn($t) => 'permalink_' . $t->name, self::datedTypes()), array_map(static fn($t) => $t->getPermalink(), self::datedTypes())) + ['front_page' => '', 'feed_items' => 10, 'discourage_search' => false, 'robots_txt' => ''],
             ] + $core,
+            'seo' => [
+                'label' => 'Search and sharing',
+                'description' => 'How your pages appear in search results, browser tabs and link previews.',
+                'schema' => Schema::object([
+                    'seo_title_pattern' => Schema::string()->min(1)->max(150)->optional()
+                        ->description('The title of every page. {title} is the page\'s title (or its search title), {site} the site name, {tagline} the tagline and {sep} the separator.'),
+                    'seo_home_pattern' => Schema::string()->min(1)->max(150)->optional()->description('The title of the home page, with the same placeholders.'),
+                    'seo_separator' => Schema::enum(\Kestello\Cms\Site\SeoTitle::SEPARATORS)->optional()->description('What {sep} becomes.'),
+                    'seo_image' => Schema::int()->min(0)->format('media')->optional()
+                        ->description('Shown in link previews of pages that have no image of their own.'),
+                    'seo_publisher_type' => Schema::enum(['organization' => 'An organization or business', 'person' => 'A person'])->optional()
+                        ->description('Search engines show this as who is behind the site.'),
+                    'seo_publisher_name' => Schema::string()->max(150)->optional()->description('Left empty, the site name is used.'),
+                    'seo_publisher_logo' => Schema::int()->min(0)->format('media')->optional()
+                        ->description('A square logo, or a photo for a person, at least 112 pixels wide.'),
+                    'seo_profiles' => Schema::string()->max(4000)->format('multiline')->optional()
+                        ->description('The site\'s profiles elsewhere, such as LinkedIn, Mastodon or GitHub: one https:// address per line. They tell search engines these belong to the same organization or person.'),
+                ]),
+                'labels' => [
+                    'seo_title_pattern' => 'Page titles', 'seo_home_pattern' => 'Home page title', 'seo_separator' => 'Separator', 'seo_image' => 'Default sharing image',
+                    'seo_publisher_type' => 'The site belongs to', 'seo_publisher_name' => 'Name', 'seo_publisher_logo' => 'Logo or photo', 'seo_profiles' => 'Profiles on other sites',
+                ],
+                'secrets' => [],
+                'defaults' => [
+                    'seo_title_pattern' => \Kestello\Cms\Site\SeoTitle::PAGE, 'seo_home_pattern' => \Kestello\Cms\Site\SeoTitle::HOME, 'seo_separator' => \Kestello\Cms\Site\SeoTitle::SEPARATOR, 'seo_image' => 0,
+                    'seo_publisher_type' => 'organization', 'seo_publisher_name' => '', 'seo_publisher_logo' => 0, 'seo_profiles' => '',
+                ],
+            ] + $core,
             'mail' => [
                 'label' => 'Email',
                 'description' => 'How the site sends password resets and notifications. Without SMTP, PHP mail() is used and messages often land in spam.',
@@ -134,6 +162,41 @@ final class SiteSettings
                 'defaults' => ['mail_from_address' => '', 'mail_from_name' => '', 'smtp_host' => '', 'smtp_port' => 587, 'smtp_encryption' => 'tls', 'smtp_username' => '', 'smtp_password' => ''],
                 // Password reset links travel through this server: whoever sets it can read them.
                 'capability' => 'system.manage',
+            ] + $core,
+            'accounts' => [
+                'label' => 'Accounts',
+                'description' => 'Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people under Users.',
+                'schema' => Schema::object([
+                    'registration' => Schema::enum([
+                        'closed' => 'Nobody: you add people yourself',
+                        'open' => 'Anyone',
+                        'domains' => 'Only people with an address at the domains below',
+                    ])->optional()->description('Email sign-up proves the address with a link before the account exists.'),
+                    'registration_domains' => Schema::string()->max(1000)->optional()->description('Separate them with commas, for example example.com, example.org.'),
+                    'default_role' => Schema::enum(self::selfServiceRoles())->optional()->description('What new accounts may do. Admin is never given this way.'),
+                    'link_by_verified_email' => Schema::bool()->optional()
+                        ->description('When someone signs in with a provider that confirmed their email, connect it to the account with that address. Leave off unless you trust every provider you use.'),
+                    'trust_provider_mfa' => Schema::bool()->optional()
+                        ->description('Skip the two-step code when the provider says it already asked for a second factor.'),
+                ]),
+                'labels' => [
+                    'registration' => 'Who can create an account',
+                    'registration_domains' => 'Allowed email domains',
+                    'default_role' => 'Role for new accounts',
+                    'link_by_verified_email' => 'Connect provider sign-ins by email',
+                    'trust_provider_mfa' => 'Trust the provider\'s two-step check',
+                ],
+                'secrets' => [],
+                'defaults' => [
+                    'registration' => (string) $config?->get('auth.registration', 'closed'),
+                    'registration_domains' => implode(', ', (array) $config?->get('auth.registration_domains', [])),
+                    'default_role' => (string) $config?->get('auth.default_role', 'user'),
+                    'link_by_verified_email' => (bool) $config?->get('auth.link_by_verified_email', false),
+                    'trust_provider_mfa' => (bool) $config?->get('auth.trust_provider_mfa', false),
+                ],
+                // Read by AccountPolicy as auth.<key>. Opening sign-up hands out accounts: user managers decide.
+                'prefix' => 'auth.',
+                'capability' => 'users.manage',
             ] + $core,
             'media' => [
                 'label' => 'Media',
@@ -183,6 +246,23 @@ final class SiteSettings
                 'defaults' => ['snippet_head' => '', 'snippet_body' => '', 'snippet_footer' => ''],
             ] + ['capability' => 'snippets.manage'] + $core,
         ];
+    }
+
+    /**
+     * Roles people may get by creating their own account: every role but admin.
+     *
+     * @return array<string, string>
+     */
+    private static function selfServiceRoles(): array
+    {
+        $roles = [];
+        foreach (Cms::instance()?->auth->roles->roles() ?? ['user' => ['label' => 'User']] as $name => $role) {
+            if ($name !== 'admin') {
+                $roles[$name] = $role['label'];
+            }
+        }
+
+        return $roles !== [] ? $roles : ['user' => 'User'];
     }
 
     /** One "Post addresses" choice per dated type. @return array<string, Schema> */
@@ -278,8 +358,8 @@ final class SiteSettings
         }
         if ($rows !== []) {
             // Plugin keys share the group plugin:config lists ("plugin.<slug>").
-            $storeGroup = $group['prefix'] === '' ? null : implode('.', array_slice(explode('.', $group['prefix']), 0, 2));
-            Settings::getInstance()->setMany($rows, $storeGroup ?? $id);
+            $storeGroup = $group['owner'] === 'core' ? $id : implode('.', array_slice(explode('.', $group['prefix']), 0, 2));
+            Settings::getInstance()->setMany($rows, $storeGroup);
         }
 
         return array_keys($values);

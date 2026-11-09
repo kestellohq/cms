@@ -64,7 +64,7 @@ final class ContentModule extends Provider
         $cms->admin->page('taxonomies/{taxonomy}', '@core/admin/content/Terms', 'Terms', 'content.access');
 
         $cms->auth->roles->capability('content_models.manage', 'Build content types, fields and taxonomies');
-        $cms->admin->page('content-types', '@core/admin/content-types/Index', 'Content types', 'content_models.manage', ['label' => 'Content types', 'icon' => 'tree-structure', 'group' => 'system', 'order' => 50]);
+        $cms->admin->page('content-types', '@core/admin/content-types/Index', 'Content types', 'content_models.manage', ['label' => 'Content types', 'icon' => 'tree-structure', 'group' => 'system', 'order' => 40]);
         $cms->admin->page('content-types/{id}', '@core/admin/content-types/Edit', 'Content type', 'content_models.manage', where: ['id' => AdminRegistry::ID]);
         $cms->admin->page('menus', '@core/admin/menus/Index', 'Menus', 'menus.manage', ['label' => 'Menus', 'icon' => 'tree-view', 'group' => 'appearance', 'order' => 10]);
 

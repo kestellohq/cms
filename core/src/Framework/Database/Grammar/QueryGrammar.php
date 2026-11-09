@@ -38,8 +38,12 @@ abstract class QueryGrammar
             return $this->wrap($m[1]) . ' AS ' . $this->quoteName($m[2]);
         }
 
+        if ($identifier === '*') {
+            return '*';
+        }
         if (!self::isPlain($identifier)) {
-            return $identifier;
+            // never pass a string through as SQL: a column name built from input would be injection
+            throw new \InvalidArgumentException('Not a column or table name: "' . mb_substr($identifier, 0, 80) . '". Use name, table.name, name AS alias, or new Expression(…) for raw SQL.');
         }
 
         return implode('.', array_map(

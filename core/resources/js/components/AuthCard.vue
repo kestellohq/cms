@@ -9,7 +9,6 @@ import { KAlert } from '@kestello/ui';
 const props = defineProps({
     title: { type: String, required: true },
     description: { type: String, default: '' },
-    code: { type: String, default: '' }, // kept for compatibility; no longer shown
 });
 
 const page = usePage();

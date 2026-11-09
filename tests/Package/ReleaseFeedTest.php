@@ -24,6 +24,9 @@ final class ReleaseFeedTest extends TestCase
             'published_at' => '2026-11-06T10:00:00Z',
             'html_url' => "https://github.com/{$repo}/releases/tag/v{$version}",
             'assets' => [
+                // the install zip comes first, as on a real release: updates must never take it
+                ['name' => "kestello-{$version}.zip", 'browser_download_url' => $base . "kestello-{$version}.zip"],
+                ['name' => "kestello-{$version}.zip.sha256", 'browser_download_url' => $base . "kestello-{$version}.zip.sha256"],
                 ['name' => "kestello-core-{$version}.zip", 'browser_download_url' => $base . "kestello-core-{$version}.zip"],
                 ['name' => "kestello-core-{$version}.zip.sha256", 'browser_download_url' => $base . "kestello-core-{$version}.zip.sha256"],
                 ['name' => 'kestello.stub.php', 'browser_download_url' => $base . 'kestello.stub.php'],
@@ -34,7 +37,7 @@ final class ReleaseFeedTest extends TestCase
     public function testOnlyPublishedVersionedReleasesWithBothFilesCountNewestFirst(): void
     {
         $evil = self::release('9.0.0');
-        $evil['assets'][0]['browser_download_url'] = 'https://evil.example/kestello-core-9.0.0.zip';
+        $evil['assets'][2]['browser_download_url'] = 'https://evil.example/kestello-core-9.0.0.zip';
         $releases = ReleaseFeed::parse([
             self::release('1.2.0'),
             self::release('1.10.0'),
@@ -50,6 +53,17 @@ final class ReleaseFeedTest extends TestCase
         $this->assertSame(['1.11.0-beta.1', '1.10.0', '1.2.0'], array_column($releases, 'version'));
         $this->assertTrue($releases[0]['prerelease']);
         $this->assertSame('https://github.com/kestellohq/cms/releases/download/v1.10.0/kestello-core-1.10.0.zip', $releases[1]['zip']);
+    }
+
+    public function testUpdatesUseTheCoreZipNeverTheInstallZip(): void
+    {
+        $release = ReleaseFeed::parse([self::release('1.2.0')], 'kestellohq/cms')[0];
+        $this->assertStringEndsWith('/kestello-core-1.2.0.zip', $release['zip']);
+        $this->assertStringEndsWith('/kestello-core-1.2.0.zip.sha256', $release['sha256']);
+
+        $installOnly = self::release('1.3.0');
+        $installOnly['assets'] = array_slice($installOnly['assets'], 0, 2);
+        $this->assertSame([], ReleaseFeed::parse([$installOnly], 'kestellohq/cms'), 'a release with only the install zip is no update');
     }
 
     public function testFilesFromAnotherRepositoryAreLeftOut(): void

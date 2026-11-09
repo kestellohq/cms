@@ -227,12 +227,12 @@ final class BlocksTest extends AuthTestCase
         $this->assertArrayNotHasKey('placeholder', (array) $link['options'], 'not as text that vanishes on typing');
     }
 
-    public function testRichTextBodiesBecomeATextBlock(): void
+    public function testHtmlInAFieldChangedToBlocksBecomesATextBlock(): void
     {
         $this->assertSame('blocks', $this->cms->content->get('page')->getField('body')->type, 'page bodies are block trees');
         [$clean, $errors] = $this->blocks()->validate('<p>Old <script>x</script>page</p>');
         $this->assertSame([], $errors);
-        $this->assertSame(['core/text', '<p>Old page</p>'], [$clean[0]['type'], ((array) $clean[0]['props'])['text']], 'HTML saved before the switch is kept as one text block');
+        $this->assertSame(['core/text', '<p>Old page</p>'], [$clean[0]['type'], ((array) $clean[0]['props'])['text']], 'HTML from when the field was rich text is kept as one text block');
         $this->assertSame([], $this->blocks()->validate('')[0]);
         $this->assertSame('<p>Old page</p>', ((array) $this->blocks()->prepare('<p>Old page</p>', new BlockContext())[0]['props'])['text']);
     }
@@ -258,6 +258,18 @@ final class BlocksTest extends AuthTestCase
             $this->assertStringStartsWith('Block 1 (Heading), Text: ', $errors[0]);
         }
         $this->assertSame([], $this->blocks()->validate([self::node('core/heading', ['text' => ['bind' => 'entry.title']])])[1], 'data counts as text');
+    }
+
+    public function testATextFieldTakesTheLengthItAsksFor(): void
+    {
+        $item = static fn(int $n) => [self::node('core/list', ['ordered' => false, 'items' => [['text' => str_repeat('a', $n)]]])];
+        $this->assertSame([], $this->blocks()->validate($item(500))[1], 'a list item asks for 500, above the 255 a text field holds by default');
+        $this->assertStringEndsWith('Must be at most 500 characters.', $this->blocks()->validate($item(501))[1][0] ?? '');
+
+        $types = new \Kestello\Cms\Content\FieldTypes();
+        $this->assertSame(255, $types->describe([Field::text('t')])[0]['options']->max, 'the default');
+        $this->assertSame(2000, $types->describe([Field::text('t')->max(50_000)])[0]['options']->max, 'a single line stays a line');
+        $this->assertSame(255, $types->describe([Field::email('e')->max(1000)])[0]['options']->max, 'an email address is never longer');
     }
 
     public function testABrokenBlockIsDroppedNotWhatHoldsIt(): void
@@ -320,15 +332,17 @@ final class BlocksTest extends AuthTestCase
         $this->assertNull(CoreBlocks::embed('https://www.youtube.com/watch?v=short'));
 
         [$clean, $errors] = $this->blocks()->validate([
-            self::node('core/separator', ['style' => 'dots']),
+            self::node('core/separator', ['look' => 'dots']),
             self::node('core/code', ['code' => "<?php echo 1;\n", 'language' => 'PHP']),
             self::node('core/details', ['summary' => 'Opening hours', 'text' => '<p>From 7 <script>x</script></p>', 'open' => true]),
         ]);
         $this->assertSame([], $errors);
-        $this->assertSame(['look' => 'dots'], (array) $clean[0]['props'], 'saved as "style" once: renamed, since Vue keeps that name for itself');
+        $this->assertSame(['look' => 'dots'], (array) $clean[0]['props']);
         $this->assertStringContainsString('<?php echo 1;', ((array) $clean[1]['props'])['code'], 'code is kept as typed (escaped when shown)');
         $this->assertSame('<p>From 7 </p>', ((array) $clean[2]['props'])['text']);
-        $bad = $this->blocks()->validate([self::node('core/separator', ['style' => 'zigzag']), self::node('core/code', []), self::node('core/details', ['text' => '<p>x</p>'])])[1];
+        [$styled] = $this->blocks()->validate([self::node('core/separator', ['style' => 'dots'])]);
+        $this->assertFalse(array_key_exists('look', (array) ($styled[0]['props'] ?? [])), 'a prop called "style" is not taken for the look');
+        $bad = $this->blocks()->validate([self::node('core/separator', ['look' => 'zigzag']), self::node('core/code', []), self::node('core/details', ['text' => '<p>x</p>'])])[1];
         $this->assertCount(3, $bad, implode("\n", $bad));
     }
 

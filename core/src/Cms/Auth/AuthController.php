@@ -23,7 +23,19 @@ final class AuthController
     public function showLogin(Request $request): Response
     {
         $this->session()->token();   // the form posts with a CSRF token: start the session (guests browsing get none)
-        return Page::render('@core/auth/Login', ['title' => 'Login', 'providers' => self::providers($request)]);
+        return Page::render('@core/auth/Login', [
+            'title' => 'Login',
+            // a public demo has one shared account: no outside sign-in, no new accounts
+            'providers' => $this->demo() ? [] : self::providers($request),
+            'canRegister' => !$this->demo() && $this->service(Registrations::class)->isOpen(),
+        ]);
+    }
+
+    private function demo(): bool
+    {
+        $cms = \Kestello\Cms\Cms::instance();
+
+        return $cms !== null && \Kestello\Cms\Demo\Demo::on($cms->config);
     }
 
     public function login(Request $request): Response
@@ -93,6 +105,23 @@ final class AuthController
         $this->session()->flash('success', ForgotPassword::MESSAGE);
 
         return Response::redirect('/forgot-password');
+    }
+
+    /** The link a new email address was sent: the account takes the address, or the person is told why not. */
+    public function confirmEmail(Request $request): Response
+    {
+        $cms = Cms::instance();
+        $result = $cms === null || !$cms->container->has(EmailChanges::class)
+            ? 'Email changes are not available on this site.'
+            : $cms->container->make(EmailChanges::class)->confirm((string) $request->input('token', ''), $request->ip());
+        if (is_string($result)) {
+            $this->session()->flash('error', $result);
+        } else {
+            $cms?->audit->record('profile.email_confirmed', ['user', $result['user_id']], [], $result['user_id']);
+            $this->session()->flash('success', 'Your new email address is confirmed.');
+        }
+
+        return Response::redirect('/admin/profile');
     }
 
     public function showReset(Request $request): Response

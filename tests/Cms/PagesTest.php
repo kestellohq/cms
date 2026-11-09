@@ -41,7 +41,7 @@ final class PagesTest extends TestCase
         }
         $loginCss = implode(' ', $registry->get('@core/auth/Login')['css']);
         $this->assertTrue(str_contains($loginCss, '/css/admin-ui.css?h=') && str_contains($loginCss, '/css/phosphor.css?h='), 'sign-in wears the UI kit and its icons');
-        $this->assertFalse(str_contains($loginCss, 'bootstrap'), 'Bootstrap is gone');
+        $this->assertFalse(str_contains($loginCss, 'bootstrap'), 'no CSS framework besides the UI kit');
         $templateCss = $registry->get('@core/admin/appearance/TemplateEdit')['css'];
         $this->assertTrue((bool) array_filter($templateCss, static fn($u) => preg_match('#/build/assets/index-[^/]+\.css$#', $u) === 1), 'admin pages load the UI kit components\' own styles (the builder\'s layout lives there)');
         foreach (['@core/content/Entry', '@core/content/Search', '@core/blocks/Heading', '@core/errors/Error'] as $site) {
@@ -67,6 +67,18 @@ final class PagesTest extends TestCase
         $this->assertSame('/login?x=1', $page['url']);
     }
 
+    public function testTheBlocksStylesheetsAreKeptWhenThePageChanges(): void
+    {
+        $html = $this->renderer([])
+            ->render($this->request(), new PageResponse('@core/content/Entry', ['title' => 'Home'], preload: ['@core/blocks/Buttons']), new Response())
+            ->content();
+
+        // the browser loads a block once and never adds its stylesheet again, so moving to another page must not drop it
+        $this->assertTrue((bool) preg_match('#href="/assets/core/[^"]*/Buttons-[^"]+\.css" data-kestello-css data-kestello-keep>#', $html), 'a block\'s stylesheet is kept');
+        preg_match_all('#<link rel="stylesheet" href="[^"]+" data-kestello-css>#', $html, $page);
+        $this->assertNotSame([], $page[0], 'the page\'s own are swapped');
+    }
+
     public function testFirstVisitGetsSafeHtmlShell(): void
     {
         $html = $this->renderer(['site' => ['name' => 'A&B']])
@@ -75,6 +87,11 @@ final class PagesTest extends TestCase
 
         $nonce = $this->csp->nonce();
         $this->assertContains('<title>&lt;/title&gt;&lt;script&gt;x&lt;/script&gt; - A&amp;B</title>', $html);
+
+        $seo = $this->renderer(['site' => ['name' => 'Bakery']])
+            ->render($this->request(), new PageResponse('@core/content/Entry', ['title' => 'Rye', 'seo' => ['title' => 'Rye bread in three days']]), new Response())
+            ->content();
+        $this->assertContains('<title>Rye bread in three days - Bakery</title>', $seo, 'a search title replaces the page title');
         $this->assertNotContains('</script><img', $html, 'props cannot break out of the JSON script');
         $this->assertContains(substr(json_encode('</script><img', JSON_HEX_TAG | JSON_UNESCAPED_SLASHES), 1, -1), $html);
         $this->assertContains("<script type=\"importmap\" nonce=\"{$nonce}\">", $html);

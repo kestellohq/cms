@@ -52,6 +52,10 @@ final class CoreHooks
         $hooks->filter('page.footer', '0.1.0', 'string', 'HTML right before </body> on public pages.', ['array $data' => 'The page props.'], $page);
         $hooks->filter('page.shared', '0.1.0', 'array', 'The data shared with every Vue page. It is sent to the browser, so never add secrets.', [], $page);
         $hooks->filter('seo.head', '0.1.0', 'list', 'The search and sharing tags of a page, as [\'meta\' or \'link\', attributes] pairs. Kestello escapes the attributes.', ['array $data' => 'The page props.'], $page);
+        $hooks->filter('seo.schema', '0.1.0', 'list', 'The schema.org nodes of a page\'s JSON-LD @graph (WebSite, Organization or Person, WebPage, Article, BreadcrumbList). Add, change or remove nodes; each needs an @type. Pages that are not listed in search get none.', ['array $data' => 'The page: component, props and url.'], $page);
+        $hooks->filter('seo.alternates', '0.1.0', 'list', 'The same page in other languages, as [\'hreflang\' => \'de\', \'href\' => \'/de/page\'] pairs, written as hreflang links. Invalid language tags and addresses are left out. Empty by default.', ['array $data' => 'The page: component, props and url.'], $page);
+        $hooks->filter('sitemap.files', '0.1.0', 'array', 'The files listed in /sitemap.xml, name => last change (DateTimeInterface or null). Add "<name>-<n>" to serve /sitemaps/<name>-<n>.xml and fill it with sitemap.urls.', [], $page);
+        $hooks->filter('sitemap.urls', '0.1.0', 'list', 'The addresses in one sitemap file, as [\'loc\' => \'/path\', \'lastmod\' => ?DateTimeInterface, \'images\' => [urls]]. Only addresses on this site are kept.', ['string $file' => 'The file name, such as post-1.'], $page);
         $hooks->filter('robots.txt', '0.1.0', 'string', 'The generated robots.txt.', [], $page);
         $hooks->filter('pagecache.query', '0.1.0', 'list', 'Query parameters that get their own page cache entry. The default is [\'page\'].', [], $page);
 
@@ -59,9 +63,13 @@ final class CoreHooks
 
         $auth = 'Accounts and sign-in';
         $hooks->filter('auth.password.errors', '0.1.0', 'list', 'Errors for a new password. Add your own rules; core\'s errors cannot be removed.', ['string $password' => 'The new password.', '?array $user' => 'The user, when known (username, email).'], $auth);
-        $hooks->filter('auth.can_register', '0.1.0', 'bool', 'Whether an external sign-in may create a new account.', ['ExternalIdentity $identity' => 'Who is signing in.'], $auth);
-        $hooks->filter('auth.default_role', '0.1.0', 'string', 'The role of an account created by an external sign-in. admin and unknown roles become user.', ['ExternalIdentity $identity' => 'Who is signing in.'], $auth);
-        $hooks->filter('auth.redirect_after_login', '0.1.0', 'string', 'Where to go after an external sign-in. The result must stay on this site.', ['array $user' => 'The user who signed in.'], $auth);
+        $who = [
+            'string $email' => 'The address the account would use. Empty when a provider shared none.',
+            '?ExternalIdentity $identity' => 'Who is signing in with a provider, or null for email sign-up.',
+        ];
+        $hooks->filter('auth.can_register', '0.1.0', 'bool', 'Whether someone may create an account, by email sign-up or by signing in with a provider.', $who, $auth);
+        $hooks->filter('auth.default_role', '0.1.0', 'string', 'The role of an account someone creates for themselves. admin and unknown roles become user.', $who, $auth);
+        $hooks->filter('auth.redirect_after_login', '0.1.0', 'string', 'Where to go after signing in with a provider or finishing email sign-up. The result must stay on this site.', ['array $user' => 'The user who signed in.'], $auth);
 
         $hooks->filter('media.scan', '0.1.0', '?string', 'Check an uploaded file, for example with a virus scanner. Return a message to reject the upload.', ['array $file' => 'filename, mime, size, path, disk and key.'], 'Media');
         $hooks->filter('backup.skip_tables', '0.1.0', 'list', 'Tables to leave out of backups, such as a large log table.', [], 'Backups');

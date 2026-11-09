@@ -8,7 +8,6 @@ use Closure;
 use Kestello\Cms\Audit\AuditSubscriber;
 use Kestello\Cms\Auth\External\AuthAttempts;
 use Kestello\Cms\Auth\External\ExternalAuthController;
-use Kestello\Cms\Auth\External\ExternalAuthPolicy;
 use Kestello\Cms\Auth\External\ExternalLogin;
 use Kestello\Cms\Auth\External\Identities;
 use Kestello\Cms\Auth\External\IdentityResolver;
@@ -30,15 +29,15 @@ use Kestello\Support\AppKey;
 use Kestello\Support\Html;
 
 /**
- * Core module: login, second factor, password reset, and the auth services
- * the API endpoints use.
+ * Core module: login, second factor, password reset, email sign-up, and the
+ * auth services the API endpoints use.
  *
  * Config (config/auth.php, returning ['password_min_length' => 12, ...]):
  *   password_min_length        12
  *   revoke_on_password_change  true   other sessions and all tokens end on a password change
  *   two_factor_roles           ['admin']  roles expected to use 2FA (reported now, enforced with the M3 enrollment screen)
  *   registration, registration_domains, default_role, link_by_verified_email, trust_provider_mfa
- *                              external sign-in policy (ExternalAuthPolicy; settings override)
+ *                              who may create an account (AccountPolicy; settings override)
  */
 final class AuthModule extends Provider
 {
@@ -74,11 +73,14 @@ final class AuthModule extends Provider
             $c->singleton('auth.mail', static fn(): Closure => static fn(string $to, string $subject, string $html): bool => (new Mailer())->send($to, $subject, $html));
         }
         $c->singleton(Identities::class, static fn(): Identities => new Identities());
+        $c->singleton(NewAccounts::class, static fn(): NewAccounts => new NewAccounts(
+            $cms()?->auth->roles ?? new Roles(),
+            static fn(): AccountPolicy => AccountPolicy::current($cms()),
+            $cms()?->filters,
+        ));
         $c->singleton(IdentityResolver::class, static fn(): IdentityResolver => new IdentityResolver(
             $c->make(Identities::class),
-            $cms()?->auth->roles ?? new Roles(),
-            static fn(): ExternalAuthPolicy => ExternalAuthPolicy::current($cms()),
-            $cms()?->filters,
+            $c->make(NewAccounts::class),
             $events(),
         ));
         $c->singleton(ExternalLogin::class, static fn(): ExternalLogin => new ExternalLogin(
@@ -88,11 +90,16 @@ final class AuthModule extends Provider
             $c->make(IdentityResolver::class),
             $c->make(LoginService::class),
             $c->make(RateLimiter::class . '@auth'),
-            static fn(): ExternalAuthPolicy => ExternalAuthPolicy::current($cms()),
+            static fn(): AccountPolicy => AccountPolicy::current($cms()),
             static fn(): string => self::site($cms())[1],
             $cms()?->filters,
             $events(),
         ));
+        $c->singleton(EmailChanges::class, static function () use ($c, $cms): EmailChanges {
+            [$name, $url] = self::site($cms());
+
+            return new EmailChanges($c->make(RateLimiter::class . '@auth'), $c->make('auth.mail'), $url, $name);
+        });
         $c->singleton(PasswordResets::class, static function () use ($c, $cms, $events): PasswordResets {
             [$name, $url] = self::site($cms());
 
@@ -106,12 +113,26 @@ final class AuthModule extends Provider
                 $events(),
             );
         });
+        $c->singleton(Registrations::class, static function () use ($c, $cms, $events): Registrations {
+            [$name, $url] = self::site($cms());
+
+            return new Registrations(
+                $c->make(RateLimiter::class . '@auth'),
+                $c->make(NewAccounts::class),
+                $c->make(PasswordPolicy::class),
+                $c->make('auth.mail'),
+                $url,
+                $name,
+                $events(),
+            );
+        });
     }
 
     public function boot(Cms $cms): void
     {
         (new AuditSubscriber($cms->audit))->subscribe($cms->events);
         $cms->events->on(IdentityLinked::class, static fn(IdentityLinked $e) => self::notifyLinked($cms, $e));
+        $cms->events->on(\Kestello\Cms\Events\LoginFailed::class, static fn(\Kestello\Cms\Events\LoginFailed $e) => self::notifySecondFactorFailures($cms, $e));
 
         $r = $cms->routes;
         $r->get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -119,12 +140,20 @@ final class AuthModule extends Provider
         $r->get('/login/two-factor', [AuthController::class, 'showTwoFactor'])->name('login.two-factor');
         $r->post('/login/two-factor', [AuthController::class, 'twoFactor'])->name('login.two-factor.post');
         $r->post('/logout', [AuthController::class, 'logout'])->name('logout');
-        $r->get('/forgot-password', [AuthController::class, 'showForgot'])->name('password.forgot');
-        $r->post('/forgot-password', [AuthController::class, 'forgot'])->name('password.forgot.post');
-        $r->get('/reset-password', [AuthController::class, 'showReset'])->name('password.reset');
-        $r->post('/reset-password', [AuthController::class, 'reset'])->name('password.reset.post');
-        $r->get('/auth/{provider}/redirect', [ExternalAuthController::class, 'redirect'])->where(['provider' => '[a-z0-9][a-z0-9-]{0,31}'])->name('auth.external.redirect');
-        $r->get('/auth/{provider}/callback', [ExternalAuthController::class, 'callback'])->where(['provider' => '[a-z0-9][a-z0-9-]{0,31}'])->name('auth.external.callback');
+        // a public demo: one shared account nobody may take over, and no mail goes out
+        if (!$cms->config->get('app.demo', false)) {
+            $r->get('/forgot-password', [AuthController::class, 'showForgot'])->name('password.forgot');
+            $r->post('/forgot-password', [AuthController::class, 'forgot'])->name('password.forgot.post');
+            $r->get('/reset-password', [AuthController::class, 'showReset'])->name('password.reset');
+            $r->post('/reset-password', [AuthController::class, 'reset'])->name('password.reset.post');
+            $r->get('/confirm-email', [AuthController::class, 'confirmEmail'])->name('email.confirm');
+            $r->get('/register', [RegistrationController::class, 'show'])->name('register');
+            $r->post('/register', [RegistrationController::class, 'register'])->name('register.post');
+            $r->get('/register/complete', [RegistrationController::class, 'showComplete'])->name('register.complete');
+            $r->post('/register/complete', [RegistrationController::class, 'complete'])->name('register.complete.post');
+            $r->get('/auth/{provider}/redirect', [ExternalAuthController::class, 'redirect'])->where(['provider' => '[a-z0-9][a-z0-9-]{0,31}'])->name('auth.external.redirect');
+            $r->get('/auth/{provider}/callback', [ExternalAuthController::class, 'callback'])->where(['provider' => '[a-z0-9][a-z0-9-]{0,31}'])->name('auth.external.callback');
+        }
     }
 
     /** @return array{0: string, 1: string} site name and base URL */
@@ -164,6 +193,35 @@ final class AuthModule extends Provider
             ($cms->container->make('auth.mail'))((string) $user['email'], "New sign-in method on {$site}", $html);
         } catch (\Throwable $ex) {
             error_log('[auth] could not send the account-linked email: ' . $ex->getMessage());
+        }
+    }
+
+    /** Wrong second-factor codes that tell an account's owner their password is known. */
+    public const int SECOND_FACTOR_WARNING = 5;
+
+    /**
+     * Tell the owner when someone keeps failing their second factor: that
+     * person got past the password, so it should be changed. Once per
+     * window, when the count reaches SECOND_FACTOR_WARNING.
+     */
+    private static function notifySecondFactorFailures(Cms $cms, \Kestello\Cms\Events\LoginFailed $e): void
+    {
+        if ($e->reason !== 'two_factor' || $e->userId === null
+            || $cms->container->make(LoginThrottle::class)->failures('2fa', 'user:' . $e->userId) !== self::SECOND_FACTOR_WARNING) {
+            return;
+        }
+        try {
+            $user = QueryBuilder::table('users')->where('id', $e->userId)->first();
+            if ($user === null) {
+                return;
+            }
+            [$site] = self::site($cms);
+            $html = '<p>Hello ' . Html::escape((string) $user['username']) . ',</p>'
+                . '<p>Someone entered your ' . Html::escape($site) . ' password correctly, then a wrong two-factor code ' . self::SECOND_FACTOR_WARNING . ' times in the last hour. Two-factor authentication stopped them, but they know your password.</p>'
+                . '<p>Sign in and change your password now. If you made these attempts yourself, you can ignore this email.</p>';
+            ($cms->container->make('auth.mail'))((string) $user['email'], "Someone has your {$site} password", $html);
+        } catch (\Throwable $ex) {
+            error_log('[auth] could not send the two-factor warning email: ' . $ex->getMessage());
         }
     }
 

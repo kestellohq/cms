@@ -1,15 +1,21 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { ApiError, formatDateTime, formatRelative, notify, useApi, __ } from '@kestello/sdk';
-import { KAlert, KBadge, KButton, KCard, KField, KIcon, KModal, KPageHeader, KTable } from '@kestello/ui';
+import { ApiError, confirm, formatDateTime, formatRelative, notify, useApi, __ } from '@kestello/sdk';
+import { KAlert, KBadge, KButton, KCard, KField, KIcon, KModal, KPageHeader } from '@kestello/ui';
+import PackageUpdates from '../../../components/updates/PackageUpdates.vue';
+import StoppedUpdate from '../../../components/updates/StoppedUpdate.vue';
+import { signatureNote } from '../../../components/updates/signature.js';
+import { rememberSwitchBack, switchBackOutcome, takeSwitchBack } from '../../../components/updates/switch-back.js';
 
 defineOptions({ layout: 'Admin' });
 
 /**
  * Updates: what runs (Kestello, plugins, themes) and applying a Kestello
- * release, downloaded from GitHub or uploaded. A release is reviewed first; applying it backs up the database,
+ * release, downloaded from GitHub or uploaded. Plugin and theme updates from
+ * their own sources are in PackageUpdates. A release is reviewed first; applying it backs up the database,
  * switches to the new release, checks the site, and switches back by itself
- * when anything is wrong.
+ * when anything is wrong. After an update, Switch back goes to the version
+ * before it, with the database from before it.
  */
 const api = useApi();
 const data = ref(null);
@@ -20,14 +26,43 @@ async function load() {
         data.value = (await api.get('/updates')).data;
     } catch (e) {
         loadError.value = e;
+        return;
+    }
+    const note = takeSwitchBack();
+    if (note?.owner === 'core') {
+        const outcome = switchBackOutcome(note, data.value.core.version, data.value.stopped_update);
+        if (outcome === 'done') notify.success(__('Kestello {v} is running again, with the database from before the update.', { v: note.version }));
+        else if (outcome === 'not-done') notify.error(__('Switching back to Kestello {v} did not finish. The audit log says why.', { v: note.version }));
     }
 }
 load();
 
-const packages = computed(() => [
-    ...(data.value?.plugins ?? []).map((p) => ({ ...p, key: `plugin:${p.slug}`, kind: __('Plugin') })),
-    ...(data.value?.themes ?? []).map((t) => ({ ...t, key: `theme:${t.slug}`, kind: __('Theme') })),
-]);
+// ── switching back after an update ──────────────────────────────────
+async function switchBack() {
+    const option = data.value.core.switch_back;
+    if (
+        !(await confirm({
+            title: __('Switch back to Kestello {v}?', { v: option.to }),
+            message: __(
+                'Kestello {v} is still on the server. Switching back also puts the database back as it was before the update, on {date}: anything changed on the site since then is lost from the site. A backup of the site as it is now is made first, under Site → Backups. Visitors see a short maintenance page.',
+                { v: option.to, date: formatDateTime(option.backup_at || option.updated_at) },
+            ),
+            confirmLabel: __('Switch back to {v}', { v: option.to }),
+            danger: true,
+        }))
+    )
+        return;
+    busy.value = 'switch-back';
+    try {
+        await api.post('/updates/core/switch-back');
+        rememberSwitchBack('core', 'Kestello', option.to);
+        // the next request runs the old release and puts the database back; the page has to come from it too
+        window.location.reload();
+    } catch (e) {
+        notify.error(e);
+        busy.value = '';
+    }
+}
 
 // ── new versions on GitHub ───────────────────────────────────────────
 const available = computed(() => data.value?.available ?? null);
@@ -90,16 +125,7 @@ async function upload() {
 }
 
 const release = computed(() => review.value?.release ?? null);
-const signature = computed(() => {
-    const s = release.value?.signature;
-    if (!s) return null;
-    return {
-        signed: { icon: 'seal-check', tone: 'success', text: __('Signed by {name}, a publisher this site trusts.', { name: s.name }) },
-        untrusted: { icon: 'seal-question', tone: 'warning', text: __('Signed with a key this site does not trust ({key}).', { key: s.key }) },
-        unsigned: { icon: 'seal-question', tone: 'warning', text: __('Not signed: nobody vouches for where it came from.') },
-        tampered: { icon: 'seal-warning', tone: 'danger', text: __('Changed after it was signed. Do not apply it.') },
-    }[s.status];
-});
+const signature = computed(() => (release.value?.signature ? signatureNote(release.value.signature) : null));
 const blocked = computed(() => {
     if (!release.value || release.value.allowed) return '';
     if (release.value.signature.status === 'tampered') return __('This release was changed after it was signed, so it is refused.');
@@ -142,6 +168,7 @@ async function apply() {
         </template>
     </KPageHeader>
     <KAlert v-if="loadError" tone="danger">{{ loadError.message }}</KAlert>
+    <StoppedUpdate v-if="data?.stopped_update" :stopped="data.stopped_update" />
 
     <template v-if="data">
         <KCard :title="__('Kestello')">
@@ -185,31 +212,25 @@ async function apply() {
                     <KButton icon="arrows-clockwise" :loading="busy === 'check'" :disabled="!!busy" @click="checkNow">{{ __('Check now') }}</KButton>
                 </div>
             </div>
+            <div v-if="data.core.switch_back" class="k-updates__back">
+                <p class="k-small">
+                    {{
+                        __('Updated from {v} on {date}. Kestello {v} and the backup from before the update are kept, so you can go back to it.', {
+                            v: data.core.switch_back.to,
+                            date: formatDateTime(data.core.switch_back.updated_at),
+                        })
+                    }}
+                </p>
+                <KButton icon="clock-counter-clockwise" :loading="busy === 'switch-back'" :disabled="!!busy || !!data.stopped_update" @click="switchBack">{{
+                    __('Switch back to {v}', { v: data.core.switch_back.to })
+                }}</KButton>
+            </div>
             <KAlert v-if="!data.core.writable" tone="warning">{{
                 __('PHP cannot write to the core folder, so Kestello can only be updated by uploading files to the server.')
             }}</KAlert>
         </KCard>
 
-        <KCard flush class="k-updates__packages">
-            <KTable
-                :columns="[
-                    { key: 'name', label: __('Plugins and themes') },
-                    { key: 'kind', label: __('Kind') },
-                    { key: 'version', label: __('Version'), align: 'end' },
-                ]"
-                :rows="packages"
-                row-key="key"
-                :empty="__('No plugins or themes installed.')"
-            >
-                <template #cell-name="{ row }">
-                    {{ row.name }} <KBadge v-if="row.active" tone="success">{{ __('Active') }}</KBadge>
-                </template>
-                <template #cell-version="{ row }"
-                    ><span class="k-num">{{ row.version }}</span></template
-                >
-            </KTable>
-        </KCard>
-        <p class="k-muted k-small k-updates__note">{{ __('Plugins are updated by uploading their new version under Plugins → Manage plugins.') }}</p>
+        <PackageUpdates v-model:data="data" />
     </template>
 
     <KModal
@@ -308,11 +329,20 @@ async function apply() {
     gap: 8px;
     flex-wrap: wrap;
 }
-.k-updates__packages {
-    margin-top: 14px;
+.k-updates__back {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--k-rule);
 }
-.k-updates__note {
-    margin: 8px 0 0;
+.k-updates__back p {
+    margin: 0;
+    color: var(--k-ink-2);
+    max-width: 60ch;
 }
 .k-updates__review {
     display: grid;

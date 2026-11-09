@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Installer;
 
+use Kestello\Cms\Extension\AssetController;
 use Kestello\Cms\Frontend\Csp;
 use Kestello\Cms\Frontend\FrontendMiddleware;
 use Kestello\Cms\View\PageRegistry;
@@ -43,5 +44,17 @@ final class InstallerRoutes
         $router->get('/install', fn(Request $r) => $controller->index($r))->name('installer.index');
         $router->post('/install', fn(Request $r) => $controller->process($r))->name('installer.process');
         $router->get('/install/complete', fn(Request $r) => $controller->complete($r))->name('installer.complete');
+    }
+
+    /**
+     * Core assets (Vue, the installer's scripts and styles) before installation.
+     * Nothing else is served then: no session, no plugin or theme assets.
+     */
+    public static function assets(Router $router, Paths $paths): void
+    {
+        $root = $paths->coreAssets();
+        $router->get('/assets/core/{path}', static fn(Request $r, string $path) => (new AssetController())->coreFrom($root, $r, $path))
+            ->where(['path' => '.+'])
+            ->name('assets.core');
     }
 }

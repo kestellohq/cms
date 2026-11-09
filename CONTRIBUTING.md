@@ -17,7 +17,7 @@ Thank you for helping. This file is the rulebook for everyone who changes Kestel
 
 ## Ground rules
 
-- **No Composer, no PHP dependencies.** Everything Kestello runs is in this repository. Development tools are fine: they are pinned PHARs in `tools/` (see [Code style and checks](#code-style-and-checks)) or npm dev dependencies, and none of them ship.
+- **Zero PHP dependencies.** Everything Kestello runs is in this repository, and `composer.json` stays without requirements. Development tools are fine: they are pinned PHARs in `tools/` (see [Code style and checks](#code-style-and-checks)) or npm dev dependencies, and none of them ship.
 - **Security and extensibility come first.** Core is built on the same public API plugins use. New features are extension points first and screens second.
 - **Every fix has a test.** A bug fix starts with a test that fails without it. A feature comes with tests for what it promises.
 - **Small, pure, debuggable code.** Prefer small modules and pure functions. Errors say what went wrong and what to do about it.
@@ -26,14 +26,15 @@ Thank you for helping. This file is the rulebook for everyone who changes Kestel
 
 ## Setting up
 
-You need Docker, Node.js 22.12 or newer and Git.
+You need Docker, Composer, Node.js 22.12 or newer and Git.
 
 ```sh
 git clone https://github.com/kestellohq/cms.git kestello && cd kestello
 cp .env.example .env
 docker compose up -d
 npm ci
-npm run tools        # downloads PHP CS Fixer and PHPStan (pinned, checksum-verified)
+npm run build        # the Vue pages: built, not committed
+composer install     # PHP CS Fixer and PHPStan, the only (dev) requirements
 ```
 
 Open http://localhost:8080 and finish the installer. `npm run check` runs every check CI runs, apart from the database matrix.
@@ -122,7 +123,7 @@ Kestello follows [Semantic Versioning 2.0](https://semver.org/). `core/VERSION` 
 - **Patch** (`1.4.2`): fixes only. Safe to install without reading anything.
 - **Minor** (`1.5.0`): new capabilities, backwards compatible. Deprecations are announced here.
 - **Major** (`2.0.0`): breaking changes, each with migration notes in the changelog.
-- **Pre-releases**: `1.5.0-beta.1`, `1.5.0-rc.1`. Sites only get them when they opt in.
+- **Pre-releases**: `1.5.0-beta.1`, `1.5.0-rc.1`. Sites are offered a pre-release when `release.prereleases` is on, or when they already run a pre-release of the same version: a site on `0.1.0-rc.1` gets `0.1.0-rc.2`, then `0.1.0`, and only releases from there. While a pre-release of Kestello runs, plugins and themes made for its release run on it: `0.1.0-rc.1` meets `"core": "^0.1"`. Before each minor release, release candidates (`-rc.1`, `-rc.2`, …) try the release workflow and the update from one candidate to the next on real hosting.
 - **Before 1.0**, a minor release may break the public API. The changelog says how to migrate.
 
 Deprecated public API keeps working for at least one minor release and logs a deprecation notice before it is removed in the next major.
@@ -145,15 +146,17 @@ Releases are cut by maintainers, through GitHub. [.agents/skills/release/SKILL.m
 
 1. `git switch develop && git pull`, then `git switch -c release/X.Y.Z`.
 2. `npm run release:prepare -- X.Y.Z` sets `core/VERSION`, turns `## [Unreleased]` into `## [X.Y.Z] - <date>` with a fresh empty Unreleased section, and refreshes the translation template and editor helpers.
-3. Rebuild assets (`npm run build`), run `npm run check`, commit `chore(release): X.Y.Z`, and open a pull request into `main`.
+3. Run `npm run check`, commit `chore(release): X.Y.Z`, and open a pull request into `main`.
 4. Only fixes land on the release branch. When it is green and approved, merge it into `main` with a merge commit.
 5. Tag the merge commit: `git tag -s vX.Y.Z -m "Kestello X.Y.Z" && git push origin vX.Y.Z`.
-6. The release workflow runs every check, checks the tag against `core/VERSION`, builds `kestello-core-X.Y.Z.zip`, signs it with the release key, verifies the signature against the keys in `core/config/release.php` (`bin/cms core:verify`), adds its SHA-256 checksum and the API stubs, and publishes a GitHub release with that version's changelog section as notes. A pre-release version becomes a GitHub pre-release.
+6. The release workflow runs every check, checks the tag against `core/VERSION`, builds `kestello-core-X.Y.Z.zip`, signs it with the release key, verifies the signature against the keys in `core/config/release.php` (`bin/cms core:verify`), builds `kestello-X.Y.Z.zip` for new installs (`bin/cms core:install-zip`), adds the SHA-256 checksums and the API stubs, and publishes a GitHub release with that version's changelog section as notes. A pre-release version becomes a GitHub pre-release.
 7. The back-merge workflow opens a pull request from `main` into `develop`. Merge it with a merge commit.
 
 Sites see the new version on **Updates** in the admin: Kestello checks the GitHub releases of `kestellohq/cms` twice a day (`config/release.php`), downloads a release only when its SHA-256 matches the published checksum, and installs it only when one of the release keys in `core/config/release.php` signed it.
 
 A hotfix works the same way from `hotfix/X.Y.Z`, branched from `main`.
+
+A pre-release goes the same way, from `release/X.Y.Z-rc.N`. `release:prepare` then sets `core/VERSION` only and leaves the changelog alone: the GitHub release notes are the Unreleased section as it stands, under a line saying it is a pre-release. The release it leads to turns Unreleased into one `[X.Y.Z]` section with every change since the last release. Merge the back-merge pull request as usual.
 
 ## The changelog
 
@@ -171,10 +174,10 @@ A hotfix works the same way from `hotfix/X.Y.Z`, branched from `main`.
 | `npm run test:php:matrix` | PHP tests on MySQL, PostgreSQL and Redis as well, as CI runs them. |
 | `npm run i18n` | Rewrites the translation template, `core/resources/lang/kestello.pot`. |
 | `npm run ide` | Rewrites `.phpstorm.meta.php`. |
-| `npm run build` | Rebuilds the Vue pages. Built files are committed. |
+| `npm run build` | Builds the Vue pages. Built files are not committed: CI builds them for its checks and the release workflow for the zips. |
 | `npm run check` | Everything above that checks, in one go. |
 
-PHP CS Fixer and PHPStan are official PHARs pinned by version and SHA-256 in `tools/tools.lock`; `tools/fetch.sh` downloads and verifies them into `tools/bin/`. To upgrade one, change its version, URL and checksum there in a `build(deps):` commit. Moving to PER Coding Style 3.0 is a one-line change in `.php-cs-fixer.dist.php` (`@PER-CS3x0`), followed by `npm run format` in its own commit.
+PHP CS Fixer and PHPStan are the only entries in `require-dev` (`php-cs-fixer/shim` and `phpstan/phpstan`, both single PHARs with no dependencies of their own), locked in `composer.lock`. They never ship: the install and update zips leave `vendor/` out. To upgrade one, run `composer update <package>` in a `build(deps):` commit. Moving to PER Coding Style 3.0 is a one-line change in `.php-cs-fixer.dist.php` (`@PER-CS3x0`), followed by `npm run format` in its own commit.
 
 ## Translations
 

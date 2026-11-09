@@ -17,7 +17,6 @@ function submit() {
     <AuthCard
         :title="__('Reset your password')"
         :description="__('Enter the email address of your account. We will send you a link to choose a new password.')"
-        code="K-02"
     >
         <FormErrors :errors="form.errors" :fields="['email']" />
 

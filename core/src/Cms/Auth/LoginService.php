@@ -92,6 +92,18 @@ final class LoginService
         return $this->complete($user, $method . ($providerMfa ? '+provider-mfa' : ''));
     }
 
+    /**
+     * Sign in someone who has just created their account by email sign-up.
+     * They chose the password a moment ago, and a new account has no second
+     * factor yet.
+     *
+     * @param array<string, mixed> $user
+     */
+    public function completeRegistration(array $user): LoginResult
+    {
+        return $this->complete($user, 'password');
+    }
+
     /** Whether a second-factor challenge is waiting in this session. */
     public function hasPendingChallenge(): bool
     {

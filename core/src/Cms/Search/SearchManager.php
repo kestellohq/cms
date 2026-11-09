@@ -141,14 +141,25 @@ final class SearchManager
     /** The text every visitor reads in a block tree, as one string (a search description for block-built pages). */
     public function visibleBlockText(mixed $tree): string
     {
-        return trim(preg_replace('/\s+/u', ' ', implode(' ', array_filter($this->blockText($tree), static fn($t) => $t !== ''))) ?? '');
+        return trim(preg_replace('/\s+/u', ' ', implode(' ', $this->visibleBlockTexts($tree))) ?? '');
+    }
+
+    /**
+     * The same text, one piece per field in reading order (a heading, a
+     * paragraph, a button label), for callers that join it themselves.
+     *
+     * @return list<string>
+     */
+    public function visibleBlockTexts(mixed $tree): array
+    {
+        return array_values(array_filter($this->blockText($tree), static fn($t) => $t !== ''));
     }
 
     /** Text a visitor reads in a block tree: text-like props, rich text, list items; never bindings. @return list<string> */
     private function blockText(mixed $tree): array
     {
         if (is_string($tree)) {
-            return [Html::toText($tree)];        // a rich-text body from before the field became blocks
+            return [Html::toText($tree)];        // HTML in a field changed from rich text to blocks
         }
         $out = [];
         foreach (is_array($tree) ? array_slice($tree, 0, 1000) : [] as $node) {

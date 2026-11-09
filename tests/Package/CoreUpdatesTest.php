@@ -88,11 +88,12 @@ final class CoreUpdatesTest extends AuthTestCase
         return CoreRelease::build($dir, $this->root . '/dist')['zip'];
     }
 
-    private function core(string $running): CoreUpdater
+    /** @param list<array{name: string, public_key: string}> $releaseKeys */
+    private function core(string $running, array $releaseKeys = []): CoreUpdater
     {
         $c = $this->cms->container;
 
-        return new CoreUpdater($this->cms, $c->make(PackageInstaller::class), $c->make(Backups::class), $c->make(HealthProbe::class), $running);
+        return new CoreUpdater($this->cms, $c->make(Backups::class), $c->make(HealthProbe::class), $running, UpdateChecker::releaseKeys($releaseKeys));
     }
 
     private function pointer(): ?string
@@ -171,10 +172,22 @@ final class CoreUpdatesTest extends AuthTestCase
         $this->assertFalse($this->core('0.1.0')->check($zip)['allowed']);
         $this->assertThrows(ContentException::class, fn() => $this->core('0.1.0')->update($zip));
         $keys = PackageSignature::generateKeys();
+        $release = [['name' => 'Kestello', 'public_key' => $keys['public_key']]];
+
+        // a plugin vendor's key, trusted for plugins, never signs core
+        PackageSignature::sign($zip, $keys['secret_key'], PackageSignature::CORE);
+        $this->cms->config->set('app.packages.trusted_keys', $release);
+        $this->assertSame('untrusted', $this->core('0.1.0')->check($zip)['signature']['status']);
+        $this->assertFalse($this->core('0.1.0')->check($zip)['allowed']);
+        $this->cms->config->set('app.packages.trusted_keys', []);
+
+        // a release key signing a package (not a release) doesn't pass either
         PackageSignature::sign($zip, $keys['secret_key']);
-        $this->cms->config->set('app.packages.trusted_keys', [['name' => 'Kestello', 'public_key' => $keys['public_key']]]);
-        $this->assertSame('signed', $this->core('0.1.0')->check($zip)['signature']['status']);
-        $this->assertTrue($this->core('0.1.0')->check($zip)['allowed']);
+        $this->assertSame('tampered', $this->core('0.1.0', $release)->check($zip)['signature']['status'], 'signed as a package');
+
+        PackageSignature::sign($zip, $keys['secret_key'], PackageSignature::CORE);
+        $this->assertSame('signed', $this->core('0.1.0', $release)->check($zip)['signature']['status']);
+        $this->assertTrue($this->core('0.1.0', $release)->check($zip)['allowed']);
 
         // a plugin zip is not a core release
         $plugin = $this->root . '/p.zip';
@@ -222,7 +235,7 @@ final class CoreUpdatesTest extends AuthTestCase
     {
         $keys = PackageSignature::generateKeys();
         $zip = $this->release('0.2.0');
-        PackageSignature::sign($zip, $keys['secret_key']);
+        PackageSignature::sign($zip, $keys['secret_key'], PackageSignature::CORE);
         $base = 'https://github.com/kestellohq/cms/releases/download/v0.2.0/';
         $transport = new FakeTransport([
             'GET https://api.github.com/repos/kestellohq/cms/releases' => ['json' => [ReleaseFeedTest::release('0.2.0')]],
@@ -246,7 +259,6 @@ final class CoreUpdatesTest extends AuthTestCase
         // the release key is trusted for core only: app.packages.trusted_keys stays empty
         $c->instance(CoreUpdater::class, new CoreUpdater(
             $this->cms,
-            $c->make(PackageInstaller::class),
             $c->make(Backups::class),
             $c->make(HealthProbe::class),
             '0.1.0',

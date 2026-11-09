@@ -58,7 +58,7 @@ async function load() {
 }
 load();
 
-// A field that held rich text before it became a blocks field opens as one text block.
+// A field changed from rich text to blocks in the content model builder still holds HTML: it opens as one text block.
 let upgraded = null;
 const tree = computed({
     get: () => {

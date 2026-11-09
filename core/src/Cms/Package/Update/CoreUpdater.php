@@ -7,7 +7,6 @@ namespace Kestello\Cms\Package\Update;
 use Kestello\Cms\Backup\Backups;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Content\ContentException;
-use Kestello\Cms\Package\PackageInstaller;
 use Kestello\Cms\Package\PackageSignature;
 use Kestello\Cms\System\Maintenance;
 use Kestello\Framework\Support\Semver;
@@ -23,6 +22,11 @@ use Throwable;
  *   maintenance → unpack → switch → health check (fresh process: core
  *   migrations, plugins, pages) → commit | switch back + restore
  *
+ * Each step is written to UpdateJournal first, and while the new release is
+ * checked core/current.php is a trial pointer (CorePointer): when the host
+ * stops PHP halfway, the next request runs the old release again and
+ * UpdateRecovery puts the database back.
+ *
  * A development checkout runs core/ directly (no current.php). Its first
  * core update creates the pointer; rolling back removes it again.
  */
@@ -32,7 +36,6 @@ final class CoreUpdater
 
     public function __construct(
         private readonly Cms $cms,
-        private readonly PackageInstaller $installer,
         private readonly Backups $backups,
         private readonly HealthProbe $probe,
         private readonly ?string $running = null,
@@ -41,14 +44,15 @@ final class CoreUpdater
     ) {}
 
     /**
-     * Who may sign a core release: the official release keys and the publishers in
-     * app.packages.trusted_keys.
+     * Who may sign a core release: the release keys (release.keys) only. The
+     * publishers in app.packages.trusted_keys sign plugins and themes; trusting
+     * them for core would let any plugin vendor replace the whole CMS.
      *
      * @return array<string, array{name: string, public_key: string}>
      */
     public function trustedKeys(): array
     {
-        return $this->releaseKeys + $this->installer->trustedKeys();
+        return $this->releaseKeys;
     }
 
     public function running(): string
@@ -148,6 +152,9 @@ final class CoreUpdater
      */
     private function problems(array $staged, array $options): array
     {
+        if ((new UpdateJournal($this->cms->paths->storage()))->current() !== null) {
+            return [UpdateRecovery::BLOCKED];
+        }
         $to = $staged['version'];
         $from = $this->running();
         if (Semver::isValid($from)) {
@@ -186,14 +193,17 @@ final class CoreUpdater
         $to = $staged['version'];
         $ext = $this->cms->extensions();
         $target = $this->releasesDir() . '/' . $to;
-        $previous = is_file($this->pointer()) ? (string) file_get_contents($this->pointer()) : null;
+        $previous = $this->pointedVersion();
+        $storage = $this->cms->paths->storage();
 
         $backup = $this->backups->create(['files' => false, 'kind' => 'before-update', 'note' => "Before updating Kestello {$from} to {$to}"])['name'];
-        $maintenance = new Maintenance($this->cms->paths->storage());
+        $maintenance = new Maintenance($storage);
         $bypass = $maintenance->on(Maintenance::VISITORS, "update core {$to}", 30);
         $ext->suspensions()->refresh();
         $suspended = $ext->suspensions()->all();
         $pluginsBefore = array_keys($ext->activePlugins());
+        $journal = new UpdateJournal($storage);
+        $journal->begin(['kind' => 'update', 'owner' => 'core', 'from' => $from, 'to' => $to, 'backup' => $backup, 'previous' => $previous, 'target' => $target, 'suspended' => $suspended]);
         $placed = false;
 
         try {
@@ -203,7 +213,8 @@ final class CoreUpdater
             Files::removeTree($target);   // a leftover of an earlier attempt, never the running release
             Files::move($staged['dir'], $target);
             $placed = true;
-            $this->writePointer("<?php\n\n// The core release the site runs; written by the updater.\nreturn " . var_export($to, true) . ";\n");
+            $journal->step(UpdateJournal::SWITCHING);
+            CorePointer::write($this->pointer(), CorePointer::trial($to, $previous, Files::lockFile($storage)));
             $this->freshCode();
 
             $problems = UpdateProbe::problems($this->probe->run('core', $bypass), $to, true, $pluginsBefore);
@@ -212,8 +223,19 @@ final class CoreUpdater
         }
 
         if ($problems === []) {
+            try {
+                $journal->step(UpdateJournal::CONFIRMED);
+                CorePointer::write($this->pointer(), CorePointer::plain($to));
+            } catch (Throwable $e) {
+                $problems = ['The release could not be kept: ' . $e->getMessage()];
+            }
+        }
+
+        if ($problems === []) {
             $maintenance->off();
             $this->pruneReleases($to, $previous);
+            (new UpdateHistory($storage))->add(['owner' => 'core', 'from' => $from, 'to' => $to, 'backup' => $backup, 'previous' => $previous, 'actor' => $options['actor'] ?? null]);
+            $journal->clear();
             $this->cms->audit->record('core.updated', null, ['from' => $from, 'to' => $to, 'signature' => $staged['signature']['status'], 'backup' => $backup], $options['actor'] ?? null);
 
             return ['ok' => true, 'from' => $from, 'to' => $to, 'problems' => [], 'backup' => $backup, 'rolled_back' => false, 'rollback_problems' => []];
@@ -222,7 +244,7 @@ final class CoreUpdater
         // ── switch back, then the database as it was ──
         $rollback = [];
         try {
-            $previous === null ? @unlink($this->pointer()) : $this->writePointer($previous);
+            $previous === null ? CorePointer::remove($this->pointer()) : CorePointer::write($this->pointer(), CorePointer::plain($previous));
             $this->freshCode();
             if ($placed) {
                 Files::removeTree($target);
@@ -238,28 +260,17 @@ final class CoreUpdater
             $rollback[] = 'Rolling back failed: ' . $e->getMessage() . " The database backup is {$backup}.";
         }
         if ($rollback === []) {
+            $journal->clear();
             $maintenance->off();
         } else {
+            // a later request (or Try again on the Updates screen) tries again from the journal
+            $journal->giveUp();
             // The rollback did not finish: keep visitors out until someone looks (signed-in administrators still get in).
             $maintenance->on(Maintenance::VISITORS, 'An update failed and could not be rolled back completely', \Kestello\Cms\Backup\Backups::BROKEN_MINUTES);
         }
         $this->cms->audit->record('core.update_failed', null, ['from' => $from, 'to' => $to, 'problems' => $problems, 'rollback' => $rollback, 'backup' => $backup], $options['actor'] ?? null);
 
         return ['ok' => false, 'from' => $from, 'to' => $to, 'problems' => $problems, 'backup' => $backup, 'rolled_back' => $rollback === [], 'rollback_problems' => $rollback];
-    }
-
-    private function writePointer(string $contents): void
-    {
-        $tmp = $this->pointer() . '.' . bin2hex(random_bytes(4)) . '.tmp';
-        if (file_put_contents($tmp, $contents) === false) {
-            throw new \RuntimeException('Could not write core/current.php.');
-        }
-        @chmod($tmp, 0644);
-        if (!rename($tmp, $this->pointer())) {
-            @unlink($tmp);
-            throw new \RuntimeException('Could not switch core/current.php.');
-        }
-        Files::forgetCompiled($this->pointer());
     }
 
     private function freshCode(): void
@@ -275,12 +286,8 @@ final class CoreUpdater
     }
 
     /** Keep the running release, the one before it, and the newest others up to KEEP_RELEASES. */
-    private function pruneReleases(string $current, ?string $previousPointer): void
+    private function pruneReleases(string $current, ?string $previous): void
     {
-        $previous = null;
-        if ($previousPointer !== null && preg_match("/return '([^']+)'/", $previousPointer, $m) === 1) {
-            $previous = $m[1];
-        }
         $dirs = array_values(array_filter(glob($this->releasesDir() . '/*', GLOB_ONLYDIR) ?: [], static fn(string $d): bool => Semver::isValid(basename($d))));
         usort($dirs, static fn(string $a, string $b): int => filemtime($b) <=> filemtime($a));
         $kept = 0;
@@ -295,12 +302,27 @@ final class CoreUpdater
 
     private function pointedVersion(): ?string
     {
-        if (!is_file($this->pointer())) {
-            return null;
-        }
-        $v = preg_match("/return '([^']+)'/", (string) file_get_contents($this->pointer()), $m) === 1 ? $m[1] : null;
+        $v = CorePointer::read($this->pointer());
 
         return $v !== null && Semver::isValid($v) ? $v : null;
+    }
+
+    /** The folder a release would be in, and whether it is complete enough to run. */
+    public function hasRelease(?string $version): bool
+    {
+        return $version === null
+            ? is_file($this->coreRoot() . '/bootstrap.php')
+            : Semver::isValid($version) && is_file($this->releasesDir() . '/' . $version . '/bootstrap.php');
+    }
+
+    public function pointer(): string
+    {
+        return $this->coreRoot() . '/current.php';
+    }
+
+    public function releasesDir(): string
+    {
+        return $this->coreRoot() . '/releases';
     }
 
     private function coreRoot(): string
@@ -308,13 +330,4 @@ final class CoreUpdater
         return $this->cms->paths->root('core');
     }
 
-    private function releasesDir(): string
-    {
-        return $this->coreRoot() . '/releases';
-    }
-
-    private function pointer(): string
-    {
-        return $this->coreRoot() . '/current.php';
-    }
 }

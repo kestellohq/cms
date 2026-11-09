@@ -1,6 +1,14 @@
 # Publishing a release, when a maintainer pushes a vX.Y.Z tag on main (CONTRIBUTING.md,
 # "How a release happens"). Nothing is published unless every check passes again here and the
-# zip is signed with the release key.
+# core zip is signed with the release key.
+#
+# A release carries:
+#   kestello-X.Y.Z.zip        what people download to install a new site (core:install-zip)
+#   kestello-core-X.Y.Z.zip   the signed update that installed sites apply (core:release)
+#   kestello.stub.php         API stubs for plugin and theme developers
+#
+# The built Vue pages are not in git: they are built here, from the tagged sources, and go
+# into both zips.
 #
 # Repository secret KESTELLO_RELEASE_KEY: the key file from
 #   php bin/cms package:keygen --out=kestello-release.key --name="Kestello releases"
@@ -29,7 +37,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -40,9 +48,10 @@ jobs:
           coverage: none
           tools: none
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
+          cache: npm
 
       - name: The tag matches core/VERSION and is on main
         id: version
@@ -62,6 +71,9 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
 
+      - name: Build the assets (they are not committed; both zips carry them)
+        run: npm ci && npm run build
+
       - name: Release notes from CHANGELOG.md
         run: node tools/release/notes.mjs "${{ steps.version.outputs.version }}" > "$RUNNER_TEMP/notes.md"
 
@@ -80,6 +92,9 @@ jobs:
           rm -f "$key"
           php bin/cms core:verify "dist/kestello-core-${{ steps.version.outputs.version }}.zip"
 
+      - name: Build the install zip
+        run: php bin/cms core:install-zip --out=dist
+
       - name: API stubs for plugin and theme developers
         run: |
           mkdir -p "$RUNNER_TEMP/stubs"
@@ -96,6 +111,8 @@ jobs:
           flags=""
           [ "$PRERELEASE" = true ] && flags="--prerelease"
           gh release create "$TAG" \
+            "dist/kestello-$VERSION.zip" \
+            "dist/kestello-$VERSION.zip.sha256" \
             "dist/kestello-core-$VERSION.zip" \
             "dist/kestello-core-$VERSION.zip.sha256" \
             dist/kestello.stub.php \

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Api;
 
 use Kestello\Contracts\Auth\Principal;
+use Kestello\Framework\Session\Session;
 use Kestello\Kernel;
 
 /**
@@ -76,7 +77,7 @@ final class OpenApi
             'paths' => $paths === [] ? (object) [] : $paths,
             'components' => [
                 'securitySchemes' => [
-                    'session' => ['type' => 'apiKey', 'in' => 'cookie', 'name' => 'cms_session', 'description' => 'Browser session. Unsafe methods also need the X-CSRF-TOKEN header.'],
+                    'session' => ['type' => 'apiKey', 'in' => 'cookie', 'name' => Session::NAME, 'description' => 'Browser session. Unsafe methods also need the X-CSRF-TOKEN header.'],
                     'bearer' => ['type' => 'http', 'scheme' => 'bearer', 'description' => 'Personal access token (kst_pat_...). Scopes: ' . implode(', ', array_keys($scopes))],
                 ],
                 'schemas' => [

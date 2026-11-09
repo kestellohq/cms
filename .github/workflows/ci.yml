@@ -23,39 +23,39 @@ jobs:
     name: Code style and analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.5'
           extensions: ${{ env.PHP_EXTENSIONS }}
           coverage: none
-          tools: none
+          tools: composer
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: npm
 
       - run: npm ci
 
-      - name: Cache the pinned PHP tools
-        uses: actions/cache@v4
+      - name: Cache the PHP dev tools
+        uses: actions/cache@v6
         with:
-          path: tools/bin
-          key: php-tools-${{ hashFiles('tools/tools.lock') }}
+          path: vendor
+          key: php-dev-tools-${{ hashFiles('composer.lock') }}
 
-      - name: Download the PHP tools (checksums verified)
-        run: sh tools/fetch.sh
+      - name: Install the PHP dev tools (composer.lock)
+        run: composer install --no-interaction --no-progress
 
       - name: PHP syntax
         run: git ls-files -z '*.php' bin/cms | xargs -0 -n1 -P4 php -l > /dev/null
 
       - name: PHP code style (PER-CS 2.0)
-        run: php tools/bin/php-cs-fixer.phar fix --dry-run --diff --show-progress=none --using-cache=no
+        run: php vendor/bin/php-cs-fixer fix --dry-run --diff --show-progress=none --using-cache=no
 
       - name: PHPStan
-        run: php -d memory_limit=2G tools/bin/phpstan.phar analyse -c phpstan.dist.neon --no-progress --error-format=github
+        run: php -d memory_limit=2G vendor/bin/phpstan analyse -c phpstan.dist.neon --no-progress --error-format=github
 
       - name: ESLint
         run: npx eslint .
@@ -70,12 +70,12 @@ jobs:
         run: php bin/cms ide:helpers --check
 
   build:
-    name: Built assets are current
+    name: The assets build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: npm
@@ -84,11 +84,11 @@ jobs:
 
       - run: npm run build
 
-      - name: Nothing changed
+      - name: Nothing built is tracked
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git status --short
-            echo "::error::The committed build is out of date. Run npm run build and commit the result."
+            echo "::error::The build changed tracked files. Built assets are not committed: check .gitignore."
             exit 1
           fi
 
@@ -96,9 +96,9 @@ jobs:
     name: JavaScript tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: npm
@@ -165,7 +165,7 @@ jobs:
       KESTELLO_TEST_REDIS: redis://127.0.0.1:6379/2
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -174,6 +174,15 @@ jobs:
           ini-values: apc.enable_cli=1, memory_limit=1G
           coverage: none
           tools: none
+
+      # the tests serve and zip the built pages, which are not committed
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Build the assets
+        run: npm ci && npm run build
 
       - name: Tests (SQLite, MySQL or MariaDB, PostgreSQL, Redis)
         run: php bin/cms test

@@ -14,7 +14,7 @@ defineProps({ items: { type: Array, default: () => [] }, columns: { type: [Strin
     >
         <li v-for="(item, i) in items" :key="i">
             <Icon class="k-b-iconlist__icon" :d="ICONS[item?.icon] ?? ICONS.check" />
-            <span>{{ item?.text }}</span>
+            <span :data-k-field="`items.${i}.text`" data-placeholder="Point">{{ item?.text }}</span>
         </li>
     </ul>
 </template>

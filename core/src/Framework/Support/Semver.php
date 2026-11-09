@@ -74,6 +74,17 @@ final class Semver
     }
 
     /**
+     * satisfies(), with a pre-release counted as the version it leads to: 0.1.0-rc.1 meets
+     * "^0.1" and ">=0.1.0". For Kestello's own version against what packages require, so a
+     * release candidate runs the plugins and themes made for its release. Strict semver would
+     * refuse every one of them until the final version.
+     */
+    public static function satisfiesRelease(string $version, string $constraint): bool
+    {
+        return self::satisfies(explode('-', explode('+', $version, 2)[0], 2)[0], $constraint);
+    }
+
+    /**
      * Validate a constraint string without evaluating it.
      */
     public static function isValidConstraint(string $constraint): bool

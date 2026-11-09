@@ -559,12 +559,6 @@ parameters:
 			path: core/src/Cms/Blocks/BlockRegistry.php
 
 		-
-			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:renamed\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Cms/Blocks/BlockRegistry.php
-
-		-
 			message: '#^Method Kestello\\Cms\\Blocks\\BlockRegistry\:\:resolveMedia\(\) has parameter \$nodes with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1813,12 +1807,6 @@ parameters:
 			path: core/src/Cms/Installer/InstallerController.php
 
 		-
-			message: '#^Method Kestello\\Cms\\Installer\\InstallerController\:\:runRequirementChecks\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Cms/Installer/InstallerController.php
-
-		-
 			message: '#^Method Kestello\\Cms\\Installer\\InstallerController\:\:saveInstallerSession\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -2597,12 +2585,6 @@ parameters:
 			identifier: match.unhandled
 			count: 1
 			path: core/src/Framework/Database/Grammar/SqliteSchemaGrammar.php
-
-		-
-			message: '#^Method Kestello\\Framework\\Database\\MigrationRunner\:\:getPendingMigrations\(\) has parameter \$ran with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Database/MigrationRunner.php
 
 		-
 			message: '#^Method Kestello\\Framework\\Database\\Model\:\:__call\(\) has parameter \$arguments with no value type specified in iterable type array\.$#'

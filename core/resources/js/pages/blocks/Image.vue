@@ -54,7 +54,7 @@ const label = computed(() => props.alt || props.image?.alt || '');
         >
             <KImage :media="image" :size="rendition" :sizes="sizes" :alt="alt || null" />
         </component>
-        <figcaption v-if="caption">{{ caption }}</figcaption>
+        <figcaption v-if="caption || canvas" data-k-field="caption" data-placeholder="Caption">{{ caption }}</figcaption>
         <dialog v-if="zoomable" ref="box" class="k-b-image__box" @click="box?.close()">
             <img :src="big" :alt="label" />
             <button type="button" class="k-b-image__close" aria-label="Close" @click.stop="box?.close()">×</button>

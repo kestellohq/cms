@@ -210,10 +210,8 @@ services:
       - cms_network
 
 volumes:
-  # MySQL 9.7 and PostgreSQL 18 can't open the data of MySQL 8.0 and
-  # PostgreSQL 16 in place, so they have volumes of their own. The old ones
-  # (php-cms-boilerplate_cms_db_data, php-cms-boilerplate_cms_pg_data) are
-  # left as they were; delete them yourself once you no longer need them.
+  # The database volumes carry the server's major version: a new major version
+  # can't open an older one's data in place, so it starts on a volume of its own.
   cms_db97_data:
     name: kestello_cms_db97_data
   cms_pg18_data:

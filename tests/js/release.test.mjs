@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { compareVersions, isPrerelease, parseVersion, releaseChangelog, releaseNotes, unreleasedHasEntries } from '../../tools/release/changelog.mjs';
+import { compareVersions, isPrerelease, notNewer, parseVersion, releaseChangelog, releaseNotes, unreleasedHasEntries } from '../../tools/release/changelog.mjs';
 import { checkBranch, checkTarget, checkTitle } from '../../tools/release/conventions.mjs';
 
 const CHANGELOG = `# Changelog
@@ -86,6 +86,29 @@ test('releasing refuses what would make a bad release', () => {
     );
     assert.throws(() => releaseChangelog('# Changelog\n', '1.0.0', '2026-11-06'), /no "## \[Unreleased\]"/);
     assert.throws(() => releaseNotes(CHANGELOG, '9.9.9'), /no section for 9\.9\.9/);
+});
+
+test('a pre-release leaves the changelog alone and takes Unreleased as its notes', () => {
+    assert.throws(() => releaseChangelog(CHANGELOG, '1.2.0-rc.1', '2026-11-06'), /pre-release: it leaves CHANGELOG\.md as it is/);
+    const notes = releaseNotes(CHANGELOG, '1.2.0-rc.1');
+    assert.match(notes, /^A pre-release of Kestello 1\.2\.0, for testing/);
+    assert.match(notes, /- Scheduled publishing \(#412\)\.\n[\s\S]*- Images keep their alt text \(#388\)\.\n$/);
+    assert.doesNotMatch(notes, /Forms/, 'only what is unreleased');
+    assert.throws(
+        () => releaseNotes('# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-01-01\n\n- x\n', '1.1.0-rc.1'),
+        /Unreleased section of CHANGELOG\.md is empty/,
+    );
+    // the release after its candidates still gets every change
+    assert.match(releaseChangelog(CHANGELOG, '1.2.0', '2026-11-20'), /## \[1\.2\.0\] - 2026-11-20\n\n### Added\n\n- Scheduled publishing/);
+});
+
+test('a release must be newer than the newest tag, not than core/VERSION', () => {
+    assert.equal(notNewer('0.1.0-rc.1', []), null, 'the first release candidate, with 0.1.0 in core/VERSION');
+    assert.equal(notNewer('0.1.0-rc.2', ['v0.1.0-rc.1']), null);
+    assert.equal(notNewer('0.1.0', ['v0.1.0-rc.1', 'v0.1.0-rc.2', 'not-a-tag', 'vX']), null);
+    assert.match(notNewer('0.1.0-rc.1', ['v0.1.0-rc.1']) ?? '', /not newer than v0\.1\.0-rc\.1/);
+    assert.match(notNewer('0.1.0-rc.3', ['v0.1.0', 'v0.1.0-rc.2']) ?? '', /not newer than v0\.1\.0,/);
+    assert.match(notNewer('0.0.9', ['v0.1.0-rc.10', 'v0.1.0-rc.9']) ?? '', /v0\.1\.0-rc\.10/);
 });
 
 test('pull request titles are Conventional Commits', () => {

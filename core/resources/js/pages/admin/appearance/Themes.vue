@@ -1,7 +1,8 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
-import { ApiError, confirm, notify, useApi, __ } from '@kestello/sdk';
+import { ApiError, confirm, formatDateTime, notify, useApi, useCan, __ } from '@kestello/sdk';
 import { KAlert, KBadge, KButton, KField, KIcon, KInput, KModal, KPageHeader, KSelect, KSwitch } from '@kestello/ui';
+import { rememberSwitchBack, switchBackOutcome, takeSwitchBack } from '../../../components/updates/switch-back.js';
 
 defineOptions({ layout: 'Admin' });
 
@@ -9,21 +10,58 @@ defineOptions({ layout: 'Admin' });
  * Appearance → Themes: switch themes, make a new one from the current
  * look, and move themes between sites as a zip. Themes made here hold no
  * code (tokens, CSS, templates, parts, patterns and fonts), so importing
- * one can't run anything on the server.
+ * one can't run anything on the server. After a developer theme is
+ * updated, Switch back goes to the version before it, with the database
+ * from before it (people who manage plugins only: it is code).
  */
 const api = useApi();
 const data = ref(null);
 const loadError = ref(null);
 const busy = ref('');
+const can = useCan();
 
 async function load() {
     try {
         data.value = (await api.get('/themes')).data;
     } catch (e) {
         loadError.value = e;
+        return;
+    }
+    const note = takeSwitchBack();
+    if (note?.owner.startsWith('theme:')) {
+        const running = data.value.themes.find((t) => `theme:${t.slug}` === note.owner)?.version ?? null;
+        const outcome = switchBackOutcome(note, running, null);
+        if (outcome === 'done') notify.success(__('{theme} {v} is back, with the database from before the update.', { theme: note.name, v: note.version }));
+        else notify.error(__('Switching {theme} back to {v} did not finish. Site → Updates and the audit log say why.', { theme: note.name, v: note.version }));
     }
 }
 load();
+
+async function switchBack(theme) {
+    const option = theme.switch_back;
+    if (
+        !(await confirm({
+            title: __('Switch {theme} back to {v}?', { theme: theme.name, v: option.to }),
+            message: __(
+                '{theme} {v} is still on the server. Switching back also puts the database back as it was before the update, on {date}: anything changed on the site since then is lost from the site. A backup of the site as it is now is made first, under Site → Backups. Visitors see a short maintenance page.',
+                { theme: theme.name, v: option.to, date: formatDateTime(option.backup_at || option.updated_at) },
+            ),
+            confirmLabel: __('Switch back to {v}', { v: option.to }),
+            danger: true,
+        }))
+    )
+        return;
+    busy.value = `switch-back:${theme.slug}`;
+    try {
+        await api.post('/plugins/switch-back', { owner: `theme:${theme.slug}` });
+        rememberSwitchBack(`theme:${theme.slug}`, theme.name, option.to);
+        // the next request puts the old version and the database back, before plugins load
+        window.location.reload();
+    } catch (e) {
+        notify.error(e);
+        busy.value = '';
+    }
+}
 
 const names = computed(() => Object.fromEntries((data.value?.themes ?? []).map((t) => [t.slug, t.name])));
 const pendingSwitch = computed(() => data.value && data.value.running && data.value.active !== data.value.running);
@@ -218,6 +256,9 @@ async function upload() {
                     <KIcon :name="t.data_only ? 'sliders' : 'code'" />
                     {{ t.data_only ? __('Made in the admin, no code') : __('Developer theme with code') }}
                 </p>
+                <p v-if="t.switch_back" class="k-muted k-small k-theme__back">
+                    {{ __('Updated from {v} on {date}.', { v: t.switch_back.to, date: formatDateTime(t.switch_back.updated_at) }) }}
+                </p>
             </div>
             <div class="k-theme__actions">
                 <KButton v-if="t.slug !== data.active" size="sm" variant="primary" :loading="busy === `activate:${t.slug}`" @click="activate(t)">{{
@@ -227,6 +268,16 @@ async function upload() {
                 <KButton v-if="t.data_only" size="sm" variant="ghost" icon="download" :loading="busy === `export:${t.slug}`" @click="exportTheme(t)">{{
                     __('Export')
                 }}</KButton>
+                <KButton
+                    v-if="t.switch_back && can('plugins.manage')"
+                    size="sm"
+                    variant="ghost"
+                    icon="clock-counter-clockwise"
+                    :loading="busy === `switch-back:${t.slug}`"
+                    :disabled="!!busy"
+                    @click="switchBack(t)"
+                    >{{ __('Switch back to {v}', { v: t.switch_back.to }) }}</KButton
+                >
                 <KButton
                     v-if="t.data_only && t.slug !== data.active && t.slug !== data.running"
                     size="sm"
@@ -369,6 +420,9 @@ async function upload() {
 .k-theme__desc,
 .k-theme__kind {
     margin: 0;
+}
+.k-theme__back {
+    margin: 4px 0 0;
 }
 .k-theme__desc {
     font-size: 13px;

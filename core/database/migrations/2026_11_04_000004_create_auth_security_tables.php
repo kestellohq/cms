@@ -7,13 +7,10 @@ use Kestello\Framework\Database\Migration;
 
 /**
  * Password resets, two-factor methods and recovery codes, and the audit log.
- * Also lowercases stored emails (lookups are by normalized email from now on).
  */
 return new class extends Migration {
     public function up(): void
     {
-        $this->normalizeEmails();
-
         $this->schema()->create('password_resets', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('user_id');
@@ -74,21 +71,5 @@ return new class extends Migration {
         $this->schema()->dropIfExists('mfa_recovery_codes');
         $this->schema()->dropIfExists('mfa_methods');
         $this->schema()->dropIfExists('password_resets');
-    }
-
-    private function normalizeEmails(): void
-    {
-        $db = \Kestello\Framework\Database\DatabaseManager::getConnection();
-        $seen = [];
-        foreach ($db->table('users')->select('id', 'email')->orderBy('id')->get() as $user) {
-            $normalized = mb_strtolower(trim((string) $user['email']));
-            if (isset($seen[$normalized])) {
-                throw new RuntimeException("Users #{$seen[$normalized]} and #{$user['id']} have the same email ignoring case ({$normalized}). Change one of them, then migrate again.");
-            }
-            $seen[$normalized] = $user['id'];
-            if ($normalized !== $user['email']) {
-                $db->table('users')->where('id', $user['id'])->update(['email' => $normalized]);
-            }
-        }
     }
 };

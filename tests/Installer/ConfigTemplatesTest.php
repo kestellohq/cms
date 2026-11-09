@@ -18,7 +18,7 @@ final class ConfigTemplatesTest extends TestCase
         $this->assertCount(4, ConfigTemplates::writeMissing($dir));
         $load = static fn(string $group): array => require "{$dir}/{$group}.php";
 
-        // Must match the defaults where each key is read (CoreTasks, ScheduleRunner, AuthModule, ExternalAuthPolicy).
+        // Must match the defaults where each key is read (CoreTasks, ScheduleRunner, AuthModule, AccountPolicy).
         $this->assertSame(['web_runner' => 'auto', 'web_runner_seconds' => 20, 'http_seconds' => 25], $load('cron'));
         $this->assertSame(['worker' => 'cron', 'failed_retention_days' => 30], $load('queue'));
         $this->assertSame(['retention_days' => 365], $load('audit'));

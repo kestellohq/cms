@@ -23,7 +23,7 @@ final class FieldTypes
     public function __construct()
     {
         foreach ([
-            new Fields\TextField('text', 255), new Fields\TextField('textarea', 20000, multiline: true),
+            new Fields\TextField('text', 255, ceiling: 2000), new Fields\TextField('textarea', 20000, multiline: true),
             new Fields\TextField('email', 255, format: 'email'), new Fields\TextField('url', 2048, format: 'uri'),
             new Fields\TextField('color', 7, pattern: '#[0-9a-fA-F]{6}'),
             new Fields\RichTextField(), new Fields\NumberField(), new Fields\BooleanField(),

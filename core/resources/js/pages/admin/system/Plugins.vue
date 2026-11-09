@@ -1,7 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { ApiError, confirm, notify, useApi, __ } from '@kestello/sdk';
+import { ApiError, confirm, formatDateTime, notify, useApi, useCan, __ } from '@kestello/sdk';
 import { KAlert, KBadge, KButton, KEmpty, KField, KIcon, KModal, KPageHeader, KSwitch } from '@kestello/ui';
+import StoppedUpdate from '../../../components/updates/StoppedUpdate.vue';
+import { rememberSwitchBack, switchBackOutcome, takeSwitchBack } from '../../../components/updates/switch-back.js';
 
 defineOptions({ layout: 'Admin' });
 
@@ -9,21 +11,59 @@ defineOptions({ layout: 'Admin' });
  * Plugins: activate, deactivate, delete, and install from a zip. An upload
  * is reviewed first (who signed it, what it declares it will do); only
  * packages signed by a publisher the server trusts install from here.
+ * After an update, Switch back goes to the version before it, with the
+ * database from before it.
  */
 const api = useApi();
 const data = ref(null);
 const loadError = ref(null);
 const busy = ref('');
 const open = ref({});
+const can = useCan();
 
 async function load() {
     try {
         data.value = (await api.get('/plugins')).data;
     } catch (e) {
         loadError.value = e;
+        return;
+    }
+    const note = takeSwitchBack();
+    if (note?.owner.startsWith('plugin:')) {
+        const running = data.value.plugins.find((p) => `plugin:${p.slug}` === note.owner)?.version ?? null;
+        const outcome = switchBackOutcome(note, running, data.value.stopped_update);
+        if (outcome === 'done') notify.success(__('{plugin} {v} is back, with the database from before the update.', { plugin: note.name, v: note.version }));
+        else if (outcome === 'not-done')
+            notify.error(__('Switching {plugin} back to {v} did not finish. The audit log says why.', { plugin: note.name, v: note.version }));
     }
 }
 load();
+
+async function switchBack(plugin) {
+    const option = plugin.switch_back;
+    if (
+        !(await confirm({
+            title: __('Switch {plugin} back to {v}?', { plugin: plugin.name, v: option.to }),
+            message: __(
+                '{plugin} {v} is still on the server. Switching back also puts the database back as it was before the update, on {date}: anything changed on the site since then is lost from the site. A backup of the site as it is now is made first, under Site → Backups. Visitors see a short maintenance page.',
+                { plugin: plugin.name, v: option.to, date: formatDateTime(option.backup_at || option.updated_at) },
+            ),
+            confirmLabel: __('Switch back to {v}', { v: option.to }),
+            danger: true,
+        }))
+    )
+        return;
+    busy.value = `switch-back:${plugin.slug}`;
+    try {
+        await api.post('/plugins/switch-back', { owner: `plugin:${plugin.slug}` });
+        rememberSwitchBack(`plugin:${plugin.slug}`, plugin.name, option.to);
+        // the next request puts the old version and the database back, before plugins load
+        window.location.reload();
+    } catch (e) {
+        notify.error(e);
+        busy.value = '';
+    }
+}
 
 const statusTone = { active: 'success', inactive: 'neutral', suspended: 'danger', failed: 'danger' };
 const statusLabel = { active: __('Active'), inactive: __('Inactive'), suspended: __('Suspended'), failed: __('Failed to start') };
@@ -212,6 +252,7 @@ async function install() {
         __('No plugins are running in this session, so you can deactivate or delete the one causing trouble.')
     }}</KAlert>
     <KAlert v-for="msg in data?.invalid ?? []" :key="msg" tone="warning">{{ msg }}</KAlert>
+    <StoppedUpdate v-if="data?.stopped_update" :stopped="data.stopped_update" :can-retry="can('core.update')" />
 
     <template v-if="data">
         <KEmpty v-if="!data.plugins.length" icon="plug" :title="__('No plugins installed')">{{ __('Upload a plugin zip to add one.') }}</KEmpty>
@@ -241,6 +282,9 @@ async function install() {
                         >
                     </p>
                     <p v-if="p.problem" class="k-plugin__problem"><KIcon name="warning-octagon" /> {{ p.problem }}</p>
+                    <p v-if="p.switch_back" class="k-muted k-small k-plugin__back">
+                        {{ __('Updated from {v} on {date}.', { v: p.switch_back.to, date: formatDateTime(p.switch_back.updated_at) }) }}
+                    </p>
                     <button
                         v-if="permissionRows(p.permissions, p.replaces).length"
                         type="button"
@@ -258,6 +302,15 @@ async function install() {
                     </dl>
                 </div>
                 <div class="k-plugin__actions">
+                    <KButton
+                        v-if="p.switch_back"
+                        size="sm"
+                        icon="clock-counter-clockwise"
+                        :loading="busy === `switch-back:${p.slug}`"
+                        :disabled="!!busy || !!data.stopped_update"
+                        @click="switchBack(p)"
+                        >{{ __('Switch back to {v}', { v: p.switch_back.to }) }}</KButton
+                    >
                     <KButton v-if="p.status === 'inactive'" size="sm" variant="primary" :loading="busy === `activate:${p.slug}`" @click="act(p, 'activate')">{{
                         __('Activate')
                     }}</KButton>
@@ -413,6 +466,9 @@ async function install() {
     font-size: 13px;
     color: var(--k-ink-2);
     max-width: 70ch;
+}
+.k-plugin__back {
+    margin: 2px 0 0;
 }
 .k-plugin__problem {
     margin: 2px 0 0;

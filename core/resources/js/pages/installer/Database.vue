@@ -11,40 +11,80 @@ const props = defineProps({
     error: { type: String, default: null },
 });
 
+const NOTES = {
+    mysql: 'What most hosting offers.',
+    pgsql: 'If your host or server has it.',
+    sqlite: 'One file, no database server. For small sites and testing.',
+};
 const driver = ref(props.db.driver);
 const server = computed(() => driver.value !== 'sqlite');
 const defaultPort = computed(() => (driver.value === 'pgsql' ? '5432' : '3306'));
 </script>
 
 <template>
-    <InstallerLayout :step="step" title="Database" description="Choose a database and enter the details your host gave you.">
-        <form method="POST" action="/install" class="k-auth__form">
+    <InstallerLayout :step="step" title="Database" description="Choose the kind of database, then enter the details from your hosting control panel.">
+        <form method="POST" action="/install" class="k-setup__form">
             <CsrfField />
             <input type="hidden" name="step" value="2" />
             <KAlert v-if="error" tone="danger">{{ error }}</KAlert>
             <KAlert v-if="drivers.length === 0" tone="danger">No supported PDO driver is installed (pdo_mysql, pdo_pgsql or pdo_sqlite).</KAlert>
 
-            <div class="k-field">
-                <label class="k-field__label" for="db_driver">Database</label>
-                <select id="db_driver" v-model="driver" name="db_driver" class="k-input k-select">
-                    <option v-for="d in drivers" :key="d.value" :value="d.value">{{ d.label }}</option>
-                </select>
-                <p v-if="!server" class="k-field__help">A single file in storage/database/, outside the web root. Best for small sites and testing.</p>
-            </div>
+            <fieldset class="k-setup__choices">
+                <legend>Database</legend>
+                <label v-for="d in drivers" :key="d.value" class="k-setup__choice">
+                    <input v-model="driver" type="radio" name="db_driver" :value="d.value" />
+                    <strong>{{ d.label }}</strong>
+                    <span>{{ NOTES[d.value] }}</span>
+                </label>
+            </fieldset>
 
-            <div v-if="server" class="k-install__row">
+            <template v-if="server">
+                <div class="k-setup__row k-setup__row--port">
+                    <div class="k-field">
+                        <label class="k-field__label" for="db_host">Host</label>
+                        <input id="db_host" type="text" name="db_host" class="k-input" :value="db.host" required aria-describedby="db_host_help" />
+                        <p id="db_host_help" class="k-field__help">Usually localhost. Your control panel shows it when it is something else.</p>
+                    </div>
+                    <div class="k-field">
+                        <label class="k-field__label" for="db_port">Port</label>
+                        <input id="db_port" :key="defaultPort" type="number" name="db_port" class="k-input" :value="db.port || defaultPort" />
+                    </div>
+                </div>
                 <div class="k-field">
-                    <label class="k-field__label" for="db_host">Host</label>
-                    <input id="db_host" type="text" name="db_host" class="k-input" :value="db.host" required aria-describedby="db_host_help" />
-                    <p id="db_host_help" class="k-field__help">Usually "localhost". Your host's control panel shows it if it is different.</p>
+                    <label class="k-field__label" for="db_name">Database name</label>
+                    <input
+                        id="db_name"
+                        type="text"
+                        name="db_name"
+                        class="k-input"
+                        :value="db.name"
+                        required
+                        pattern="[A-Za-z0-9_]{1,64}"
+                        aria-describedby="db_name_help"
+                    />
+                    <p id="db_name_help" class="k-field__help">Kestello creates it if it does not exist and the user is allowed to.</p>
                 </div>
-                <div class="k-field k-install__narrow">
-                    <label class="k-field__label" for="db_port">Port</label>
-                    <input id="db_port" type="number" name="db_port" class="k-input" :value="db.port || defaultPort" :placeholder="defaultPort" />
+                <div class="k-setup__row">
+                    <div class="k-field">
+                        <label class="k-field__label" for="db_user">Database user</label>
+                        <input id="db_user" type="text" name="db_user" class="k-input" :value="db.user" required autocomplete="off" />
+                    </div>
+                    <div class="k-field">
+                        <label class="k-field__label" for="db_pass">Password</label>
+                        <input
+                            id="db_pass"
+                            type="password"
+                            name="db_pass"
+                            class="k-input"
+                            autocomplete="new-password"
+                            :aria-describedby="db.passwordSet ? 'db_pass_help' : undefined"
+                        />
+                        <p v-if="db.passwordSet" id="db_pass_help" class="k-field__help">Saved. Leave it empty to keep it.</p>
+                    </div>
                 </div>
-            </div>
-            <div class="k-field">
-                <label class="k-field__label" for="db_name">{{ server ? 'Database name' : 'File name' }}</label>
+            </template>
+            <div v-else class="k-field">
+                <label class="k-field__label" for="db_name">File name</label>
                 <input
                     id="db_name"
                     type="text"
@@ -55,35 +95,12 @@ const defaultPort = computed(() => (driver.value === 'pgsql' ? '5432' : '3306'))
                     pattern="[A-Za-z0-9_]{1,64}"
                     aria-describedby="db_name_help"
                 />
-                <p id="db_name_help" class="k-field__help">
-                    {{
-                        server
-                            ? 'Created if it does not exist and the user is allowed to create it.'
-                            : 'Letters, numbers and underscores. The file is stored in storage/database.'
-                    }}
-                </p>
-            </div>
-            <div v-if="server" class="k-install__row">
-                <div class="k-field">
-                    <label class="k-field__label" for="db_user">Username</label>
-                    <input id="db_user" type="text" name="db_user" class="k-input" :value="db.user" required autocomplete="off" />
-                </div>
-                <div class="k-field">
-                    <label class="k-field__label" for="db_pass">Password</label>
-                    <input
-                        id="db_pass"
-                        type="password"
-                        name="db_pass"
-                        class="k-input"
-                        autocomplete="new-password"
-                        :placeholder="db.passwordSet ? 'Saved (leave blank to keep)' : ''"
-                    />
-                </div>
+                <p id="db_name_help" class="k-field__help">Letters, numbers and underscores. The file is kept in storage/database, out of reach of visitors.</p>
             </div>
 
-            <div class="k-install__actions">
+            <div class="k-setup__actions">
                 <a href="/install?step=1" class="k-btn k-btn--secondary k-btn--md">Back</a>
-                <button type="submit" class="k-btn k-btn--primary k-btn--md" :disabled="drivers.length === 0">Test and continue</button>
+                <button type="submit" class="k-btn k-btn--primary k-btn--md" :disabled="drivers.length === 0">Connect and continue</button>
             </div>
         </form>
     </InstallerLayout>

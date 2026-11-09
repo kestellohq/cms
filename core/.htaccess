@@ -1,0 +1,2 @@
+# Kestello reads this folder through PHP; browsers never may.
+Require all denied
