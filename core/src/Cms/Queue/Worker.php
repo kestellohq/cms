@@ -45,9 +45,19 @@ final class Worker
         int $memoryMb = 128,
         int $sleep = 3,
     ): string {
+        $restore = $this->trapSignals();
+        try {
+            return $this->loop($queues, $stopWhenEmpty, $maxJobs, $maxTime, $memoryMb, $sleep);
+        } finally {
+            $restore();     // the scheduler runs a worker every minute: leave its handlers as they were
+        }
+    }
+
+    /** @param list<string> $queues */
+    private function loop(array $queues, bool $stopWhenEmpty, int $maxJobs, int $maxTime, int $memoryMb, int $sleep): string
+    {
         $started = time();
         $restartMark = $this->cache->get(self::RESTART_KEY);
-        $this->trapSignals();
 
         $jobs = 0;
         while (true) {
@@ -100,17 +110,38 @@ final class Worker
         $cache->put(self::RESTART_KEY, microtime(true), 0);
     }
 
-    private function trapSignals(): void
+    /**
+     * Stop after the current job on SIGTERM, SIGINT or SIGQUIT. A handler that
+     * was already there (schedule:work's) still hears the signal, so the command
+     * that started this worker stops too.
+     *
+     * @return Closure(): void puts back the handlers that were there before
+     */
+    private function trapSignals(): Closure
     {
         if (!function_exists('pcntl_signal') || PHP_SAPI !== 'cli') {
-            return;
+            return static function (): void {};
         }
-        pcntl_async_signals(true);
+        $async = pcntl_async_signals(true);
+        $previous = [];
         foreach ([SIGTERM, SIGINT, SIGQUIT] as $signal) {
-            pcntl_signal($signal, function (): void {
+            $before = pcntl_signal_get_handler($signal);   // a handler, or SIG_DFL / SIG_IGN
+            $previous[$signal] = $before;
+            pcntl_signal($signal, function (int $signo, mixed $info = null) use ($before): void {
                 $this->stop = true;
+                if (is_callable($before)) {
+                    // PHP passes a handler the signal and its info; the stub says it takes none.
+                    $before($signo, $info); // @phpstan-ignore arguments.count
+                }
             });
         }
+
+        return static function () use ($previous, $async): void {
+            foreach ($previous as $signal => $handler) {
+                pcntl_signal($signal, $handler);
+            }
+            pcntl_async_signals($async);
+        };
     }
 
     private function say(string $line): void

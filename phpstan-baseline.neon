@@ -697,12 +697,6 @@ parameters:
 			path: core/src/Cms/Console/Queue/QueueMonitorCommand.php
 
 		-
-			message: '#^While loop condition is always true\.$#'
-			identifier: while.alwaysTrue
-			count: 1
-			path: core/src/Cms/Console/Schedule/ScheduleWorkCommand.php
-
-		-
 			message: '#^Method Kestello\\Cms\\Content\\Conditions\:\:visible\(\) has parameter \$data with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
