@@ -12,6 +12,7 @@ use Kestello\Cms\Extension\ManifestException;
 use Kestello\Cms\Extension\Package;
 use Kestello\Cms\Extension\PackageChecker;
 use Kestello\Cms\Extension\PackageType;
+use Kestello\Cms\Package\Registry\RegistryTrust;
 use Kestello\Cms\Package\Update\KeyPins;
 use Kestello\Support\Zip\Zip;
 use Kestello\Support\Zip\ZipEntry;
@@ -28,6 +29,11 @@ use Throwable;
  *     in the server's config
  * plugin:check runs on every package; its errors refuse the install.
  *
+ * Every zip is also shown to the registry (RegistryTrust). When the registry lists its exact bytes,
+ * the zip is checked against the registry alone: it must be signed by the key the root certified
+ * for the package's organisation, the site's own trusted keys don't count, and a version the
+ * registry refuses (withdrawn, revoked key, wrong manifest) is never installed, from anywhere.
+ *
  * The zip holds the package at its root or in one top folder; the folder
  * name doesn't matter, the manifest's slug does.
  */
@@ -36,7 +42,7 @@ final class PackageInstaller
     private const int MAX_BYTES = 256 << 20;
     private const string TOKEN = '/^[a-f0-9]{32}$/';
 
-    public function __construct(private readonly Cms $cms) {}
+    public function __construct(private readonly Cms $cms, private readonly ?RegistryTrust $registry = null) {}
 
     /**
      * Read a package zip without installing it.
@@ -55,7 +61,7 @@ final class PackageInstaller
     }
 
     /**
-     * @param array{replace?: bool, allow_unsigned?: bool, replace_active?: bool} $options (replace_active: CLI only; the update pipeline replaces active packages safely)
+     * @param array{replace?: bool, allow_unsigned?: bool, replace_active?: bool, require_registry?: bool} $options (replace_active: CLI only; the update pipeline replaces active packages safely)
      * @return array{package: Package, replaced: bool, check: array<string, mixed>}
      * @throws ContentException
      */
@@ -73,13 +79,13 @@ final class PackageInstaller
                 if ($installed['active'] && !($options['replace_active'] ?? false)) {
                     throw ContentException::conflict("Deactivate {$check['name']} before replacing it, or update it.");
                 }
-                $pin = ($options['allow_unsigned'] ?? false) ? null : $this->pins()->problem($this->owner($check), $check['signature']);
+                $pin = ($options['allow_unsigned'] ?? false) ? null : $this->pins()->problem($this->owner($check), $check['signature'], self::vouched($check));
                 if ($pin !== null) {
                     throw ContentException::forbidden("{$check['name']} {$check['version']} {$pin}.");
                 }
             }
             $package = $this->extensions()->install($staged['package'], $staged['type'], $installed !== null);
-            $this->pins()->remember($this->owner($check), $check['signature'], $check['signing_keys']);
+            $this->pins()->remember($this->owner($check), $check['signature'], $check['signing_keys'], self::vouched($check)['organisation'] ?? null);
 
             return ['package' => $package, 'replaced' => $installed !== null, 'check' => $check];
         } catch (ContentException $e) {
@@ -118,11 +124,17 @@ final class PackageInstaller
      * Signature policy and code check (see the class comment).
      *
      * @param array<string, mixed> $check
-     * @param array{allow_unsigned?: bool} $options
+     * @param array{allow_unsigned?: bool, require_registry?: bool} $options require_registry: the zip came from the registry, so it must be one the registry vouches for
      * @throws ContentException
      */
     public function assertAllowed(array $check, array $options): void
     {
+        if ($check['registry']['status'] === RegistryTrust::REFUSED) {
+            throw ContentException::invalid(['file' => [(string) $check['registry']['reason']]]);
+        }
+        if (($options['require_registry'] ?? false) && $check['registry']['status'] !== RegistryTrust::VOUCHED) {
+            throw ContentException::invalid(['file' => [$check['registry']['reason'] ?? "The registry doesn't vouch for this zip of {$check['name']} {$check['version']}."]]);
+        }
         $sig = $check['signature']['status'];
         if ($sig === PackageSignature::TAMPERED) {
             throw ContentException::invalid(['file' => ['The package was changed after it was signed. It was not installed.']]);
@@ -183,10 +195,32 @@ final class PackageInstaller
         return PackageSignature::trustedKeys($this->cms->config->get('app.packages.trusted_keys', []));
     }
 
+    private function trust(): RegistryTrust
+    {
+        if ($this->registry !== null) {
+            return $this->registry;
+        }
+
+        return $this->cms->container->has(RegistryTrust::class) ? $this->cms->container->make(RegistryTrust::class) : new RegistryTrust(static fn(): null => null);
+    }
+
     /** The signing keys each installed package's updates must come from. */
     public function pins(): KeyPins
     {
         return $this->cms->container->has(KeyPins::class) ? $this->cms->container->make(KeyPins::class) : KeyPins::inSettings();
+    }
+
+    /**
+     * What the registry vouches for about a described zip, when it does (for KeyPins).
+     *
+     * @param array<string, mixed> $check
+     * @return array{organisation: string, moved_from: list<string>}|null
+     */
+    public static function vouched(array $check): ?array
+    {
+        $r = $check['registry'] ?? null;
+
+        return is_array($r) && $r['status'] === RegistryTrust::VOUCHED ? ['organisation' => (string) $r['organisation'], 'moved_from' => $r['moved_from']] : null;
     }
 
     /** @param array<string, mixed> $check */
@@ -267,7 +301,13 @@ final class PackageInstaller
     private function describe(string $zipPath, array $work): array
     {
         $manifest = Manifest::load($work['package'], $work['type']);
-        $signature = PackageSignature::verify(Zip::open($zipPath), $this->trustedKeys());
+        $registry = $this->trust()->vouch($zipPath, $work['type']->value, $manifest->slug, $manifest->version);
+        // a zip the registry vouches for is checked against its organisation's key, and only that key
+        $signature = PackageSignature::verify(Zip::open($zipPath), $registry['status'] === RegistryTrust::VOUCHED ? $registry['trusted'] : $this->trustedKeys());
+        if ($registry['status'] === RegistryTrust::VOUCHED && $signature['status'] !== PackageSignature::SIGNED) {
+            $registry = ['status' => RegistryTrust::REFUSED, 'reason' => "The registry lists {$manifest->name} {$manifest->version}, but the zip isn't signed by the key it names ({$registry['key']})."] + $registry;
+        }
+        unset($registry['trusted']);
         $findings = (new PackageChecker())->check($work['package'], $work['type']);
         $hasCode = $manifest->provider !== null || is_dir($work['package'] . '/src') || glob($work['package'] . '/{,*/,*/*/}*.php', GLOB_BRACE) !== [];
 
@@ -285,6 +325,7 @@ final class PackageInstaller
             'signing_keys' => $manifest->signingKeys,
             'code' => $hasCode,
             'signature' => $signature,
+            'registry' => $registry,
             'findings' => $findings,
             'installed' => $this->installed($work['type'], $manifest->slug),
         ];

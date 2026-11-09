@@ -132,7 +132,13 @@ final class QueueTest extends TestCase
 
     private function drain(JobQueue $m, int $max = 50): void
     {
-        (new Worker($m, new ArrayStore(), sleep: static fn() => null))->run(JobQueue::QUEUES, stopWhenEmpty: true, maxJobs: $max);
+        (new Worker($m, new ArrayStore(), sleep: static fn() => null))->run(JobQueue::QUEUES, stopWhenEmpty: true, maxJobs: $max, memoryMb: self::memoryMb());
+    }
+
+    /** The worker's memory limit, above what the test process already holds: a long test run must not stop it early. */
+    public static function memoryMb(): int
+    {
+        return (int) ceil(memory_get_usage(true) / 1048576) + 128;
     }
 
     /** @return array<string, Connection> sqlite plus KESTELLO_TEST_DATABASES, each with fresh queue tables */
@@ -394,12 +400,12 @@ final class QueueTest extends TestCase
                 Worker::requestRestart($cache);
             }
         });
-        $this->assertSame('restart requested', $worker->run(['default']));
+        $this->assertSame('restart requested', $worker->run(['default'], memoryMb: self::memoryMb()));
         $this->assertTrue(is_array($cache->get(Worker::HEARTBEAT_KEY)), 'heartbeat recorded');
 
         $m->push(new RecordJob('a'));
         $m->push(new RecordJob('b'));
-        $this->assertSame('max jobs', (new Worker($m, new ArrayStore()))->run(['default'], maxJobs: 1));
+        $this->assertSame('max jobs', (new Worker($m, new ArrayStore()))->run(['default'], maxJobs: 1, memoryMb: self::memoryMb()));
         $this->assertSame(['a@core'], Ledger::$ran);
     }
 

@@ -180,6 +180,7 @@ const signature = computed(() => {
 });
 const blockedReason = computed(() => {
     if (!review.value || review.value.allowed) return '';
+    if (pkg.value.registry?.status === 'refused') return pkg.value.registry.reason;
     if (pkg.value.signature.status === 'tampered') return __('This package was changed after it was signed, so it is refused.');
     return data.value?.policy.trusted.length
         ? __('Only packages signed by {publishers} install from here. A developer can install this one on the server: bin/cms plugin:install <zip>.', {

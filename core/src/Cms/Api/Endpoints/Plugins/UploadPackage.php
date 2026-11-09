@@ -7,6 +7,7 @@ namespace Kestello\Cms\Api\Endpoints\Plugins;
 use Kestello\Cms\Api\ApiProblem;
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Package\Registry\RegistryTrust;
 use Kestello\Cms\Package\Update\Updater;
 
 /**
@@ -57,7 +58,9 @@ final class UploadPackage extends PluginEndpoint
             'token' => $token,
             'package' => $package,
             'update' => $update,
-            'allowed' => $sig === 'signed' || ($sig !== 'tampered' && $this->installer()->adminMayInstallUnsigned()),
+            // a version the registry refuses (withdrawn, revoked key, …) never installs, whatever the signature says
+            'allowed' => $package['registry']['status'] !== RegistryTrust::REFUSED
+                && ($sig === 'signed' || ($sig !== 'tampered' && $this->installer()->adminMayInstallUnsigned())),
         ];
     }
 }

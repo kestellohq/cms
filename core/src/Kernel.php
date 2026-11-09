@@ -488,7 +488,7 @@ final class Kernel
                 \Kestello\Cms\Console\Backup\BackupRestoreCommand::class, \Kestello\Cms\Console\Backup\BackupDeleteCommand::class,
                 \Kestello\Cms\Console\Package\PackageVerifyCommand::class,
                 \Kestello\Cms\Console\Package\PackageUpdateCommand::class, \Kestello\Cms\Console\Package\PackageCheckUpdatesCommand::class, \Kestello\Cms\Console\Package\PackageLicenseCommand::class, \Kestello\Cms\Console\Package\UpdateProbeCommand::class,
-                \Kestello\Cms\Console\Package\CoreUpdateCommand::class, \Kestello\Cms\Console\Package\CoreCheckCommand::class, \Kestello\Cms\Console\Package\RegistryStatusCommand::class,
+                \Kestello\Cms\Console\Package\CoreUpdateCommand::class, \Kestello\Cms\Console\Package\CoreCheckCommand::class, \Kestello\Cms\Console\Package\RegistryStatusCommand::class, \Kestello\Cms\Console\Package\RegistryInstallCommand::class,
                 \Kestello\Cms\Console\Package\UpdateRecoverCommand::class] as $command) {
                 $console->register(new $command());
             }
