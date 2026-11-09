@@ -93,6 +93,7 @@ final class DemoModeTest extends AuthTestCase
         'POST /auth/2fa/verify',
         'POST /auth/confirm',
         'POST /auth/session',
+        'POST /content/{type}/checklist',
         'POST /content/{type}/entries',
         'POST /content/{type}/entries/{id}/comments',
         'POST /content/{type}/entries/{id}/previews',

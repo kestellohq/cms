@@ -40,6 +40,7 @@ final class ListContentTypes extends ContentEndpoint
                 'icon' => $type->getIcon(),
                 'hierarchical' => $type->isHierarchical(),
                 'excerpt' => $type->hasExcerpt(),
+                'checklist' => count($type->getChecklist()),
                 'revisions' => $type->keepRevisions() > 0,
                 'path' => $type->getPath(),
                 'archive' => $type->hasArchive(),
