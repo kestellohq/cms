@@ -6,6 +6,8 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- **Waiting on you** on the Overview: your entries sent back with changes requested, entries assigned to you, and entries in review that are yours to publish, most urgent first (`GET /api/v1/content/waiting`, `Reviews::waitingFor()`).
+- @mentions in review comments: naming someone as `@username` tells them, in the bell and by email, when they may open the entry. Typing @ in **Add a comment** suggests people who may edit entries of the type, and names are marked in the timeline.
 - Plugins and themes can say where their updates come from: `"updates": {"github": "owner/name"}` for a GitHub repository's releases, or `"updates": {"url": "https://…"}` for the vendor's own feed. Kestello checks every 12 hours (`app.updates.check_every`), and **Site → Updates** lists what is available, with the release notes, and updates through the same backup, health check and automatic rollback as an upload. Packages without `updates` still update by upload. This needs the permission once called *Update Kestello itself*, now *Update Kestello, and plugins and themes from their publishers*.
 - License keys for paid plugins and themes (`"license": true` in `updates`): an administrator enters the key on **Site → Updates** or with `package:license`. It is stored encrypted, shown only by its last four characters, and sent only to that package's own feed, in a header. When the vendor refuses it, the vendor's message and renew link are shown.
 - `package:check-updates [<plugin:slug>]` asks the sources now.
