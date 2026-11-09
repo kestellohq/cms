@@ -16,7 +16,7 @@ Releases are cut by maintainers. An agent prepares a release only when a maintai
 | Patch | `1.4.2` | Fixes only. |
 | Minor | `1.5.0` | New capabilities, backwards compatible; deprecations are announced. |
 | Major | `2.0.0` | Breaking changes, each with migration notes. |
-| Pre-release | `1.5.0-beta.1`, `1.5.0-rc.1` | Published as a GitHub pre-release; sites get it only when they opt in. |
+| Pre-release | `1.5.0-beta.1`, `1.5.0-rc.1` | Published as a GitHub pre-release. Sites are offered a pre-release when `release.prereleases` is on, or when they already run a pre-release of the same version: a site on `0.1.0-rc.1` gets `0.1.0-rc.2`, then `0.1.0`, and only releases from there. While a pre-release of Kestello runs, plugins and themes made for its release run on it: `0.1.0-rc.1` meets `"core": "^0.1"`. |
 
 Before 1.0, a minor release may break the public API; the changelog says how to migrate. Deprecated API keeps working for at least one minor release and logs a deprecation notice before removal in the next major.
 
@@ -53,6 +53,18 @@ Before 1.0, a minor release may break the public API; the changelog says how to 
 `config/release.php` names the repository (`kestellohq/cms`), how often to check (`check_every`, hours) and whether pre-releases count. The scheduled task `updates.check` and **Check now** on **Updates** ask the GitHub releases API (`UpdateChecker`, `ReleaseFeed`). A release counts only when it is published, tagged `vX.Y.Z`, and carries both `kestello-core-X.Y.Z.zip` and its `.sha256` from that repository.
 
 **Review the update** downloads the zip again (asking GitHub where it is, nothing remembered is trusted), checks the SHA-256, then shows the same review as an upload. The admin applies it only when a key in `release.keys` signed it as a core release (`core:release --key`). Release keys are trusted for core only, never for plugins, and package keys (`app.packages.trusted_keys`) never for core. `bin/cms core:check` does the check from the command line; `core:update <zip>` installs a zip by hand (with a backup, a health check through `update:probe` and automatic rollback).
+
+## Pre-releases
+
+Release candidates come before each minor release: they try the release workflow, the signed zips and a real update before anyone depends on it.
+
+1. Branch `release/X.Y.Z-rc.N` from `develop` and run `npm run release:prepare -- X.Y.Z-rc.N`. It sets `core/VERSION` and leaves `CHANGELOG.md` as it is (it refuses when Unreleased is empty).
+2. Pull request into `main`, merge commit, tag `vX.Y.Z-rc.N`, as for any release. The workflow publishes a GitHub pre-release whose notes are the Unreleased section under a line saying it is a pre-release (`tools/release/notes.mjs`).
+3. Install `kestello-X.Y.Z-rc.N.zip` on a real host, the slower and more limited the better (shared hosting, web cron only). Build a small site, install a plugin from a zip.
+4. Cut `rc.N+1` the same way. On the test site, **Updates** offers it without any setting, because the site runs a pre-release of the same version. Apply it, then **Switch back**, then apply it again.
+5. When a candidate passes, release `X.Y.Z` from `release/X.Y.Z`: `release:prepare` turns Unreleased into the `[X.Y.Z]` section with every change since the last release.
+
+Plugins and themes keep working on a candidate: Kestello checks their `requires.core` against the version a pre-release leads to (`Semver::satisfiesRelease`), so `0.1.0-rc.1` meets `^0.1`. Dependencies between plugins stay strict.
 
 ## Hotfixes
 
