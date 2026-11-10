@@ -40,6 +40,7 @@ final class CoreHooks
         $hooks->event(Events\JobFailed::class, '0.1.0', 'Background jobs');
         $hooks->event(Events\KernelBooted::class, '0.1.0', 'System');
         $hooks->event(PlatformChanged::class, '0.1.0', 'System');
+        $hooks->event(Events\RegistryRefreshed::class, '0.1.0', 'Plugins and themes');
         foreach ([Orm\Saving::class, Orm\Creating::class, Orm\Updating::class, Orm\Created::class, Orm\Updated::class, Orm\Saved::class,
             Orm\Deleting::class, Orm\Deleted::class, Orm\Restoring::class, Orm\Restored::class] as $class) {
             $hooks->event($class, '0.1.0', 'Models');

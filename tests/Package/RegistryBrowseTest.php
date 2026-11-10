@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Tests\Package;
 
 use Kestello\Cms\Backup\BackupModule;
+use Kestello\Cms\Events\RegistryRefreshed;
 use Kestello\Cms\Extension\ArrayStateStore;
 use Kestello\Cms\Extension\ExtensionManager;
 use Kestello\Cms\Extension\SuspensionList;
@@ -14,6 +15,7 @@ use Kestello\Cms\Package\PackagesModule;
 use Kestello\Cms\Package\Registry\RegistryClient;
 use Kestello\Cms\Package\Update\KeyPins;
 use Kestello\Framework\Core\Response;
+use Kestello\Framework\Http\Client\HttpClient;
 use Kestello\Tests\Auth\AuthTestCase;
 
 /**
@@ -322,5 +324,40 @@ final class RegistryBrowseTest extends AuthTestCase
         $this->assertSame([[], [], [], null, null], [$off->packages(), $off->organisations(), $off->advisories(), $off->package('events'), $off->organisation('acme')]);
         $this->assertSame('Content', $off->categories()['content'], 'labels need no registry');
         $this->assertSame(['enabled' => false, 'usable' => false], array_intersect_key($off->refresh(), ['enabled' => 1, 'usable' => 1]));
+    }
+
+    public function testARefreshThatChangesTheRegistryTellsPluginsWhatChanged(): void
+    {
+        // the client PackagesModule builds, talking to the fixture registry
+        $this->cms->config->set('registry.url', RegistryFixture::BASE);
+        $this->cms->config->set('registry.root_keys', [['name' => 'Test root', 'public_key' => $this->registry->root['public_key']]]);
+        $this->cms->container->instance(HttpClient::class, new HttpClient($this->registry->transport, static fn(string $host): array => ['104.18.1.1']));
+        $this->cms->container->bind(RegistryClient::class, static fn() => null);   // drops the fixture's client
+        (new PackagesModule())->register($this->cms->container);
+        $seen = [];
+        $this->cms->events->on(RegistryRefreshed::class, static function (RegistryRefreshed $e) use (&$seen): void {
+            $seen[] = [$e->packages, $e->organisations, $e->advisories];
+        });
+        $registry = $this->cms->registry();
+
+        $this->assertTrue($registry->refresh()['usable']);
+        $this->assertSame([[['aurora', 'events', 'forms-extra', 'search-plus', 'shop'], ['acme'], true]], $seen, 'the first copy: everything');
+
+        $registry->refresh();
+        $this->assertCount(1, $seen, 'nothing new, nothing told');
+
+        $this->registry->describe('events', ['summary' => 'Events, now with tickets.']);
+        $this->registry->publish();
+        $registry->refresh();
+        $this->assertSame([['events'], [], false], $seen[1], 'only the package that changed');
+
+        $this->registry->advisories[] = ['id' => 'KSA-2027-0003', 'type' => 'plugin', 'package' => 'events', 'affected' => '<1.0.0', 'fixed' => '1.0.0', 'severity' => 'medium', 'title' => 'CSRF in settings', 'url' => 'https://kestello.com/advisories/KSA-2027-0003', 'published_at' => RegistryFixture::at($this->registry->now - 60)];
+        $this->registry->publish();
+        $registry->refresh();
+        $this->assertSame([[], [], true], $seen[2], 'only the advisories');
+
+        $this->registry->transport->on('GET ' . RegistryFixture::BASE . 'keys.json', static fn(): array => ['status' => 503]);
+        $this->assertNotNull($registry->refresh()['error']);
+        $this->assertCount(3, $seen, 'a failed refresh tells nothing');
     }
 }

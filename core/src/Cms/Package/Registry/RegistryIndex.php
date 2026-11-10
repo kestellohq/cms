@@ -101,6 +101,30 @@ final readonly class RegistryIndex
         return new self($freshness['serial'], $freshness['issued_at'], $freshness['expires_at'], $packages, $organisations, $advisories, $moves);
     }
 
+    /**
+     * What differs from an earlier copy, by the hashes of the files the two pin: packages and
+     * organisations added, changed or gone, and whether the advisories changed. Everything, when
+     * there is no earlier copy.
+     *
+     * @return array{packages: list<string>, organisations: list<string>, advisories: bool}
+     */
+    public function changesSince(?self $before): array
+    {
+        $differ = static function (array $now, array $then): array {
+            $keys = array_unique([...array_keys($now), ...array_keys($then)]);
+            $changed = array_values(array_filter($keys, static fn(string|int $k): bool => ($now[$k]['file']->sha256 ?? null) !== ($then[$k]['file']->sha256 ?? null)));
+            sort($changed);
+
+            return array_map('strval', $changed);
+        };
+
+        return [
+            'packages' => $differ($this->packages, $before->packages ?? []),
+            'organisations' => $differ($this->organisations, $before->organisations ?? []),
+            'advisories' => $before === null || $before->advisories->sha256 !== $this->advisories->sha256,
+        ];
+    }
+
     /** @return list<array<mixed>> */
     private static function entries(mixed $v, int $max, string $what): array
     {

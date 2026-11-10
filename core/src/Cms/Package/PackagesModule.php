@@ -6,9 +6,11 @@ namespace Kestello\Cms\Package;
 
 use Kestello\Cms\Backup\Backups;
 use Kestello\Cms\Cms;
+use Kestello\Cms\Events\RegistryRefreshed;
 use Kestello\Cms\Extension\Provider;
 use Kestello\Cms\Package\Registry\Registry;
 use Kestello\Cms\Package\Registry\RegistryClient;
+use Kestello\Cms\Package\Registry\RegistryIndex;
 use Kestello\Cms\Package\Registry\RegistryPackages;
 use Kestello\Cms\Package\Registry\RegistryTrust;
 use Kestello\Cms\Package\Registry\RootKeys;
@@ -102,6 +104,9 @@ final class PackagesModule extends Provider
                 },
                 static fn(array $state) => Settings::getInstance()->set(self::REGISTRY_STATE, (string) json_encode($state, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 'updates'),
                 static fn(): int => Clock::timestamp(),
+                static function (RegistryIndex $index, array $changes) use ($cms): void {
+                    $cms->events->dispatch(new RegistryRefreshed($changes['packages'], $changes['organisations'], $changes['advisories'], $index->serial));
+                },
             );
         });
         $container->singleton(Registry::class, static fn(Container $c): Registry => new Registry(
