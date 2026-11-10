@@ -84,6 +84,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- Site Health's **Image processing** check writes the formats as people write them: "served as WebP and AVIF", not "WEBP AND AVIF", and "WebP, AVIF" in its details.
 - `assertCount()` in `Kestello\Framework\Testing\TestCase` takes any `Countable`, such as an `ArrayObject` or a `SimpleXMLElement`. Its parameter was typed as a class in the testing namespace, so only arrays could be counted.
 - Appearance → Themes shows a preview of Base instead of an empty card: the theme ships its `screenshot.webp`.
 - Links to the page chosen as the home page go to `/`. Menus, breadcrumbs, search results, lists of entries and the page's own `path` used its slug address (`/home`), which redirects to `/`, so every click went through a redirect. `Entry::url()` gives the address links should use.
