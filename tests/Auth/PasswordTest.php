@@ -225,4 +225,47 @@ final class PasswordTest extends AuthTestCase
         $this->assertTrue((bool) preg_match('/^  ([A-Za-z0-9]{20})$/m', $out, $m), 'prints the new password once');
         $this->assertTrue($login->attempt('ana', $m[1], '192.0.2.1')->ok());
     }
+
+    public function testTheServerCanCreateAnAccount(): void
+    {
+        $this->createUser();
+        $run = function (array $args, array $options = [], string $stdin = ''): array {
+            $in = fopen('php://memory', 'w+');
+            fwrite($in, $stdin);
+            rewind($in);
+            $out = fopen('php://memory', 'w+');
+            $command = new \Kestello\Cms\Console\CreateUserCommand($in);
+            $command->setOutput(new \Kestello\Framework\Console\Output($out, false));
+            $code = $command->handle($args, $options);
+            rewind($out);
+
+            return [$code, (string) stream_get_contents($out)];
+        };
+        $login = $this->cms->container->make(LoginService::class);
+        $pw = "a long enough passphrase\n";
+
+        $this->assertSame(1, $run([])[0], 'needs a username and an email');
+        $this->assertSame(1, $run(['bob', 'bob@example.test', 'a password on the command line'])[0], 'never takes the password as an argument');
+        $this->assertSame(1, $run(['ana', 'new@example.test'], [], $pw)[0], 'the username is taken');
+        $this->assertSame(1, $run(['bob', 'ana@example.test'], [], $pw)[0], 'the email is taken');
+        $this->assertSame(1, $run(['bo', 'bob@example.test'], [], $pw)[0], 'too short a username');
+        $this->assertSame(1, $run(['bob', 'not-an-email'], [], $pw)[0]);
+        $this->assertSame(1, $run(['bob', 'bob@example.test'], ['role' => 'emperor'], $pw)[0], 'a role that exists');
+        $this->assertSame(1, $run(['bob', 'bob@example.test'], [], "short\n")[0], 'the password rules apply');
+        $this->assertSame(1, $run(['bob', 'bob@example.test'], [], '')[0], 'no password, no account');
+        $this->assertFalse(\Kestello\Framework\Database\QueryBuilder::table('users')->where('username', 'bob')->exists(), 'nothing was created by a refusal');
+
+        [$code, $out] = $run(['bob', 'Bob@Example.TEST'], ['role' => 'admin'], $pw);
+        $this->assertSame(0, $code, $out);
+        $bo = \Kestello\Framework\Database\QueryBuilder::table('users')->where('username', 'bob')->first();
+        $this->assertSame(['bob@example.test', 'admin', 1], [$bo['email'], $bo['role'], (int) $bo['is_active']]);
+        $this->assertTrue($login->attempt('bob', 'a long enough passphrase', '192.0.2.1')->ok());
+        $this->assertContains('users.created', $this->auditEvents());
+
+        [$code, $out] = $run(['cyd', 'cyd@example.test'], ['generate' => true]);
+        $this->assertSame(0, $code);
+        $this->assertTrue((bool) preg_match('/^  ([A-Za-z0-9]{20})$/m', $out, $m), 'prints the new password once');
+        $this->assertTrue($login->attempt('cyd', $m[1], '192.0.2.1')->ok());
+        $this->assertSame('user', \Kestello\Framework\Database\QueryBuilder::table('users')->where('username', 'cyd')->value('role'), 'the default role is the least one');
+    }
 }

@@ -28,8 +28,13 @@ final class SetPasswordCommand extends Command
     protected string $name = 'user:password';
     protected string $description = 'Set a user\'s password: user:password <username|email> [--generate]';
 
+    private readonly PasswordPrompt $prompt;
+
     /** @param resource|null $input where the password is read from (tests pass a stream) */
-    public function __construct(private readonly mixed $input = null) {}
+    public function __construct(mixed $input = null)
+    {
+        $this->prompt = new PasswordPrompt($input);
+    }
 
     public function handle(array $arguments, array $options): int
     {
@@ -54,15 +59,15 @@ final class SetPasswordCommand extends Command
         $policy = $cms->container->make(PasswordPolicy::class);
         $generated = $this->hasFlag($options, 'generate');
         if ($generated) {
-            $password = self::generate();
+            $password = PasswordPrompt::generate();
         } else {
-            $password = $this->read('New password for ' . $user['username']);
+            $password = $this->prompt->read('New password for ' . $user['username']);
             if ($password === null) {
                 $this->output->error('No password given.');
                 return 1;
             }
-            if ($this->interactive()) {
-                if ($this->read('Repeat it') !== $password) {
+            if ($this->prompt->interactive()) {
+                if ($this->prompt->read('Repeat it') !== $password) {
                     $this->output->error('The two passwords are different. Nothing was changed.');
                     return 1;
                 }
@@ -89,44 +94,5 @@ final class SetPasswordCommand extends Command
         }
 
         return 0;
-    }
-
-    /** One line from the terminal without echo, or from piped input. */
-    private function read(string $prompt): ?string
-    {
-        $stream = $this->input ?? STDIN;
-        $tty = $this->interactive();
-        if ($tty) {
-            fwrite(STDOUT, $prompt . ': ');
-            shell_exec('stty -echo 2>/dev/null');
-        }
-        try {
-            $line = fgets($stream);
-        } finally {
-            if ($tty) {
-                shell_exec('stty echo 2>/dev/null');
-                fwrite(STDOUT, PHP_EOL);
-            }
-        }
-        $line = $line === false ? '' : rtrim($line, "\r\n");
-
-        return $line === '' ? null : $line;
-    }
-
-    private function interactive(): bool
-    {
-        return $this->input === null && function_exists('stream_isatty') && stream_isatty(STDIN);
-    }
-
-    /** 20 characters from an alphabet without look-alikes (0/O, 1/l/I). */
-    private static function generate(): string
-    {
-        $alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        $out = '';
-        for ($i = 0; $i < 20; $i++) {
-            $out .= $alphabet[random_int(0, strlen($alphabet) - 1)];
-        }
-
-        return $out;
     }
 }
