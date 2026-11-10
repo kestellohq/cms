@@ -8,8 +8,11 @@ use Kestello\Cms\Backup\Backups;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Events\RegistryRefreshed;
 use Kestello\Cms\Extension\Provider;
+use Kestello\Cms\Health\HealthResult;
+use Kestello\Cms\Package\Registry\InstalledAdvisories;
 use Kestello\Cms\Package\Registry\Registry;
 use Kestello\Cms\Package\Registry\RegistryClient;
+use Kestello\Cms\Package\Registry\RegistryException;
 use Kestello\Cms\Package\Registry\RegistryIndex;
 use Kestello\Cms\Package\Registry\RegistryPackages;
 use Kestello\Cms\Package\Registry\RegistryTrust;
@@ -194,6 +197,9 @@ final class PackagesModule extends Provider
         }, 'updates.registry')->hourlyAt(37)->withoutOverlapping(30)
             ->description('Fetches the plugin and theme registry\'s signed list (config/registry.php) and checks it. It only reads; nothing is installed.');
 
+        // what this site runs that a security advisory names; critical ones reach administrators through Site Health alerts
+        $cms->health->check('core.advisories', 'Security advisories', static fn(): HealthResult => self::advisories($cms), 'security');
+
         // the HTTP health check's view of a package; only during an update, only with its bypass token
         $cms->routes->get('/system/update/probe', static function (Request $request) use ($cms): Response {
             $state = (new Maintenance($cms->paths->storage()))->current();
@@ -212,7 +218,9 @@ final class PackagesModule extends Provider
     /**
      * The installed plugins and themes, as PackageUpdates reads them.
      *
-     * @return list<array{owner: string, type: string, slug: string, name: string, version: string, updates: array<string, mixed>|null}>
+     * from_registry: installed from the registry (its organisation's key is pinned).
+     *
+     * @return list<array{owner: string, type: string, slug: string, name: string, version: string, updates: array<string, mixed>|null, from_registry: bool}>
      */
     public static function installedPackages(Cms $cms): array
     {
@@ -220,11 +228,31 @@ final class PackagesModule extends Provider
         $out = [];
         foreach ([...array_values($cms->extensions()->plugins()), ...array_values($cms->extensions()->themes())] as $p) {
             // a package installed from the registry takes its updates from the registry (registry-format.md §5.2)
-            $updates = $pins->organisation($p->owner()) !== null ? ['registry' => true] : $p->manifest->updates;
-            $out[] = ['owner' => $p->owner(), 'type' => $p->manifest->type->value, 'slug' => $p->slug(), 'name' => $p->manifest->name, 'version' => $p->version(), 'updates' => $updates];
+            $fromRegistry = $pins->organisation($p->owner()) !== null;
+            $updates = $fromRegistry ? ['registry' => true] : $p->manifest->updates;
+            $out[] = ['owner' => $p->owner(), 'type' => $p->manifest->type->value, 'slug' => $p->slug(), 'name' => $p->manifest->name, 'version' => $p->version(), 'updates' => $updates, 'from_registry' => $fromRegistry];
         }
 
         return $out;
+    }
+
+    /** The Site Health check "Security advisories" (InstalledAdvisories). */
+    public static function advisories(Cms $cms): HealthResult
+    {
+        if (!(bool) $cms->config->get('registry.enabled', true)) {
+            return HealthResult::good('The plugin and theme registry is turned off (registry.enabled), so security advisories are not checked.');
+        }
+        $client = $cms->container->make(RegistryClient::class);
+        if ($client->index() === null) {
+            return InstalledAdvisories::unknown($client->status()['error']);
+        }
+        try {
+            $advisories = $client->advisories();
+        } catch (RegistryException $e) {
+            return InstalledAdvisories::unknown($e->getMessage());
+        }
+
+        return InstalledAdvisories::result(InstalledAdvisories::find($advisories, self::installedPackages($cms), $cms->version()));
     }
 
     /** Registry versions and downloads, or null when the registry is turned off. */

@@ -9,10 +9,12 @@ use Kestello\Cms\Content\ContentException;
 use Kestello\Cms\Extension\ArrayStateStore;
 use Kestello\Cms\Extension\ExtensionManager;
 use Kestello\Cms\Extension\SuspensionList;
+use Kestello\Cms\Health\HealthResult;
 use Kestello\Cms\Package\PackageBuilder;
 use Kestello\Cms\Package\PackageInstaller;
 use Kestello\Cms\Package\PackageSignature;
 use Kestello\Cms\Package\PackagesModule;
+use Kestello\Cms\Package\Registry\InstalledAdvisories;
 use Kestello\Cms\Package\Registry\RegistryClient;
 use Kestello\Cms\Package\Registry\RegistryPackages;
 use Kestello\Cms\Package\Registry\RegistryTrust;
@@ -465,5 +467,42 @@ final class RegistryInstallTest extends AuthTestCase
 
         $advisories = $this->installer()->inspect($this->packages()->download('plugin', 'ledger', '1.0.0'))['registry']['advisories'];
         $this->assertSame(['KSA-2027-0001'], array_column($advisories, 'id'));
+    }
+
+    public function testSiteHealthSaysWhenAnAdvisoryAppliesToWhatTheSiteRuns(): void
+    {
+        $this->installFromRegistry();
+        $this->assertSame(HealthResult::GOOD, PackagesModule::advisories($this->cms)->status, 'nothing applies yet');
+
+        $this->registry->advisories[] = ['id' => 'KSA-2027-0003', 'type' => 'plugin', 'package' => 'ledger', 'affected' => '<1.0.0', 'fixed' => '1.0.0', 'severity' => 'critical', 'title' => 'Not this version', 'url' => 'https://kestello.com/advisories/KSA-2027-0003', 'published_at' => RegistryFixture::at($this->registry->now - 120)];
+        $this->registry->advisories[] = ['id' => 'KSA-2027-0001', 'type' => 'plugin', 'package' => 'ledger', 'affected' => '<1.1.0', 'fixed' => '1.1.0', 'severity' => 'medium', 'title' => 'Totals off by one', 'url' => 'https://kestello.com/advisories/KSA-2027-0001', 'published_at' => RegistryFixture::at($this->registry->now - 60)];
+        $this->republish();
+        $result = PackagesModule::advisories($this->cms);
+        $this->assertSame(HealthResult::RECOMMENDED, $result->status, 'medium: recommended');
+        $this->assertSame('A security advisory applies to this site. Ledger 1.0.0: Totals off by one (KSA-2027-0001, medium). Update to 1.1.0 or later.', $result->message);
+        $this->assertSame(['KSA-2027-0001' => 'Ledger 1.0.0 (medium)'], $result->details);
+        $this->assertSame(InstalledAdvisories::ACTION, $result->action);
+
+        $this->registry->advisories[] = ['id' => 'KSA-2027-0002', 'type' => 'core', 'package' => 'core', 'affected' => '<99.0.0', 'fixed' => null, 'severity' => 'high', 'title' => 'Open redirect', 'url' => 'https://kestello.com/advisories/KSA-2027-0002', 'published_at' => RegistryFixture::at($this->registry->now - 30)];
+        $this->republish();
+        $result = PackagesModule::advisories($this->cms);
+        $this->assertSame(HealthResult::CRITICAL, $result->status, 'high: critical, so administrators are alerted');
+        $this->assertSame(['KSA-2027-0002', 'KSA-2027-0001'], array_keys($result->details), 'most severe first, Kestello itself included');
+        $this->assertStringContainsString('Kestello ' . $this->cms->version() . ': Open redirect (KSA-2027-0002, high). No fixed version yet', $result->message);
+
+        $this->cms->config->set('registry.enabled', false);
+        $this->assertStringContainsString('turned off', PackagesModule::advisories($this->cms)->message);
+    }
+
+    public function testAnAdvisoryOnlyNamesPackagesInstalledFromTheRegistry(): void
+    {
+        $this->registry->advisories[] = ['id' => 'KSA-2027-0001', 'type' => 'plugin', 'package' => 'ledger', 'affected' => '<1.1.0', 'fixed' => '1.1.0', 'severity' => 'high', 'title' => 'Stored XSS in labels', 'url' => 'https://kestello.com/advisories/KSA-2027-0001', 'published_at' => RegistryFixture::at($this->registry->now - 60)];
+        $this->republish();
+        $advisories = $this->cms->container->make(RegistryClient::class)->advisories();
+        $ledger = ['type' => 'plugin', 'slug' => 'ledger', 'name' => 'Ledger', 'version' => '1.0.0'];
+
+        $this->assertSame([], InstalledAdvisories::find($advisories, [$ledger + ['from_registry' => false]], '0.1.0'), 'an uploaded zip can share a name with an unrelated package');
+        $this->assertSame(['KSA-2027-0001'], array_column(array_column(InstalledAdvisories::find($advisories, [$ledger + ['from_registry' => true]], '0.1.0'), 'advisory'), 'id'));
+        $this->assertSame([], InstalledAdvisories::find($advisories, [['version' => '1.1.0'] + $ledger + ['from_registry' => true]], '0.1.0'), 'the fixed version');
     }
 }
