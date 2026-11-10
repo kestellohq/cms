@@ -12,7 +12,7 @@ namespace Kestello\Cms\Seed;
  */
 final class DryRun extends \RuntimeException
 {
-    /** @param array{media: int, pages: int, menus: int, settings: int, front_page: ?int, unassigned: list<string>} $summary */
+    /** @param array{media: int, pages: int, menus: int, settings: int, front_page: ?int, unassigned: list<string>, updated: int, reused: int} $summary */
     public function __construct(public readonly array $summary)
     {
         parent::__construct('Dry run: rolled back.');
