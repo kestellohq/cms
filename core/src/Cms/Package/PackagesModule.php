@@ -144,6 +144,7 @@ final class PackagesModule extends Provider
         $cms->auth->roles->capability('core.update', 'Update Kestello, and plugins and themes from their publishers', sensitive: true);
         $cms->admin->page('system/updates', '@core/admin/system/Updates', 'Updates', 'core.update', ['label' => 'Updates', 'icon' => 'arrows-clockwise', 'group' => 'site', 'order' => 20]);
         $cms->admin->page('system/plugins', '@core/admin/system/Plugins', 'Plugins', 'plugins.manage', ['label' => 'Manage plugins', 'icon' => 'plug', 'group' => 'plugins', 'order' => 0]);
+        $cms->admin->page('system/plugins/add', '@core/admin/system/AddPlugins', 'Add plugins', 'plugins.manage', ['label' => 'Add new', 'icon' => 'plus', 'group' => 'plugins', 'order' => 1]);
 
         // new Kestello versions: asked of GitHub at most every release.check_every hours; nothing is installed
         $cms->schedule->call(static function () use ($cms): string {

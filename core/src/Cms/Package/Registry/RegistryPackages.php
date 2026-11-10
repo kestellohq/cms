@@ -13,6 +13,7 @@ use RuntimeException;
  *
  *   $packages->releases('plugin', 'events')         what this site could install, newest first
  *   $packages->choose('plugin', 'events', null)      the version to install (or update to from $installed)
+ *   $packages->offer('plugin', 'events', null)       the same, with the newer version that needs another Kestello
  *   $packages->download('plugin', 'events', '1.5.0') the zip, in the temporary folder, size and SHA-256 checked
  *
  * Left out of releases(): withdrawn versions, paid versions (their zips come from the seller, a
@@ -68,10 +69,19 @@ final class RegistryPackages
      */
     public function choose(string $type, string $slug, ?string $installed, bool $prereleases = false): ?string
     {
-        $releases = $this->releases($type, $slug);
-        $choice = PackageFeed::choose($releases, $installed ?? '0.0.0-0', $this->core, $this->php, $prereleases);
+        return $this->offer($type, $slug, $installed, $prereleases)['offer']['version'] ?? null;
+    }
 
-        return $choice['offer']['version'] ?? null;
+    /**
+     * choose() with the reason when nothing is offered: needs_core is the newest version left out
+     * because it needs another Kestello.
+     *
+     * @return array{offer: ?array{version: string, requires_core: ?string}, needs_core: ?array{version: string, requires_core: ?string}}
+     * @throws RegistryException
+     */
+    public function offer(string $type, string $slug, ?string $installed, bool $prereleases = false): array
+    {
+        return PackageFeed::choose($this->releases($type, $slug), $installed ?? '0.0.0-0', $this->core, $this->php, $prereleases);
     }
 
     /**

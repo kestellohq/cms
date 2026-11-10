@@ -11,7 +11,11 @@ use Kestello\Cms\Content\ContentException;
 use Kestello\Cms\Extension\ExtensionManager;
 use Kestello\Cms\Extension\Package;
 use Kestello\Cms\Package\PackageInstaller;
+use Kestello\Cms\Package\Registry\RegistryClient;
+use Kestello\Cms\Package\Registry\RegistryIndex;
+use Kestello\Cms\Package\Registry\RegistryTrust;
 use Kestello\Cms\Package\Update\UpdateJournal;
+use Kestello\Cms\Package\Update\Updater;
 use Kestello\Cms\Package\Update\UpdateRecovery;
 
 /** Base for /plugins: plugins.manage, scope admin (plugins run code on the server). @internal */
@@ -159,6 +163,51 @@ abstract class PluginEndpoint extends Endpoint
                 'trusted' => array_values(array_column($this->installer()->trustedKeys(), 'name')),
                 'unsigned' => $this->installer()->adminMayInstallUnsigned(),
             ],
+        ];
+    }
+
+    /** The registry, or null when this site has it turned off (registry.enabled). */
+    protected function registry(): ?RegistryClient
+    {
+        return (bool) $this->cms()->config->get('registry.enabled', true) ? $this->cms()->container->make(RegistryClient::class) : null;
+    }
+
+    /** The registry's checked list, or a 409 saying why there is none. */
+    protected function registryIndex(RegistryClient $client): RegistryIndex
+    {
+        return $client->index() ?? throw ApiProblem::conflict($client->status()['error'] ?? 'The registry could not be read yet. Try again in a minute.');
+    }
+
+    /**
+     * Keep a plugin zip for review and say what it is: who signed it, what the registry says about
+     * it, what it declares, and whether it may be installed (POST /plugins/install) or, when an
+     * active copy is installed, applied as an update (POST /plugins/update). Nothing is installed.
+     * Uploads and registry downloads both come through here, so they are judged the same way.
+     *
+     * @return array{token: string, package: array<string, mixed>, update: ?array{from: string, problems: list<string>}, allowed: bool}
+     */
+    protected function review(string $zipPath, string $notPlugin): array
+    {
+        $package = $this->attempt(fn() => $this->installer()->inspect($zipPath));
+        if ($package['type'] !== 'plugin') {
+            throw ApiProblem::validation(['file' => [$notPlugin]]);
+        }
+        $token = $this->attempt(fn() => $this->installer()->hold($zipPath));
+        $sig = $package['signature']['status'];
+
+        $update = null;
+        if ($package['installed'] !== null && $package['installed']['active']) {
+            $held = $this->installer()->held($token);
+            $update = ['from' => $package['installed']['version'], 'problems' => $this->attempt(fn() => $this->cms()->container->make(Updater::class)->check($held)['problems'])];
+        }
+
+        return [
+            'token' => $token,
+            'package' => $package,
+            'update' => $update,
+            // a version the registry refuses (withdrawn, revoked key, …) never installs, whatever the signature says
+            'allowed' => $package['registry']['status'] !== RegistryTrust::REFUSED
+                && ($sig === 'signed' || ($sig !== 'tampered' && $this->installer()->adminMayInstallUnsigned())),
         ];
     }
 }
