@@ -116,7 +116,7 @@ abstract class TestCase
         $this->check($value !== null, $message ?: 'Expected a non-null value');
     }
 
-    protected function assertCount(int $expected, countable|array $value, string $message = ''): void
+    protected function assertCount(int $expected, \Countable|array $value, string $message = ''): void
     {
         $count = count($value);
         $this->check($count === $expected, $message ?: "Expected count {$expected}, got {$count}");

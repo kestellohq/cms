@@ -99,108 +99,19 @@ final class Discovery
                 'html' => $html,
             ];
         }
-        $feed = ['title' => $title, 'home' => $base . $home, 'self' => $base . $self . ($format === 'atom' ? '/atom' : ''),
-            'description' => (string) Settings::getInstance()->get('site_description', ''), 'id' => "tag:{$host},2000:" . $self,
-            'updated' => $items === [] ? new DateTimeImmutable() : max(array_column($items, 'updated'))];
-
-        $xml = $format === 'atom' ? self::atom($feed, $items) : self::rss($feed, $items);
-
-        return self::xml($xml, $format === 'atom' ? 'application/atom+xml' : 'application/rss+xml');
-    }
-
-    /** @param list<array<string, mixed>> $items */
-    private static function rss(array $feed, array $items): string
-    {
-        $w = self::writer();
-        $w->startElement('rss');
-        $w->writeAttribute('version', '2.0');
-        $w->writeAttribute('xmlns:atom', 'http://www.w3.org/2005/Atom');
-        $w->writeAttribute('xmlns:content', 'http://purl.org/rss/1.0/modules/content/');
-        $w->writeAttribute('xmlns:dc', 'http://purl.org/dc/elements/1.1/');
-        $w->startElement('channel');
-        $w->writeElement('title', $feed['title']);
-        $w->writeElement('link', $feed['home']);
-        $w->writeElement('description', $feed['description'] !== '' ? $feed['description'] : $feed['title']);
-        $w->startElement('atom:link');
-        $w->writeAttribute('href', $feed['self']);
-        $w->writeAttribute('rel', 'self');
-        $w->writeAttribute('type', 'application/rss+xml');
-        $w->endElement();
-        $w->writeElement('lastBuildDate', $feed['updated']->format(DateTimeInterface::RSS));
-        $w->writeElement('generator', 'Kestello');
+        $feed = new Feed(
+            $title,
+            $base . $home,
+            $base . $self . ($format === 'atom' ? '/atom' : ''),
+            (string) Settings::getInstance()->get('site_description', ''),
+            "tag:{$host},2000:" . $self,
+        );
         foreach ($items as $item) {
-            $w->startElement('item');
-            $w->writeElement('title', $item['title']);
-            $w->writeElement('link', $item['url']);
-            $w->startElement('guid');
-            $w->writeAttribute('isPermaLink', 'false');
-            $w->text($item['id']);
-            $w->endElement();
-            $w->writeElement('pubDate', $item['published']->format(DateTimeInterface::RSS));
-            if ($item['author'] !== null) {
-                $w->writeElement('dc:creator', $item['author']);
-            }
-            $w->writeElement('description', $item['summary']);
-            if ($item['html'] !== '') {
-                $w->startElement('content:encoded');
-                $w->writeCdata(str_replace(']]>', ']]]]><![CDATA[>', $item['html']));
-                $w->endElement();
-            }
-            $w->endElement();
+            $feed->add($item['title'], $item['url'], $item['published'], $item['updated'], $item['summary'], $item['html'], $item['author'], $item['id']);
         }
-        $w->endElement();
-        $w->endElement();
+        \Kestello\Cms\Cache\PageTags::add('content');
 
-        return $w->outputMemory();
-    }
-
-    /** @param list<array<string, mixed>> $items */
-    private static function atom(array $feed, array $items): string
-    {
-        $w = self::writer();
-        $w->startElement('feed');
-        $w->writeAttribute('xmlns', 'http://www.w3.org/2005/Atom');
-        $w->writeElement('title', $feed['title']);
-        if ($feed['description'] !== '') {
-            $w->writeElement('subtitle', $feed['description']);
-        }
-        $w->writeElement('id', $feed['id']);
-        $w->writeElement('updated', $feed['updated']->format(DateTimeInterface::ATOM));
-        foreach ([['alternate', $feed['home'], 'text/html'], ['self', $feed['self'], 'application/atom+xml']] as [$rel, $href, $mime]) {
-            $w->startElement('link');
-            $w->writeAttribute('rel', $rel);
-            $w->writeAttribute('type', $mime);
-            $w->writeAttribute('href', $href);
-            $w->endElement();
-        }
-        $w->writeElement('generator', 'Kestello');
-        foreach ($items as $item) {
-            $w->startElement('entry');
-            $w->writeElement('title', $item['title']);
-            $w->startElement('link');
-            $w->writeAttribute('rel', 'alternate');
-            $w->writeAttribute('href', $item['url']);
-            $w->endElement();
-            $w->writeElement('id', $item['id']);
-            $w->writeElement('published', $item['published']->format(DateTimeInterface::ATOM));
-            $w->writeElement('updated', $item['updated']->format(DateTimeInterface::ATOM));
-            $w->startElement('author');
-            $w->writeElement('name', $item['author'] ?? $feed['title']);
-            $w->endElement();
-            $w->startElement('summary');
-            $w->text($item['summary']);
-            $w->endElement();
-            if ($item['html'] !== '') {
-                $w->startElement('content');
-                $w->writeAttribute('type', 'html');
-                $w->text($item['html']);
-                $w->endElement();
-            }
-            $w->endElement();
-        }
-        $w->endElement();
-
-        return $w->outputMemory();
+        return $format === 'atom' ? $feed->atom() : $feed->rss();
     }
 
     // ── sitemaps ─────────────────────────────────────────────────────────

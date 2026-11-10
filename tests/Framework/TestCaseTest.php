@@ -17,4 +17,10 @@ final class TestCaseTest extends TestCase
         $this->assertSame(realpath($core . '/database/migrations'), realpath(self::corePath('database/migrations')));
         $this->assertSame(self::corePath('database'), self::corePath('/database'), 'a leading slash is the same path');
     }
+
+    public function testAssertCountTakesAnyCountable(): void
+    {
+        $this->assertCount(2, new \ArrayObject([1, 2]));
+        $this->assertCount(1, [1]);
+    }
 }
