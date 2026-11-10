@@ -219,6 +219,7 @@ final class ApiModule extends Provider
         Endpoints\Auth\RevokeMySession::class,
         Endpoints\Auth\RevokeOtherSessions::class,
         Endpoints\Auth\ChangeMyPassword::class,
+        Endpoints\Auth\ExportMyData::class,
         Endpoints\Auth\GetMyTwoFactor::class,
         Endpoints\Auth\BeginTotp::class,
         Endpoints\Auth\ConfirmTotp::class,
