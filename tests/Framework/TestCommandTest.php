@@ -9,7 +9,7 @@ use Kestello\Framework\Testing\TestCommand;
 
 /**
  * bin/cms test on a site: several paths at once, and a plugin's or theme's tests using its own
- * classes without it being installed.
+ * classes and its own test helpers without it being installed.
  */
 final class TestCommandTest extends TestCase
 {
@@ -23,20 +23,25 @@ final class TestCommandTest extends TestCase
         file_put_contents($site . '/tests/broken/BrokenTest.php', "<?php\nnamespace Kestello\\Tests\\Broken{$id};\nfinal class BrokenTest extends \\Kestello\\Framework\\Testing\\TestCase { public function testFails(): void { \$this->assertSame(1, 2); } }\n");
 
         $this->assertSame(
-            ["Plugins\\Greeter{$id}\\" => $site . '/content/plugins/greeter/src', "Themes\\Plain{$id}\\" => $site . '/content/themes/plain/src'],
+            [
+                "Plugins\\Greeter{$id}\\" => $site . '/content/plugins/greeter/src',
+                "Plugins\\Greeter{$id}\\Tests\\" => $site . '/content/plugins/greeter/tests',
+                "Themes\\Plain{$id}\\" => $site . '/content/themes/plain/src',
+                "Themes\\Plain{$id}\\Tests\\" => $site . '/content/themes/plain/tests',
+            ],
             TestCommand::packages($site . '/content'),
         );
 
         [$code, $out] = $this->run($site, ['content/plugins', 'content/themes']);
         $this->assertSame(0, $code, $out);
-        $this->assertStringContainsString('2 tests', $out, 'both paths, and each package\'s classes autoloaded');
+        $this->assertStringContainsString('2 tests', $out, 'both paths, and each package\'s classes and test helpers autoloaded');
 
         [$code, $out] = $this->run($site, ['content/plugins', 'tests']);
         $this->assertSame(1, $code, 'a failing test anywhere fails the run');
         $this->assertStringContainsString('1 failed', $out);
     }
 
-    /** A package with one class and one test of it. */
+    /** A package with one class, and one test of it built on a helper of the package's own. */
     private function package(string $dir, string $manifest, string $namespace, string $class, string $body, string $expected): void
     {
         mkdir($dir . '/src', 0o777, true);
@@ -44,7 +49,8 @@ final class TestCommandTest extends TestCase
         file_put_contents($dir . '/' . $manifest, (string) json_encode(['slug' => basename($dir), 'name' => basename($dir), 'version' => '1.0.0', 'namespace' => $namespace]));
         $ns = rtrim($namespace, '\\');
         file_put_contents("{$dir}/src/{$class}.php", "<?php\nnamespace {$ns};\nfinal class {$class} { public function value(): string { {$body} } }\n");
-        file_put_contents("{$dir}/tests/{$class}Test.php", "<?php\nnamespace {$ns}\\Tests;\nfinal class {$class}Test extends \\Kestello\\Framework\\Testing\\TestCase { public function testValue(): void { \$this->assertSame('{$expected}', (new \\{$ns}\\{$class}())->value()); } }\n");
+        file_put_contents("{$dir}/tests/{$class}Case.php", "<?php\nnamespace {$ns}\\Tests;\nabstract class {$class}Case extends \\Kestello\\Framework\\Testing\\TestCase { protected function expected(): string { return '{$expected}'; } }\n");
+        file_put_contents("{$dir}/tests/{$class}Test.php", "<?php\nnamespace {$ns}\\Tests;\nfinal class {$class}Test extends {$class}Case { public function testValue(): void { \$this->assertSame(\$this->expected(), (new \\{$ns}\\{$class}())->value()); } }\n");
     }
 
     /**
