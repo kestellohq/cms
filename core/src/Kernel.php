@@ -423,6 +423,7 @@ final class Kernel
         $console->register(new RecoveryLinkCommand($app->config()));
         $console->register(new \Kestello\Cms\Console\ResetTwoFactorCommand());
         $console->register(new \Kestello\Cms\Console\SetPasswordCommand());
+        $console->register(new \Kestello\Cms\Console\CreateUserCommand());
         $console->register(new \Kestello\Cms\Console\ConfigPublishCommand($this->paths->config()));
         $console->register(new \Kestello\Cms\Console\AuditPruneCommand());
         $console->register(new \Kestello\Cms\Console\Queue\QueueWorkCommand());
