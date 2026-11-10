@@ -23,7 +23,7 @@ PHP 8.4 or newer (with `json`, `mbstring`, `pdo` and `sodium`), and MySQL 8, Mar
 
 ## Run it locally
 
-You need Docker, Composer and Node.js 22.12 or newer.
+You need Docker, Composer and Node.js 22.15 or newer.
 
 ```bash
 cp .env.example .env

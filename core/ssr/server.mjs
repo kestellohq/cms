@@ -10,10 +10,11 @@
 // size-capped JSON body, and only imports .mjs files under */assets/build/ssr/
 // inside KESTELLO_ROOT. It never fetches anything itself.
 import { createServer } from 'node:http';
-import { register, createRequire } from 'node:module';
+import { registerHooks, createRequire } from 'node:module';
 import { realpathSync } from 'node:fs';
 import { resolve as resolvePath, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { createResolve } from './hooks.mjs';
 
 const HOST = process.env.SSR_HOST ?? '127.0.0.1';
 const PORT = Number(process.env.SSR_PORT ?? 13714);
@@ -25,12 +26,16 @@ const RUNTIME = fileURLToPath(new URL('../resources/assets/build/ssr/app/index.m
 const require = createRequire(resolvePath(ROOT, 'package.json'));
 const vueUrl = pathToFileURL(require.resolve('vue')).href;
 const built = (path) => pathToFileURL(fileURLToPath(new URL(`../resources/assets/build/ssr/${path}`, import.meta.url))).href;
-register('./hooks.mjs', import.meta.url, {
-    data: { runtime: pathToFileURL(RUNTIME).href, sdk: built('sdk/index.mjs'), ui: built('ui/index.mjs'), vue: vueUrl },
+registerHooks({
+    resolve: createResolve({
+        shared: { '@kestello/app': pathToFileURL(RUNTIME).href, '@kestello/sdk': built('sdk/index.mjs'), '@kestello/ui': built('ui/index.mjs'), vue: vueUrl },
+        core: built(''),
+    }),
 });
 
 const { renderToString } = await import(pathToFileURL(require.resolve('vue/server-renderer')).href);
 const { createKestelloApp } = await import(pathToFileURL(RUNTIME).href);
+// A theme or plugin rebuilt while this runs is picked up on the next render (hooks.mjs).
 
 /** Only built SSR modules inside the site may be imported. */
 function allowed(file) {
