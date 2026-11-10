@@ -292,9 +292,13 @@ final class PasswordTest extends AuthTestCase
 
         $shots = (int) $this->createUser(['username' => 'shots', 'email' => 'shots@example.test'])['id'];
         (new PersonalAccessTokens())->create($shots, 'laptop', ['content:read']);
+        $this->addUnlinkedRows($shots);
+        $this->addUnlinkedRows($ana);
         $this->assertSame(0, $run(['Shots@Example.TEST'], ['yes' => true])[0], 'found by email, any case');
         $this->assertFalse($users()->where('id', $shots)->exists());
         $this->assertSame([], (new PersonalAccessTokens())->forUser($shots), 'their access tokens end');
+        $this->assertSame(['email_changes' => 0, 'notifications' => 0, 'notification_preferences' => 0], $this->unlinkedRows($shots), 'their waiting email change, inbox and preferences go too');
+        $this->assertSame(['email_changes' => 1, 'notifications' => 1, 'notification_preferences' => 1], $this->unlinkedRows($ana), "someone else's stay");
         $this->assertContains('users.deleted', $this->auditEvents());
         $this->assertTrue($users()->where('id', $ana)->exists(), 'nobody else is touched');
     }

@@ -8,9 +8,9 @@ use Kestello\Cms\Api\ApiProblem;
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
 use Kestello\Cms\Api\Endpoint;
-use Kestello\Framework\Database\QueryBuilder;
+use Kestello\Cms\Auth\AccountDeletion;
 
-/** Delete someone's account; their sessions and tokens end with it. */
+/** Delete someone's account; their sessions, tokens and other per-person rows go with it (AccountDeletion). */
 final class DeleteUser extends Endpoint
 {
     use UserAdmin;
@@ -52,8 +52,7 @@ final class DeleteUser extends Endpoint
             throw ApiProblem::conflict('This is the last administrator.');
         }
 
-        self::endAccess($id);
-        QueryBuilder::table('users')->where('id', $id)->delete();
+        AccountDeletion::delete(self::cms(), $id);
         self::audit($request, 'users.deleted', $id, ['username' => $user['username'], 'email' => $user['email']]);
 
         return null;
