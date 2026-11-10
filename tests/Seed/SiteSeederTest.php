@@ -84,7 +84,7 @@ final class SiteSeederTest extends AuthTestCase
                 'settings' => ['general' => ['site_name' => 'Acme']],
                 'front_page' => 'home',
                 'menus' => [
-                    ['name' => 'Main', 'location' => 'primary', 'items' => [['page' => 'home'], ['page' => 'about', 'label' => 'Who we are'], ['url' => 'https://docs.acme.test/', 'label' => 'Docs']]],
+                    ['name' => 'Main', 'location' => 'primary', 'items' => [['page' => 'home'], ['page' => 'about', 'label' => 'Who we are'], ['url' => 'https://docs.acme.test/', 'label' => 'Docs', 'children' => [['url' => '/guides', 'label' => 'Guides', 'children' => [['page' => 'home', 'label' => 'Start']]]]]]],
                     ['name' => 'Legal', 'location' => 'legal', 'items' => [['page' => 'about']]],
                 ],
                 'media' => ['dot.png' => ['alt' => 'A dot']],
@@ -115,7 +115,10 @@ final class SiteSeederTest extends AuthTestCase
 
         $settings = Settings::getInstance();
         $this->assertSame(['Acme', (string) $summary['front_page']], [$settings->get('site_name'), $settings->get('front_page')]);
-        $this->assertSame(['Home', 'Who we are', 'Docs'], array_column($this->cms->container->make(Menus::class)->forLocations()['primary'], 'label'));
+        $primary = $this->cms->container->make(Menus::class)->forLocations()['primary'];
+        $this->assertSame(['Home', 'Who we are', 'Docs'], array_column($primary, 'label'));
+        $this->assertSame('Guides', $primary[2]['children'][0]['label'] ?? null, 'menus nest');
+        $this->assertSame('Start', $primary[2]['children'][0]['children'][0]['label'] ?? null, 'a page link nests too');
     }
 
     public function testSettingsAreCheckedLikeTheSettingsScreen(): void

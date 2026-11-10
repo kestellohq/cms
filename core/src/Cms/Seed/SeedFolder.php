@@ -21,7 +21,8 @@ namespace Kestello\Cms\Seed;
  *     "menus":      [ { "name": "Main", "location": "primary", "items": [
  *                       { "page": "about" },
  *                       { "url": "https://docs.acme.test/", "label": "Docs" },
- *                       { "archive": "post", "label": "Blog" } ] } ],
+ *                       { "archive": "post", "label": "Blog" },
+ *                       { "url": "/shop", "label": "Shop", "children": [ { "page": "chairs" } ] } ] } ],
  *     "media":      { "team.jpg": { "alt": "The team outside the shop" } } }
  *
  *   $plan = SeedFolder::read('/path/to/seed');   // throws SeedException naming the file
@@ -36,7 +37,7 @@ final class SeedFolder
      * @return array{
      *     settings: array<string, array<string, scalar>>,
      *     front_page: ?string,
-     *     menus: list<array{name: string, location: string, items: list<array<string, string>>}>,
+     *     menus: list<array{name: string, location: string, items: list<array<string, mixed>>}>,
      *     media: array<string, array{path: string, alt: string}>,
      *     pages: array<string, array{title: string, slug: string, status: string, template: ?string, seo: array<string, mixed>, blocks: list<mixed>}>
      * }
@@ -155,7 +156,7 @@ final class SeedFolder
 
     /**
      * @param array<string, mixed> $pages
-     * @return list<array{name: string, location: string, items: list<array<string, string>>}>
+     * @return list<array{name: string, location: string, items: list<array<string, mixed>>}>
      */
     private static function menus(mixed $menus, array $pages, string $where): array
     {
@@ -173,11 +174,27 @@ final class SeedFolder
             if (!is_string($location)) {
                 throw new SeedException("{$at}: \"location\" must be a menu location of the theme, such as primary.");
             }
-            $items = [];
-            foreach (is_array($menu['items'] ?? null) ? $menu['items'] : [] as $j => $item) {
-                $items[] = self::menuItem($item, $pages, "{$at}.items[{$j}]");
-            }
-            $out[] = ['name' => $menu['name'], 'location' => $location, 'items' => $items];
+            $out[] = ['name' => $menu['name'], 'location' => $location, 'items' => self::menuItems($menu['items'] ?? [], $pages, "{$at}.items")];
+        }
+
+        return $out;
+    }
+
+    /**
+     * A menu's items, and the items under each item ("children"), as deep as
+     * Menus allows (it names a menu that nests deeper when it is saved).
+     *
+     * @param array<string, mixed> $pages
+     * @return list<array<string, mixed>>
+     */
+    private static function menuItems(mixed $items, array $pages, string $at): array
+    {
+        if (!is_array($items) || !array_is_list($items)) {
+            throw new SeedException("{$at} must be a list.");
+        }
+        $out = [];
+        foreach ($items as $j => $item) {
+            $out[] = self::menuItem($item, $pages, "{$at}[{$j}]");
         }
 
         return $out;
@@ -185,7 +202,7 @@ final class SeedFolder
 
     /**
      * @param array<string, mixed> $pages
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     private static function menuItem(mixed $item, array $pages, string $at): array
     {
@@ -196,26 +213,27 @@ final class SeedFolder
         if (!is_string($label)) {
             throw new SeedException("{$at}: \"label\" must be text.");
         }
+        $children = array_key_exists('children', $item) ? ['children' => self::menuItems($item['children'], $pages, "{$at}.children")] : [];
         if (isset($item['page'])) {
-            self::only($item, ['page', 'label'], $at);
+            self::only($item, ['page', 'label', 'children'], $at);
             if (!is_string($item['page']) || !isset($pages[$item['page']])) {
                 throw new SeedException("{$at}: \"page\" must be the key of a page in pages/.");
             }
-            return ['page' => $item['page'], 'label' => $label];
+            return ['page' => $item['page'], 'label' => $label] + $children;
         }
         if (isset($item['url'])) {
-            self::only($item, ['url', 'label'], $at);
+            self::only($item, ['url', 'label', 'children'], $at);
             if (!is_string($item['url']) || $item['url'] === '' || $label === '') {
                 throw new SeedException("{$at}: a link needs a \"url\" and a \"label\".");
             }
-            return ['url' => $item['url'], 'label' => $label];
+            return ['url' => $item['url'], 'label' => $label] + $children;
         }
         if (isset($item['archive'])) {
-            self::only($item, ['archive', 'label'], $at);
+            self::only($item, ['archive', 'label', 'children'], $at);
             if (!is_string($item['archive'])) {
                 throw new SeedException("{$at}: \"archive\" must be a content type's name, such as post.");
             }
-            return ['archive' => $item['archive'], 'label' => $label];
+            return ['archive' => $item['archive'], 'label' => $label] + $children;
         }
 
         throw new SeedException("{$at}: say what it links to with \"page\", \"url\" or \"archive\".");
