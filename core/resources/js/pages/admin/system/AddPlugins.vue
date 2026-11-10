@@ -55,19 +55,8 @@ watch(
     () => load(),
 );
 
-const categoryLabels = {
-    content: __('Content'),
-    design: __('Design and layout'),
-    forms: __('Forms and surveys'),
-    commerce: __('Shops and payments'),
-    marketing: __('Marketing and search'),
-    media: __('Pictures and media'),
-    people: __('Members and accounts'),
-    integrations: __('Other services'),
-    developer: __('Developer tools'),
-    theme: __('Themes'),
-};
-const categoryLabel = (id) => categoryLabels[id] ?? id;
+// in the site's language, from the server ($cms->registry()->categories())
+const categoryLabel = (id) => result.value?.category_labels?.[id] ?? id;
 const categoryOptions = computed(() => [
     { value: '', label: __('All categories') },
     ...Object.entries(result.value?.categories ?? {}).map(([id, count]) => ({ value: id, label: `${categoryLabel(id)} (${count})` })),

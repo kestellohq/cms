@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Package\Registry;
 
+use Kestello\Support\Translator;
+
 /**
  * The plugin and theme registry, read-only, for plugins and themes that show it: a directory of
  * packages, an organisation's page, a list of advisories. The site's own checked copy
@@ -16,6 +18,7 @@ namespace Kestello\Cms\Package\Registry;
  *   $registry->organisations()       every organisation, by name
  *   $registry->organisation('acme')  one organisation, with its packages
  *   $registry->advisories()          every advisory, newest first
+ *   $registry->categories()          category id => label, in the site's language
  *
  * Text from publishers (descriptions, release notes) comes as safe HTML without images; icons and
  * screenshots are addresses of the registry's own copies, never a publisher's server. Times are
@@ -196,6 +199,36 @@ final class Registry
         usort($all, static fn(array $a, array $b): int => [$b['published_at'], $b['id']] <=> [$a['published_at'], $a['id']]);
 
         return $all;
+    }
+
+    /**
+     * The registry's categories, id => label in the site's language: the ones the registry's rules
+     * name (rules/categories.json there), then any other a listed package uses, labelled with its id
+     * until Kestello knows it. Plugins → Add new shows the same labels.
+     *
+     * @return array<string, string>
+     */
+    public function categories(): array
+    {
+        $labels = [
+            'content' => Translator::get('Content'),
+            'design' => Translator::get('Design and layout'),
+            'forms' => Translator::get('Forms and surveys'),
+            'commerce' => Translator::get('Shops and payments'),
+            'marketing' => Translator::get('Marketing and search'),
+            'media' => Translator::get('Pictures and media'),
+            'people' => Translator::get('Members and accounts'),
+            'integrations' => Translator::get('Other services'),
+            'developer' => Translator::get('Developer tools'),
+            'theme' => Translator::get('Themes'),
+        ];
+        foreach ($this->packages() as $package) {
+            foreach ($package['categories'] as $id) {
+                $labels[$id] ??= $id;
+            }
+        }
+
+        return $labels;
     }
 
     /**

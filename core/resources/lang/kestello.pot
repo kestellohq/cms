@@ -1904,13 +1904,13 @@ msgstr ""
 #: core/resources/js/pages/admin/content/Index.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/admin/roles/Index.vue
-#: core/resources/js/pages/admin/system/AddPlugins.vue
 #: core/resources/js/pages/admin/system/Audit.vue
 #: core/resources/js/ui/KFinder.vue
 #: core/src/Cms/Admin/AdminRegistry.php
 #: core/src/Cms/Api/Endpoints/Search/FindInAdmin.php
 #: core/src/Cms/Blocks/CoreBlocks.php
 #: core/src/Cms/Content/ContentModule.php
+#: core/src/Cms/Package/Registry/Registry.php
 msgid "Content"
 msgstr ""
 
@@ -2535,7 +2535,7 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/AddPlugins.vue
+#: core/src/Cms/Package/Registry/Registry.php
 msgid "Design and layout"
 msgstr ""
 
@@ -2568,7 +2568,7 @@ msgstr ""
 msgid "Developer theme with code"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/AddPlugins.vue
+#: core/src/Cms/Package/Registry/Registry.php
 msgid "Developer tools"
 msgstr ""
 
@@ -3526,7 +3526,7 @@ msgstr ""
 msgid "Forms"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/AddPlugins.vue
+#: core/src/Cms/Package/Registry/Registry.php
 msgid "Forms and surveys"
 msgstr ""
 
@@ -4917,7 +4917,7 @@ msgstr ""
 msgid "Marked as new."
 msgstr ""
 
-#: core/resources/js/pages/admin/system/AddPlugins.vue
+#: core/src/Cms/Package/Registry/Registry.php
 msgid "Marketing and search"
 msgstr ""
 
@@ -4959,7 +4959,7 @@ msgstr ""
 msgid "Media library"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/AddPlugins.vue
+#: core/src/Cms/Package/Registry/Registry.php
 msgid "Members and accounts"
 msgstr ""
 
@@ -6388,7 +6388,7 @@ msgstr ""
 msgid "Other accounts you can sign in with instead of your password."
 msgstr ""
 
-#: core/resources/js/pages/admin/system/AddPlugins.vue
+#: core/src/Cms/Package/Registry/Registry.php
 msgid "Other services"
 msgstr ""
 
@@ -6719,7 +6719,7 @@ msgstr ""
 msgid "Pick exact, prefix or pattern."
 msgstr ""
 
-#: core/resources/js/pages/admin/system/AddPlugins.vue
+#: core/src/Cms/Package/Registry/Registry.php
 msgid "Pictures and media"
 msgstr ""
 
@@ -8246,7 +8246,7 @@ msgstr ""
 msgid "Sharing image"
 msgstr ""
 
-#: core/resources/js/pages/admin/system/AddPlugins.vue
+#: core/src/Cms/Package/Registry/Registry.php
 msgid "Shops and payments"
 msgstr ""
 
@@ -9733,8 +9733,8 @@ msgid "Theme: {mode}"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
-#: core/resources/js/pages/admin/system/AddPlugins.vue
 #: core/src/Cms/Design/DesignModule.php
+#: core/src/Cms/Package/Registry/Registry.php
 msgid "Themes"
 msgstr ""
 
