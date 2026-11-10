@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- `Kestello\Cms\Site\Feed` writes an RSS 2.0 or Atom feed for a plugin or theme, as core writes its own: `(new Feed('Releases', '/releases', '/releases.atom'))->add(...)->atom()`. Paths go under the site's address, and items get lasting `tag:` ids. Before, a plugin with a list of its own had to write the XML itself.
 - `bin/cms test` takes several paths (`bin/cms test content/plugins content/themes`), and a site's tests can use its plugins' and themes' classes without installing them, the helpers in each one's own `tests/` (`<namespace>\Tests\`, such as a shared base class), and core's test helpers (`AuthTestCase`, the registry fixture) when core comes with its tests, as in a development checkout. Before, only the first path ran, and a site's plugin tests couldn't load their own classes.
 - `RegistryRefreshed` is dispatched when a refresh brings a registry list with other packages, organisations or advisories, and names them, so a plugin that keeps its own copy of the registry updates only what changed. Not dispatched when a refresh fails or finds nothing new.
 - `$cms->registry()->categories()` gives the registry's category labels in the site's language, such as "Shops and payments" for `commerce`; a category Kestello doesn't know yet shows its id. Plugins → Add new takes its labels from there, so a directory and the admin say the same.
@@ -82,6 +83,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- `assertCount()` in `Kestello\Framework\Testing\TestCase` takes any `Countable`, such as an `ArrayObject` or a `SimpleXMLElement`. Its parameter was typed as a class in the testing namespace, so only arrays could be counted.
 - Appearance → Themes shows a preview of Base instead of an empty card: the theme ships its `screenshot.webp`.
 - Links to the page chosen as the home page go to `/`. Menus, breadcrumbs, search results, lists of entries and the page's own `path` used its slug address (`/home`), which redirects to `/`, so every click went through a redirect. `Entry::url()` gives the address links should use.
 - `cache:clear` empties the cache. It deleted only files at the top of `storage/cache`, and the cache keeps its entries in subfolders (or in APCu, Redis or the database), so it cleared nothing and reported 0 files. It now empties the configured cache store and the compiled templates, subfolders included.
