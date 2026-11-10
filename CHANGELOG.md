@@ -74,6 +74,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- `site:seed` checks a seed's settings with the same rules as the Settings screens and stores them the same way. It wrote them unchecked, so a seed could store a setting that does not exist or a value the screens refuse. Secrets, such as a mail password, are refused in a seed, and `--dry-run` no longer writes the site name and address to `config/app.php`.
 - The SSR renderer renders a theme or plugin rebuilt while it runs with its new code. It kept the pages it had loaded until restarted, so visitors got the old markup and the browser hydrated different code.
 - A release key or registry root key that can't be read is now logged under its own setting, not under app.packages.trusted_keys.
 - The **Accounts** settings sent people to **Users** to add someone; the menu is **People**.
