@@ -34,15 +34,18 @@ final class TestRunner
     }
 
     /**
-     * @param string      $directory Root directory to scan for *Test.php.
-     * @param string|null $filter    Only run tests whose "Class::method" contains this string.
+     * @param string|list<string> $directory Directories (or *Test.php files) to scan for *Test.php.
+     * @param string|null         $filter    Only run tests whose "Class::method" contains this string.
      *
      * @return bool True when every test passed.
      */
-    public function run(string $directory, ?string $filter = null): bool
+    public function run(string|array $directory, ?string $filter = null): bool
     {
         $started = microtime(true);
-        $classes = $this->discover($directory);
+        $classes = [];
+        foreach ((array) $directory as $path) {
+            $classes = [...$classes, ...$this->discover($path)];
+        }
         $count = 0;
 
         foreach ($classes as $class) {
