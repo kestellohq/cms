@@ -108,6 +108,16 @@ final class RegistryFixture
         ];
     }
 
+    /**
+     * Change what the registry says about a listed package: name, summary, description, categories, paid.
+     *
+     * @param array{name?: string, summary?: string, description?: string, categories?: list<string>, paid?: bool} $meta
+     */
+    public function describe(string $slug, array $meta): void
+    {
+        $this->packages[$slug]['meta'] = $meta + ($this->packages[$slug]['meta'] ?? []);
+    }
+
     /** Change a listed version (withdraw it, …). */
     public function amend(string $slug, string $version, array $changes): void
     {
@@ -143,12 +153,16 @@ final class RegistryFixture
         };
         $packages = [];
         foreach ($this->packages as $slug => $p) {
-            $file = (string) json_encode(['format' => 1, 'slug' => $slug, 'type' => $p['type'], 'organisation' => $p['organisation'], 'name' => $p['name'], 'summary' => "{$p['name']} for tests.", 'license' => 'GPL-2.0-or-later', 'categories' => [], 'commerce' => null, 'versions' => $p['versions']]);
+            $meta = ($p['meta'] ?? []) + ['name' => $p['name'], 'summary' => "{$p['name']} for tests.", 'description' => '', 'categories' => [], 'paid' => false];
+            $commerce = $meta['paid'] ? ['model' => 'yearly-per-site', 'price' => 'From 49 EUR a year', 'store_url' => 'https://acme.example/buy', 'license' => 'seller'] : null;
+            $file = (string) json_encode(['format' => 1, 'slug' => $slug, 'type' => $p['type'], 'organisation' => $p['organisation'], 'name' => $meta['name'], 'summary' => $meta['summary'], 'description' => $meta['description'], 'license' => 'GPL-2.0-or-later', 'categories' => $meta['categories'], 'commerce' => $commerce, 'versions' => $p['versions']]);
             $stable = array_values(array_filter(array_column($p['versions'], 'version'), static fn(string $v): bool => !str_contains($v, '-')));
             usort($stable, 'version_compare');
+            // as the builder does: what the newest stable version needs
+            $latest = array_values(array_filter($p['versions'], static fn(array $v): bool => $v['version'] === (end($stable) ?: null)))[0] ?? [];
             $packages[] = [
-                'slug' => $slug, 'type' => $p['type'], 'name' => $p['name'], 'summary' => "{$p['name']} for tests.", 'organisation' => $p['organisation'], 'categories' => [],
-                'latest' => ['stable' => end($stable) ?: '0.0.1'], 'paid' => false, 'updated_at' => self::at($this->now - 3600), 'file' => $pin("p/{$slug}", $file),
+                'slug' => $slug, 'type' => $p['type'], 'name' => $meta['name'], 'summary' => $meta['summary'], 'organisation' => $p['organisation'], 'categories' => $meta['categories'],
+                'latest' => ['stable' => end($stable) ?: '0.0.1'], 'paid' => $meta['paid'], 'requires_core' => $latest['requires']['core'] ?? null, 'updated_at' => self::at($this->now - 3600), 'file' => $pin("p/{$slug}", $file),
             ];
         }
         $organisations = [];
