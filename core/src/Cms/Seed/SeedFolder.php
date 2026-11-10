@@ -34,7 +34,7 @@ final class SeedFolder
 
     /**
      * @return array{
-     *     settings: array<string, array<string, string>>,
+     *     settings: array<string, array<string, scalar>>,
      *     front_page: ?string,
      *     menus: list<array{name: string, location: string, items: list<array<string, string>>}>,
      *     media: array<string, array{path: string, alt: string}>,
@@ -127,7 +127,7 @@ final class SeedFolder
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * @return array<string, array<string, scalar>>
      */
     private static function settings(mixed $groups, string $where): array
     {
@@ -143,7 +143,7 @@ final class SeedFolder
                 if (!is_scalar($value)) {
                     throw new SeedException("{$where}: the setting {$group}.{$name} must be text, a number or true/false.");
                 }
-                $out[(string) $group][(string) $name] = is_bool($value) ? ($value ? '1' : '0') : (string) $value;
+                $out[(string) $group][(string) $name] = $value;
             }
         }
         if (isset($out['reading']['front_page'])) {

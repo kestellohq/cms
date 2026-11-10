@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Seed;
 
+use Kestello\Cms\Api\Endpoints\Settings\SiteSettings;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Content\ContentException;
 use Kestello\Cms\Content\Entries;
@@ -17,8 +18,10 @@ use Kestello\Framework\Settings\Settings;
 
 /**
  * Puts a seed folder (SeedFolder) into an empty site: media, pages, menus,
- * settings and the front page, written through the same services an
- * editor's save uses, so everything is validated and cleaned the same way.
+ * settings and the front page, written through the same services the admin
+ * uses (settings through the same schema as Settings), so everything is
+ * validated and cleaned the same way. A seed never holds secrets, such as a
+ * mail password: those are refused.
  *
  *   $seeder = new SiteSeeder($cms);
  *   $plan = SeedFolder::read($folder);
@@ -94,7 +97,7 @@ final class SiteSeeder
 
         $library = $this->cms->container->make(MediaLibrary::class);
         try {
-            return DatabaseManager::getConnection()->transaction(function () use ($plan, $author, $keep, $library): array {
+            $summary = DatabaseManager::getConnection()->transaction(function () use ($plan, $author, $keep, $library): array {
                 /** @var array<string, Media> $added */
                 $added = [];
                 try {
@@ -121,6 +124,12 @@ final class SiteSeeder
         } finally {
             Settings::getInstance()->reload();
         }
+        // Only once committed: it writes config/app.php, which no rollback undoes.
+        if (isset($plan['settings']['general'])) {
+            SiteSettings::syncAppConfig(SiteSettings::read()['general']);
+        }
+
+        return $summary;
     }
 
     /**
@@ -141,7 +150,7 @@ final class SiteSeeder
             'media' => count($ids),
             'pages' => count($pages),
             'menus' => count($plan['menus']),
-            'settings' => $this->settings($plan['settings'], $front),
+            'settings' => $this->settings($plan['settings'], $front, $author),
             'front_page' => $front,
             'unassigned' => $unassigned,
         ];
@@ -246,20 +255,43 @@ final class SiteSeeder
     }
 
     /**
-     * @param array<string, array<string, string>> $groups
+     * The settings, and the front page, checked and stored like a save on the
+     * Settings screens: the group's schema, then SiteSettings::write().
+     *
+     * @param array<string, array<string, scalar>> $groups
      * @return int settings written, not counting the front page
      */
-    private function settings(array $groups, ?int $front): int
+    private function settings(array $groups, ?int $front, Principal $author): int
     {
-        $settings = Settings::getInstance();
-        $count = 0;
-        foreach ($groups as $group => $values) {
-            $settings->setMany($values, $group);
-            $count += count($values);
-        }
+        $count = array_sum(array_map('count', $groups));
         if ($front !== null) {
-            $settings->setMany(['front_page' => (string) $front], 'reading');
+            $groups['reading']['front_page'] = (string) $front;
         }
+        $allowed = SiteSettings::groupsFor($author);
+        $problems = [];
+        $clean = [];
+        foreach ($groups as $id => $values) {
+            $group = $allowed[$id] ?? null;
+            if ($group === null) {
+                $problems[] = "site.json: there are no \"{$id}\" settings; use " . implode(', ', array_keys($allowed)) . '.';
+                continue;
+            }
+            foreach (array_intersect(array_keys($values), $group['secrets']) as $secret) {
+                $problems[] = "site.json: settings.{$id}.{$secret} is a secret and does not belong in a seed; set it on the site.";
+            }
+            [$checked, $errors] = $group['schema']->partial()->validate($values);
+            foreach ($errors as $path => $messages) {
+                $problems[] = "site.json: settings.{$id}" . ($path === '_' ? '' : ".{$path}") . ': ' . implode(' ', $messages);
+            }
+            $clean[$id] = [$group, is_array($checked) ? $checked : []];
+        }
+        if ($problems !== []) {
+            throw new SeedException(implode("\n", $problems));
+        }
+        foreach ($clean as $id => [$group, $values]) {
+            SiteSettings::write($id, $group, $values);
+        }
+        Settings::getInstance()->reload();
 
         return $count;
     }
