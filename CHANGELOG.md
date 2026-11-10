@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- `RegistryRefreshed` is dispatched when a refresh brings a registry list with other packages, organisations or advisories, and names them, so a plugin that keeps its own copy of the registry updates only what changed. Not dispatched when a refresh fails or finds nothing new.
 - `$cms->registry()->categories()` gives the registry's category labels in the site's language, such as "Shops and payments" for `commerce`; a category Kestello doesn't know yet shows its id. Plugins → Add new takes its labels from there, so a directory and the admin say the same.
 - `$cms->registry()` reads the plugin and theme registry for a plugin or theme that shows it, such as a directory of packages: `packages()`, `package($slug)` with its versions, permissions and advisories, `organisations()`, `organisation($id)` and `advisories()`, from the site's own checked copy. Publishers' text comes as safe HTML without images, and icons and screenshots are the registry's own copies. Before, the registry's classes were internal to Kestello.
 - `user:delete <username|email>` deletes an account from the server, such as a test account a script made with `user:create`. The same rules as deleting a person in the admin: the last administrator stays, their sessions and access tokens end, and their content stays on the site without them as author. It asks first; `--yes` skips the question for scripts.

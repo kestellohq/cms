@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kestello\Tests\Package;
 
+use Closure;
 use Kestello\Cms\Package\PackageSignature;
 use Kestello\Cms\Package\Registry\Envelope;
 use Kestello\Cms\Package\Registry\RegistryClient;
@@ -187,8 +188,12 @@ final class RegistryFixture
         }
     }
 
-    /** A client of this registry, its cache in $cacheDir, its state kept here. */
-    public function client(string $cacheDir): RegistryClient
+    /**
+     * A client of this registry, its cache in $cacheDir, its state kept here.
+     *
+     * @param Closure|null $changed told what changed after a refresh (RegistryClient)
+     */
+    public function client(string $cacheDir, ?Closure $changed = null): RegistryClient
     {
         return new RegistryClient(
             new HttpClient($this->transport, static fn(string $host): array => ['104.18.1.1']),
@@ -200,6 +205,7 @@ final class RegistryFixture
                 $this->state = $state;
             },
             fn(): int => $this->now,
+            $changed,
         );
     }
 
