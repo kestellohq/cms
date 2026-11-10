@@ -292,6 +292,22 @@ final class ExternalAuthTest extends AuthTestCase
         $this->assertSame('new.person@example.test', $this->mail[0]['to']);
     }
 
+    public function testOpenRegistrationStillNeedsAConfirmedEmail(): void
+    {
+        $this->cms->config->set('auth.registration', 'open');
+        $this->claims = ['email' => 'someone.else@example.test', 'email_verified' => false];
+
+        [$unverified] = $this->roundTrip();
+
+        $this->assertSame(ExternalLoginResult::FAILED, $unverified->status, 'an unconfirmed address never starts an account');
+        $this->assertContains('has not confirmed someone.else@example.test', $unverified->message);
+        $this->assertFalse($this->db->table('users')->where('email', 'someone.else@example.test')->exists());
+
+        $this->claims = [];
+        [$ok] = $this->roundTrip();
+        $this->assertSame(ExternalLoginResult::SUCCESS, $ok->status, 'a confirmed address does');
+    }
+
     public function testRegistrationPolicies(): void
     {
         [$closed] = $this->roundTrip();

@@ -70,9 +70,12 @@ final class IdentityResolver
         }
 
         if (!$this->accounts->mayRegister($email ?? '', $identity, $verified)) {
-            return Resolution::refused($policy->registration === 'closed'
-                ? 'There is no account for this sign-in, and registration is closed.'
-                : 'There is no account for this sign-in, and it can\'t be used to register.');
+            return Resolution::refused(match (true) {
+                $policy->registration === 'closed' => 'There is no account for this sign-in, and registration is closed.',
+                $email === null => $authenticator->label() . ' did not share an email address, so an account can\'t be created.',
+                !$verified => $authenticator->label() . " has not confirmed {$email}, so it can't be used to create an account. Confirm it there, or sign up with your email address.",
+                default => 'There is no account for this sign-in, and it can\'t be used to register.',
+            });
         }
         if ($email === null) {
             return Resolution::refused($authenticator->label() . ' did not share an email address, so an account can\'t be created.');

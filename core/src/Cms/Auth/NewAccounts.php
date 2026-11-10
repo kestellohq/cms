@@ -33,14 +33,13 @@ final readonly class NewAccounts
     }
 
     /**
-     * Whether this address may create an account. With the "domains" policy
-     * the address must be proven: by the emailed link, or verified by a
-     * provider that is trusted with emails.
+     * Whether this address may create an account. The address must be proven,
+     * by the emailed link or verified by a provider that is trusted with
+     * emails: an account never starts with an address nobody confirmed.
      */
     public function mayRegister(string $email, ?ExternalIdentity $identity = null, bool $emailProven = true): bool
     {
-        $policy = $this->policy();
-        $allowed = $policy->allows($email) && ($policy->registration !== 'domains' || $emailProven);
+        $allowed = $this->policy()->allows($email) && $emailProven;
 
         return (bool) ($this->filters?->apply('auth.can_register', $allowed, $email, $identity) ?? $allowed);
     }
