@@ -291,8 +291,11 @@ final class Menus
             // a cached page shows these titles and addresses: it must go when one of them changes
             \Kestello\Cms\Cache\PageTags::add(...array_map(static fn($id) => 'entry:' . (int) $id, array_unique($ids['entry'])));
             foreach (Entry::query()->whereIn('id', array_unique($ids['entry']))->get() as $e) {
+                if (!$e instanceof Entry) {
+                    continue;
+                }
                 $type = $this->content->get((string) $e->type);
-                $out['entry'][(int) $e->getKey()] = ['label' => (string) $e->title, 'url' => $type === null ? null : $e->path($type), 'live' => $e->status === 'published' && $type !== null && $type->getPath() !== null && (!$type->isHierarchical() || $e->publicAncestors() !== null), 'type_label' => $type === null ? '' : Labels::text($type->singular(), Labels::domain($type->owner))];
+                $out['entry'][(int) $e->getKey()] = ['label' => (string) $e->title, 'url' => $type === null ? null : $e->url($type), 'live' => $e->status === 'published' && $type !== null && $type->getPath() !== null && (!$type->isHierarchical() || $e->publicAncestors() !== null), 'type_label' => $type === null ? '' : Labels::text($type->singular(), Labels::domain($type->owner))];
             }
         }
         if ($ids['term'] !== []) {

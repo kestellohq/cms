@@ -94,8 +94,22 @@ final class Entry extends Model
     }
 
     /**
+     * Where the site links to this entry: its path, except for the page
+     * chosen as the home page (Settings, Reading), which lives at /. Its
+     * path still answers, with a redirect to /.
+     */
+    public function url(?ContentType $type = null): ?string
+    {
+        $path = $this->path($type);
+
+        return $path !== null && $this->exists() && (int) $this->getKey() === ContentController::frontPageId() ? '/' : $path;
+    }
+
+    /**
      * The public path (/about/team, /blog/hello), or null when the type
-     * isn't public. Parents are read once per call.
+     * isn't public. Parents are read once per call. Links use url(), which
+     * knows the home page; path() is the address the slugs make, for
+     * routing and redirects.
      */
     public function path(?ContentType $type = null): ?string
     {

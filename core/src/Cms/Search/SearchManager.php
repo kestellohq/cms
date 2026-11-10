@@ -108,7 +108,7 @@ final class SearchManager
             'entry:' . $entry->getKey(),
             (string) $entry->title,
             $body,
-            $entry->path($type),
+            $entry->url($type),
             $type->name,
             $publishedAt,
             $tags,

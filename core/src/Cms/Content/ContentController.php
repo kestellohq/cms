@@ -391,7 +391,7 @@ final class ContentController
         return [
             'id' => $entry->getKey(),
             'title' => $entry->title,
-            'path' => $entry->path($type),
+            'path' => $entry->url($type),
             'excerpt' => $type->hasExcerpt() ? $entry->excerpt : null,
             'published_at' => Caster::present($entry->published_at),
             'author' => $author === null ? null : ['name' => (string) $author->username, 'path' => $type->hasArchive() ? '/author/' . rawurlencode((string) $author->username) : null],
