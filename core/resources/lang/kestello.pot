@@ -4945,6 +4945,7 @@ msgstr ""
 #: core/resources/js/ui/builder/useLibrary.js
 #: core/src/Cms/Api/Endpoints/Search/FindInAdmin.php
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+#: core/src/Cms/Console/SeedCommand.php
 #: core/src/Cms/Media/MediaModule.php
 msgid "Media"
 msgstr ""
@@ -4990,6 +4991,7 @@ msgstr ""
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/admin/system/Audit.vue
 #: core/resources/js/pages/admin/system/Import.vue
+#: core/src/Cms/Console/SeedCommand.php
 #: core/src/Cms/Content/ContentModule.php
 msgid "Menus"
 msgstr ""
@@ -6511,6 +6513,7 @@ msgstr ""
 
 #: core/resources/js/ui/KLinkInput.vue
 #: core/resources/js/ui/builder/BuilderPatterns.vue
+#: core/src/Cms/Console/SeedCommand.php
 #: core/src/Cms/Content/ContentModule.php
 msgid "Pages"
 msgstr ""

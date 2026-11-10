@@ -485,6 +485,7 @@ final class Kernel
             $console->register(new \Kestello\Cms\Console\Extensions\ThemeExportCommand());
             $console->register(new \Kestello\Cms\Console\Extensions\ThemeImportCommand());
             $console->register(new \Kestello\Cms\Console\ImportWordPressCommand());
+            $console->register(new \Kestello\Cms\Console\SeedCommand());
             foreach ([\Kestello\Cms\Console\Backup\BackupCreateCommand::class, \Kestello\Cms\Console\Backup\BackupListCommand::class,
                 \Kestello\Cms\Console\Backup\BackupRestoreCommand::class, \Kestello\Cms\Console\Backup\BackupDeleteCommand::class,
                 \Kestello\Cms\Console\Package\PackageVerifyCommand::class,

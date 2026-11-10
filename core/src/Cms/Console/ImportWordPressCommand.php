@@ -105,26 +105,12 @@ final class ImportWordPressCommand extends Command
      */
     private function user(?string $username, bool $adminOnly = true): ?array
     {
-        if ($username !== null) {
-            $user = QueryBuilder::table('users')->where('username', $username)->where('is_active', true)->first();
-            if ($user === null) {
-                $this->output->error("  No active user \"{$username}\".");
-                return null;
-            }
-            if ($adminOnly && $user['role'] !== 'admin') {
-                $this->output->error("  {$username} is not an administrator; only administrators import sites.");
-                return null;
-            }
-
-            return $user;
-        }
-        $admins = QueryBuilder::table('users')->where('role', 'admin')->where('is_active', true)->orderBy('id')->limit(2)->get();
-        if (count($admins) !== 1) {
-            $this->output->error(count($admins) === 0 ? '  This site has no active administrator.' : '  Say who imports it with --as=username (an administrator).');
-            return null;
+        [$user, $error] = CommandUser::find($username, 'import sites', 'imports it', $adminOnly);
+        if ($error !== null) {
+            $this->output->error('  ' . $error);
         }
 
-        return $admins[0];
+        return $user;
     }
 
     /**
