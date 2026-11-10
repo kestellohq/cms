@@ -78,6 +78,28 @@ final class EmailChangeTest extends AuthTestCase
         $this->assertContains('profile.email_confirmed', $this->auditEvents());
     }
 
+    public function testSomeoneWithoutTheAdminIsSentToTheirAccountNotTheAdminProfile(): void
+    {
+        $this->createUser(['role' => 'user']);
+        $confirm = function (string $address): ?string {
+            $this->signIn();
+            $this->api('PATCH', '/me', ['email' => $address]);
+            $token = $this->tokenSentTo($address);
+            $this->nextRequest();
+            $uri = '/confirm-email?token=' . $token;
+
+            return $this->cms->routes->dispatch(new \Kestello\Framework\Core\Request('GET', $uri, '/confirm-email', [], ['token' => $token], [], [], [], ['REMOTE_ADDR' => '203.0.113.7'], ''))->headers()['Location'] ?? null;
+        };
+
+        $this->assertSame('/', $confirm('first@example.test'), 'the admin profile would refuse them');
+
+        $this->cms->filters->add('auth.account_url', static fn(string $url, array $user): string => $user['role'] === 'user' ? '/account' : $url);
+        $this->assertSame('/account', $confirm('second@example.test'), "the site's own account area");
+
+        $this->cms->filters->add('auth.account_url', static fn(): string => 'https://elsewhere.example/account', -10); // runs last
+        $this->assertSame('/', $confirm('third@example.test'), 'never off the site');
+    }
+
     public function testConfirmingEndsResetLinksMailedToTheOldAddress(): void
     {
         $ana = $this->createUser();

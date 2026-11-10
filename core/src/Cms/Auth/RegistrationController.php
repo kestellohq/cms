@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Auth;
 
-use Kestello\Cms\Auth\External\ReturnPath;
 use Kestello\Cms\Cms;
 use Kestello\Cms\View\Page;
 use Kestello\Framework\Core\Application;
@@ -91,10 +90,9 @@ final class RegistrationController
         $this->service(LoginService::class)->completeRegistration($user);
         $this->session()->flash('success', 'Welcome! Your account is ready.');
 
-        $default = '/';
-        $filtered = Cms::instance()?->filters->apply('auth.redirect_after_login', $default, $user) ?? $default;
+        $cms = Cms::instance();
 
-        return Response::redirect(ReturnPath::sanitize($filtered) ?? $default); // a filter can't send people off-site
+        return Response::redirect($cms === null ? '/' : AfterSignIn::path($user, null, $cms->auth->roles, $cms->filters));
     }
 
     /**

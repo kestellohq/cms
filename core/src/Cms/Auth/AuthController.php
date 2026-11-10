@@ -11,6 +11,7 @@ use Kestello\Cms\View\Page;
 use Kestello\Framework\Core\Application;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
+use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Session\Session;
 
 /**
@@ -124,8 +125,10 @@ final class AuthController
             $cms?->audit->record('profile.email_confirmed', ['user', $result['user_id']], [], $result['user_id']);
             $this->session()->flash('success', 'Your new email address is confirmed.');
         }
+        $user = $cms === null || is_string($result) ? null : QueryBuilder::table('users')->where('id', $result['user_id'])->first();
 
-        return Response::redirect('/admin/profile');
+        // Back to their own account: the admin profile is only for people who may use the admin.
+        return Response::redirect($user === null || $cms === null ? '/' : AfterSignIn::account((array) $user, $cms->auth->roles, $cms->filters));
     }
 
     public function showReset(Request $request): Response
@@ -169,10 +172,16 @@ final class AuthController
             $this->session()->flash('error', "You used a recovery code. {$result->recoveryCodesLeft} left: generate new ones soon.");
         }
 
-        $caps = Cms::instance()?->auth->roles->capabilitiesFor((string) ($result->user['role'] ?? '')) ?? [];
-        $admin = in_array('*', $caps, true) || in_array('admin.access', $caps, true);
+        $cms = Cms::instance();
+        if ($cms === null) {
+            return Response::redirect('/');
+        }
+        $user = $result->user ?? [];
+        // Only the admin remembers where someone was headed (IntendedUrl keeps /admin paths).
+        $caps = $cms->auth->roles->capabilitiesFor((string) ($user['role'] ?? ''));
+        $intended = in_array('*', $caps, true) || in_array('admin.access', $caps, true) ? IntendedUrl::pull('/admin') : null;
 
-        return Response::redirect($admin ? IntendedUrl::pull('/admin') : '/');
+        return Response::redirect(AfterSignIn::path($user, $intended, $cms->auth->roles, $cms->filters));
     }
 
     /**

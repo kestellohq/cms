@@ -70,7 +70,8 @@ final class CoreHooks
         ];
         $hooks->filter('auth.can_register', '0.1.0', 'bool', 'Whether someone may create an account, by email sign-up or by signing in with a provider.', $who, $auth);
         $hooks->filter('auth.default_role', '0.1.0', 'string', 'The role of an account someone creates for themselves. admin, roles with a sensitive capability and unknown roles become user.', $who, $auth);
-        $hooks->filter('auth.redirect_after_login', '0.1.0', 'string', 'Where to go after signing in with a provider or finishing email sign-up. The result must stay on this site.', ['array $user' => 'The user who signed in.'], $auth);
+        $hooks->filter('auth.redirect_after_login', '0.1.0', 'string', 'Where to go after signing in, with a password or a provider, or finishing email sign-up. The result must stay on this site.', ['array $user' => 'The user who signed in.'], $auth);
+        $hooks->filter('auth.account_url', '0.1.0', 'string', 'Where someone manages their own account, such as after confirming a new email address. The default is the admin profile for people who may use the admin and the front page for everyone else. The result must stay on this site.', ['array $user' => 'The account.'], $auth);
 
         $hooks->filter('media.scan', '0.1.0', '?string', 'Check an uploaded file, for example with a virus scanner. Return a message to reject the upload.', ['array $file' => 'filename, mime, size, path, disk and key.'], 'Media');
         $hooks->filter('backup.skip_tables', '0.1.0', 'list', 'Tables to leave out of backups, such as a large log table.', [], 'Backups');

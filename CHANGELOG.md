@@ -84,6 +84,8 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- Opening the link that confirms a new email address takes people who may use the admin to their admin profile, as before, and everyone else to the front page, or to the site's own account page with the new `auth.account_url` filter. Before, everyone went to `/admin/profile`, which people without the admin can't open.
+- Signing in with a password goes through `auth.redirect_after_login`, like signing in with a provider and finishing email sign-up, so a site with an account area sends everyone there the same way. Provider sign-in now decides who goes to `/admin` by the admin capability, as password sign-in does, not by the role being named admin.
 - Site Health's **Image processing** check writes the formats as people write them: "served as WebP and AVIF", not "WEBP AND AVIF", and "WebP, AVIF" in its details.
 - `assertCount()` in `Kestello\Framework\Testing\TestCase` takes any `Countable`, such as an `ArrayObject` or a `SimpleXMLElement`. Its parameter was typed as a class in the testing namespace, so only arrays could be counted.
 - Appearance → Themes shows a preview of Base instead of an empty card: the theme ships its `screenshot.webp`.
@@ -115,6 +117,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Security
 
+- Signing in with a provider (GitHub, Google) creates an account only when the provider confirmed the email address, whatever the registration setting. Before, with registration open, an address the provider hadn't confirmed could start an account, so someone could sign up as an address they don't own.
 - Signing up never gives a role that may manage people, roles, security or the system, or that holds a plugin's sensitive permission: such a role is as good as administrator. **Role for new accounts** no longer offers those roles, and an account created with one set (in the config or by the `auth.default_role` filter) becomes a **User**. Until now only the administrator role itself was kept out.
 - Kestello ships the public key its official releases are signed with (`release.keys` in `core/config/release.php`), so sites apply releases from GitHub only when that key signed them.
 - Direct uploads to an S3 bucket land at a private staging key (`incoming/<upload id>`). Kestello checks the file there, then copies it to the key it chose and makes it public. Before, the browser uploaded straight to the final key as a public file, so an unchecked file, or one that was never finished, could be read at its permanent address. With a bucket policy instead of object ACLs, keep `incoming/` out of public reads.

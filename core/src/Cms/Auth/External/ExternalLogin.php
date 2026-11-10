@@ -6,6 +6,7 @@ namespace Kestello\Cms\Auth\External;
 
 use Closure;
 use Kestello\Cms\Auth\AccountPolicy;
+use Kestello\Cms\Auth\AfterSignIn;
 use Kestello\Cms\Auth\Auth;
 use Kestello\Cms\Auth\AuthRegistry;
 use Kestello\Cms\Auth\LoginResult;
@@ -176,10 +177,7 @@ final class ExternalLogin
     /** @param array<string, mixed> $user */
     private function afterLogin(array $user, AuthAttempt $attempt): string
     {
-        $default = $attempt->returnTo ?? (($user['role'] ?? '') === 'admin' ? '/admin' : '/');
-        $filtered = $this->filters?->apply('auth.redirect_after_login', $default, $user) ?? $default;
-
-        return ReturnPath::sanitize($filtered) ?? $default; // re-validated: a filter can't send users off-site
+        return AfterSignIn::path($user, $attempt->returnTo, $this->registry->roles, $this->filters);
     }
 
     private function log(string $id, string $detail): void

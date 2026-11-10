@@ -241,6 +241,23 @@ final class LoginTest extends AuthTestCase
         $this->assertSame('12345678901234567890', Totp::base32Decode(strtolower($secret)));
     }
 
+    public function testSigningInWithAPasswordGoesWhereTheSiteSays(): void
+    {
+        $this->createUser();
+        $this->createUser(['username' => 'bo', 'email' => 'bo@example.test', 'role' => 'user']);
+        $signIn = function (string $login): ?string {
+            $this->nextRequest();
+            $response = $this->cms->routes->dispatch(new Request('POST', '/login', '/login', [], [], ['email' => $login, 'password' => self::PASSWORD], [], [], ['REMOTE_ADDR' => '203.0.113.7'], ''));
+
+            return $response->headers()['Location'] ?? null;
+        };
+
+        $this->assertSame(['/admin', '/'], [$signIn('ana'), $signIn('bo')]);
+
+        $this->cms->filters->add('auth.redirect_after_login', static fn(string $to, array $user): string => $user['role'] === 'user' ? '/account' : $to);
+        $this->assertSame(['/admin', '/account'], [$signIn('ana'), $signIn('bo')], 'the same filter as provider sign-in and email sign-up');
+    }
+
     public function testTheSignInFormAsksForWhatIsMissingWithoutTryingToSignIn(): void
     {
         $this->createUser();
