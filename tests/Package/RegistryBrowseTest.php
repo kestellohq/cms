@@ -103,6 +103,7 @@ final class RegistryBrowseTest extends AuthTestCase
         $this->assertSame(['events', 'forms-extra', 'search-plus'], array_column($page['packages'], 'slug'), 'no theme, no paid plugin');
         $this->assertSame(3, $page['total']);
         $this->assertSame(['content' => 2, 'forms' => 1, 'integrations' => 1], $page['categories']);
+        $this->assertSame('Shops and payments', $page['category_labels']['commerce'] ?? null, 'labels for every category, in the site\'s language');
 
         $events = $page['packages'][0];
         $this->assertSame(['id' => 'acme', 'name' => 'Acme', 'verified' => null], $events['organisation']);
@@ -309,9 +310,17 @@ final class RegistryBrowseTest extends AuthTestCase
         $this->assertNull($registry->organisation('nobody'));
         $this->assertSame(['KSA-2027-0002', 'KSA-2027-0001'], array_column($registry->advisories(), 'id'), 'newest first');
 
+        $labels = $registry->categories();
+        $this->assertSame(['Content', 'Forms and surveys', 'Themes'], [$labels['content'], $labels['forms'], $labels['theme']]);
+        $this->registry->describe('aurora', ['categories' => ['seasonal']]);
+        $this->registry->publish();
+        $registry->refresh();
+        $this->assertSame('seasonal', $registry->categories()['seasonal'] ?? null, 'a category Kestello doesn\'t know yet shows its id');
+
         $off = new \Kestello\Cms\Package\Registry\Registry(null);
         $this->assertFalse($off->enabled());
         $this->assertSame([[], [], [], null, null], [$off->packages(), $off->organisations(), $off->advisories(), $off->package('events'), $off->organisation('acme')]);
+        $this->assertSame('Content', $off->categories()['content'], 'labels need no registry');
         $this->assertSame(['enabled' => false, 'usable' => false], array_intersect_key($off->refresh(), ['enabled' => 1, 'usable' => 1]));
     }
 }
