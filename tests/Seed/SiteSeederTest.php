@@ -118,6 +118,27 @@ final class SiteSeederTest extends AuthTestCase
         $this->assertSame(['Home', 'Who we are', 'Docs'], array_column($this->cms->container->make(Menus::class)->forLocations()['primary'], 'label'));
     }
 
+    public function testSettingsAreCheckedLikeTheSettingsScreen(): void
+    {
+        $files = $this->site();
+        $files['site.json']['settings'] = [
+            'general' => ['site_name' => str_repeat('a', 500), 'nope' => 'x'],
+            'mail' => ['smtp_password' => 'hunter2'],
+            'nothing' => ['x' => '1'],
+        ];
+        $plan = SeedFolder::read($this->folder($files));
+
+        $problems = (new SiteSeeder($this->cms))->check($plan, $this->author());
+
+        $this->assertCount(4, $problems, implode(' | ', $problems));
+        $general = implode(' | ', array_slice($problems, 0, 2));
+        $this->assertStringContainsString('site.json: settings.general.site_name: ', $general, 'too long');
+        $this->assertStringContainsString('site.json: settings.general.nope: ', $general, 'not a setting');
+        $this->assertSame('site.json: settings.mail.smtp_password is a secret and does not belong in a seed; set it on the site.', $problems[2]);
+        $this->assertStringStartsWith('site.json: there are no "nothing" settings; use general, ', $problems[3]);
+        $this->assertSame(0, $this->db->table('entries')->count());
+    }
+
     public function testASiteWithContentIsLeftAlone(): void
     {
         $seeder = new SiteSeeder($this->cms);

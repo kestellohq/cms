@@ -52,7 +52,7 @@ final class SeedFolderTest extends TestCase
         $this->assertSame('home', $plan['pages']['home']['slug'], 'the slug defaults to the file name');
         $this->assertSame('published', $plan['pages']['home']['status']);
         $this->assertSame('home', $plan['front_page']);
-        $this->assertSame(['general' => ['site_name' => 'Acme', 'comments' => '0']], $plan['settings']);
+        $this->assertSame(['general' => ['site_name' => 'Acme', 'comments' => false]], $plan['settings'], 'values keep their type for the settings schema');
         $this->assertSame([['page' => 'about', 'label' => ''], ['url' => 'https://docs.acme.test/', 'label' => 'Docs'], ['archive' => 'post', 'label' => 'Blog']], $plan['menus'][0]['items']);
         $this->assertSame(['team.jpg'], array_keys($plan['media']));
         $this->assertSame('The team', $plan['media']['team.jpg']['alt']);

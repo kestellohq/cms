@@ -7,6 +7,7 @@ Every change people would notice is listed here, newest first. The format follow
 ### Added
 
 - `KESTELLO_STORAGE` puts what Kestello writes (cache, sessions, logs, uploaded files, backups) in another folder than the site's `storage/`: an absolute path, or one relative to the site. For a throwaway test run beside a development site, or a host that keeps the code read-only.
+- `KImage` takes a `dark` image for visitors whose device is set to dark, such as a screenshot of a dark admin beside a light one: `<KImage :media="shot" :dark="shotDark" />`.
 - `site:seed <folder>` fills an empty site from files: pages built from blocks, media, menus, settings and the front page. Everything goes through the same checks as the admin and in one transaction, so a seed that fails leaves the site empty; `--dry-run` does the whole seed and rolls it back, for checking a seed in CI. For a site's starting content kept in its repository, or an agency's starter site.
 - `user:create <username> <email>` creates an account from the server, such as the first administrator of a site set up by a script, with the same rules as the admin. The password is asked for or piped in, never an argument; `--generate` prints a new one once.
 - Plugins → Add new: browse and search the plugins in the Kestello registry, by category, see what each one declares and who publishes it, and install or update it through the same review as an uploaded zip. Nothing is loaded from a publisher's server; descriptions are shown without images.
@@ -74,6 +75,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- `site:seed` checks a seed's settings with the same rules as the Settings screens and stores them the same way. It wrote them unchecked, so a seed could store a setting that does not exist or a value the screens refuse. Secrets, such as a mail password, are refused in a seed, and `--dry-run` no longer writes the site name and address to `config/app.php`.
 - The SSR renderer renders a theme or plugin rebuilt while it runs with its new code. It kept the pages it had loaded until restarted, so visitors got the old markup and the browser hydrated different code.
 - A release key or registry root key that can't be read is now logged under its own setting, not under app.packages.trusted_keys.
 - The **Accounts** settings sent people to **Users** to add someone; the menu is **People**.
