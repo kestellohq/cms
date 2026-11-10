@@ -70,11 +70,18 @@ final class SeedCommand extends Command
             return 1;
         }
 
-        $this->output->success("  Seeded {$summary['pages']} pages, {$summary['media']} files, {$summary['menus']} menus and {$summary['settings']} settings.");
+        $this->output->success('  Seeded ' . self::count($summary['pages'], 'page') . ', ' . self::count($summary['media'], 'file') . ', '
+            . self::count($summary['menus'], 'menu') . ' and ' . self::count($summary['settings'], 'setting') . '.');
         foreach ($summary['unassigned'] as $menu) {
             $this->output->muted("  The theme has no location for the menu \"{$menu}\"; it was made and can be placed under Appearance → Menus.");
         }
 
         return 0;
+    }
+
+    /** "1 page", "2 pages" */
+    private static function count(int $n, string $noun): string
+    {
+        return $n . ' ' . $noun . ($n === 1 ? '' : 's');
     }
 }
