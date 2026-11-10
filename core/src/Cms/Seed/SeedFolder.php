@@ -12,7 +12,7 @@ namespace Kestello\Cms\Seed;
  *   seed/
  *     site.json          settings, the front page, menus, alt text for media
  *     pages/<key>.json   one page each: title, slug, blocks, and optionally
- *                        status, template, excerpt, seo
+ *                        status, template, seo
  *     media/<file>       images and files, used in blocks as "@media:<file>"
  *
  * site.json, every part optional:
@@ -29,7 +29,7 @@ namespace Kestello\Cms\Seed;
 final class SeedFolder
 {
     private const string KEY = '/^[a-z0-9][a-z0-9-]{0,60}$/';
-    private const array PAGE_FIELDS = ['title', 'slug', 'status', 'template', 'excerpt', 'seo', 'blocks'];
+    private const array PAGE_FIELDS = ['title', 'slug', 'status', 'template', 'seo', 'blocks'];
     private const array STATUSES = ['published', 'draft'];
 
     /**
@@ -38,7 +38,7 @@ final class SeedFolder
      *     front_page: ?string,
      *     menus: list<array{name: string, location: string, items: list<array<string, string>>}>,
      *     media: array<string, array{path: string, alt: string}>,
-     *     pages: array<string, array{title: string, slug: string, status: string, template: ?string, excerpt: string, seo: array<string, mixed>, blocks: list<mixed>}>
+     *     pages: array<string, array{title: string, slug: string, status: string, template: ?string, seo: array<string, mixed>, blocks: list<mixed>}>
      * }
      * @throws SeedException
      */
@@ -71,7 +71,7 @@ final class SeedFolder
     }
 
     /**
-     * @return array<string, array{title: string, slug: string, status: string, template: ?string, excerpt: string, seo: array<string, mixed>, blocks: list<mixed>}>
+     * @return array<string, array{title: string, slug: string, status: string, template: ?string, seo: array<string, mixed>, blocks: list<mixed>}>
      */
     private static function pages(string $root): array
     {
@@ -108,10 +108,6 @@ final class SeedFolder
             if ($template !== null && (!is_string($template) || preg_match(self::KEY, $template) !== 1)) {
                 throw new SeedException("{$where}: \"template\" must be a template's name, such as landing.");
             }
-            $excerpt = $page['excerpt'] ?? '';
-            if (!is_string($excerpt)) {
-                throw new SeedException("{$where}: \"excerpt\" must be text.");
-            }
             $seo = $page['seo'] ?? [];
             if (!is_array($seo) || ($seo !== [] && array_is_list($seo))) {
                 throw new SeedException("{$where}: \"seo\" must be an object, such as {\"description\": \"…\"}.");
@@ -123,7 +119,7 @@ final class SeedFolder
 
             $pages[$key] = [
                 'title' => $title, 'slug' => $slug, 'status' => $status, 'template' => $template,
-                'excerpt' => $excerpt, 'seo' => $seo, 'blocks' => $blocks,
+                'seo' => $seo, 'blocks' => $blocks,
             ];
         }
 

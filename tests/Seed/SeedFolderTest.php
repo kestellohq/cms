@@ -48,7 +48,7 @@ final class SeedFolderTest extends TestCase
         $plan = SeedFolder::read($dir);
 
         $this->assertSame(['about', 'home'], array_keys($plan['pages']), 'pages in file name order');
-        $this->assertSame(['title' => 'About us', 'slug' => 'about-us', 'status' => 'draft', 'template' => null, 'excerpt' => '', 'seo' => ['description' => 'Who we are'], 'blocks' => []], $plan['pages']['about']);
+        $this->assertSame(['title' => 'About us', 'slug' => 'about-us', 'status' => 'draft', 'template' => null, 'seo' => ['description' => 'Who we are'], 'blocks' => []], $plan['pages']['about']);
         $this->assertSame('home', $plan['pages']['home']['slug'], 'the slug defaults to the file name');
         $this->assertSame('published', $plan['pages']['home']['status']);
         $this->assertSame('home', $plan['front_page']);

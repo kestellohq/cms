@@ -202,9 +202,7 @@ final class SiteSeeder
                 $data['seo'] = self::resolve($page['seo'], $media);
             }
             try {
-                // Only what the seed sets: a type without excerpts refuses even an empty one.
                 $input = ['title' => $page['title'], 'slug' => $page['slug'], 'status' => $page['status'], 'data' => $data]
-                    + ($page['excerpt'] !== '' ? ['excerpt' => $page['excerpt']] : [])
                     + ($page['template'] !== null ? ['template' => $page['template']] : []);
                 $ids[$key] = (int) $entries->create($type, $input, $author)->getKey();
             } catch (ContentException $e) {
