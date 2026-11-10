@@ -26,7 +26,7 @@ Thank you for helping. This file is the rulebook for everyone who changes Kestel
 
 ## Setting up
 
-You need Docker, Composer, Node.js 22.12 or newer and Git.
+You need Docker, Composer, Node.js 22.15 or newer and Git.
 
 ```sh
 git clone https://github.com/kestellohq/cms.git kestello && cd kestello
