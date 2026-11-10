@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- `KESTELLO_STORAGE` puts what Kestello writes (cache, sessions, logs, uploaded files, backups) in another folder than the site's `storage/`: an absolute path, or one relative to the site. For a throwaway test run beside a development site, or a host that keeps the code read-only.
 - `site:seed <folder>` fills an empty site from files: pages built from blocks, media, menus, settings and the front page. Everything goes through the same checks as the admin and in one transaction, so a seed that fails leaves the site empty; `--dry-run` does the whole seed and rolls it back, for checking a seed in CI. For a site's starting content kept in its repository, or an agency's starter site.
 - `user:create <username> <email>` creates an account from the server, such as the first administrator of a site set up by a script, with the same rules as the admin. The password is asked for or piped in, never an argument; `--generate` prints a new one once.
 - Plugins → Add new: browse and search the plugins in the Kestello registry, by category, see what each one declares and who publishes it, and install or update it through the same review as an uploaded zip. Nothing is loaded from a publisher's server; descriptions are shown without images.

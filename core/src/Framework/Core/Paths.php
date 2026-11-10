@@ -13,16 +13,39 @@ namespace Kestello\Framework\Core;
  *
  *  - root: the site install (config, storage, content, public)
  *  - core: the running core release (src, views, migrations, defaults)
+ *  - storage: what the site writes (cache, sessions, logs, uploaded files);
+ *    root/storage unless KESTELLO_STORAGE names another folder (fromEnv())
  */
 final class Paths
 {
     public readonly string $root;
     public readonly string $core;
+    public readonly string $storage;
 
-    public function __construct(string $root, string $core)
+    public function __construct(string $root, string $core, ?string $storage = null)
     {
         $this->root = rtrim($root, '/');
         $this->core = rtrim($core, '/');
+        $this->storage = $storage === null || trim($storage) === '' ? $this->root . '/storage' : self::absolute(rtrim($storage, '/'), $this->root);
+    }
+
+    /**
+     * Paths for a site, with storage from KESTELLO_STORAGE when it is set: an
+     * absolute folder, or one relative to the site, such as a throwaway folder
+     * for a test run.
+     *
+     * @param array<string, string>|null $env null: the process environment
+     */
+    public static function fromEnv(string $root, string $core, ?array $env = null): self
+    {
+        $storage = $env === null ? getenv('KESTELLO_STORAGE') : ($env['KESTELLO_STORAGE'] ?? false);
+
+        return new self($root, $core, is_string($storage) ? $storage : null);
+    }
+
+    private static function absolute(string $path, string $root): string
+    {
+        return str_starts_with($path, '/') || preg_match('#^[A-Za-z]:[\\/]#', $path) === 1 ? $path : $root . '/' . preg_replace('#^\./#', '', $path);
     }
 
     public function root(string $path = ''): string
@@ -44,7 +67,7 @@ final class Paths
 
     public function storage(string $path = ''): string
     {
-        return self::join($this->root . '/storage', $path);
+        return self::join($this->storage, $path);
     }
 
     public function cache(): string

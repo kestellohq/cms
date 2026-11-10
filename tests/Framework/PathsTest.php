@@ -22,6 +22,16 @@ final class PathsTest extends TestCase
         $this->assertSame('/site/content/themes', $paths->themes());
     }
 
+    public function testStorageCanLiveElsewhere(): void
+    {
+        $this->assertSame('/site/storage/cache', Paths::fromEnv('/site', '/core', [])->cache(), 'the default');
+        $this->assertSame('/site/storage/cache', Paths::fromEnv('/site', '/core', ['KESTELLO_STORAGE' => ''])->cache(), 'empty is the default');
+        $this->assertSame('/tmp/run-1/cache', Paths::fromEnv('/site', '/core', ['KESTELLO_STORAGE' => '/tmp/run-1/'])->cache());
+        $this->assertSame('/site/var/smoke/logs', Paths::fromEnv('/site', '/core', ['KESTELLO_STORAGE' => './var/smoke'])->logs(), 'relative to the site');
+        $this->assertSame('/site/../shared/app', Paths::fromEnv('/site', '/core', ['KESTELLO_STORAGE' => '../shared'])->storage('app'));
+        $this->assertSame('/site/config', Paths::fromEnv('/site', '/core', ['KESTELLO_STORAGE' => '/tmp/x'])->config(), 'nothing else moves');
+    }
+
     public function testJoinNormalisesLeadingSlash(): void
     {
         $paths = new Paths('/site', '/core');
