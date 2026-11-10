@@ -94,7 +94,7 @@ final class Kernel
 
     private function __construct(string $root, string $core)
     {
-        $this->paths = new Paths($root, $core);
+        $this->paths = Paths::fromEnv($root, $core);
     }
 
     public static function create(string $root): self

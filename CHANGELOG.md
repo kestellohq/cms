@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- `KESTELLO_STORAGE` puts what Kestello writes (cache, sessions, logs, uploaded files, backups) in another folder than the site's `storage/`: an absolute path, or one relative to the site. For a throwaway test run beside a development site, or a host that keeps the code read-only.
 - `KImage` takes a `dark` image for visitors whose device is set to dark, such as a screenshot of a dark admin beside a light one: `<KImage :media="shot" :dark="shotDark" />`.
 - `site:seed <folder>` fills an empty site from files: pages built from blocks, media, menus, settings and the front page. Everything goes through the same checks as the admin and in one transaction, so a seed that fails leaves the site empty; `--dry-run` does the whole seed and rolls it back, for checking a seed in CI. For a site's starting content kept in its repository, or an agency's starter site.
 - `user:create <username> <email>` creates an account from the server, such as the first administrator of a site set up by a script, with the same rules as the admin. The password is asked for or piped in, never an argument; `--generate` prints a new one once.
