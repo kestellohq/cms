@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Kestello\Cms\Cms;
-use Kestello\Cms\Content\ContentController;
 use Kestello\Cms\Content\ContentType;
 use Kestello\Cms\Content\Entry;
 use Kestello\Cms\Content\Term;
@@ -476,7 +475,7 @@ final class Discovery
 
     private static function address(Entry $entry, ContentType $type): string
     {
-        return (int) $entry->getKey() === ContentController::frontPageId() ? '/' : (string) $entry->path($type);
+        return (string) $entry->url($type);
     }
 
     private static function date(mixed $value): ?DateTimeImmutable

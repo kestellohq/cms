@@ -1915,42 +1915,6 @@ parameters:
 			path: core/src/Cms/Media/Optimizer.php
 
 		-
-			message: '#^Cannot access property \$status on array\<string, mixed\>\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Cannot access property \$title on array\<string, mixed\>\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Cannot access property \$type on array\<string, mixed\>\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Cannot call method getKey\(\) on array\<string, mixed\>\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Cannot call method path\(\) on array\<string, mixed\>\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Cannot call method publicAncestors\(\) on array\<string, mixed\>\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
 			message: '#^Method Kestello\\Cms\\Menus\\Menus\:\:linkFor\(\) has parameter \$item with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1

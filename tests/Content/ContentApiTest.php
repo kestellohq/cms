@@ -444,6 +444,17 @@ final class ContentApiTest extends AuthTestCase
         $this->assertSame(['@core/content/Entry', 'Welcome'], [$page->component, $page->props['title']], 'the page answers at /');
         $moved = $get('/welcome');
         $this->assertSame([301, '/'], [$moved->statusCode(), $moved->headers()['Location'] ?? null], 'and its own address redirects there');
+        $this->assertSame('/', $page->props['entry']['path'], 'the page knows where it lives');
+
+        // Links to it go to / too, so nobody follows a redirect.
+        $this->cms->menus->location('primary', 'Main');
+        $menus = $this->cms->container->make(\Kestello\Cms\Menus\Menus::class);
+        $menus->assign('primary', $menus->save(null, 'Main', [['kind' => 'entry', 'ref' => $home['id']]]));
+        $this->assertSame('/', $menus->forLocations()['primary'][0]['url'] ?? null, 'menus');
+        $entry = Entry::find($home['id']);
+        $this->assertSame(['/', '/welcome'], [$entry?->url(), $entry?->path()], 'url() is where links go; path() is what its slug makes');
+        $child = $this->create('page', ['title' => 'Team', 'status' => 'published', 'parent_id' => $home['id']]);
+        $this->assertSame('/welcome/team', Entry::find($child['id'])?->url(), 'pages under it keep their addresses');
 
         $this->api('PATCH', "/content/page/entries/{$home['id']}", ['status' => 'draft']);
         $this->assertSame('theme home', $get('/')->content(), 'an unpublished choice falls back to the theme');

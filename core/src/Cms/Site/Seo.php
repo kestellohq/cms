@@ -116,7 +116,7 @@ final class Seo
         }
         $parents = [];
         foreach (Entry::query()->findMany($ids) as $parent) {
-            $path = $parent->path($type);
+            $path = $parent->url($type);
             if ($path !== null) {
                 $parents[(int) $parent->getKey()] = ['name' => (string) $parent->title, 'path' => $path];
             }

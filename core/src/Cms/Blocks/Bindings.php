@@ -55,7 +55,7 @@ final class Bindings
             return match ($path) {
                 'entry.title' => $entry->title,
                 'entry.excerpt' => $entry->excerpt,
-                'entry.url' => $ctx->type !== null ? $entry->path($ctx->type) : null,
+                'entry.url' => $ctx->type !== null ? $entry->url($ctx->type) : null,
                 'entry.published_at' => \Kestello\Framework\Database\Orm\Caster::present($entry->published_at),
                 'entry.author' => $entry->author?->username,
                 default => null,

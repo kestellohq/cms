@@ -280,7 +280,7 @@ final class CoreBlocks
         foreach ($items as $entry) {
             $node['children'][] = [
                 'type' => 'core/query-item', 'id' => $node['id'] . 'e' . $entry->getKey(), 'component' => self::QUERY_ITEM,
-                'props' => (object) ['url' => $entry->path($type)],
+                'props' => (object) ['url' => $entry->url($type)],
                 'children' => $blocks->prepareNodes($template, $ctx->withEntry($entry, $type)),
             ];
         }
@@ -331,7 +331,7 @@ final class CoreBlocks
         }
         $node['props']['kind'] = $kind;
         $node['props']['value'] = $value;
-        $node['props']['url'] = !empty($p['link']) && $ctx->type !== null ? $entry->path($ctx->type) : null;
+        $node['props']['url'] = !empty($p['link']) && $ctx->type !== null ? $entry->url($ctx->type) : null;
 
         return $node;
     }
