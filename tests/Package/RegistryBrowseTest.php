@@ -260,4 +260,58 @@ final class RegistryBrowseTest extends AuthTestCase
         $this->assertSame(409, $this->api('POST', '/plugins/registry/aurora/review', ['version' => '1.0.0'])->statusCode(), 'a theme');
         $this->assertSame(422, $this->api('POST', '/plugins/registry/events/review', [])->statusCode());
     }
+
+    public function testPluginsAndThemesReadTheRegistryThroughItsPublicReader(): void
+    {
+        $this->registry->describe('events', [
+            'description' => 'Lists **events**. ![a tracker](https://acme.example/pixel.png) [Docs](https://acme.example/docs)',
+            'icon' => 'img/events/icon.png',
+            'screenshots' => [['image' => 'img/events/list.png', 'caption' => 'The list of events']],
+            'homepage' => 'https://acme.example/events',
+        ]);
+        $this->registry->amend('events', '1.0.0', ['notes' => 'The **first** release.']);
+        $at = fn(int $ago): string => RegistryFixture::at($this->registry->now - $ago);
+        $this->registry->advisories[] = ['id' => 'KSA-2027-0001', 'type' => 'plugin', 'package' => 'events', 'affected' => '<1.0.0', 'fixed' => '1.0.0', 'severity' => 'high', 'title' => 'Stored XSS in titles', 'url' => 'https://kestello.com/advisories/KSA-2027-0001', 'published_at' => $at(7200)];
+        $this->registry->advisories[] = ['id' => 'KSA-2027-0002', 'type' => 'plugin', 'package' => 'forms-extra', 'affected' => '<2.0.0', 'fixed' => '2.0.0', 'severity' => 'low', 'title' => 'Open redirect', 'url' => 'https://kestello.com/advisories/KSA-2027-0002', 'published_at' => $at(60)];
+        $this->registry->publish();
+        $registry = $this->cms->registry();
+
+        $this->assertTrue($registry->enabled());
+        $this->assertSame([], $registry->packages(), 'nothing until the site has a copy');
+        $this->assertFalse($registry->status()['usable']);
+        $this->assertTrue($registry->refresh()['usable']);
+        $this->assertSame(5, $registry->status()['packages'], 'the index has five, the paid one included');
+
+        $this->assertSame(['aurora', 'events', 'forms-extra', 'search-plus'], array_column($registry->packages(), 'slug'), 'by name; paid packages are left out');
+        $this->assertSame(['events', 'forms-extra', 'search-plus'], array_column($registry->packages('plugin'), 'slug'));
+        $this->assertSame(['aurora'], array_column($registry->packages('theme'), 'slug'));
+        $events = $registry->packages('plugin')[0];
+        $this->assertSame(['Events', 'acme', '1.0.0', RegistryFixture::BASE . 'img/events/icon.png'], [$events['name'], $events['organisation'], $events['stable'], $events['icon']]);
+
+        $full = $registry->package('events');
+        $this->assertNotNull($full);
+        $this->assertStringContainsString('<strong>events</strong>', $full['description_html']);
+        $this->assertStringNotContainsString('pixel.png', $full['description_html'], 'no images from a publisher\'s server');
+        $this->assertStringContainsString('rel="nofollow ugc"', $full['description_html'], 'links from publishers are marked as theirs');
+        $this->assertSame([['url' => RegistryFixture::BASE . 'img/events/list.png', 'caption' => 'The list of events']], $full['screenshots'], 'the registry\'s own copies');
+        $this->assertSame('https://acme.example/events', $full['homepage']);
+        $this->assertSame('1.0.0', $full['versions'][0]['version']);
+        $this->assertStringContainsString('<strong>first</strong>', $full['versions'][0]['notes_html']);
+        $this->assertSame(['http' => ['api.acme.example']], $full['versions'][0]['permissions']);
+        $this->assertNull($full['versions'][0]['withdrawn']);
+        $this->assertSame(['KSA-2027-0001'], array_column($full['advisories'], 'id'), 'only this package\'s');
+        $this->assertNull($registry->package('shop'), 'paid packages are left out');
+        $this->assertNull($registry->package('nope'));
+
+        $this->assertSame([['id' => 'acme', 'name' => 'Acme', 'verified' => null]], $registry->organisations());
+        $acme = $registry->organisation('acme');
+        $this->assertSame(['Acme', ['aurora', 'events', 'forms-extra', 'search-plus']], [$acme['name'] ?? null, $acme['packages'] ?? null]);
+        $this->assertNull($registry->organisation('nobody'));
+        $this->assertSame(['KSA-2027-0002', 'KSA-2027-0001'], array_column($registry->advisories(), 'id'), 'newest first');
+
+        $off = new \Kestello\Cms\Package\Registry\Registry(null);
+        $this->assertFalse($off->enabled());
+        $this->assertSame([[], [], [], null, null], [$off->packages(), $off->organisations(), $off->advisories(), $off->package('events'), $off->organisation('acme')]);
+        $this->assertSame(['enabled' => false, 'usable' => false], array_intersect_key($off->refresh(), ['enabled' => 1, 'usable' => 1]));
+    }
 }

@@ -7,6 +7,7 @@ namespace Kestello\Cms\Package;
 use Kestello\Cms\Backup\Backups;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Extension\Provider;
+use Kestello\Cms\Package\Registry\Registry;
 use Kestello\Cms\Package\Registry\RegistryClient;
 use Kestello\Cms\Package\Registry\RegistryPackages;
 use Kestello\Cms\Package\Registry\RegistryTrust;
@@ -103,6 +104,9 @@ final class PackagesModule extends Provider
                 static fn(): int => Clock::timestamp(),
             );
         });
+        $container->singleton(Registry::class, static fn(Container $c): Registry => new Registry(
+            (bool) self::cms()->config->get('registry.enabled', true) ? $c->make(RegistryClient::class) : null,
+        ));
         $container->singleton(PackageLicenses::class, static fn(): PackageLicenses => new PackageLicenses(
             AppKey::secretStore(),
             static fn(string $owner): ?string => Settings::getInstance()->get(self::settingsKey('license', $owner)),

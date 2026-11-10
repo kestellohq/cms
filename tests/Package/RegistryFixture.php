@@ -109,9 +109,10 @@ final class RegistryFixture
     }
 
     /**
-     * Change what the registry says about a listed package: name, summary, description, categories, paid.
+     * Change what the registry says about a listed package: name, summary, description, categories,
+     * paid, and its icon, screenshots and homepage.
      *
-     * @param array{name?: string, summary?: string, description?: string, categories?: list<string>, paid?: bool} $meta
+     * @param array{name?: string, summary?: string, description?: string, categories?: list<string>, paid?: bool, icon?: string, screenshots?: list<array{image: string, caption: string}>, homepage?: string} $meta
      */
     public function describe(string $slug, array $meta): void
     {
@@ -155,7 +156,7 @@ final class RegistryFixture
         foreach ($this->packages as $slug => $p) {
             $meta = ($p['meta'] ?? []) + ['name' => $p['name'], 'summary' => "{$p['name']} for tests.", 'description' => '', 'categories' => [], 'paid' => false];
             $commerce = $meta['paid'] ? ['model' => 'yearly-per-site', 'price' => 'From 49 EUR a year', 'store_url' => 'https://acme.example/buy', 'license' => 'seller'] : null;
-            $file = (string) json_encode(['format' => 1, 'slug' => $slug, 'type' => $p['type'], 'organisation' => $p['organisation'], 'name' => $meta['name'], 'summary' => $meta['summary'], 'description' => $meta['description'], 'license' => 'GPL-2.0-or-later', 'categories' => $meta['categories'], 'commerce' => $commerce, 'versions' => $p['versions']]);
+            $file = (string) json_encode(['format' => 1, 'slug' => $slug, 'type' => $p['type'], 'organisation' => $p['organisation'], 'name' => $meta['name'], 'summary' => $meta['summary'], 'description' => $meta['description'], 'license' => 'GPL-2.0-or-later', 'categories' => $meta['categories'], 'commerce' => $commerce, 'versions' => $p['versions']] + array_intersect_key($meta, ['icon' => 1, 'screenshots' => 1, 'homepage' => 1]));
             $stable = array_values(array_filter(array_column($p['versions'], 'version'), static fn(string $v): bool => !str_contains($v, '-')));
             usort($stable, 'version_compare');
             // as the builder does: what the newest stable version needs
@@ -163,7 +164,7 @@ final class RegistryFixture
             $packages[] = [
                 'slug' => $slug, 'type' => $p['type'], 'name' => $meta['name'], 'summary' => $meta['summary'], 'organisation' => $p['organisation'], 'categories' => $meta['categories'],
                 'latest' => ['stable' => end($stable) ?: '0.0.1'], 'paid' => $meta['paid'], 'requires_core' => $latest['requires']['core'] ?? null, 'updated_at' => self::at($this->now - 3600), 'file' => $pin("p/{$slug}", $file),
-            ];
+            ] + array_intersect_key($meta, ['icon' => 1]);
         }
         $organisations = [];
         foreach ($this->organisations as $id => $o) {
