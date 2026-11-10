@@ -7,7 +7,7 @@ namespace Kestello\Cms\Events;
 /**
  * The site's copy of the plugin and theme registry changed: a refresh brought a new list, and
  * these packages, organisations or advisories are new, different or gone. For a plugin that shows
- * the registry ($cms->registry()) and keeps or caches its own copy: update only what changed.
+ * the registry (the Registry reader) and keeps or caches its own copy: update only what changed.
  * Not dispatched when a refresh fails or finds nothing new.
  *
  * @api
