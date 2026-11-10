@@ -39,8 +39,9 @@ final class ContentModule extends Provider
         $roles->role('author', 'Author', ['read', 'profile.manage', 'admin.access', 'content.access']);
         $roles->role('contributor', 'Contributor', ['read', 'profile.manage', 'admin.access', 'content.access']);
 
-        $cms->notifications->type(ReviewNotification::class, 'Reviews', 'When an entry is submitted to you for review, a reviewer decides on yours, or one is assigned to you');
-        $cms->notifications->type(CommentNotification::class, 'Editorial comments', 'When someone comments on an entry you wrote, are assigned to or commented on');
+        // Reviews sends these to authors, assignees, reviewers and commenters: people who work in the content editor.
+        $cms->notifications->type(ReviewNotification::class, 'Reviews', 'When an entry is submitted to you for review, a reviewer decides on yours, or one is assigned to you', capability: 'content.access');
+        $cms->notifications->type(CommentNotification::class, 'Editorial comments', 'When someone comments on an entry you wrote, are assigned to or commented on', capability: 'content.access');
         $cms->container->make(Reviews::class)->listen($cms->events);
 
         $cms->content->type('page')

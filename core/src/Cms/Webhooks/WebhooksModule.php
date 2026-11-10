@@ -37,7 +37,7 @@ final class WebhooksModule extends Provider
         $w->event('webhook.ping', 'Test message', 'Webhooks', 'Sent by "Send a test" only.');
 
         $cms->queue->job(DeliverWebhook::class);
-        $cms->notifications->type(WebhookDisabledNotification::class, 'Webhook turned off', 'When a webhook kept failing and was turned off');
+        $cms->notifications->type(WebhookDisabledNotification::class, 'Webhook turned off', 'When a webhook kept failing and was turned off', capability: 'system.manage'); // sent to Administrators::ids()
 
         $send = static function (string $event, \Closure $data) use ($cms): void {
             try {

@@ -84,6 +84,8 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- Notification preferences on the profile, and `GET /me/notification-preferences`, list only the types that can reach you: a member no longer sees Site Health alerts, Reviews, Editorial comments or Webhook turned off, and `PUT` refuses a type you can't receive as it refuses an unknown one. `$cms->notifications->type()` takes an optional `capability` (a name or a list, any one is enough) for the people a plugin's type goes to, and `typesFor($principal)` lists what someone can receive.
+- Deleting a person, in the admin or with `user:delete`, also removes their waiting email change, their notifications and their notification preferences. Before, these stayed behind with no account.
 - Opening the link that confirms a new email address takes people who may use the admin to their admin profile, as before, and everyone else to the front page, or to the site's own account page with the new `auth.account_url` filter. Before, everyone went to `/admin/profile`, which people without the admin can't open.
 - Signing in with a password goes through `auth.redirect_after_login`, like signing in with a provider and finishing email sign-up, so a site with an account area sends everyone there the same way. Provider sign-in now decides who goes to `/admin` by the admin capability, as password sign-in does, not by the role being named admin.
 - Site Health's **Image processing** check writes the formats as people write them: "served as WebP and AVIF", not "WEBP AND AVIF", and "WebP, AVIF" in its details.

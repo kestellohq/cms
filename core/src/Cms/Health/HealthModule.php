@@ -22,7 +22,7 @@ final class HealthModule extends Provider
     {
         $cms->health->setCache(static fn() => CoreTasks::cache($cms));
         CoreHealthChecks::register($cms);
-        $cms->notifications->type(HealthAlertNotification::class, 'Site Health alerts', 'When a critical problem is found on the site');
+        $cms->notifications->type(HealthAlertNotification::class, 'Site Health alerts', 'When a critical problem is found on the site', capability: 'system.manage'); // sent to Administrators::ids()
 
         $cms->events->on(PlatformChanged::class, static function (PlatformChanged $e) use ($cms): void {
             $by = 'Someone';

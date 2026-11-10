@@ -43,8 +43,10 @@ final class UserAdminApiTest extends AuthTestCase
         $this->assertSame(200, $edit->statusCode());
         $this->assertSame(['Bakes.', false], [$this->json($edit)['data']['bio'], $this->json($edit)['data']['is_active']]);
 
+        $this->addUnlinkedRows($bob['id']);
         $this->assertSame(204, $this->api('DELETE', "/users/{$bob['id']}")->statusCode());
         $this->assertSame(404, $this->api('GET', "/users/{$bob['id']}")->statusCode());
+        $this->assertSame(['email_changes' => 0, 'notifications' => 0, 'notification_preferences' => 0], $this->unlinkedRows($bob['id']), 'their waiting email change, inbox and preferences go with the account');
         $this->assertSame(['users.created', 'users.updated', 'users.deleted'], array_values(array_filter($this->auditEvents(), static fn(string $e) => str_starts_with($e, 'users.'))));
     }
 

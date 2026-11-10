@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Console;
 
-use Kestello\Cms\Auth\PersonalAccessTokens;
+use Kestello\Cms\Auth\AccountDeletion;
 use Kestello\Cms\Cms;
-use Kestello\Contracts\Session\SessionStore;
 use Kestello\Framework\Console\Command;
 use Kestello\Framework\Database\QueryBuilder;
 
@@ -14,7 +13,7 @@ use Kestello\Framework\Database\QueryBuilder;
  * Delete an account from the server, such as a test account a script made with user:create.
  * The same rules as People → Delete in the admin: the last active administrator stays, every
  * session and access token of that person ends, and their pages, files and comments stay on the
- * site without them as author.
+ * site without them as author. AccountDeletion does the deleting for both.
  *
  *   php bin/cms user:delete shots          asks first
  *   php bin/cms user:delete shots --yes    for scripts
@@ -66,11 +65,7 @@ final class DeleteUserCommand extends Command
             return 1;
         }
 
-        if ($cms->container->has(SessionStore::class)) {
-            $cms->container->make(SessionStore::class)->destroyForUser($id);
-        }
-        $cms->container->make(PersonalAccessTokens::class)->revokeAll($id);
-        QueryBuilder::table('users')->where('id', $id)->delete();
+        AccountDeletion::delete($cms, $id);
         $cms->audit->record('users.deleted', ['user', $id], ['username' => $user['username'], 'email' => $user['email'], 'via' => 'cli'], null);
 
         $this->output->success("  Deleted {$user['username']}.");
