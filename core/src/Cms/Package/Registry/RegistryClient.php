@@ -40,6 +40,8 @@ final class RegistryClient
      * @param Closure(): array<string, mixed> $load the stored state
      * @param Closure(array<string, mixed>): void $save
      * @param Closure(): int $clock
+     * @param (Closure(RegistryIndex, array{packages: list<string>, organisations: list<string>, advisories: bool}): void)|null $changed
+     *        told after a refresh that brought a list with other packages, organisations or advisories
      */
     public function __construct(
         private readonly HttpClient $http,
@@ -49,6 +51,7 @@ final class RegistryClient
         private readonly Closure $load,
         private readonly Closure $save,
         private readonly Closure $clock,
+        private readonly ?Closure $changed = null,
     ) {}
 
     /**
@@ -62,6 +65,8 @@ final class RegistryClient
         $state = ($this->load)();
         $now = ($this->clock)();
         $state['checked_at'] = $now;
+        $before = $this->index();
+        $changes = null;
         try {
             if (Fields::https($this->baseUrl) === null || !str_ends_with($this->baseUrl, '/')) {
                 throw new RegistryException('registry.url must be an https address ending in "/".');
@@ -79,12 +84,16 @@ final class RegistryClient
             $this->keys = $keys;
             $this->index = $index;
             $state = ['checked_at' => $now, 'keys_serial' => $keys->serial, 'index_serial' => $index->serial, 'keys_etag' => $keysTag, 'index_etag' => $indexTag, 'error' => null];
+            $changes = $index->changesSince($before);
         } catch (Throwable $e) {
             $state['error'] = $e instanceof RegistryException ? $e->getMessage() : 'The registry could not be reached: ' . $e->getMessage();
             // a 304 relies on the copy we hold; after a failure, ask for the whole files next time
             unset($state['keys_etag'], $state['index_etag']);
         }
         ($this->save)($state);
+        if ($changes !== null && $this->changed !== null && ($changes['packages'] !== [] || $changes['organisations'] !== [] || $changes['advisories'])) {
+            ($this->changed)($this->index, $changes);
+        }
 
         return $this->status();
     }

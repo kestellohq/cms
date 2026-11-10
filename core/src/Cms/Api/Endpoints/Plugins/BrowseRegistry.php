@@ -10,7 +10,8 @@ use Kestello\Cms\Api\Schema;
 use Kestello\Cms\Package\Registry\RegistryCatalog;
 
 /**
- * Plugins → Add new: the registry's plugins, searched and filtered by category. With refresh=1
+ * Plugins → Add new: the registry's plugins, searched and filtered by category, with the
+ * categories' labels in the site's language. With refresh=1
  * (when the screen opens) the site's copy of the registry is brought up to date first, at most
  * once a minute; a failed refresh keeps the copy it has and says why.
  */
@@ -45,7 +46,7 @@ final class BrowseRegistry extends PluginEndpoint
     {
         $client = $this->registry();
         if ($client === null) {
-            return ['enabled' => false, 'status' => null, 'total' => 0, 'page' => 1, 'per_page' => RegistryCatalog::PER_PAGE, 'categories' => (object) [], 'packages' => []];
+            return ['enabled' => false, 'status' => null, 'total' => 0, 'page' => 1, 'per_page' => RegistryCatalog::PER_PAGE, 'categories' => (object) [], 'category_labels' => (object) [], 'packages' => []];
         }
         $status = $client->status();
         if ($request->query('refresh', false) && ($status['checked_at'] ?? 0) < time() - self::REFRESH_AFTER) {
@@ -66,6 +67,8 @@ final class BrowseRegistry extends PluginEndpoint
             ],
             ...$result,
             'categories' => (object) $result['categories'],
+            // labels in the site's language for every category, also for the package's details
+            'category_labels' => (object) $this->cms()->registry()->categories(),
         ];
     }
 }
