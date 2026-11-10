@@ -150,7 +150,42 @@ final class SiteSeederTest extends AuthTestCase
         $e = $this->assertThrows(SeedException::class, fn() => $seeder->seed(SeedFolder::read($this->folder($this->site())), $this->author()));
 
         $this->assertStringContainsString('only goes into an empty site', $e->getMessage());
+        $this->assertStringContainsString('--update', $e->getMessage(), 'and says how to update it instead');
         $this->assertSame(2, $this->db->table('entries')->count());
+    }
+
+    public function testUpdateBringsASiteInLineWithTheSeed(): void
+    {
+        $seeder = new SiteSeeder($this->cms);
+        $first = $seeder->seed(SeedFolder::read($this->folder($this->site())), $this->author());
+        $about = (int) Entry::query()->where('slug', 'about-us')->first()?->getKey();
+        $type = $this->cms->content->get('page');
+        $this->assertNotNull($type);
+        $mine = (int) $this->cms->container->make(\Kestello\Cms\Content\Entries::class)->create($type, ['title' => 'Written by hand', 'status' => 'published'], $this->author())->getKey();
+
+        // the seed changes: new words, a new page, a new file, a menu with other items
+        $files = $this->site();
+        $files['pages/home.json']['blocks'][0]['props']['text'] = 'Welcome back';
+        $files['pages/about.json']['title'] = 'About the team';
+        $files['pages/contact.json'] = ['title' => 'Contact', 'blocks' => [['type' => 'core/image', 'props' => ['image' => '@media:map.png'], 'children' => []]]];
+        $files['media/map.png'] = (string) base64_decode(self::PNG) . "\0";
+        $files['site.json']['menus'][0]['items'] = [['page' => 'contact']];
+        $dir = $this->folder($files);
+
+        $this->assertSame([], $seeder->check(SeedFolder::read($dir), $this->author(), update: true), 'a dry run of an update finds nothing wrong');
+        $summary = $seeder->seed(SeedFolder::read($dir), $this->author(), update: true);
+
+        $this->assertSame([4, 1, 0, 1, 1], [$summary['updated'], $summary['pages'], $summary['menus'], $summary['media'], $summary['reused']], 'updated, new pages, new menus, new files, files kept');
+        $this->assertSame($first['front_page'], $summary['front_page'], 'the home page is the same entry');
+        $this->assertSame('Welcome back', Entry::query()->find($summary['front_page'])?->field('body')[0]['props']['text'] ?? null);
+        $this->assertSame('About the team', (string) Entry::query()->find($about)?->title, 'updated in place');
+        $this->assertSame('Written by hand', (string) Entry::query()->find($mine)?->title, 'pages the seed does not name are left alone');
+        $this->assertSame([4, 2, 2], [$this->db->table('entries')->count(), $this->db->table('media')->count(), $this->db->table('menus')->count()]);
+        $this->assertSame(['Contact'], array_column($this->cms->container->make(Menus::class)->forLocations()['primary'], 'label'));
+
+        $again = $seeder->seed(SeedFolder::read($dir), $this->author(), update: true);
+        $this->assertSame([0, 2, 5], [$again['media'], $again['reused'], $again['updated']], 'a second update adds nothing');
+        $this->assertSame([4, 2, 2], [$this->db->table('entries')->count(), $this->db->table('media')->count(), $this->db->table('menus')->count()]);
     }
 
     public function testCheckingNamesEveryBadBlockAndWritesNothing(): void

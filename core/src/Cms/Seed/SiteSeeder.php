@@ -8,6 +8,7 @@ use Kestello\Cms\Api\Endpoints\Settings\SiteSettings;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Content\ContentException;
 use Kestello\Cms\Content\Entries;
+use Kestello\Cms\Content\Entry;
 use Kestello\Cms\Media\Media;
 use Kestello\Cms\Media\MediaLibrary;
 use Kestello\Cms\Menus\Menus;
@@ -17,7 +18,7 @@ use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Settings\Settings;
 
 /**
- * Puts a seed folder (SeedFolder) into an empty site: media, pages, menus,
+ * Puts a seed folder (SeedFolder) into a site: media, pages, menus,
  * settings and the front page, written through the same services the admin
  * uses (settings through the same schema as Settings), so everything is
  * validated and cleaned the same way. A seed never holds secrets, such as a
@@ -27,11 +28,19 @@ use Kestello\Framework\Settings\Settings;
  *   $plan = SeedFolder::read($folder);
  *   $problems = $seeder->check($plan, $principal);   // [] when it would go in
  *   $summary = $seeder->seed($plan, $principal);
+ *   $summary = $seeder->seed($plan, $principal, update: true);   // a site that has it already
+ *
+ * A seed goes into an empty site. With update, it brings a site in line with
+ * the seed instead, keeping everything else: a page with the seed page's
+ * address is updated in place (a new revision, the same id and links), a
+ * menu with the seed menu's name gets the seed's items, settings are
+ * written, and a file the seed added before is reused rather than added
+ * again. Pages, menus and files the seed doesn't name are left alone.
  *
  * Everything is written in one transaction. When anything fails, it is
  * rolled back and the media files it added are deleted, so the site is left
- * empty. check() is a seed that always rolls back: it finds exactly what a
- * real seed would.
+ * as it was. check() is a seed that always rolls back: it finds exactly what
+ * a real seed would.
  */
 final class SiteSeeder
 {
@@ -44,10 +53,10 @@ final class SiteSeeder
      * @param array<string, mixed> $plan SeedFolder::read()
      * @return list<string>
      */
-    public function check(array $plan, Principal $author): array
+    public function check(array $plan, Principal $author, bool $update = false): array
     {
         try {
-            $this->run($plan, $author, keep: false);
+            $this->run($plan, $author, keep: false, update: $update);
         } catch (SeedException $e) {
             return explode("\n", $e->getMessage());
         }
@@ -57,12 +66,12 @@ final class SiteSeeder
 
     /**
      * @param array<string, mixed> $plan SeedFolder::read()
-     * @return array{media: int, pages: int, menus: int, settings: int, front_page: ?int, unassigned: list<string>}
+     * @return array{media: int, pages: int, menus: int, settings: int, front_page: ?int, unassigned: list<string>, updated: int, reused: int}
      * @throws SeedException naming each problem, one per line; nothing is written then
      */
-    public function seed(array $plan, Principal $author): array
+    public function seed(array $plan, Principal $author, bool $update = false): array
     {
-        return $this->run($plan, $author, keep: true);
+        return $this->run($plan, $author, keep: true, update: $update);
     }
 
     /**
@@ -84,12 +93,12 @@ final class SiteSeeder
 
     /**
      * @param array<string, mixed> $plan
-     * @return array{media: int, pages: int, menus: int, settings: int, front_page: ?int, unassigned: list<string>}
+     * @return array{media: int, pages: int, menus: int, settings: int, front_page: ?int, unassigned: list<string>, updated: int, reused: int}
      */
-    private function run(array $plan, Principal $author, bool $keep): array
+    private function run(array $plan, Principal $author, bool $keep, bool $update): array
     {
-        if (QueryBuilder::table('entries')->exists()) {
-            throw new SeedException('A seed only goes into an empty site, and this one already has pages or posts.');
+        if (!$update && QueryBuilder::table('entries')->exists()) {
+            throw new SeedException('A seed only goes into an empty site, and this one already has pages or posts. To bring it in line with the seed, use --update.');
         }
         if ($this->cms->content->get('page') === null) {
             throw new SeedException('This site has no "page" content type.');
@@ -97,14 +106,29 @@ final class SiteSeeder
 
         $library = $this->cms->container->make(MediaLibrary::class);
         try {
-            $summary = DatabaseManager::getConnection()->transaction(function () use ($plan, $author, $keep, $library): array {
+            $summary = DatabaseManager::getConnection()->transaction(function () use ($plan, $author, $keep, $update, $library): array {
                 /** @var array<string, Media> $added */
                 $added = [];
+                /** @var array<string, int> $ids */
+                $ids = [];
                 try {
                     foreach ($plan['media'] as $name => $file) {
-                        $added[$name] = $this->addMedia($library, $name, $file, $author);
+                        $checksum = (string) hash_file('sha256', $file['path']);
+                        $kept = $update ? self::seeded($name, $checksum) : null;
+                        if ($kept !== null) {
+                            if ((string) $kept->alt !== $file['alt']) {
+                                $kept->alt = $file['alt'];
+                                $kept->save();
+                            }
+                            $ids[$name] = (int) $kept->getKey();
+                            continue;
+                        }
+                        $added[$name] = $this->addMedia($library, $name, $file, $author, $checksum);
+                        $ids[$name] = (int) $added[$name]->getKey();
                     }
-                    $summary = $this->write($plan, array_map(static fn(Media $m): int => (int) $m->getKey(), $added), $author);
+                    $summary = $this->write($plan, $ids, $author, $update);
+                    $summary['reused'] = count($ids) - count($added);
+                    $summary['media'] = count($added);
                     if (!$keep) {
                         throw new DryRun($summary);
                     }
@@ -137,23 +161,45 @@ final class SiteSeeder
      *
      * @param array<string, mixed> $plan
      * @param array<string, int> $ids media file name => id
-     * @return array{media: int, pages: int, menus: int, settings: int, front_page: ?int, unassigned: list<string>}
+     * @return array{media: int, pages: int, menus: int, settings: int, front_page: ?int, unassigned: list<string>, updated: int, reused: int}
      */
-    private function write(array $plan, array $ids, Principal $author): array
+    private function write(array $plan, array $ids, Principal $author, bool $update): array
     {
         $this->checkBlocks($plan['pages'], $ids);
-        $pages = $this->pages($plan['pages'], $ids, $author);
-        $unassigned = $this->menus($plan['menus'], $pages);
+        [$pages, $updatedPages] = $this->pages($plan['pages'], $ids, $author, $update);
+        [$unassigned, $updatedMenus] = $this->menus($plan['menus'], $pages, $update);
         $front = $plan['front_page'] === null ? null : $pages[$plan['front_page']];
 
         return [
             'media' => count($ids),
-            'pages' => count($pages),
-            'menus' => count($plan['menus']),
+            'pages' => count($pages) - $updatedPages,
+            'menus' => count($plan['menus']) - $updatedMenus,
             'settings' => $this->settings($plan['settings'], $front, $author),
             'front_page' => $front,
             'unassigned' => $unassigned,
+            'updated' => $updatedPages + $updatedMenus,
+            'reused' => 0,
         ];
+    }
+
+    /**
+     * The file a seed added before from this seed file: the same name, and the
+     * checksum the seeder recorded (or the library's own, for files seeded
+     * before it recorded one, when the library kept the file as it was).
+     */
+    private static function seeded(string $name, string $checksum): ?Media
+    {
+        foreach (Media::query()->where('filename', MediaLibrary::cleanName($name))->orderBy('id')->get() as $media) {
+            if (!$media instanceof Media) {
+                continue;
+            }
+            $meta = is_array($media->meta) ? $media->meta : [];
+            if (($meta['seed']['checksum'] ?? null) === $checksum || (string) $media->checksum === $checksum) {
+                return $media;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -180,7 +226,7 @@ final class SiteSeeder
     /**
      * @param array{path: string, alt: string} $file
      */
-    private function addMedia(MediaLibrary $library, string $name, array $file, Principal $author): Media
+    private function addMedia(MediaLibrary $library, string $name, array $file, Principal $author, string $checksum): Media
     {
         // The library moves the file it is given; the seed folder stays as it is.
         $copy = tempnam(sys_get_temp_dir(), 'kestello-seed-');
@@ -188,23 +234,30 @@ final class SiteSeeder
             throw new SeedException("Could not copy media/{$name} to the temporary folder " . sys_get_temp_dir() . '.');
         }
         try {
-            return $library->addFile($author, $copy, $name, ['alt' => $file['alt']]);
+            $media = $library->addFile($author, $copy, $name, ['alt' => $file['alt']]);
         } catch (\Throwable $e) {
             @unlink($copy);
             throw new SeedException("media/{$name}: {$e->getMessage()}", previous: $e);
         }
+        // The library may rewrite an image (rotation, metadata), so its checksum is of
+        // the stored file. The seed file's own is what a later --update compares.
+        $media->meta = ['seed' => ['checksum' => $checksum]] + (is_array($media->meta) ? $media->meta : []);
+        $media->save();
+
+        return $media;
     }
 
     /**
      * @param array<string, array<string, mixed>> $pages
      * @param array<string, int> $media
-     * @return array<string, int> page key => entry id
+     * @return array{0: array<string, int>, 1: int} page key => entry id, and how many were updated
      */
-    private function pages(array $pages, array $media, Principal $author): array
+    private function pages(array $pages, array $media, Principal $author, bool $update): array
     {
         $type = $this->cms->content->get('page') ?? throw new SeedException('This site has no "page" content type.');
         $entries = $this->cms->container->make(Entries::class);
         $ids = [];
+        $updated = 0;
         foreach ($pages as $key => $page) {
             $data = ['body' => self::resolve($page['blocks'], $media)];
             if ($page['seo'] !== []) {
@@ -213,13 +266,32 @@ final class SiteSeeder
             try {
                 $input = ['title' => $page['title'], 'slug' => $page['slug'], 'status' => $page['status'], 'data' => $data]
                     + ($page['template'] !== null ? ['template' => $page['template']] : []);
-                $ids[$key] = (int) $entries->create($type, $input, $author)->getKey();
+                // a seed page is a top-level page, so its slug is its address
+                $existing = $update ? $this->topLevelPage($page['slug']) : null;
+                if ($existing !== null) {
+                    $ids[$key] = (int) $entries->update($existing, $input, $author)->getKey();
+                    $updated++;
+                } else {
+                    $ids[$key] = (int) $entries->create($type, $input, $author)->getKey();
+                }
             } catch (ContentException $e) {
                 throw new SeedException("pages/{$key}.json: {$e->getMessage()}" . self::details($e), previous: $e);
             }
         }
 
-        return $ids;
+        return [$ids, $updated];
+    }
+
+    /** The page at /<slug>, not counting the trash. */
+    private function topLevelPage(string $slug): ?Entry
+    {
+        foreach (Entry::query()->where('type', 'page')->whereNull('parent_id')->where('slug', $slug)->limit(1)->get() as $entry) {
+            if ($entry instanceof Entry) {
+                return $entry;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -227,15 +299,19 @@ final class SiteSeeder
      *
      * @param list<array{name: string, location: string, items: list<array<string, mixed>>}> $menus
      * @param array<string, int> $pages
-     * @return list<string> names of menus whose location the theme lacks
+     * @return array{0: list<string>, 1: int} names of menus whose location the theme lacks, and how many were updated
      */
-    private function menus(array $menus, array $pages): array
+    private function menus(array $menus, array $pages, bool $update): array
     {
         $store = $this->cms->container->make(Menus::class);
+        $existing = $update ? array_column($store->all(), 'id', 'name') : [];
         $unassigned = [];
+        $updated = 0;
         foreach ($menus as $menu) {
+            $current = isset($existing[$menu['name']]) ? (int) $existing[$menu['name']] : null;
+            $updated += $current === null ? 0 : 1;
             try {
-                $id = $store->save(null, $menu['name'], self::menuItems($menu['items'], $pages));
+                $id = $store->save($current, $menu['name'], self::menuItems($menu['items'], $pages));
             } catch (ContentException $e) {
                 throw new SeedException("site.json: menu \"{$menu['name']}\": {$e->getMessage()}" . self::details($e), previous: $e);
             }
@@ -246,7 +322,7 @@ final class SiteSeeder
             }
         }
 
-        return $unassigned;
+        return [$unassigned, $updated];
     }
 
     /**

@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- `site:seed --update` brings a site that has content in line with its seed folder: pages with the seed's addresses are updated in place (a new revision, same id and links), menus with the seed's names get its items, settings are written, and files the seed added before are reused. Pages, menus and files the seed doesn't name are left alone. Before, a seed only went into an empty site, so a site kept in a repository had no way to pick up changes to its seed.
 - Menus in a seed (`site:seed`) can nest: any item takes `children`, a list of items, as deep as menus go.
 - `KESTELLO_STORAGE` puts what Kestello writes (cache, sessions, logs, uploaded files, backups) in another folder than the site's `storage/`: an absolute path, or one relative to the site. For a throwaway test run beside a development site, or a host that keeps the code read-only.
 - `KImage` takes a `dark` image for visitors whose device is set to dark, such as a screenshot of a dark admin beside a light one: `<KImage :media="shot" :dark="shotDark" />`.
