@@ -11,7 +11,7 @@ use Kestello\Cms\Api\Endpoint;
 use Kestello\Cms\Api\Schema;
 use Kestello\Cms\Cms;
 
-/** Switch channels on or off per notification type. */
+/** Switch channels on or off per notification type. A type you can't receive is refused like an unknown one. */
 final class UpdateMyNotificationPreferences extends Endpoint
 {
     public function route(): ApiRoute
@@ -49,7 +49,7 @@ final class UpdateMyNotificationPreferences extends Endpoint
     public function handle(ApiRequest $request): mixed
     {
         $notifier = (Cms::instance() ?? throw new \RuntimeException('Not booted.'))->notifications;
-        $types = $notifier->types();
+        $types = $notifier->typesFor($request->principal);
         $channels = $notifier->channels();
         $prefs = (array) $request->input('preferences', []);
         foreach ($prefs as $i => $p) {

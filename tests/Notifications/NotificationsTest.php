@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace Kestello\Tests\Notifications;
 
+use Kestello\Cms\Content\ContentModule;
 use Kestello\Cms\Events\NotificationFailed;
 use Kestello\Cms\Events\NotificationSent;
+use Kestello\Cms\Health\HealthModule;
 use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Cms\Notifications\Notification;
 use Kestello\Cms\Notifications\NotificationsModule;
 use Kestello\Cms\Notifications\Recipient;
+use Kestello\Cms\Webhooks\WebhooksModule;
+use Kestello\Contracts\Auth\Principal;
 use Kestello\Contracts\Notifications\Channel;
 use Kestello\Framework\Core\ExecutionContext;
+use Kestello\Framework\Database\Model;
 use Kestello\Framework\Queue\ArrayQueue;
 use Kestello\Tests\Auth\AuthTestCase;
 
@@ -146,6 +151,59 @@ final class NotificationsTest extends AuthTestCase
         $this->assertSame(204, $this->api('PUT', '/me/notification-preferences', ['preferences' => [['type' => 'order-shipped', 'channel' => 'mail', 'enabled' => false]]])->statusCode());
         $this->assertSame(['mail'], $this->cms->notifications->disabledChannels((int) $ana['id'], 'order-shipped'));
         $this->assertSame(422, $this->api('PUT', '/me/notification-preferences', ['preferences' => [['type' => 'nope', 'channel' => 'mail', 'enabled' => false]]])->statusCode());
+    }
+
+    public function testPreferencesOnlyListTypesYouCanReceive(): void
+    {
+        $this->createUser();
+        $bo = $this->createUser(['username' => 'bo', 'email' => 'bo@example.test', 'role' => 'user']);
+        $n = $this->cms->notifications;
+        $n->type(OrderShipped::class, 'Order shipped');
+        $n->type(QueuedDigest::class, 'Digest', 'For people who run the site', 'system.manage');
+        $n->type(SecurityAlert::class, 'Security alerts', '', ['users.manage', 'security.manage']);
+        $this->assertSame([], $n->types()['order-shipped']['capabilities'], 'no capability: everyone can receive it');
+        $this->assertSame(['users.manage', 'security.manage'], $n->types()['security-alert']['capabilities']);
+        $this->assertThrows(\InvalidArgumentException::class, fn() => $n->type(OrderShipped::class, 'Order shipped', '', ['']), 'an empty capability is a mistake');
+
+        $member = new Principal((int) $bo['id'], [], 'session', ['read', 'profile.manage']);
+        $this->assertSame(['order-shipped'], array_keys($n->typesFor($member)));
+        $security = new Principal((int) $bo['id'], [], 'session', ['security.manage']);
+        $this->assertSame(['order-shipped', 'security-alert'], array_keys($n->typesFor($security)), 'any one of the capabilities is enough');
+        $admin = new Principal(1, [], 'session', ['*']);
+        $this->assertSame(['order-shipped', 'queued-digest', 'security-alert'], array_keys($n->typesFor($admin)));
+
+        $this->api('POST', '/auth/session', ['login' => 'bo', 'password' => self::PASSWORD]);
+        $this->assertSame(['order-shipped'], array_column($this->json($this->api('GET', '/me/notification-preferences'))['data'], 'type'), 'a member sees only what can reach them');
+        $refused = $this->api('PUT', '/me/notification-preferences', ['preferences' => [['type' => 'queued-digest', 'channel' => 'mail', 'enabled' => false]]]);
+        $this->assertSame(422, $refused->statusCode(), 'a type you cannot receive is refused like an unknown one');
+        $this->assertSame([], $n->disabledChannels((int) $bo['id'], 'queued-digest'), 'nothing was stored');
+
+        $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD]);
+        $this->assertSame(['order-shipped', 'queued-digest', 'security-alert'], array_column($this->json($this->api('GET', '/me/notification-preferences'))['data'], 'type'));
+        $this->assertSame(204, $this->api('PUT', '/me/notification-preferences', ['preferences' => [['type' => 'queued-digest', 'channel' => 'mail', 'enabled' => false]]])->statusCode());
+    }
+
+    public function testCoreTypesReachOnlyThePeopleTheyAreSentTo(): void
+    {
+        Model::resetRegistry();
+        try {
+            $content = new ContentModule();
+            $content->register($this->cms->container);
+            $content->boot($this->cms);
+            (new HealthModule())->boot($this->cms);
+            (new WebhooksModule())->boot($this->cms);
+            $roles = $this->cms->auth->roles;
+            $as = fn(string $role): array => array_keys($this->cms->notifications->typesFor(new Principal(1, [], 'session', $roles->capabilitiesFor($role))));
+            $all = ['content-review', 'content-comment', 'site-health', 'webhook-disabled'];
+            $this->assertSame($all, array_keys($this->cms->notifications->types()), 'the core types');
+
+            $this->assertSame([], $as('user'), 'a member gets none of them');
+            $this->assertSame(['content-review', 'content-comment'], $as('contributor'), 'people who use the content editor get reviews and comments');
+            $this->assertSame(['content-review', 'content-comment'], $as('editor'));
+            $this->assertSame($all, $as('admin'), 'administrators get Site Health and webhook notices too');
+        } finally {
+            Model::resetRegistry();
+        }
     }
 
     public function testQueuedPluginChannelsAndPruning(): void

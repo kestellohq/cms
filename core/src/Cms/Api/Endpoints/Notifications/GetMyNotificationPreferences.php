@@ -10,7 +10,7 @@ use Kestello\Cms\Api\Endpoint;
 use Kestello\Cms\Cms;
 use Kestello\Framework\Core\Response;
 
-/** Configurable notification types and which channels you have switched off. */
+/** The notification types you can receive and which channels you have switched off. */
 final class GetMyNotificationPreferences extends Endpoint
 {
     public function route(): ApiRoute
@@ -39,7 +39,7 @@ final class GetMyNotificationPreferences extends Endpoint
         $notifier = (Cms::instance() ?? throw new \RuntimeException('Not booted.'))->notifications;
         $userId = (int) $request->userId();
         $data = [];
-        foreach ($notifier->types() as $type => $t) {
+        foreach ($notifier->typesFor($request->principal) as $type => $t) {
             $off = $notifier->disabledChannels($userId, $type);
             $data[] = [
                 'type' => $type,
