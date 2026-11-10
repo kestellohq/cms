@@ -414,7 +414,7 @@ final class Kernel
         $console->register(new Commands\MigrateResetCommand($migrations));
         $console->register(new Commands\MigrateStatusCommand($migrations));
         $console->register(new Commands\MigrateFreshCommand($migrations));
-        $console->register(new Commands\CacheClearCommand($root));
+        $console->register(new Commands\CacheClearCommand(static fn(): CacheStore => $app->container()->make(CacheStore::class), $this->paths->compiled()));
         $console->register(new Commands\ServeCommand($root));
         $console->register(new Commands\KeyGenerateCommand($root));
         $console->register(new Commands\RoutesCommand(fn(): Router => $app->router()));
