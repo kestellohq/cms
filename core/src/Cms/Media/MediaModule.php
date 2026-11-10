@@ -6,6 +6,7 @@ namespace Kestello\Cms\Media;
 
 use Kestello\Cms\Cms;
 use Kestello\Cms\Extension\Provider;
+use Kestello\Cms\Media\Image\FormatNames;
 use Kestello\Framework\Core\Container;
 
 /** Core module: the media library, image sizes and variants, the admin screen, cleanup tasks. */
@@ -42,7 +43,7 @@ final class MediaModule extends Provider
             $tools = Optimizer::tools();
             $details = [
                 'Engine' => $engine->name(),
-                'Modern formats' => $formats === [] ? 'none' : strtoupper(implode(', ', $formats)),
+                'Modern formats' => $formats === [] ? 'none' : FormatNames::list($formats),
                 'Lossless optimizers' => $tools === [] ? 'none installed' : implode(', ', array_unique($tools)) . (Optimizer::enabled() ? '' : ' (turned off)'),
                 'PDF thumbnails' => PdfPoster::binary() !== null ? 'Ghostscript' : 'no (Ghostscript isn\'t installed)',
             ];
@@ -50,7 +51,7 @@ final class MediaModule extends Provider
                 return \Kestello\Cms\Health\HealthResult::recommended("Images are resized with {$engine->name()}, but it can't write WebP, so pages are heavier than they need to be.", $details);
             }
 
-            return \Kestello\Cms\Health\HealthResult::good('Images are resized with ' . $engine->name() . ' and served as ' . strtoupper(implode(' and ', $formats)) . ' where browsers support it.', $details);
+            return \Kestello\Cms\Health\HealthResult::good('Images are resized with ' . $engine->name() . ' and served as ' . FormatNames::sentence($formats) . ' where browsers support it.', $details);
         }, category: 'performance');
 
         $roles = $cms->auth->roles;
