@@ -106,6 +106,8 @@ final class SeedFolderTest extends TestCase
         $this->failsWith('menus[0].items[0]: a link needs a "url" and a "label"', $this->folder($menu(['url' => 'https://acme.test/'])));
         $this->failsWith('menus[0].items[0]: say what it links to', $this->folder($menu(['label' => 'Home'])));
         $this->failsWith('menus[0] needs a "name"', $this->folder(['site.json' => ['menus' => [['items' => []]]]]));
+        $this->failsWith('menus[0].items[0].children[1]: "page" must be the key of a page', $this->folder($menu(['url' => '/a', 'label' => 'A', 'children' => [['url' => '/b', 'label' => 'B'], ['page' => 'nowhere']]])));
+        $this->failsWith('menus[0].items[0].children must be a list', $this->folder($menu(['url' => '/a', 'label' => 'A', 'children' => ['page' => 'x']])));
     }
 
     public function testMediaReferencesNameRealFiles(): void

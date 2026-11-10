@@ -225,7 +225,7 @@ final class SiteSeeder
     /**
      * Make each menu and put it in its location when the theme has one.
      *
-     * @param list<array{name: string, location: string, items: list<array<string, string>>}> $menus
+     * @param list<array{name: string, location: string, items: list<array<string, mixed>>}> $menus
      * @param array<string, int> $pages
      * @return list<string> names of menus whose location the theme lacks
      */
@@ -234,13 +234,8 @@ final class SiteSeeder
         $store = $this->cms->container->make(Menus::class);
         $unassigned = [];
         foreach ($menus as $menu) {
-            $items = array_map(static fn(array $item): array => match (true) {
-                isset($item['page']) => ['kind' => 'entry', 'ref' => $pages[$item['page']]] + ($item['label'] !== '' ? ['label' => $item['label']] : []),
-                isset($item['url']) => ['kind' => 'url', 'url' => $item['url'], 'label' => $item['label']],
-                default => ['kind' => 'archive', 'ref' => $item['archive']] + ($item['label'] !== '' ? ['label' => $item['label']] : []),
-            }, $menu['items']);
             try {
-                $id = $store->save(null, $menu['name'], $items);
+                $id = $store->save(null, $menu['name'], self::menuItems($menu['items'], $pages));
             } catch (ContentException $e) {
                 throw new SeedException("site.json: menu \"{$menu['name']}\": {$e->getMessage()}" . self::details($e), previous: $e);
             }
@@ -294,6 +289,27 @@ final class SiteSeeder
         Settings::getInstance()->reload();
 
         return $count;
+    }
+
+    /**
+     * Seed menu items as Menus stores them, children included.
+     *
+     * @param list<array<string, mixed>> $items SeedFolder's
+     * @param array<string, int> $pages page key => entry id
+     * @return list<array<string, mixed>>
+     */
+    public static function menuItems(array $items, array $pages): array
+    {
+        return array_map(static function (array $item) use ($pages): array {
+            $label = (string) $item['label'];
+            $out = match (true) {
+                isset($item['page']) => ['kind' => 'entry', 'ref' => $pages[$item['page']]] + ($label !== '' ? ['label' => $label] : []),
+                isset($item['url']) => ['kind' => 'url', 'url' => $item['url'], 'label' => $label],
+                default => ['kind' => 'archive', 'ref' => $item['archive']] + ($label !== '' ? ['label' => $label] : []),
+            };
+
+            return $out + (isset($item['children']) ? ['children' => self::menuItems($item['children'], $pages)] : []);
+        }, $items);
     }
 
     private static function details(ContentException $e): string
