@@ -124,4 +124,13 @@ final class Cms
     {
         return $this->extensions ?? throw new \LogicException('Extensions are not booted.');
     }
+
+    /**
+     * The plugin and theme registry, read-only: for a plugin or theme that shows its packages,
+     * organisations or advisories. Empty, with status() saying why, when it is turned off.
+     */
+    public function registry(): \Kestello\Cms\Package\Registry\Registry
+    {
+        return $this->container->make(\Kestello\Cms\Package\Registry\Registry::class);
+    }
 }

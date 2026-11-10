@@ -131,7 +131,7 @@ final class RegistryCatalog
     /**
      * Registry text (a package's description or release notes) as safe HTML. Images are left out:
      * the admin never loads anything from a publisher's server (registry-format.md §6), so
-     * browsing tells nobody which sites are looking. Links get rel="nofollow noopener noreferrer".
+     * browsing tells nobody which sites are looking. Links get rel="nofollow ugc", as text from others.
      */
     public static function html(string $markdown): string
     {
