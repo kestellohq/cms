@@ -268,4 +268,34 @@ final class PasswordTest extends AuthTestCase
         $this->assertTrue($login->attempt('cyd', $m[1], '192.0.2.1')->ok());
         $this->assertSame('user', \Kestello\Framework\Database\QueryBuilder::table('users')->where('username', 'cyd')->value('role'), 'the default role is the least one');
     }
+
+    public function testTheServerCanDeleteAnAccount(): void
+    {
+        $ana = (int) $this->createUser()['id'];
+        $run = function (array $args, array $options = []): array {
+            $out = fopen('php://memory', 'w+');
+            $command = new \Kestello\Cms\Console\DeleteUserCommand();
+            $command->setOutput(new \Kestello\Framework\Console\Output($out, false));
+            $code = $command->handle($args, $options);
+            rewind($out);
+
+            return [$code, (string) stream_get_contents($out)];
+        };
+        $users = static fn(): \Kestello\Framework\Database\QueryBuilder => \Kestello\Framework\Database\QueryBuilder::table('users');
+
+        $this->assertSame(1, $run([])[0], 'needs a person');
+        $this->assertSame(1, $run(['nobody'], ['yes' => true])[0]);
+        [$code, $out] = $run(['ana'], ['yes' => true]);
+        $this->assertSame(1, $code, 'the last administrator stays');
+        $this->assertStringContainsString('last administrator', $out);
+        $this->assertTrue($users()->where('id', $ana)->exists());
+
+        $shots = (int) $this->createUser(['username' => 'shots', 'email' => 'shots@example.test'])['id'];
+        (new PersonalAccessTokens())->create($shots, 'laptop', ['content:read']);
+        $this->assertSame(0, $run(['Shots@Example.TEST'], ['yes' => true])[0], 'found by email, any case');
+        $this->assertFalse($users()->where('id', $shots)->exists());
+        $this->assertSame([], (new PersonalAccessTokens())->forUser($shots), 'their access tokens end');
+        $this->assertContains('users.deleted', $this->auditEvents());
+        $this->assertTrue($users()->where('id', $ana)->exists(), 'nobody else is touched');
+    }
 }
