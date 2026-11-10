@@ -77,6 +77,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- Appearance → Themes shows a preview of Base instead of an empty card: the theme ships its `screenshot.webp`.
 - Links to the page chosen as the home page go to `/`. Menus, breadcrumbs, search results, lists of entries and the page's own `path` used its slug address (`/home`), which redirects to `/`, so every click went through a redirect. `Entry::url()` gives the address links should use.
 - `cache:clear` empties the cache. It deleted only files at the top of `storage/cache`, and the cache keeps its entries in subfolders (or in APCu, Redis or the database), so it cleared nothing and reported 0 files. It now empties the configured cache store and the compiled templates, subfolders included.
 - `site:seed` checks a seed's settings with the same rules as the Settings screens and stores them the same way. It wrote them unchecked, so a seed could store a setting that does not exist or a value the screens refuse. Secrets, such as a mail password, are refused in a seed, and `--dry-run` no longer writes the site name and address to `config/app.php`.
