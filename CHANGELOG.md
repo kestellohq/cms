@@ -73,6 +73,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- `cache:clear` empties the cache. It deleted only files at the top of `storage/cache`, and the cache keeps its entries in subfolders (or in APCu, Redis or the database), so it cleared nothing and reported 0 files. It now empties the configured cache store and the compiled templates, subfolders included.
 - The SSR renderer renders a theme or plugin rebuilt while it runs with its new code. It kept the pages it had loaded until restarted, so visitors got the old markup and the browser hydrated different code.
 - A release key or registry root key that can't be read is now logged under its own setting, not under app.packages.trusted_keys.
 - The **Accounts** settings sent people to **Users** to add someone; the menu is **People**.
