@@ -61,7 +61,7 @@ final class HomeController
      *
      * @return array{title: string, description: string, path: string}|null
      */
-    private static function page(string $slug): ?array
+    public static function page(string $slug): ?array
     {
         $q = Entry::query();
         $q->where('entries.type', 'page')->where('entries.slug', $slug)->where('entries.locale', '')->whereNull('entries.parent_id')

@@ -11,8 +11,14 @@ test('each page hangs in a room', () => {
     assert.equal(roomOf('@core/content/Archive', { type: { name: 'talks' } }), 'talks');
     assert.equal(roomOf('@core/content/Entry', { type: { name: 'post' } }), 'journal');
     assert.equal(roomOf('@core/content/Entry', { type: { name: 'team' } }), 'studio');
-    assert.equal(roomOf('@core/content/Entry', { type: { name: 'page' }, entry: { path: '/es/studio' } }), 'studio');
-    assert.equal(roomOf('@core/content/Entry', { type: { name: 'page' }, entry: { path: '/contact' } }), 'hall');
+    const studio = { exhibit: { studio: '/es/estudio' } };
+    assert.equal(
+        roomOf('@core/content/Entry', { type: { name: 'page' }, entry: { path: '/es/estudio' }, ...studio }),
+        'studio',
+        'the studio page, under its own slug',
+    );
+    assert.equal(roomOf('@core/content/Entry', { type: { name: 'page' }, entry: { path: '/es/contacto' }, ...studio }), 'hall');
+    assert.equal(roomOf('@core/content/Entry', { type: { name: 'page' }, entry: { path: '/studio' } }), 'hall', 'a site without a studio page');
     assert.equal(roomOf('@core/content/Archive', { type: { name: 'category' } }), 'journal', 'categories are read in the journal');
     assert.equal(roomOf('@core/auth/Login'), 'hall');
 });

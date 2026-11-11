@@ -9,15 +9,16 @@ export const ROOMS = { projects: 'projects', team: 'studio', talks: 'talks', pos
 
 /**
  * The room of a page: its wall colour. The entrance is the projects room;
- * an entry or a list follows its type; a page called "studio" is the
- * studio; categories, tags and authors are read in the journal.
+ * an entry or a list follows its type; the studio page (its address in
+ * this language is the shared prop exhibit.studio) is the studio;
+ * categories, tags and authors are read in the journal.
  */
 export function roomOf(component, props = {}) {
     if (component === 'Home') return 'projects';
     const type = props.type?.name;
     if (component === '@core/content/Entry' || component === '@core/content/Archive') {
         if (ROOMS[type]) return ROOMS[type];
-        if (type === 'page') return props.entry?.path?.split('/').filter(Boolean).pop() === 'studio' ? 'studio' : 'hall';
+        if (type === 'page') return props.exhibit?.studio && props.entry?.path === props.exhibit.studio ? 'studio' : 'hall';
         if (component === '@core/content/Archive') return 'journal';
     }
     return 'hall';
