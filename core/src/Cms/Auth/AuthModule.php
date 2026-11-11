@@ -14,6 +14,7 @@ use Kestello\Cms\Auth\External\IdentityResolver;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Events\IdentityLinked;
 use Kestello\Cms\Extension\Provider;
+use Kestello\Cms\Mail\MailBrand;
 use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Contracts\Security\SecretStore;
 use Kestello\Contracts\Session\SessionStore;
@@ -201,7 +202,8 @@ final class AuthModule extends Provider
     /** Send one of the account emails above through auth.mail, as HTML with its plain-text part. */
     private static function mail(Cms $cms, string $to, MailMessage $message, string $site): void
     {
-        ($cms->container->make('auth.mail'))($to, $message->subject, $message->render($site), $message->text($site));
+        $brand = MailBrand::site($site);
+        ($cms->container->make('auth.mail'))($to, $message->subject, $message->render($brand), $message->text($brand));
     }
 
     /** Wrong second-factor codes that tell an account's owner their password is known. */

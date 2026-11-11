@@ -9,7 +9,8 @@ use Kestello\Support\Translator;
 
 /**
  * Turns an email's blocks into its two parts: html() for mail clients
- * (tables and inline styles, which every client reads) and text() for the
+ * (tables and inline styles, which every client reads, plus a dark-mode
+ * stylesheet for the clients that follow it) and text() for the
  * plain-text part. Both say the same thing in the same order. Every block's
  * text is escaped; nothing in a block can add markup.
  *
@@ -39,30 +40,60 @@ final class MailLayout
         $body = '';
         foreach ($blocks as $b) {
             $body .= match ($b['type']) {
-                'heading' => '<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;color:' . $c('ink') . '">' . $e($b['text']) . '</h1>',
+                'heading' => '<h1 class="k-ink" style="margin:0 0 16px;font-size:20px;line-height:1.3;color:' . $c('ink') . '">' . $e($b['text']) . '</h1>',
                 'paragraph' => '<p style="margin:0 0 16px;line-height:1.6">' . nl2br($e($b['text']), false) . '</p>',
-                'button' => '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0"><tr><td style="border-radius:8px;background:' . $c('accent') . '">'
-                    . '<a href="' . $e($b['url']) . '" style="display:inline-block;padding:12px 20px;border-radius:8px;background:' . $c('accent') . ';color:' . $c('accentInk') . ';font-weight:600;text-decoration:none">' . $e($b['label']) . '</a>'
+                'button' => '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0"><tr><td class="k-btn" style="border-radius:8px;background:' . $c('accent') . '">'
+                    . '<a class="k-btn" href="' . $e($b['url']) . '" style="display:inline-block;padding:12px 20px;border-radius:8px;background:' . $c('accent') . ';color:' . $c('accentInk') . ';font-weight:600;text-decoration:none">' . $e($b['label']) . '</a>'
                     . '</td></tr></table>',
                 'rows' => self::rows($b['rows'], $c),
-                'code' => '<p style="margin:0 0 16px;padding:12px 16px;border-radius:8px;background:' . $c('page') . ';font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;letter-spacing:.04em;overflow-wrap:anywhere">' . $e($b['text']) . '</p>',
-                'note' => '<p style="margin:0 0 16px;font-size:13px;line-height:1.5;color:' . $c('muted') . '">' . nl2br($e($b['text']), false) . '</p>',
+                'code' => '<p class="k-code" style="margin:0 0 16px;padding:12px 16px;border-radius:8px;background:' . $c('page') . ';font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;letter-spacing:.04em;overflow-wrap:anywhere">' . $e($b['text']) . '</p>',
+                'note' => '<p class="k-muted" style="margin:0 0 16px;font-size:13px;line-height:1.5;color:' . $c('muted') . '">' . nl2br($e($b['text']), false) . '</p>',
                 default => throw new \InvalidArgumentException("Unknown email block \"{$b['type']}\"."),
             };
         }
         $link = self::firstLink($blocks);
         if ($link !== null) {
-            $body .= '<p style="margin:24px 0 0;font-size:12px;line-height:1.5;color:' . $c('muted') . ';overflow-wrap:anywhere">' . $e(Translator::get('If the button does not work, copy this link into your browser:')) . '<br>' . $e($link) . '</p>';
+            $body .= '<p class="k-muted" style="margin:24px 0 0;font-size:12px;line-height:1.5;color:' . $c('muted') . ';overflow-wrap:anywhere">' . $e(Translator::get('If the button does not work, copy this link into your browser:')) . '<br>' . $e($link) . '</p>';
         }
+        $font = $e($brand->font);
+        $logo = '';
+        if ($brand->logo !== null) {
+            $height = MailBrand::LOGO_HEIGHT;
+            $width = max(1, (int) round($brand->logo['width'] * $height / $brand->logo['height']));
+            $logo = '<tr><td style="padding:0 0 16px;text-align:start"><img src="' . $e($brand->logo['url']) . '" alt="' . $e($brand->name) . '" width="' . $width . '" height="' . $height . '" style="display:block;border:0;height:' . $height . 'px;width:' . $width . 'px;max-width:100%"></td></tr>';
+        }
+        $footer = $brand->footer !== '' ? '<br>' . implode('<br>', array_map($e, preg_split('/\R/', $brand->footer) ?: [])) : '';
 
         return '<!DOCTYPE html><html lang="' . $e(str_replace('_', '-', Translator::locale())) . '" dir="' . Translator::direction() . '">'
-            . '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>' . $e($subject) . '</title></head>'
-            . '<body style="margin:0;padding:0;background:' . $c('page') . '">'
-            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:' . $c('page') . '"><tr><td align="center" style="padding:24px 12px">'
-            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px"><tr>'
-            . '<td style="padding:32px;border-radius:14px;background:' . $c('card') . ';font-family:' . $e($brand->font) . ';font-size:16px;color:' . $c('ink') . ';text-align:start">' . $body . '</td>'
-            . '</tr><tr><td style="padding:16px 0 0;font-family:' . $e($brand->font) . ';font-size:12px;color:' . $c('muted') . ';text-align:center">' . $e($brand->name) . '</td></tr></table>'
+            . '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">'
+            . '<title>' . $e($subject) . '</title><style>' . self::darkCss($brand) . '</style></head>'
+            . '<body class="k-page" style="margin:0;padding:0;background:' . $c('page') . '">'
+            . '<table class="k-page" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:' . $c('page') . '"><tr><td align="center" style="padding:24px 12px">'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px">' . $logo . '<tr>'
+            . '<td class="k-card" style="padding:32px;border-radius:14px;background:' . $c('card') . ';font-family:' . $font . ';font-size:16px;color:' . $c('ink') . ';text-align:start">' . $body . '</td>'
+            . '</tr><tr><td class="k-muted" style="padding:16px 0 0;font-family:' . $font . ';font-size:12px;line-height:1.5;color:' . $c('muted') . ';text-align:center">' . $e($brand->name) . $footer . '</td></tr></table>'
             . '</td></tr></table></body></html>';
+    }
+
+    /**
+     * The dark-mode colours, for mail apps that read a <style> and follow
+     * the reader's setting (Apple Mail, iOS, Outlook for Mac, and others).
+     * Elsewhere the inline light colours stay.
+     */
+    public static function darkCss(MailBrand $brand): string
+    {
+        $d = $brand->darkColor(...);
+
+        return '@media (prefers-color-scheme: dark){'
+            . '.k-page{background:' . $d('page') . '!important}'
+            . '.k-card{background:' . $d('card') . '!important;color:' . $d('ink') . '!important}'
+            . '.k-ink{color:' . $d('ink') . '!important}'
+            . '.k-muted{color:' . $d('muted') . '!important}'
+            . '.k-row{border-color:' . $d('line') . '!important}'
+            . 'th.k-row{color:' . $d('muted') . '!important}'
+            . '.k-code{background:' . $d('page') . '!important}'
+            . '.k-btn{background:' . $d('accent') . '!important;color:' . $d('accentInk') . '!important}'
+            . '}';
     }
 
     /**
@@ -83,7 +114,7 @@ final class MailLayout
                 default => throw new \InvalidArgumentException("Unknown email block \"{$b['type']}\"."),
             };
         }
-        $parts[] = $brand->name;
+        $parts[] = $brand->footer !== '' ? $brand->name . "\n" . $brand->footer : $brand->name;
 
         return implode("\n\n", $parts);
     }
@@ -108,8 +139,8 @@ final class MailLayout
     {
         $out = '';
         foreach ($rows as $r) {
-            $out .= '<tr><th align="left" valign="top" scope="row" style="padding:8px 16px 8px 0;border-top:1px solid ' . $c('line') . ';color:' . $c('muted') . ';font-weight:600;text-align:start">' . Html::escape($r['label']) . '</th>'
-                . '<td valign="top" style="padding:8px 0;border-top:1px solid ' . $c('line') . ';white-space:pre-wrap;word-break:break-word">' . Html::escape($r['value']) . '</td></tr>';
+            $out .= '<tr><th class="k-row" align="left" valign="top" scope="row" style="padding:8px 16px 8px 0;border-top:1px solid ' . $c('line') . ';color:' . $c('muted') . ';font-weight:600;text-align:start">' . Html::escape($r['label']) . '</th>'
+                . '<td class="k-row" valign="top" style="padding:8px 0;border-top:1px solid ' . $c('line') . ';white-space:pre-wrap;word-break:break-word">' . Html::escape($r['value']) . '</td></tr>';
         }
 
         return '<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 16px;border-collapse:collapse">' . $out . '</table>';

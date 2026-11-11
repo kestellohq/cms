@@ -101,6 +101,12 @@ final class NotificationsTest extends AuthTestCase
         $this->assertStringEndsWith("\n\nBakery Ana", $this->mail[0]['text']);
         $this->assertStringContainsString('>Bakery Ana</td>', $this->mail[0]['html']);
         $this->assertStringNotContainsString('Config Name', $this->mail[0]['html'] . $this->mail[0]['text']);
+
+        \Kestello\Framework\Settings\Settings::getInstance()->set('email_footer', "Main street 1\nNovi Sad");
+        $this->cms->notifications->send((int) $ana['id'], new OrderShipped(43));
+        $this->assertStringEndsWith("\n\nBakery Ana\nMain street 1\nNovi Sad", $this->mail[1]['text'], 'Settings → Emails footer text');
+        $this->assertStringContainsString('>Bakery Ana<br>Main street 1<br>Novi Sad</td>', $this->mail[1]['html']);
+        $this->assertStringNotContainsString('<img', $this->mail[1]['html'], 'no logo chosen and no publisher logo: none drawn');
     }
 
     public function testChannelsInboxAndPreferences(): void

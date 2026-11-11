@@ -298,6 +298,33 @@ final class DiscoveryTest extends AuthTestCase
         $this->assertSame(422, $this->api('PATCH', '/settings', ['seo' => ['seo_publisher_type' => 'robot']])->statusCode());
     }
 
+    public function testEmailsShowTheSitesLogo(): void
+    {
+        $upload = function (string $name, int $w, int $h): array {
+            ob_start();
+            imagepng(imagecreatetruecolor($w, $h));
+            $png = (string) ob_get_clean();
+            $up = $this->json($this->api('POST', '/media/uploads', ['filename' => $name, 'size' => strlen($png)]))['data'];
+            $this->api('PUT', "/media/uploads/{$up['id']}/chunks/0", raw: $png);
+
+            return $this->json($this->api('POST', "/media/uploads/{$up['id']}/complete"))['data'];
+        };
+        $this->assertNull(\Kestello\Cms\Mail\MailBrand::site()->logo, 'no logo anywhere: the name alone');
+
+        $publisher = $upload('publisher.png', 300, 100);
+        $this->settings(['seo' => ['seo_publisher_logo' => $publisher['id']]]);
+        $logo = \Kestello\Cms\Mail\MailBrand::site()->logo;
+        $this->assertSame([300, 100], [$logo['width'] ?? null, $logo['height'] ?? null], 'the publisher logo by default');
+        $this->assertStringStartsWith('https://bakery.test/', $logo['url'], 'as a whole address a mail app can fetch');
+
+        $own = $upload('email.png', 64, 64);
+        $this->settings(['emails' => ['email_logo' => $own['id']]]);
+        $this->assertSame(64, \Kestello\Cms\Mail\MailBrand::site()->logo['width'] ?? null, 'an email logo chosen in Settings → Emails wins');
+
+        $this->settings(['emails' => ['email_show_logo' => false]]);
+        $this->assertNull(\Kestello\Cms\Mail\MailBrand::site()->logo, 'or none at all');
+    }
+
     public function testAnEntryFirstPublishedElsewhere(): void
     {
         $this->assertSame(422, $this->api('POST', '/content/post/entries', ['title' => 'X', 'status' => 'published', 'data' => ['seo' => ['canonical' => 'javascript:alert(1)']]])->statusCode(), 'only web addresses are saved');

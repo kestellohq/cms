@@ -132,7 +132,7 @@ final class AccountEmailsTest extends AuthTestCase
                 continue;
             }
             [$label, $url] = $buttons[$i];
-            $this->assertSame(1, preg_match('#<a href="([^"]+)" style="display:inline-block[^"]*">' . preg_quote($label, '#') . '</a>#', $m['html'], $button), "{$m['subject']}: the link is the button");
+            $this->assertSame(1, preg_match('#<a class="k-btn" href="([^"]+)" style="display:inline-block[^"]*">' . preg_quote($label, '#') . '</a>#', $m['html'], $button), "{$m['subject']}: the link is the button");
             $this->assertMatchesRegularExpression($url, html_entity_decode($button[1]));
             $this->assertStringContainsString('If the button does not work, copy this link into your browser:<br>' . $button[1], $m['html'], "{$m['subject']}: the link is written out under the button");
             $this->assertStringContainsString($label . "\n" . html_entity_decode($button[1]) . "\n\n", $m['text'], "{$m['subject']}: the text part has the link under its label");

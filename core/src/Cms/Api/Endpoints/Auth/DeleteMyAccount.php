@@ -13,6 +13,7 @@ use Kestello\Cms\Auth\AccountDeletion;
 use Kestello\Cms\Auth\Auth;
 use Kestello\Cms\Auth\AuthModule;
 use Kestello\Cms\Cms;
+use Kestello\Cms\Mail\MailBrand;
 use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Cms\System\WebRunner;
 use Kestello\Framework\Database\QueryBuilder;
@@ -80,8 +81,10 @@ final class DeleteMyAccount extends Endpoint
         $mail = $cms->container->has('auth.mail') ? $cms->container->make('auth.mail') : null;
         if ($mail instanceof Closure) {
             $to = (string) $user['email'];
-            WebRunner::defer(static function () use ($mail, $to, $message, $site): void {
-                $mail($to, $message->subject, $message->render($site), $message->text($site));
+            $brand = MailBrand::site($site);
+            [$subject, $html, $text] = [$message->subject, $message->render($brand), $message->text($brand)];
+            WebRunner::defer(static function () use ($mail, $to, $subject, $html, $text): void {
+                $mail($to, $subject, $html, $text);
             });
         }
 

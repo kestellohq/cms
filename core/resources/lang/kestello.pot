@@ -2854,6 +2854,10 @@ msgstr ""
 msgid "Email each submission"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Email logo"
+msgstr ""
+
 #: core/resources/js/pages/auth/Login.vue
 #: core/src/Cms/Api/Endpoints/Auth/CreateSession.php
 msgid "Email or username"
@@ -2861,6 +2865,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Email sign-up proves the address with a link before the account exists."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Emails"
 msgstr ""
 
 #: core/resources/js/ui/builder/useCanvas.js
@@ -3000,6 +3008,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Every day"
+msgstr ""
+
+#: core/resources/js/pages/admin/Settings.vue
+msgid "Every email the site sends: sign-up and password links, form submissions and notifications. Colours and the font follow your theme under Design, with dark colours for mail apps in dark mode."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Api.vue
@@ -3467,6 +3479,10 @@ msgstr ""
 msgid "Fonts on this site"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Footer text"
+msgstr ""
+
 #: core/resources/js/pages/admin/content-types/Index.vue
 msgid "For"
 msgstr ""
@@ -3917,6 +3933,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "How much each role may keep in the media library. Administrators are never limited. Leave a field empty for no limit."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "How the emails the site sends look: the logo at the top and the text at the foot. Colours and the font come from the theme."
 msgstr ""
 
 #: core/src/Cms/Api/Resources/MediaResource.php
@@ -4676,6 +4696,10 @@ msgstr ""
 
 #: core/resources/js/components/media/ImageEditor.vue
 msgid "Left edge"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Left empty, the logo from Search engines (the publisher logo) is used. It is shown 40 pixels tall."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -8330,6 +8354,10 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Show a logo"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreListBlocks.php
 msgid "Show captions"
 msgstr ""
@@ -10379,6 +10407,10 @@ msgstr ""
 msgid "Unchanged"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Under the site name in every email, such as a postal address or a line about the site."
+msgstr ""
+
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/ui/builder/BuilderBar.vue
 #: core/resources/js/ui/builder/useDocument.js
@@ -11228,6 +11260,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Withdraw (back to draft)"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Without a logo, the site name is shown at the foot only."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Import.vue

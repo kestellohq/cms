@@ -88,6 +88,50 @@ final class MailLayoutTest extends TestCase
         $this->assertSame('Kestello', MailBrand::named('  ')->name);
     }
 
+    public function testButtonsAndTextStayReadable(): void
+    {
+        $pale = new MailBrand('x', ['accent' => '#fde047', 'accentInk' => '#ffffff']);
+        $this->assertSame(['#111827', '#ffffff'], [$pale->color('accent'), $pale->color('accentInk')], 'a white label on yellow becomes ink on card');
+
+        $faint = new MailBrand('x', ['ink' => '#dddddd', 'muted' => '#eeeeee']);
+        $this->assertSame(MailBrand::DEFAULT_COLORS['ink'], $faint->color('ink'), 'text too faint on its card falls back to the defaults');
+        $this->assertGreaterThanOrEqual(4.5, MailBrand::ratio($faint->color('muted'), $faint->color('card')));
+
+        $teal = new MailBrand('x', ['accent' => '#0f766e', 'accentInk' => '#ffffff']);
+        $this->assertSame(['#0f766e', '#ffffff'], [$teal->darkColor('accent'), $teal->darkColor('accentInk')], 'a button that shows on the dark card stays in dark mode');
+        $navy = new MailBrand('x', ['accent' => '#1e3a8a', 'accentInk' => '#ffffff']);
+        $this->assertSame([MailBrand::DEFAULT_DARK['ink'], MailBrand::DEFAULT_DARK['card']], [$navy->darkColor('accent'), $navy->darkColor('accentInk')], 'one that would vanish turns light on dark');
+        $own = new MailBrand('x', [], MailBrand::DEFAULT_FONT, ['accent' => '#93c5fd', 'accentInk' => '#0b1220']);
+        $this->assertSame('#93c5fd', $own->darkColor('accent'), "the theme's own dark button wins");
+
+        foreach ([MailBrand::named('x'), $pale, $teal, $navy, $own] as $brand) {
+            foreach (['color', 'darkColor'] as $scheme) {
+                $c = $brand->{$scheme}(...);
+                $this->assertGreaterThanOrEqual(4.5, MailBrand::ratio($c('ink'), $c('card')));
+                $this->assertGreaterThanOrEqual(4.5, MailBrand::ratio($c('accentInk'), $c('accent')));
+            }
+        }
+    }
+
+    public function testDarkModeLogoAndFooter(): void
+    {
+        $brand = new MailBrand('Bakery <Ana>', logo: ['url' => 'https://bakery.test/media/logo.png?v=1&s=2', 'width' => 300, 'height' => 100], footer: "Main street 1\nNovi Sad");
+        $m = MailMessage::make('Hi')->heading('Hello')->paragraph('Text')->rows(['A' => 'b'])->code('123')->note('Small')->button('Go', 'https://a.test');
+        $html = $m->render($brand);
+
+        $this->assertStringContainsString('<meta name="color-scheme" content="light dark">', $html);
+        $this->assertStringContainsString('@media (prefers-color-scheme: dark){.k-page{background:' . MailBrand::DEFAULT_DARK['page'] . '!important}', $html);
+        foreach (['k-page', 'k-card', 'k-ink', 'k-muted', 'k-row', 'k-code', 'k-btn'] as $class) {
+            $this->assertMatchesRegularExpression('/class="' . $class . '"/', $html, "{$class} is used, so its dark colour applies");
+        }
+        $this->assertStringContainsString('<img src="https://bakery.test/media/logo.png?v=1&amp;s=2" alt="Bakery &lt;Ana&gt;" width="120" height="40"', $html, 'the logo, 40 pixels tall, named for the site');
+        $this->assertStringContainsString('>Bakery &lt;Ana&gt;<br>Main street 1<br>Novi Sad</td>', $html);
+        $this->assertStringEndsWith("\n\nBakery <Ana>\nMain street 1\nNovi Sad", $m->text($brand), 'the footer ends the text part too');
+
+        $this->assertStringNotContainsString('<img', MailMessage::make('x')->paragraph('y')->render(), 'no logo, no image');
+        $this->assertThrows(\InvalidArgumentException::class, fn() => new MailBrand('x', logo: ['url' => '/media/logo.png', 'width' => 10, 'height' => 10]), 'whole http(s) address');
+    }
+
     public function testBadInputIsRefusedWithAClearMessage(): void
     {
         $this->assertThrows(\InvalidArgumentException::class, fn() => MailMessage::make('x')->button('Go', 'javascript:alert(1)'), 'http(s)');

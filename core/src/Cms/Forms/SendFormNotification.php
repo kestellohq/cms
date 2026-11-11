@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Forms;
 
 use Kestello\Cms\Cms;
+use Kestello\Cms\Mail\MailBrand;
 use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Contracts\Queue\Job;
 use Kestello\Framework\Settings\Settings;
@@ -40,6 +41,7 @@ final class SendFormNotification implements Job
         $mail = $cms->container->make('forms.mail');
         $site = (string) Settings::getInstance()->get('site_name', 'Kestello');
         $base = rtrim((string) (Settings::getInstance()->get('site_url', '') ?: ''), '/');
+        $brand = MailBrand::site($site);
         foreach ($form['definition']['notifications'] as $n) {
             $headers = [];
             $reply = $n['reply_to'] !== null ? (string) ($data[$n['reply_to']] ?? '') : '';
@@ -47,9 +49,9 @@ final class SendFormNotification implements Job
                 $headers['Reply-To'] = $reply;
             }
             $subject = $n['subject'] !== '' ? $n['subject'] : Translator::get('New submission: {form}', ['form' => (string) $form['title']]);
-            // A refused message fails the job, so the queue retries it instead of losing it.
             $message = self::message(str_replace(["\r", "\n"], ' ', $subject), $form, $data, $site, $base, $this->submissionId, $this->page);
-            if ($mail($n['to'], $message->subject, $message->render($site), $headers, $message->text($site)) === false) {
+            // A refused message fails the job, so the queue retries it instead of losing it.
+            if ($mail($n['to'], $message->subject, $message->render($brand), $headers, $message->text($brand)) === false) {
                 throw new \RuntimeException('The mail server did not accept the form notification.');
             }
         }
