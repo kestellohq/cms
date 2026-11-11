@@ -28,6 +28,11 @@ final class LanguagePrefix implements MiddlewareInterface
 
     public function handle(Request $request, Closure $next): Response
     {
+        [$code, $asked] = self::split($request->path);
+        if ($code !== '' && in_array($request->method, ['GET', 'HEAD'], true) && ($moved = TranslatedPaths::moved($asked, $code)) !== null) {
+            // /es/projects/casa: Spanish has its own prefix for projects
+            return Response::redirect(ContentLanguages::prefix($code) . $moved . ($request->query !== [] ? '?' . http_build_query($request->query) : ''), 301);
+        }
         [$code, $rest] = self::detect($request->path);
 
         return self::run($code, $rest, static fn(): Response => $next($code === '' ? $request : $request->withPath($rest)));
@@ -41,6 +46,18 @@ final class LanguagePrefix implements MiddlewareInterface
      * @return array{0: string, 1: string}
      */
     public static function detect(string $path): array
+    {
+        [$code, $rest] = self::split($path);
+
+        return [$code, $code === '' ? $rest : TranslatedPaths::in($rest, $code)];      // routes know the declared prefixes: /proyectos is /projects
+    }
+
+    /**
+     * The language of an address and the rest of it as asked.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private static function split(string $path): array
     {
         $others = ContentLanguages::others();
         [$code, $rest] = $others === [] ? ['', $path] : ContentLanguages::split($path, $others);

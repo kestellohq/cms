@@ -93,6 +93,26 @@ final class UpdateSettings extends Endpoint
                 }
                 $values[ContentLanguages::SETTING] = implode(',', $codes);
             }
+            if ($id === 'general' && array_key_exists(\Kestello\Cms\I18n\TranslatedPaths::SETTING, $values)) {
+                $entries = Cms::instance()?->container->make(Entries::class);
+                $content = Cms::instance()?->content;
+                $declared = [];
+                foreach ([...($content?->types() ?? []), ...($content?->taxonomies() ?? [])] as $owner) {
+                    if (($owner->getPath() ?? '') !== '') {
+                        $declared[] = (string) $owner->getPath();
+                    }
+                }
+                [$paths, $errors] = \Kestello\Cms\I18n\TranslatedPaths::clean(
+                    json_decode((string) $values[\Kestello\Cms\I18n\TranslatedPaths::SETTING], true),
+                    array_key_exists(ContentLanguages::SETTING, $values) ? array_values(array_filter(explode(',', (string) $values[ContentLanguages::SETTING]))) : ContentLanguages::others(),
+                    $declared,
+                    static fn(string $segment, string $code): ?string => $entries?->translatedPathOwner($segment, $code),
+                );
+                if ($errors !== []) {
+                    throw ApiProblem::validation(['general.' . \Kestello\Cms\I18n\TranslatedPaths::SETTING => $errors]);
+                }
+                $values[\Kestello\Cms\I18n\TranslatedPaths::SETTING] = $paths === [] ? '' : json_encode($paths, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            }
             if ($id === 'general' && array_key_exists(\Kestello\Cms\I18n\SiteText::SETTING, $values)) {
                 // texts for the languages the site has after this save, kept to the known keys
                 $languages = array_key_exists(ContentLanguages::SETTING, $values)

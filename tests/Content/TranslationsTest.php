@@ -323,4 +323,35 @@ final class TranslationsTest extends AuthTestCase
         $this->assertStringContainsString('<language>en</language>', $main);
         $this->assertStringNotContainsString('Notas del studio', $main);
     }
+
+    public function testTypesAndCategoriesHaveTheirOwnAddressesInEachLanguage(): void
+    {
+        Settings::getInstance()->set(\Kestello\Cms\I18n\TranslatedPaths::SETTING, json_encode(['es' => ['/blog' => '/noticias', '/category' => '/categoria']]));
+        $terms = new \Kestello\Cms\Content\Terms();
+        $category = $this->cms->content->getTaxonomy('category');
+        $news = $terms->create($category, ['name' => 'News'], $this->me);
+        $hello = $this->publish('post', ['title' => 'Hello', 'terms' => ['category' => [(int) $news->getKey()]]]);
+        $hola = $this->inSpanish($hello, ['title' => 'Hola', 'slug' => 'hola']);
+
+        $this->assertSame(['/blog/hello', '/es/noticias/hola'], [$hello->url(), $hola->url()], 'Spanish posts live under its own word');
+        $this->assertSame('Hola', $this->page('/es/noticias/hola')['entry']['title']);
+        $this->assertSame(['Hola'], array_column($this->page('/es/noticias')['entries'], 'title'), 'the archive too');
+        $this->assertSame(['Hola'], array_column($this->page('/es/categoria/news')['entries'], 'title'), 'and the categories');
+        $this->assertSame(404, $this->visit('/noticias/hola')->statusCode(), 'a Spanish word is not an English address');
+
+        $this->assertSame([301, '/es/noticias/hola'], $this->goesTo('/es/blog/hola'), 'the main word in Spanish leads to the Spanish one');
+        $this->assertSame([301, '/es/noticias?page=2'], $this->goesTo('/es/blog?page=2'));
+        $this->assertSame([301, '/es/noticias/hello'], $this->goesTo('/es/blog/hello'), 'both words in English: the Spanish word first');
+        $this->assertSame([301, '/es/noticias/hola'], $this->goesTo('/es/noticias/hello'), 'then the translation');
+
+        $this->assertSame(['en' => ['/blog/hello', false], 'es' => ['/es/noticias/hola', false]], $this->languagesOf('/blog/hello')[0], 'the switcher and hreflang use them');
+        $this->assertSame(['es', '/blog/hola'], LanguagePrefix::detect('/es/noticias/hola'));
+        $this->assertSame('/es/noticias', ContentLanguages::localize('/blog', 'es'));
+        $this->assertSame('/es/blogroll', ContentLanguages::localize('/blogroll', 'es'), 'a whole segment only');
+        $this->assertSame('/blog', ContentLanguages::localize('/blog', ''), 'the main language keeps its own');
+
+        $page = $this->entries->create($this->cms->content->get('page'), ['title' => 'Noticias', 'locale' => 'es', 'status' => 'published'], $this->me);
+        $this->assertSame('noticias-2', $page->slug, 'a Spanish page cannot take the Spanish word for posts');
+        $this->assertSame('noticias', $this->publish('page', ['title' => 'Noticias'])->slug, 'an English page can');
+    }
 }

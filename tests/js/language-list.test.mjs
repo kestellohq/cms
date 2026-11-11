@@ -1,6 +1,18 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { add, badge, code, codes, dropped, remove, setText, slots, texts } from '../../core/resources/js/components/languages/language-list.js';
+import {
+    add,
+    badge,
+    code,
+    codes,
+    dropped,
+    localPath,
+    prefixes,
+    remove,
+    setText,
+    slots,
+    texts,
+} from '../../core/resources/js/components/languages/language-list.js';
 
 test('codes are written as in addresses', () => {
     assert.equal(code(' pt_BR '), 'pt-br');
@@ -66,4 +78,33 @@ test('the site name and tagline per language are one setting', () => {
     value = setText(value, 'de', 'site_name', '  ');
     assert.deepEqual(Object.keys(texts(value)), ['es'], 'an emptied language goes');
     assert.equal(setText(setText(value, 'es', 'site_name', ''), 'es', 'site_description', ''), '', 'nothing left: empty');
+});
+
+test('the prefixes a language can translate', () => {
+    const types = [
+        { name: 'page', plural: 'Pages', path: '' },
+        { name: 'project', plural: 'Projects', path: '/projects' },
+        { name: 'post', plural: 'Posts', path: '/blog' },
+        { name: 'hidden', plural: 'Hidden', path: null },
+    ];
+    const taxonomies = [
+        { name: 'category', plural: 'Categories', path: '/blog/category' },
+        { name: 'dup', plural: 'Again', path: '/blog' },
+    ];
+    assert.deepEqual(prefixes(types, taxonomies), [
+        { path: '/blog', label: 'Posts' },
+        { path: '/projects', label: 'Projects' },
+        { path: '/blog/category', label: 'Categories' },
+    ]);
+    assert.deepEqual(prefixes(null, undefined), []);
+    assert.deepEqual(texts(setText('', 'es', '/projects', 'proyectos')), { es: { '/projects': 'proyectos' } }, 'paths are stored like texts');
+});
+
+test('a prefix in a language with its own word', () => {
+    const paths = { '/blog': '/noticias', '/blog/category': '/categoria' };
+    assert.equal(localPath('/blog/', paths), '/noticias/');
+    assert.equal(localPath('/blog', paths), '/noticias');
+    assert.equal(localPath('/blog/category/x', paths), '/categoria/x', 'the longest first');
+    assert.equal(localPath('/blogroll/', paths), '/blogroll/', 'a whole segment only');
+    assert.equal(localPath('/blog/', undefined), '/blog/');
 });

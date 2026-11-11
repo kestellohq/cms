@@ -11,6 +11,7 @@ import SharePreviews from '../../../components/content/SharePreviews.vue';
 import StudioPublish from '../../../components/content/StudioPublish.vue';
 import { isNewEntry } from '../../../components/content/entry-state.js';
 import TranslationLinks from '../../../components/languages/TranslationLinks.vue';
+import { localPath } from '../../../components/languages/language-list.js';
 import { checkSeo } from '../../../components/content/seo-checks.js';
 
 defineOptions({ layout: 'Admin' });
@@ -445,9 +446,12 @@ const prefix = computed(() => {
     const p = type.value?.path;
     if (p === null || p === undefined) return null;
     // an entry in another language lives under its prefix: /es/about
-    const languagePrefix = languages.value.find((l) => l.code === language.value)?.prefix ?? '';
+    // (and its own word for the type's prefix, when it has one: /es/noticias)
+    const lang = languages.value.find((l) => l.code === language.value);
     const parentPath =
-        entry.value?.parent && form.parent_id === entry.value.parent_id ? (entry.value.path ?? '').replace(/[^/]+$/, '') : `${languagePrefix}${p}/`;
+        entry.value?.parent && form.parent_id === entry.value.parent_id
+            ? (entry.value.path ?? '').replace(/[^/]+$/, '')
+            : `${lang?.prefix ?? ''}${localPath(`${p}/`, lang?.paths)}`;
     return parentPath || '/';
 });
 const shownSlug = computed(

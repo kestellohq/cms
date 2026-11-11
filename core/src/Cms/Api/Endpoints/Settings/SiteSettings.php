@@ -94,8 +94,10 @@ final class SiteSettings
                         ->description('Languages your content is also written in. Each lives under its code, such as /es for Spanish, and every page can have a translation in it.'),
                     \Kestello\Cms\I18n\SiteText::SETTING => Schema::string()->max(20000)->format('translations')->optional()
                         ->description('The site name and tagline in each of the other languages. Left empty, a language uses the main ones.'),
+                    \Kestello\Cms\I18n\TranslatedPaths::SETTING => Schema::string()->max(20000)->format('paths')->optional()
+                        ->description('Addresses of content types and categories in each of the other languages, such as /es/proyectos for /projects. Left empty, a language uses the main ones.'),
                 ]),
-                'labels' => ['site_name' => 'Site name', 'site_description' => 'Tagline', 'site_url' => 'Site address', 'timezone' => 'Timezone', SiteLanguage::SETTING => 'Language', ContentLanguages::SETTING => 'Other languages', \Kestello\Cms\I18n\SiteText::SETTING => 'Name and tagline in other languages'],
+                'labels' => ['site_name' => 'Site name', 'site_description' => 'Tagline', 'site_url' => 'Site address', 'timezone' => 'Timezone', SiteLanguage::SETTING => 'Language', ContentLanguages::SETTING => 'Other languages', \Kestello\Cms\I18n\SiteText::SETTING => 'Name and tagline in other languages', \Kestello\Cms\I18n\TranslatedPaths::SETTING => 'Addresses in other languages'],
                 'secrets' => [],
                 'defaults' => [
                     'site_name' => (string) $config?->get('app.name', ''),
@@ -105,6 +107,7 @@ final class SiteSettings
                     SiteLanguage::SETTING => SiteLanguage::resolve(null, (string) $config?->get('app.locale', 'en')),
                     ContentLanguages::SETTING => implode(',', ContentLanguages::parse($config?->get('app.languages', []), SiteLanguage::resolve(null, (string) $config?->get('app.locale', 'en')))),
                     \Kestello\Cms\I18n\SiteText::SETTING => '',
+                    \Kestello\Cms\I18n\TranslatedPaths::SETTING => '',
                 ],
             ] + $core,
             'reading' => [

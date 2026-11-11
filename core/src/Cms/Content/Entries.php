@@ -629,7 +629,7 @@ final class Entries
                 $errors['slug'][] = Translator::get('Use letters or digits.');
                 return (string) $entry->slug;
             }
-            if (($owner = $this->reservedBy($type, $base, $parentId)) !== null) {
+            if (($owner = $this->reservedBy($type, $base, $parentId, $entry->language())) !== null) {
                 $errors['slug'][] = Translator::get('The address /{base} belongs to {owner}. Pick another.', ['base' => $base, 'owner' => $owner]);
                 return (string) $entry->slug;
             }
@@ -641,7 +641,7 @@ final class Entries
         }
 
         $slug = $this->uniqueSlug($type, $base, $parentId, $entry->getKey(), $entry->language());
-        for ($i = 2; $this->reservedBy($type, $slug, $parentId) !== null; $i++) {      // a title like "Blog": take blog-2
+        for ($i = 2; $this->reservedBy($type, $slug, $parentId, $entry->language()) !== null; $i++) {      // a title like "Blog": take blog-2
             $slug = $this->uniqueSlug($type, "{$base}-{$i}", $parentId, $entry->getKey(), $entry->language());
         }
 
@@ -652,7 +652,7 @@ final class Entries
      * What already answers at /{slug} when an entry of $type would live there: only top-level entries of a type
      * served from the site root (pages) can collide. Returns a description, or null when the address is free.
      */
-    public function reservedBy(ContentType $type, string $slug, ?int $parentId): ?string
+    public function reservedBy(ContentType $type, string $slug, ?int $parentId, string $language = ''): ?string
     {
         if ($slug === 'feed' && $type->hasArchive() && $parentId === null) {
             return 'the ' . mb_strtolower($type->plural()) . ' feed';
@@ -666,8 +666,35 @@ final class Entries
         if (ContentLanguages::has($slug)) {
             return 'the pages in that language';
         }
+        if ($language !== '' && ($taken = array_search('/' . $slug, \Kestello\Cms\I18n\TranslatedPaths::all()[$language] ?? [], true)) !== false) {
+            return 'the ' . $taken . ' pages in this language';      // /es/proyectos is Spanish's address for /projects
+        }
 
         return $this->rootOwner($slug, $type->name);
+    }
+
+    /**
+     * What answers at /{code}/{segment} besides a language's translated
+     * prefix: rootOwner(), or a top-level page in that language with that
+     * slug. Null when it is free.
+     */
+    public function translatedPathOwner(string $segment, string $code): ?string
+    {
+        if (($owner = $this->rootOwner($segment)) !== null) {
+            return $owner;
+        }
+        foreach ($this->content->types() as $type) {
+            if ($type->getPath() !== '') {
+                continue;
+            }
+            $q = Entry::query();
+            $q->where('type', $type->name)->where('locale', $code)->where('slug', $segment)->whereNull('parent_id');
+            if (($page = $q->value('title')) !== null) {
+                return 'the ' . mb_strtolower($type->singular()) . ' "' . $page . '"';
+            }
+        }
+
+        return null;
     }
 
     /**

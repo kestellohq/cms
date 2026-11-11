@@ -175,9 +175,8 @@ final class Entry extends Model
         if ($type === null || $type->getPath() === null) {
             return null;
         }
-        $prefix = ContentLanguages::prefix($this->language());
         if (!$type->isHierarchical()) {
-            return $prefix . $type->getPath() . '/' . Permalinks::segments($type, (string) $this->slug, $this->published_at);
+            return ContentLanguages::localize($type->getPath() . '/' . Permalinks::segments($type, (string) $this->slug, $this->published_at), $this->language());
         }
         $segments = [$this->slug];
         if ($type->isHierarchical()) {
@@ -194,7 +193,7 @@ final class Entry extends Model
             }
         }
 
-        return $prefix . $type->getPath() . '/' . implode('/', $segments);
+        return ContentLanguages::localize($type->getPath() . '/' . implode('/', $segments), $this->language());     // with the language's prefix, and its own for the type
     }
 
     /** @var array<int, array<string, mixed>|null>|null parent rows, kept only inside remembering() */
