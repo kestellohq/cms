@@ -5,6 +5,7 @@ import { ApiError, notify, useApi, useResource, useUser, __ } from '@kestello/sd
 import { KAlert, KButton, KCard, KExtension, KField, KInput, KPageHeader, KSchemaForm, KTabs } from '@kestello/ui';
 import MediaPicker from '../fields/MediaPicker.vue';
 import LanguagesPicker from '../../components/languages/LanguagesPicker.vue';
+import SiteTexts from '../../components/languages/SiteTexts.vue';
 
 defineOptions({ layout: 'Admin' });
 
@@ -178,6 +179,18 @@ const whereItShows = computed(() => ({
                                     :saved="stored.languages ?? ''"
                                     :main="drafts.general?.language ?? ''"
                                     :invalid="invalid"
+                                    :disabled="disabled"
+                                    @update:model-value="set"
+                                />
+                            </template>
+                            <!-- the site name and tagline in the other languages: {"es": {...}} -->
+                            <template #format-translations="{ id, value, set, disabled }">
+                                <SiteTexts
+                                    :id="id"
+                                    :model-value="value ?? ''"
+                                    :languages="drafts.general?.languages ?? stored.languages ?? ''"
+                                    :name="drafts.general?.site_name ?? ''"
+                                    :tagline="drafts.general?.site_description ?? ''"
                                     :disabled="disabled"
                                     @update:model-value="set"
                                 />

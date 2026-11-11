@@ -207,4 +207,30 @@ final class TranslationsApiTest extends AuthTestCase
         $this->assertSame([['Noticias', '/es/category/noticias']], $public('es'), 'the translation names the link');
         $this->assertSame([['News', '/category/news']], $public(''));
     }
+
+    public function testTheSiteIsNamedInEachLanguage(): void
+    {
+        $this->ok('PATCH', '/settings', ['general' => ['site_name' => 'Studio', 'site_description' => 'Architecture', 'languages' => 'es,de']]);
+        $saved = $this->ok('PATCH', '/settings', ['general' => [\Kestello\Cms\I18n\SiteText::SETTING => json_encode([
+            'es' => ['site_name' => ' Taller ', 'site_description' => 'Arquitectura', 'extra' => 'x'],
+            'de' => ['site_name' => ''],
+            'fr' => ['site_name' => 'Atelier'],
+        ])]]);
+        $this->assertSame('{"es":{"site_name":"Taller","site_description":"Arquitectura"}}', $saved['general'][\Kestello\Cms\I18n\SiteText::SETTING], 'cleaned up: the site\'s languages and known keys only');
+        $this->assertSame('Taller', \Kestello\Cms\I18n\SiteText::translated('site_name', 'es'));
+        $this->assertNull(\Kestello\Cms\I18n\SiteText::translated('site_name', 'de'), 'none of its own: the main one');
+        $this->assertNull(\Kestello\Cms\I18n\SiteText::translated('site_name', ''));
+
+        $long = $this->refused('PATCH', '/settings', ['general' => [\Kestello\Cms\I18n\SiteText::SETTING => json_encode(['es' => ['site_name' => str_repeat('a', 101)]])]]);
+        $this->assertArrayHasKey('general.' . \Kestello\Cms\I18n\SiteText::SETTING, $long);
+
+        $shared = fn(string $code) => ContentLanguages::within($code, fn() => \Kestello\Cms\Frontend\FrontendModule::shared($this->cms));
+        $tagline = static fn(string $code) => ContentLanguages::within($code, static fn() => \Kestello\Cms\Site\Seo::titles()['tagline']);
+        $this->assertSame(['Taller', 'Arquitectura', 'Architecture'], [$shared('es')['site']['name'], $tagline('es'), $tagline('')]);
+        $this->assertSame('Studio', $shared('')['site']['name']);
+        $this->assertSame('Studio', $shared('de')['site']['name'], 'German has none: the main name');
+
+        $this->ok('PATCH', '/settings', ['general' => ['languages' => 'de']]);
+        $this->assertNull(\Kestello\Cms\I18n\SiteText::translated('site_name', 'es'), 'a removed language\'s texts are not used');
+    }
 }

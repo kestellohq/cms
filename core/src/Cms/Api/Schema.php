@@ -25,7 +25,7 @@ use Kestello\Support\Translator;
  */
 final class Schema
 {
-    private const array FORMATS = ['email', 'uri', 'date-time', 'date', 'uuid', 'slug', 'multiline', 'media', 'languages'];   // multiline: forms show a text area; media: an image from the library, by id; languages: codes such as "es, pt-br"
+    private const array FORMATS = ['email', 'uri', 'date-time', 'date', 'uuid', 'slug', 'multiline', 'media', 'languages', 'translations'];   // multiline: forms show a text area; media: an image from the library, by id; languages: codes such as "es, pt-br"; translations: a JSON object of texts by language
 
     /** @var array<string, Schema> */
     private array $properties = [];
@@ -485,6 +485,7 @@ final class Schema
             'multiline' => true,
             'media' => ctype_digit($value),
             'languages' => preg_match('/^[A-Za-z0-9_, -]*$/', $value) === 1,     // language codes, such as "es, pt-br" (checked further where it is saved)
+            'translations' => $value === '' || is_array(json_decode($value, true)),     // {"es": {...}} (cleaned up where it is saved)
         };
     }
 

@@ -93,6 +93,16 @@ final class UpdateSettings extends Endpoint
                 }
                 $values[ContentLanguages::SETTING] = implode(',', $codes);
             }
+            if ($id === 'general' && array_key_exists(\Kestello\Cms\I18n\SiteText::SETTING, $values)) {
+                // texts for the languages the site has after this save, kept to the known keys
+                $languages = array_key_exists(ContentLanguages::SETTING, $values)
+                    ? array_values(array_filter(explode(',', (string) $values[ContentLanguages::SETTING]))) : ContentLanguages::others();
+                [$texts, $errors] = \Kestello\Cms\I18n\SiteText::clean(json_decode((string) $values[\Kestello\Cms\I18n\SiteText::SETTING], true), $languages);
+                if ($errors !== []) {
+                    throw ApiProblem::validation(['general.' . \Kestello\Cms\I18n\SiteText::SETTING => $errors]);
+                }
+                $values[\Kestello\Cms\I18n\SiteText::SETTING] = $texts === [] ? '' : json_encode($texts, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            }
             if ($values === []) {
                 continue;
             }
