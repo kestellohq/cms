@@ -12,6 +12,7 @@ use Kestello\Cms\Frontend\FrontendModule;
 use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Cms\I18n\LanguagePrefix;
 use Kestello\Cms\I18n\LanguagesModule;
+use Kestello\Cms\I18n\PageLanguages;
 use Kestello\Cms\Redirects\RedirectsModule;
 use Kestello\Cms\Site\SiteModule;
 use Kestello\Contracts\Auth\Principal;
@@ -27,6 +28,7 @@ final class TranslationsTest extends AuthTestCase
 {
     private Entries $entries;
     private Principal $me;
+    private object $capture;
 
     protected function setUp(): void
     {
@@ -37,6 +39,19 @@ final class TranslationsTest extends AuthTestCase
             $module->boot($this->cms);
         }
         ContentModule::finalize($this->cms);
+        // innermost: sees each page's languages while its request is still being answered
+        $this->cms->routes->pushGlobalMiddleware($this->capture = new class implements \Kestello\Framework\Core\Middleware\MiddlewareInterface {
+            /** @var array{languages: list<array<string, mixed>>, alternates: list<array<string, string>>}|null */
+            public ?array $seen = null;
+
+            public function handle(Request $request, \Closure $next): Response
+            {
+                $response = $next($request);
+                $this->seen = ['languages' => PageLanguages::all(), 'alternates' => PageLanguages::alternates()];
+
+                return $response;
+            }
+        });
         $id = $this->createUser();
         $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
         Settings::getInstance()->set(ContentLanguages::SETTING, 'es');
@@ -75,6 +90,22 @@ final class TranslationsTest extends AuthTestCase
         $this->assertNotNull($r->payload(), $uri);
 
         return $r->payload()->props;
+    }
+
+    /**
+     * Where the page at $uri is in each language: code => [url, missing], and its hreflang alternates.
+     *
+     * @return array{0: array<string, array{0: string, 1: bool}>, 1: array<string, string>}
+     */
+    private function languagesOf(string $uri): array
+    {
+        $this->assertSame(200, $this->visit($uri)->statusCode(), $uri);
+        $seen = $this->capture->seen;
+
+        return [
+            array_combine(array_column($seen['languages'], 'code'), array_map(static fn(array $l) => [$l['url'], $l['missing']], $seen['languages'])),
+            array_combine(array_column($seen['alternates'], 'hreflang'), array_column($seen['alternates'], 'href')),
+        ];
     }
 
     private function publish(string $type, array $input): Entry
@@ -218,5 +249,48 @@ final class TranslationsTest extends AuthTestCase
 
         $again = $this->entries->translate($this->publish('post', ['title' => 'Second', 'terms' => ['category' => [(int) $news->getKey()]]]), 'es', $this->me);
         $this->assertSame([(int) $noticias->getKey()], (new \Kestello\Cms\Content\Terms())->idsFor([(int) $again->getKey()])[(int) $again->getKey()]['category'], 'a new translation takes the translated category');
+    }
+
+    public function testEachPageKnowsItsOtherLanguages(): void
+    {
+        $about = $this->publish('page', ['title' => 'About']);
+        $this->assertSame([['en' => ['/about', false], 'es' => ['/es/about', true]], []], $this->languagesOf('/about'), 'not translated: the original in Spanish, and no alternates');
+        $this->assertSame(['en' => ['/about', false], 'es' => ['/es/about', true]], $this->languagesOf('/es/about')[0], 'the stand-in knows it too');
+
+        $this->inSpanish($about, ['title' => 'Sobre', 'slug' => 'sobre']);
+        $both = [['en' => ['/about', false], 'es' => ['/es/sobre', false]], ['en' => '/about', 'es' => '/es/sobre', 'x-default' => '/about']];
+        $this->assertSame($both, $this->languagesOf('/about'));
+        $this->assertSame($both, $this->languagesOf('/es/sobre'));
+
+        $this->publish('post', ['title' => 'Hello']);
+        $this->assertSame(['en' => ['/blog', false], 'es' => ['/es/blog', false]], $this->languagesOf('/es/blog')[0], 'a list is at the same address in each language');
+
+        $spanishOnly = $this->entries->create($this->cms->content->get('page'), ['title' => 'Solo', 'locale' => 'es', 'status' => 'published'], $this->me);
+        $this->assertSame(['en' => ['/', true], 'es' => ['/es/solo', false]], $this->languagesOf((string) $spanishOnly->url())[0], 'nothing in English: its home page');
+    }
+
+    public function testTheSitemapListsTranslationsAsAlternates(): void
+    {
+        $about = $this->publish('page', ['title' => 'About']);
+        $this->inSpanish($about, ['title' => 'Sobre', 'slug' => 'sobre']);
+        $this->publish('page', ['title' => 'Only English']);
+        Settings::getInstance()->set('site_url', 'https://studio.test');
+        $xml = $this->visit('/sitemaps/page-1.xml')->content();
+        $this->assertStringContainsString('xmlns:xhtml="http://www.w3.org/1999/xhtml"', $xml);
+        $this->assertSame(2, substr_count($xml, '<xhtml:link rel="alternate" hreflang="es" href="https://studio.test/es/sobre"/>'), 'on both translations');
+        $this->assertSame(2, substr_count($xml, 'hreflang="x-default" href="https://studio.test/about"'));
+        $this->assertSame(6, substr_count($xml, '<xhtml:link'), 'none for a page in one language');
+
+        $this->publish('post', ['title' => 'Hello']);
+        $this->entries->create($this->cms->content->get('post'), ['title' => 'Hola', 'locale' => 'es', 'status' => 'published'], $this->me);
+        $posts = $this->visit('/sitemaps/post-1.xml')->content();
+        $this->assertStringContainsString('<loc>https://studio.test/es/blog</loc>', $posts, 'the archive in each language with posts');
+    }
+
+    public function testAnAddressSaysItsLanguage(): void
+    {
+        $this->assertSame([['es', '/about'], ['es', '/'], ['', '/es/admin/x'], ['', '/fr/about']], array_map(LanguagePrefix::detect(...), ['/es/about', '/es', '/es/admin/x', '/fr/about']));
+        $inSpanish = LanguagePrefix::run('es', '/missing', static fn() => [ContentLanguages::current(), Translator::locale(), PageLanguages::all()[1]['url']]);
+        $this->assertSame(['es', 'es', '/es/missing'], $inSpanish, 'an error page renders in the address\'s language');
     }
 }

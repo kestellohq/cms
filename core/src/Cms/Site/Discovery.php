@@ -205,11 +205,19 @@ final class Discovery
         $w->startElement('urlset');
         $w->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
         $w->writeAttribute('xmlns:image', 'http://www.google.com/schemas/sitemap-image/1.1');
+        $w->writeAttribute('xmlns:xhtml', 'http://www.w3.org/1999/xhtml');
         foreach ($urls as $u) {
             $w->startElement('url');
             $w->writeElement('loc', $u['loc']);
             if ($u['lastmod'] !== null) {
                 $w->writeElement('lastmod', $u['lastmod']->format(DateTimeInterface::ATOM));
+            }
+            foreach ($u['alternates'] as $alternate) {
+                $w->startElement('xhtml:link');
+                $w->writeAttribute('rel', 'alternate');
+                $w->writeAttribute('hreflang', $alternate['hreflang']);
+                $w->writeAttribute('href', $alternate['href']);
+                $w->endElement();
             }
             foreach ($u['images'] as $img) {
                 $w->startElement('image:image');
@@ -226,11 +234,12 @@ final class Discovery
     /**
      * What "sitemap.urls" returned, kept to what a sitemap may hold: addresses
      * on this site only (a path, or an absolute address under the site
-     * address), real dates, http(s) images, and at most the protocol's
-     * 50,000 addresses with 1,000 images each.
+     * address), real dates, http(s) images, alternates in other languages
+     * on this site, and at most the protocol's 50,000 addresses with 1,000
+     * images each.
      *
      * @param array<mixed> $urls
-     * @return list<array{loc: string, lastmod: ?DateTimeInterface, images: list<string>}>
+     * @return list<array{loc: string, lastmod: ?DateTimeInterface, images: list<string>, alternates: list<array{hreflang: string, href: string}>}>
      */
     public static function siteUrls(string $base, array $urls): array
     {
@@ -256,8 +265,15 @@ final class Discovery
                     $images[] = $on($img) ?? $img;      // images may live on a CDN or in a bucket
                 }
             }
+            $alternates = [];
+            foreach (is_array($u['alternates'] ?? null) ? $u['alternates'] : [] as $a) {
+                $href = is_array($a) ? $on($a['href'] ?? null) : null;
+                if ($href !== null && is_string($a['hreflang'] ?? null) && preg_match('/^(x-default|[a-z]{2,3}(-[a-z0-9]{2,8}){0,3})$/i', $a['hreflang']) === 1) {
+                    $alternates[] = ['hreflang' => $a['hreflang'], 'href' => $href];
+                }
+            }
             $lastmod = $u['lastmod'] ?? null;
-            $out[] = ['loc' => $loc, 'lastmod' => $lastmod instanceof DateTimeInterface ? $lastmod : null, 'images' => array_slice($images, 0, 1000)];
+            $out[] = ['loc' => $loc, 'lastmod' => $lastmod instanceof DateTimeInterface ? $lastmod : null, 'images' => array_slice($images, 0, 1000), 'alternates' => array_slice($alternates, 0, 50)];
             if (count($out) === 50000) {
                 break;
             }
@@ -268,23 +284,41 @@ final class Discovery
 
     /**
      * Core's addresses for a file name: a public type's or taxonomy's page
-     * of entries; [] for any other name (a plugin's file).
+     * of entries; [] for any other name (a plugin's file). On a site in
+     * several languages, each address lists its translations as alternates,
+     * and a type's archive is listed in each language that has entries.
      *
-     * @return list<array{loc: string, lastmod: ?DateTimeInterface, images: list<string>}>
+     * @return list<array{loc: string, lastmod: ?DateTimeInterface, images: list<string>, alternates?: list<array{hreflang: string, href: string}>}>
      */
     private static function coreUrls(Cms $cms, string $name, int $page): array
     {
         $base = Seo::siteUrl($cms);
         $urls = [];
+        $main = \Kestello\Cms\I18n\ContentLanguages::code(\Kestello\Cms\I18n\SiteLanguage::site());
+        $hreflang = static fn(string $code): string => $code === '' ? $main : $code;
         if (($type = $cms->content->get($name)) !== null && $type->getPath() !== null) {
             if ($page === 1 && $type->hasArchive()) {
-                $urls[] = ['loc' => $base . $type->getPath(), 'lastmod' => null, 'images' => []];
+                $codes = [''];
+                if (\Kestello\Cms\I18n\ContentLanguages::others() !== []) {
+                    $used = array_map('strval', QueryBuilder::table('entries')->where('type', $type->name)->where('status', 'published')
+                        ->where('published_at', '<=', \Kestello\Framework\Database\Model::freshTimestamp())->whereNull('deleted_at')->distinct()->pluck('locale'));
+                    $codes = array_values(array_filter(['', ...\Kestello\Cms\I18n\ContentLanguages::others()], static fn(string $c) => $c === '' || in_array($c, $used, true)));
+                }
+                $archive = static fn(string $code): string => $base . \Kestello\Cms\I18n\ContentLanguages::localize((string) $type->getPath(), $code);
+                $alternates = count($codes) < 2 ? [] : [
+                    ...array_map(static fn(string $c) => ['hreflang' => $hreflang($c), 'href' => $archive($c)], $codes),
+                    ['hreflang' => 'x-default', 'href' => $archive('')],
+                ];
+                foreach ($codes as $code) {
+                    $urls[] = ['loc' => $archive($code), 'lastmod' => null, 'images' => [], 'alternates' => $alternates];
+                }
             }
             $entries = Entry::query()->ofType($type->name)->published()->orderBy('id')
                 ->offset(($page - 1) * self::SITEMAP_CHUNK)->limit(self::SITEMAP_CHUNK)->get()->all();
             if ($entries === [] && $urls === []) {
                 return [];
             }
+            $translations = self::translationsOf($entries, $type, $base, $hreflang);
             $mediaFields = array_filter($type->getFields(), static fn($f) => $f->type === 'media' && !$f->isInternal());
             $ids = [];
             foreach ($entries as $e) {
@@ -309,7 +343,8 @@ final class Discovery
                         }
                     }
                 }
-                $urls[] = ['loc' => $base . self::address($e, $type), 'lastmod' => self::date($e->updated_at), 'images' => array_slice(array_unique($images), 0, 20)];
+                $urls[] = ['loc' => $base . self::address($e, $type), 'lastmod' => self::date($e->updated_at), 'images' => array_slice(array_unique($images), 0, 20),
+                    'alternates' => $translations[(string) $e->translation_group] ?? []];
             }
         } elseif (($tax = $cms->content->getTaxonomy($name)) !== null && $tax->getPath() !== null) {
             $terms = Term::onlyInUse(Term::query()->of($tax->name))->orderBy('id')->offset(($page - 1) * self::SITEMAP_CHUNK)->limit(self::SITEMAP_CHUNK)->get()->all();
@@ -382,6 +417,48 @@ final class Discovery
         }
 
         return $html;
+    }
+
+    /**
+     * The alternates of each translation group among $entries: every public
+     * member's address, plus x-default (the main language's); none for a
+     * group with one public member.
+     *
+     * @param list<mixed> $entries
+     * @param \Closure(string): string $hreflang
+     * @return array<string, list<array{hreflang: string, href: string}>> by translation group
+     */
+    private static function translationsOf(array $entries, ContentType $type, string $base, \Closure $hreflang): array
+    {
+        $groups = [];
+        foreach ($entries as $e) {
+            if ($e instanceof Entry && (string) $e->translation_group !== '') {
+                $groups[] = (string) $e->translation_group;
+            }
+        }
+        if ($groups === [] || \Kestello\Cms\I18n\ContentLanguages::others() === []) {
+            return [];
+        }
+        $members = [];
+        $q = Entry::query();
+        $q->where('entries.type', $type->name)->where('entries.status', 'published')->where('entries.published_at', '<=', \Kestello\Framework\Database\Model::freshTimestamp())
+            ->whereIn('translation_group', array_values(array_unique($groups)))->orderBy('locale');
+        foreach ($q->get() as $m) {
+            if ($m instanceof Entry && !Seo::hidden($m) && (!$type->isHierarchical() || $m->publicAncestors() !== null)) {
+                $members[(string) $m->translation_group][$m->language()] = $base . self::address($m, $type);
+            }
+        }
+        $out = [];
+        foreach ($members as $group => $byLanguage) {
+            if (count($byLanguage) > 1) {
+                $out[$group] = [
+                    ...array_map(static fn(string $code, string $href) => ['hreflang' => $hreflang($code), 'href' => $href], array_map('strval', array_keys($byLanguage)), array_values($byLanguage)),
+                    ...(isset($byLanguage['']) ? [['hreflang' => 'x-default', 'href' => $byLanguage['']]] : []),
+                ];
+            }
+        }
+
+        return $out;
     }
 
     private static function address(Entry $entry, ContentType $type): string

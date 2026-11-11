@@ -163,13 +163,14 @@ final class ContentController
         foreach ($entry->exists() ? (new Terms())->summaries([(int) $entry->getKey()])[(int) $entry->getKey()] ?? [] : [] as $taxName => $list) {
             $tax = $cms->content->getTaxonomy($taxName);
             if ($tax !== null) {
-                $terms[] = ['taxonomy' => $tax->name, 'label' => $tax->plural(), 'terms' => array_map(static fn(array $t) => $t + ['path' => $tax->getPath() === null ? null : $tax->getPath() . '/' . $t['slug']], $list)];
+                $terms[] = ['taxonomy' => $tax->name, 'label' => $tax->plural(), 'terms' => array_map(static fn(array $t) => $t + ['path' => $tax->getPath() === null ? null : self::here($tax->getPath() . '/' . $t['slug'])], $list)];
             }
         }
 
         // Tagged with its parents too: moving, renaming or unpublishing one changes this page's address or visibility.
         if (!$preview) {
             \Kestello\Cms\Cache\PageTags::add('entry:' . $entry->getKey(), 'terms', ...array_map(static fn(int $id) => 'entry:' . $id, $entry->publicAncestors() ?? []));
+            \Kestello\Cms\I18n\PageLanguages::forEntry($entry, $type);
         }
         $ctx = new \Kestello\Cms\Blocks\BlockContext($entry, $type, $request, \Kestello\Cms\Auth\Auth::getInstance()?->user());
         $presented = self::present($entry, $type, full: true, blocks: $ctx);
@@ -215,7 +216,7 @@ final class ContentController
             'title' => $entry->title,
             'terms' => $terms,
             'entry' => $presented,
-            'type' => ['name' => $type->name, 'singular' => $type->singular(), 'plural' => $type->plural(), 'archive' => $type->hasArchive() ? $type->getPath() : null],
+            'type' => ['name' => $type->name, 'singular' => $type->singular(), 'plural' => $type->plural(), 'archive' => $type->hasArchive() ? self::here((string) $type->getPath()) : null],
             'seo' => $seo,
         ] + $language + ($design === null ? [] : ['design' => $design]), preload: array_values(array_unique($preload)));
     }
@@ -282,6 +283,7 @@ final class ContentController
         if (($page > $result['last_page'] && $page > 1) || $result['total'] === 0) {
             return Response::notFound();    // a term only drafts use has no public page yet
         }
+        \Kestello\Cms\I18n\PageLanguages::forTerm($term, $tax);
 
         return Page::render('@core/content/Archive', [
             'title' => $term->name,

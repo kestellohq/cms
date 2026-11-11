@@ -98,11 +98,16 @@ final class FrontendModule extends Provider
      */
     public static function errorPages(PageRenderer $renderer, FrontendMiddleware $middleware, ?Closure $adminNotFound = null): Closure
     {
-        return static fn(Request $request, Response $response): Response => $middleware->withCsp($renderer->render(
-            $request,
-            self::errorPage($request, $response->statusCode(), $adminNotFound),
-            $response,
-        ));
+        // rendered after the middleware, so in the address's language here: /es/missing is a Spanish "not found"
+        return static function (Request $request, Response $response) use ($renderer, $middleware, $adminNotFound): Response {
+            [$code, $rest] = \Kestello\Cms\I18n\LanguagePrefix::detect($request->path);
+
+            return \Kestello\Cms\I18n\LanguagePrefix::run($code, $rest, static fn(): Response => $middleware->withCsp($renderer->render(
+                $request,
+                self::errorPage($request, $response->statusCode(), $adminNotFound),
+                $response,
+            )));
+        };
     }
 
     /**
@@ -161,8 +166,10 @@ final class FrontendModule extends Provider
             'old' => is_array($old) && $old !== [] ? self::withoutSecrets($old) : (object) [],
             // the plugins' and theme's text in the page's language, for __() in their components; prefix starts
             // the theme's own links in that language ("/es" on a Spanish page, '' in the main language)
+            // languages: the page in each of the site's languages, for a switcher ([] on a site in one language)
             'i18n' => ['locale' => Translator::locale(), 'translations' => BrowserCatalogue::url(Translator::locale(), site: true),
-                'prefix' => \Kestello\Cms\I18n\ContentLanguages::prefix(\Kestello\Cms\I18n\ContentLanguages::current())],
+                'prefix' => \Kestello\Cms\I18n\ContentLanguages::prefix(\Kestello\Cms\I18n\ContentLanguages::current()),
+                'languages' => \Kestello\Cms\I18n\PageLanguages::all()],
         ];
 
         $shared = array_replace($shared, $cms->pages->resolve());
