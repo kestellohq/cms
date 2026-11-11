@@ -13,7 +13,7 @@ namespace Kestello\Cms\Seed;
  *     site.json          settings, the front page, menus, alt text for media
  *     pages/<key>.json   one page each: title, slug, blocks, and optionally
  *                        status, template, seo
- *     media/<file>       images and files, used in blocks as "@media:<file>"
+ *     media/<file>       images and files, used in blocks, seo and settings as "@media:<file>"
  *
  * site.json, every part optional:
  *   { "settings":   { "general": { "site_name": "Acme" } },
@@ -56,6 +56,12 @@ final class SeedFolder
         $pages = self::pages($root);
         $media = self::media($root, $site['media'] ?? [], 'site.json');
         self::mediaUsed($pages, $media);
+        $settings = self::settings($site['settings'] ?? [], 'site.json');
+        foreach (self::references($settings) as $name) {
+            if (!isset($media[$name])) {
+                throw new SeedException("site.json: \"@media:{$name}\" in settings names a file that is not in media/.");
+            }
+        }
 
         $front = $site['front_page'] ?? null;
         if ($front !== null && (!is_string($front) || !isset($pages[$front]))) {
@@ -63,7 +69,7 @@ final class SeedFolder
         }
 
         return [
-            'settings' => self::settings($site['settings'] ?? [], 'site.json'),
+            'settings' => $settings,
             'front_page' => $front,
             'menus' => self::menus($site['menus'] ?? [], $pages, 'site.json'),
             'media' => $media,
