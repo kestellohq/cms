@@ -110,6 +110,7 @@ msgid "Projects"
 msgstr ""
 
 #: resources/js/pages/@core/content/Archive.vue
+#: resources/js/pages/Home.vue
 msgid "Read"
 msgstr ""
 

@@ -682,51 +682,6 @@ p {
     }
 }
 
-.essays {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
-    gap: 0 40px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-.essays li {
-    position: relative;
-    padding: 20px 0 24px;
-    border-top: 2px solid var(--on-wall);
-}
-.essays time {
-    color: var(--on-wall-2);
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
-}
-.essays h3,
-.essays__title {
-    margin: 6px 0 8px;
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    line-height: 1.2;
-}
-.essays h3 a,
-.essays__title a {
-    text-decoration: none;
-}
-.essays h3 a::after,
-.essays__title a::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-}
-.essays li:hover h3,
-.essays li:hover .essays__title {
-    text-decoration: underline;
-}
-.essays p {
-    margin: 0;
-    color: var(--on-wall-2);
-}
-
 /* the journal's own room: the newest essay laid open, then an index */
 .lead-essay {
     position: relative;
@@ -788,6 +743,9 @@ p {
     text-decoration: underline;
     text-decoration-thickness: 2px;
     text-underline-offset: 0.12em;
+}
+.lead-essay--band .lead-essay__title {
+    font-size: clamp(28px, 3.4vw, 44px);
 }
 .journal-index {
     margin: 0;

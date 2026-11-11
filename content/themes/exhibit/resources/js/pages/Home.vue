@@ -125,14 +125,29 @@ const meta = (e) =>
             <span v-if="numberOf(journal.path)" class="room-sign__no">{{ numberOf(journal.path) }}</span>
             <Link :href="journal.path">{{ roomName('post', journal.plural, __) }}</Link>
         </h2>
-        <ul class="essays">
-            <li v-for="e in journal.entries" :key="e.id">
-                <time :datetime="e.published_at">{{ fmt(e.published_at) }}</time>
-                <h3>
-                    <Link :href="e.path">{{ e.title }}</Link>
+        <!-- the newest essay laid open, then the index, as in the journal's own room -->
+        <article class="lead-essay lead-essay--band">
+            <Print v-if="journal.entries[0].image" :media="journal.entries[0].image" size="large" sizes="(min-width: 900px) 56vw, 92vw" alt="" />
+            <div class="lead-essay__text">
+                <time :datetime="journal.entries[0].published_at">{{ fmt(journal.entries[0].published_at) }}</time>
+                <h3 class="lead-essay__title">
+                    <Link :href="journal.entries[0].path">{{ journal.entries[0].title }}</Link>
                 </h3>
-                <p v-if="e.excerpt">{{ e.excerpt }}</p>
+                <p v-if="journal.entries[0].excerpt">{{ journal.entries[0].excerpt }}</p>
+                <span class="lead-essay__read" aria-hidden="true">{{ __('Read') }} →</span>
+            </div>
+        </article>
+        <ol v-if="journal.entries.length > 1" class="journal-index">
+            <li v-for="e in journal.entries.slice(1)" :key="e.id" class="journal-index__item">
+                <time :datetime="e.published_at">{{ fmt(e.published_at) }}</time>
+                <div>
+                    <h3 class="journal-index__title">
+                        <Link :href="e.path">{{ e.title }}</Link>
+                    </h3>
+                    <p v-if="e.excerpt">{{ e.excerpt }}</p>
+                </div>
+                <Print v-if="e.image" :media="e.image" size="medium" sizes="(min-width: 760px) 14rem, 30vw" alt="" />
             </li>
-        </ul>
+        </ol>
     </section>
 </template>
