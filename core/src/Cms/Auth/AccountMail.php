@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Auth;
 
 use Closure;
+use Kestello\Cms\Mail\MailBrand;
 use Kestello\Cms\Notifications\MailMessage;
 
 /**
@@ -24,8 +25,9 @@ final class AccountMail
     public static function send(Closure $mail, string $to, MailMessage $message, string $siteName, string $failure): void
     {
         $subject = $message->subject;
-        $html = $message->render($siteName);
-        $text = $message->text($siteName);
+        $brand = MailBrand::site($siteName);
+        $html = $message->render($brand);
+        $text = $message->text($brand);
         \Kestello\Cms\System\WebRunner::defer(static function () use ($mail, $to, $subject, $html, $text, $failure): void {
             if (!$mail($to, $subject, $html, $text)) {
                 error_log('[kestello] ' . $failure);

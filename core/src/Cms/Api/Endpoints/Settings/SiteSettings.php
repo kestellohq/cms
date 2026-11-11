@@ -163,6 +163,21 @@ final class SiteSettings
                 // Password reset links travel through this server: whoever sets it can read them.
                 'capability' => 'system.manage',
             ] + $core,
+            'emails' => [
+                'label' => 'Emails',
+                'description' => 'How the emails the site sends look: the logo at the top and the text at the foot. Colours and the font come from the theme.',
+                'schema' => Schema::object([
+                    'email_show_logo' => Schema::bool()->optional()->description('Without a logo, the site name is shown at the foot only.'),
+                    'email_logo' => Schema::int()->min(0)->format('media')->optional()
+                        ->description('Left empty, the logo from Search engines (the publisher logo) is used. It is shown 40 pixels tall.'),
+                    'email_footer' => Schema::string()->max(500)->format('multiline')->optional()
+                        ->description('Under the site name in every email, such as a postal address or a line about the site.'),
+                ]),
+                'labels' => ['email_show_logo' => 'Show a logo', 'email_logo' => 'Email logo', 'email_footer' => 'Footer text'],
+                'secrets' => [],
+                'defaults' => ['email_show_logo' => true, 'email_logo' => 0, 'email_footer' => ''],
+                'capability' => 'emails.manage',
+            ] + $core,
             'accounts' => [
                 'label' => 'Accounts',
                 'description' => 'Whether people can create an account on the site themselves, by email or with a sign-in provider such as Google. You can always add people yourself under People.',

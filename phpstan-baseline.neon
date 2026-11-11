@@ -1543,24 +1543,6 @@ parameters:
 			path: core/src/Cms/Design/ThemeStyles.php
 
 		-
-			message: '#^Offset ''presets'' does not exist on array\{groups\: array\<string, string\>, tokens\: array\<string, array\<string, mixed\>\>, fonts\: array\<string, array\{label\: string, stack\: string\}\>, contrast\: list\<array\{fg\: string, bg\: string, label\: string\}\>, variations\: array\<string, array\{label\: string, values\: array\<string, mixed\>\}\>\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: core/src/Cms/Design/ThemeStyles.php
-
-		-
-			message: '#^Offset ''theme_css'' does not exist on array\{groups\: array\<string, string\>, tokens\: array\<string, array\<string, mixed\>\>, fonts\: array\<string, array\{label\: string, stack\: string\}\>, contrast\: list\<array\{fg\: string, bg\: string, label\: string\}\>, variations\: array\<string, array\{label\: string, values\: array\<string, mixed\>\}\>\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 2
-			path: core/src/Cms/Design/ThemeStyles.php
-
-		-
-			message: '#^Offset ''theme_css'' does not exist on array\{groups\: array\<string, string\>, tokens\: array\{\}, fonts\: array\<string, array\{label\: string, stack\: string\}\>, contrast\: list\<array\{fg\: string, bg\: string, label\: string\}\>, variations\: array\<string, array\{label\: string, values\: array\<string, mixed\>\}\>\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: core/src/Cms/Design/ThemeStyles.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$template\.$#'
 			identifier: property.notFound
 			count: 1

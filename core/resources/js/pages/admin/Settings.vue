@@ -122,6 +122,9 @@ const whereItShows = computed(() => ({
     seo: __(
         'Page titles show in the browser tab and as the headline in search results. The sharing image shows when someone posts a link to the site. Each entry can set its own under Search and sharing.',
     ),
+    emails: __(
+        'Every email the site sends: sign-up and password links, form submissions and notifications. Colours and the font follow your theme under Design, with dark colours for mail apps in dark mode.',
+    ),
     accounts: __('Applies to the sign-up page and to every sign-in provider. People you add under People are not affected.'),
     media: __('Applies to new uploads. Files already in the library stay as they are.'),
     performance: __('Visitors who are signed in always get fresh pages. Saving content refreshes the pages it appears on.'),
