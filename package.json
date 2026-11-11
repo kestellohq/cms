@@ -2,7 +2,7 @@
   "name": "kestello",
   "private": true,
   "type": "module",
-  "description": "Dev-only tooling for Kestello: build, format, lint and test. Nothing here ships or runs in production: built files are committed under */assets/build/.",
+  "description": "Dev-only tooling for Kestello: build, format, lint and test. Nothing here ships or runs in production: release zips carry the built files (*/assets/build/, made by npm run build), which git ignores.",
   "scripts": {
     "build": "node core/build/build.mjs",
     "build:core": "node core/build/build.mjs core",

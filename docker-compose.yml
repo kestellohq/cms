@@ -78,7 +78,7 @@ services:
       - cms_network
 
   # Search engines for the Meilisearch / Typesense plugins: docker compose --profile search up -d meilisearch typesense
-  # (then activate the plugin and pick it under System > Platform > Search; dev-only keys below)
+  # (then activate the plugin and pick it under System > Infrastructure > Search; dev-only keys below)
   meilisearch:
     image: getmeili/meilisearch:v1.56
     container_name: cms_meilisearch
