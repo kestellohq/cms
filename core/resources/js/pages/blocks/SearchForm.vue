@@ -1,19 +1,21 @@
 <script setup>
-import { ref, useId } from 'vue';
-import { useRouter } from '@kestello/app';
+import { computed, ref, useId } from 'vue';
+import { usePage, useRouter } from '@kestello/app';
 
 // core/search-form: a plain GET form to /search, so it works before scripts load too.
 const props = defineProps({ label: { type: String, default: 'Search' }, button: { type: String, default: 'Search' }, type: { type: String, default: '' } });
 const router = useRouter();
+const page = usePage();
+const action = computed(() => `${page.props.i18n?.prefix ?? ''}/search`); // /es/search searches the Spanish pages
 const q = ref('');
 const id = `k-b-search-${useId()}`;
 function submit() {
-    if (q.value.trim()) router.get('/search', { q: q.value.trim(), type: props.type || undefined });
+    if (q.value.trim()) router.get(action.value, { q: q.value.trim(), type: props.type || undefined });
 }
 </script>
 
 <template>
-    <form class="k-b-search" role="search" action="/search" method="get" @submit.prevent="submit">
+    <form class="k-b-search" role="search" :action="action" method="get" @submit.prevent="submit">
         <label class="k-b-search__label" :for="id">{{ label }}</label>
         <div class="k-b-search__bar">
             <input :id="id" v-model="q" class="k-b-search__input" type="search" name="q" maxlength="200" autocomplete="off" enterkeyhint="search" />

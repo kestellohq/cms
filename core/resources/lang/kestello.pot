@@ -6496,6 +6496,7 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Content/ListEntries.php
 #: core/src/Cms/Api/Endpoints/Content/ListTerms.php
+#: core/src/Cms/Api/Endpoints/Search/SearchSite.php
 msgid "One language: main (or empty) for the main one, or a code such as es. Default: any, every language"
 msgstr ""
 

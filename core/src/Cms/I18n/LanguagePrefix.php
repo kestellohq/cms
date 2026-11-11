@@ -18,10 +18,14 @@ use Kestello\Framework\Core\Response;
  * ContentLanguages::current().
  *
  * The site's own addresses (/es/admin, /es/api…) are never in a language:
- * they are left as they are, and answer "not found".
+ * they are left as they are, and answer "not found". Search, feeds and
+ * author pages are public pages, so they are.
  */
 final class LanguagePrefix implements MiddlewareInterface
 {
+    /** Reserved addresses that are public pages, so they exist in each language: /es/search, /es/feed, /es/author/ana. */
+    public const array IN_EVERY_LANGUAGE = ['search', 'feed', 'author'];
+
     public function handle(Request $request, Closure $next): Response
     {
         [$code, $rest] = self::detect($request->path);
@@ -40,7 +44,8 @@ final class LanguagePrefix implements MiddlewareInterface
     {
         $others = ContentLanguages::others();
         [$code, $rest] = $others === [] ? ['', $path] : ContentLanguages::split($path, $others);
-        if ($code !== '' && in_array(explode('/', ltrim($rest, '/'))[0], Entries::RESERVED_PATHS, true)) {
+        $first = explode('/', ltrim($rest, '/'))[0];
+        if ($code !== '' && in_array($first, Entries::RESERVED_PATHS, true) && !in_array($first, self::IN_EVERY_LANGUAGE, true)) {
             return ['', $path];
         }
 

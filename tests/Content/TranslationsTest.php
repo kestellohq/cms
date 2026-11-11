@@ -34,7 +34,8 @@ final class TranslationsTest extends AuthTestCase
     {
         Model::resetRegistry();
         parent::setUp();
-        foreach ([new LanguagesModule(), new ContentModule(), new RedirectsModule(), new SiteModule()] as $module) {
+        \Kestello\Cms\Platform\CoreDrivers::registerSearch($this->cms->drivers);     // the database engine
+        foreach ([new LanguagesModule(), new ContentModule(), new RedirectsModule(), new SiteModule(), new \Kestello\Cms\Search\SearchModule()] as $module) {
             $module->register($this->cms->container);
             $module->boot($this->cms);
         }
@@ -289,8 +290,37 @@ final class TranslationsTest extends AuthTestCase
 
     public function testAnAddressSaysItsLanguage(): void
     {
-        $this->assertSame([['es', '/about'], ['es', '/'], ['', '/es/admin/x'], ['', '/fr/about']], array_map(LanguagePrefix::detect(...), ['/es/about', '/es', '/es/admin/x', '/fr/about']));
+        $this->assertSame(
+            [['es', '/about'], ['es', '/'], ['', '/es/admin/x'], ['', '/fr/about'], ['es', '/search'], ['es', '/feed'], ['es', '/author/ana']],
+            array_map(LanguagePrefix::detect(...), ['/es/about', '/es', '/es/admin/x', '/fr/about', '/es/search', '/es/feed', '/es/author/ana']),
+            'the site\'s own addresses have no language; its public search, feeds and author pages do',
+        );
         $inSpanish = LanguagePrefix::run('es', '/missing', static fn() => [ContentLanguages::current(), Translator::locale(), PageLanguages::all()[1]['url']]);
         $this->assertSame(['es', 'es', '/es/missing'], $inSpanish, 'an error page renders in the address\'s language');
+    }
+
+    public function testSearchAndFeedsAreInThePageLanguage(): void
+    {
+        $hello = $this->publish('post', ['title' => 'Studio notes']);
+        $this->inSpanish($hello, ['title' => 'Notas del studio', 'slug' => 'notas']);
+        $this->cms->search->syncNow(array_map('intval', $this->db->table('entries')->pluck('id')));
+        $titles = fn(string $code, array $options = []): array => array_column(ContentLanguages::within($code, fn() => $this->cms->search->search('studio', $options))['hits'], 'title');
+
+        $this->assertSame(['Studio notes'], $titles(''));
+        $this->assertSame(['Notas del studio'], $titles('es'), '/es/search finds Spanish entries');
+        $every = $titles('', ['language' => null]);
+        sort($every);
+        $this->assertSame(['Notas del studio', 'Studio notes'], $every, 'or every language, when asked');
+        $this->assertSame(200, $this->visit('/es/search?q=studio')->statusCode());
+
+        Settings::getInstance()->set('site_url', 'https://studio.test');
+        $feed = $this->visit('/es/feed')->content();
+        $this->assertStringContainsString('<language>es</language>', $feed);
+        $this->assertStringContainsString('<link>https://studio.test/es/blog/notas</link>', $feed, 'Spanish posts at Spanish addresses');
+        $this->assertStringNotContainsString('Studio notes', $feed);
+        $this->assertStringContainsString('href="https://studio.test/es/feed"', $feed, 'its own address');
+        $main = $this->visit('/feed')->content();
+        $this->assertStringContainsString('<language>en</language>', $main);
+        $this->assertStringNotContainsString('Notas del studio', $main);
     }
 }
