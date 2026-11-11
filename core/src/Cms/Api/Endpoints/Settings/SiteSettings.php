@@ -169,7 +169,7 @@ final class SiteSettings
                 'schema' => Schema::object([
                     'email_show_logo' => Schema::bool()->optional()->description('Without a logo, the site name is shown at the foot only.'),
                     'email_logo' => Schema::int()->min(0)->format('media')->optional()
-                        ->description('Left empty, the logo from Search engines (the publisher logo) is used. It is shown 40 pixels tall.'),
+                        ->description('Left empty, the Logo or photo from Search and sharing is used. It is shown 40 pixels tall.'),
                     'email_footer' => Schema::string()->max(500)->format('multiline')->optional()
                         ->description('Under the site name in every email, such as a postal address or a line about the site.'),
                 ]),

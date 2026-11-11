@@ -96,6 +96,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- The test email, its description in Site → Emails and the error when a test send fails now name the settings tab as it is labelled, **Settings → Email** (they said "Settings → Mail"), and Email logo’s help names **Logo or photo** under **Search and sharing** (it said "Search engines").
 - Form notifications use the same email layout as everything else the site sends, with the answers as rows, a plain-text part, and the button to the submission in the admin. Before, they were their own bare HTML.
 - Notification emails show the site's name at the foot (Settings → General) instead of the `app.name` from config.
 - The test email in Settings → Mail is in the site's language and the email layout. Before, it was always in English.
