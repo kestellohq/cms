@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\I18n;
 
 use Kestello\Cms\Auth\Emails;
-use Kestello\Cms\Cms;
 use Kestello\Framework\Database\QueryBuilder;
-use Kestello\Framework\Settings\Settings;
 use Kestello\Support\Translator;
 
 /**
@@ -63,7 +61,7 @@ final class PersonLanguage
     public static function atSignUp(): string
     {
         $current = Translator::locale();
-        $site = SiteLanguage::resolve((string) Settings::getInstance()->get(SiteLanguage::SETTING, ''), (string) (Cms::instance()?->config->get('app.locale', 'en') ?? 'en'));
+        $site = SiteLanguage::site();
 
         return $current !== $site && in_array($current, self::allowed(), true) ? $current : self::SITE;
     }

@@ -22,6 +22,8 @@ use Kestello\Support\Translator;
  *   ['type' => 'rows',      'rows' => [['label' => '…', 'value' => '…'], …]]
  *   ['type' => 'code',      'text' => '…']                     a one-time code, a command
  *   ['type' => 'note',      'text' => '…']                     small print
+ *   ['type' => 'image',     'url' => 'https://…', 'alt' => '…', 'width' => 800, 'height' => 400]
+ *   ['type' => 'divider']
  *
  * The first button's address is also written out at the end, for clients
  * that hide buttons.
@@ -30,7 +32,9 @@ use Kestello\Support\Translator;
  */
 final class MailLayout
 {
-    public const array TYPES = ['heading', 'paragraph', 'button', 'rows', 'code', 'note'];
+    public const array TYPES = ['heading', 'paragraph', 'button', 'rows', 'code', 'note', 'image', 'divider'];
+    /** The widest an image is drawn: the card's width inside its padding. */
+    public const int IMAGE_WIDTH = 496;
 
     /** @param list<array<string, mixed>> $blocks */
     public static function html(string $subject, array $blocks, MailBrand $brand): string
@@ -48,6 +52,8 @@ final class MailLayout
                 'rows' => self::rows($b['rows'], $c),
                 'code' => '<p class="k-code" style="margin:0 0 16px;padding:12px 16px;border-radius:8px;background:' . $c('page') . ';font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;letter-spacing:.04em;overflow-wrap:anywhere">' . $e($b['text']) . '</p>',
                 'note' => '<p class="k-muted" style="margin:0 0 16px;font-size:13px;line-height:1.5;color:' . $c('muted') . '">' . nl2br($e($b['text']), false) . '</p>',
+                'image' => self::image($b),
+                'divider' => '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:8px 0 24px"><tr><td class="k-row" style="border-top:1px solid ' . $c('line') . ';font-size:0;line-height:0">&nbsp;</td></tr></table>',
                 default => throw new \InvalidArgumentException("Unknown email block \"{$b['type']}\"."),
             };
         }
@@ -110,13 +116,25 @@ final class MailLayout
             $parts[] = match ($b['type']) {
                 'heading', 'paragraph', 'code', 'note' => $b['text'],
                 'button' => $b['label'] . "\n" . $b['url'],
+                'image' => $b['alt'] !== '' ? '[' . $b['alt'] . ']' : null,
+                'divider' => '----',
                 'rows' => implode("\n", array_map(static fn(array $r): string => $r['label'] . ': ' . $r['value'], $b['rows'])),
                 default => throw new \InvalidArgumentException("Unknown email block \"{$b['type']}\"."),
             };
         }
+        $parts = array_values(array_filter($parts, static fn(?string $p): bool => $p !== null));
         $parts[] = $brand->footer !== '' ? $brand->name . "\n" . $brand->footer : $brand->name;
 
         return implode("\n\n", $parts);
+    }
+
+    /** @param array<string, mixed> $b */
+    private static function image(array $b): string
+    {
+        $width = min((int) $b['width'], self::IMAGE_WIDTH);
+        $height = max(1, (int) round((int) $b['height'] * $width / max(1, (int) $b['width'])));
+
+        return '<p style="margin:0 0 16px"><img src="' . Html::escape($b['url']) . '" alt="' . Html::escape($b['alt']) . '" width="' . $width . '" height="' . $height . '" style="display:block;border:0;width:100%;max-width:' . $width . 'px;height:auto;border-radius:8px"></p>';
     }
 
     /** @param list<array<string, mixed>> $blocks */

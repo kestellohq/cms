@@ -6,7 +6,6 @@ namespace Kestello\Cms\Mail;
 
 use Kestello\Cms\Cms;
 use Kestello\Cms\Design\ThemeStyles;
-use Kestello\Cms\Site\Seo;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Support\Color;
 
@@ -117,7 +116,7 @@ final class MailBrand
             $theme['light'],
             $theme['font'] ?? self::DEFAULT_FONT,
             $theme['dark'],
-            $cms !== null ? self::siteLogo($cms, $settings) : null,
+            $cms !== null ? self::siteLogo($settings) : null,
             trim((string) $settings->get('email_footer', '')),
         );
     }
@@ -180,24 +179,12 @@ final class MailBrand
     }
 
     /** @return array{url: string, width: int, height: int}|null */
-    private static function siteLogo(Cms $cms, Settings $settings): ?array
+    private static function siteLogo(Settings $settings): ?array
     {
         if (!filter_var($settings->get('email_show_logo', true), FILTER_VALIDATE_BOOLEAN)) {
             return null;
         }
-        try {
-            $media = Seo::media((int) $settings->get('email_logo', 0) ?: $settings->get('seo_publisher_logo', 0));
-        } catch (\Throwable) {
-            return null;
-        }
-        if ($media === null || !is_numeric($media['width']) || !is_numeric($media['height']) || (int) $media['height'] < 1) {
-            return null;
-        }
-        $url = str_starts_with($media['url'], '/') && !str_starts_with($media['url'], '//') ? Seo::siteUrl($cms) . $media['url'] : $media['url'];
-        if (preg_match('#^https?://[^/\s]#i', $url) !== 1) {
-            return null;   // no site address yet: a mail app can't fetch a relative image
-        }
 
-        return ['url' => $url, 'width' => (int) $media['width'], 'height' => (int) $media['height']];
+        return MailMedia::image((int) $settings->get('email_logo', 0) ?: $settings->get('seo_publisher_logo', 0));
     }
 }

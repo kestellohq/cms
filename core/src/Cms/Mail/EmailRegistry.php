@@ -19,7 +19,7 @@ use Kestello\Support\Translator;
  * Every email the site can send, by name ($cms->emails), so each one can
  * be listed, previewed with sample values and changed in one place.
  *
- *   $cms->emails->register('shop.order_shipped', 'Order shipped',
+ *   $cms->emails->register('shop.order_shipped', label: 'Order shipped',
  *       build: fn(array $d) => MailMessage::make("Order {$d['order']} is on its way")
  *           ->paragraph('It left today.')
  *           ->button('Track it', $d['url'])->name('link'),
@@ -33,9 +33,11 @@ use Kestello\Support\Translator;
  * preview, so both must have the same keys. locked names the blocks that
  * make the email work (its link, a code): they must be in every message it
  * builds, and editing (Settings → Emails) can reword them but not remove
- * them. A plugin's ids start with its slug and a dot.
+ * them. A plugin's ids start with its slug and a dot. Pass label: and
+ * description: by name, so bin/cms i18n:extract finds them.
  *
- * Sending runs, in order: build, the filter mail.message, the event
+ * Sending runs, in order: build, the edit saved in Settings → Emails for
+ * the reader's language (EmailEdit), the filter mail.message, the event
  * MailSending (which can stop it), the filter mail.branding, the layout,
  * the transport, and MailSent once the server accepted it.
  *
@@ -47,9 +49,15 @@ final class EmailRegistry
     private array $emails = [];
 
     /** Core's own emails are always there (CoreEmails). */
-    public function __construct()
+    public function __construct(private ?EmailEdits $edits = null)
     {
         CoreEmails::register($this);
+    }
+
+    /** The saved edits (Settings → Emails). */
+    public function edits(): EmailEdits
+    {
+        return $this->edits ??= new EmailEdits();
     }
 
     /**
@@ -97,15 +105,30 @@ final class EmailRegistry
     }
 
     /**
-     * Build one email from the sender's values, through the filter
-     * mail.message. Its locked blocks must be there.
+     * One email as its code builds it from these values, with no edit and
+     * no filter: what an edit starts from and keeps blocks of.
      *
      * @param array<string, mixed> $data
      */
-    public function message(string $id, array $data, string $to = ''): MailMessage
+    public function original(string $id, array $data): MailMessage
+    {
+        return ($this->get($id)['build'])($data);
+    }
+
+    /**
+     * Build one email from the sender's values, with the edit saved for the
+     * current language (or $edit, a draft being previewed), through the
+     * filter mail.message. Its locked blocks must be there. A saved edit
+     * that no longer fits the email is logged and left out, so the email
+     * still goes out.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $edit
+     */
+    public function message(string $id, array $data, string $to = '', ?array $edit = null): MailMessage
     {
         $email = $this->get($id);
-        $message = ($email['build'])($data);
+        $message = $this->edited($id, $this->original($id, $data), $data, $edit);
         $filtered = Cms::instance()?->filters->apply('mail.message', $message, $id, $to, $data) ?? $message;
         if (!$filtered instanceof MailMessage) {
             error_log("[kestello] mail.message for \"{$id}\" did not return a MailMessage; the email is sent as built.");
@@ -120,10 +143,78 @@ final class EmailRegistry
         return $filtered;
     }
 
-    /** The email with its sample values, for a preview. */
-    public function sample(string $id): MailMessage
+    /**
+     * The email with its sample values, for a preview: with the edit saved
+     * for the current language, or with $edit, a draft.
+     *
+     * @param array<string, mixed>|null $edit
+     */
+    public function sample(string $id, ?array $edit = null): MailMessage
     {
-        return $this->message($id, $this->get($id)['sample']);
+        return $this->message($id, $this->get($id)['sample'], '', $edit);
+    }
+
+    /**
+     * The edit that changes nothing, for the editor to start from, in the
+     * current language (EmailEdit::template()). Null for an email whose code
+     * writes its own HTML, which can't be edited block by block.
+     *
+     * @return array{subject: string, blocks: list<array<string, mixed>>}|null
+     */
+    public function template(string $id): ?array
+    {
+        $sample = $this->get($id)['sample'];
+        $built = $this->original($id, EmailEdit::templateValues($sample));
+
+        return $built->custom() ? null : EmailEdit::template($built, $sample);
+    }
+
+    /**
+     * What is wrong with an edit of this email, by field; empty when it can
+     * be saved (EmailEdit::validate(), against the sample values).
+     *
+     * @param array<string, mixed> $edit
+     * @return array<string, list<string>>
+     */
+    public function check(string $id, array $edit): array
+    {
+        $email = $this->get($id);
+        $original = $this->original($id, $email['sample']);
+        if ($original->custom()) {
+            return ['blocks' => [Translator::get('This email is written in HTML by its code and can’t be edited here.')]];
+        }
+
+        return EmailEdit::validate($edit, $original, $email['locked'], $email['sample'], self::media(...));
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $edit
+     */
+    private function edited(string $id, MailMessage $original, array $data, ?array $edit): MailMessage
+    {
+        if ($original->custom() || ($edit === null && Cms::instance() === null)) {
+            return $original;
+        }
+        $edit ??= $this->edits()->find($id, Translator::locale());
+        if ($edit === null) {
+            return $original;
+        }
+        $errors = EmailEdit::validate($edit, $original, $this->get($id)['locked'], $data, self::media(...));
+        if ($errors !== []) {
+            $first = array_key_first($errors);
+            error_log("[kestello] the edit of \"{$id}\" (" . Translator::locale() . ") no longer fits the email ({$first}: {$errors[$first][0]}); it is sent as its code writes it.");
+
+            return $original;
+        }
+
+        return EmailEdit::apply($edit, $original, $data, self::media(...));
+    }
+
+    /** @return array{url: string, width: int, height: int}|null */
+    private static function media(int $id): ?array
+    {
+        return MailMedia::image($id);
     }
 
     /**
