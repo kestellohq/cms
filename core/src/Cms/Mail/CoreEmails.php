@@ -115,7 +115,7 @@ final class CoreEmails
             build: self::testEmail(...),
             sample: ['site' => 'Kestello'],
             group: 'Site',
-            description: 'Sent from Settings → Mail to check that the site can send email.',
+            description: 'Sent from Settings → Email to check that the site can send email.',
         );
     }
 
@@ -241,7 +241,7 @@ final class CoreEmails
         return MailMessage::make(Translator::get('Test email from {site}', $site))
             ->heading(Translator::get('Your email settings work'))
             ->paragraph(Translator::get('This is a test email from {site}. It reached you, so the site can send email with the settings you saved.', $site))
-            ->note(Translator::get('Someone sent this from Settings → Mail on {site}.', $site));
+            ->note(Translator::get('Someone sent this from Settings → Email on {site}.', $site));
     }
 
     private static function hours(int $hours): string

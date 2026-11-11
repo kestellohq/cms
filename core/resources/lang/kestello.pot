@@ -8429,7 +8429,7 @@ msgid "Sent from"
 msgstr ""
 
 #: core/src/Cms/Mail/CoreEmails.php
-msgid "Sent from Settings → Mail to check that the site can send email."
+msgid "Sent from Settings → Email to check that the site can send email."
 msgstr ""
 
 #: core/src/Cms/Mail/CoreEmails.php
@@ -9041,7 +9041,7 @@ msgid "Someone has your {site} password"
 msgstr ""
 
 #: core/src/Cms/Mail/CoreEmails.php
-msgid "Someone sent this from Settings → Mail on {site}."
+msgid "Someone sent this from Settings → Email on {site}."
 msgstr ""
 
 #: core/src/Cms/Mail/CoreEmails.php
@@ -9771,7 +9771,7 @@ msgid "The email can’t be built like this."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Emails/SendEmailTest.php
-msgid "The email could not be sent. Check Settings → Mail and the server log."
+msgid "The email could not be sent. Check Settings → Email and the server log."
 msgstr ""
 
 #: core/resources/js/pages/admin/emails/Edit.vue
