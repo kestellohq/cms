@@ -473,10 +473,14 @@ p {
 
 .entrance {
     display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
     gap: clamp(28px, 5vw, 72px);
     align-items: center;
     padding: clamp(24px, 5vw, 64px) var(--gutter) clamp(48px, 7vw, 96px);
+}
+.entrance .wall-text {
+    max-width: 16ch;
+    font-size: clamp(40px, 5vw, 68px);
 }
 .entrance__prints {
     display: grid;
@@ -598,6 +602,49 @@ p {
     margin: 0;
     color: var(--on-wall-2);
 }
+/* a plate is printed paper whatever wall it hangs on: no wall colour reaches its text */
+.plate .plate__title {
+    color: var(--ink);
+}
+.plate .plate__credit {
+    color: var(--ink-2);
+}
+/* people: name plates in a row, as beside a door */
+.people {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: clamp(16px, 2vw, 28px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.person {
+    position: relative;
+    max-width: none;
+    padding: 20px 20px 18px;
+}
+.person .plate__title {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+.person .plate__title a {
+    text-decoration: none;
+}
+.person .plate__title a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+.person:hover .plate__title {
+    text-decoration: underline;
+}
+.person p {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 14px;
+}
 
 @media (max-width: 760px) {
     .catalogue__row,
@@ -673,8 +720,8 @@ p {
     margin: 6px 0 0;
     color: var(--on-wall-2);
 }
-.programme__past {
-    opacity: 0.72;
+.programme__past .programme__date {
+    color: var(--on-wall-2);
 }
 @media (max-width: 640px) {
     .programme__item {
@@ -1011,7 +1058,7 @@ p {
 .reading .k-blocks textarea,
 .reading .k-blocks select {
     border-radius: 2px;
-    border-color: var(--rule);
+    border-color: #8a8274;
     background: var(--mount);
 }
 .reading .k-blocks button[type="submit"] {

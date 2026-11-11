@@ -100,37 +100,37 @@ return [
         'terraces' => [
             'file' => 'concrete-volumes.webp',
             'alt' => 'A corner of board-marked concrete against a clear blue sky',
-            'caption' => 'Photo: Lance Anderson, via Wikimedia Commons (CC0)',
+            'caption' => 'Lance Anderson, Wikimedia Commons (CC0)',
         ],
         'chapel' => [
             'file' => 'concrete-slab.webp',
             'alt' => 'A tall concrete volume with three round windows above a band of copper panels',
-            'caption' => 'Photo: Samuel Zeller, via Wikimedia Commons (CC0)',
+            'caption' => 'Samuel Zeller, Wikimedia Commons (CC0)',
         ],
         'galleries' => [
             'file' => 'concrete-gallery.webp',
             'alt' => 'A long concrete gallery of curved fins beside a planted courtyard',
-            'caption' => 'Photo: Lekeboy54, via Wikimedia Commons (CC0)',
+            'caption' => 'Lekeboy54, Wikimedia Commons (CC0)',
         ],
         'flats' => [
             'file' => 'brick-shadow.webp',
             'alt' => 'The shadow of a bare tree on a red brick front with arched windows',
-            'caption' => 'Photo: Pecid2180, via Wikimedia Commons (CC0)',
+            'caption' => 'Pecid2180, Wikimedia Commons (CC0)',
         ],
         'stands' => [
             'file' => 'metal-stair.webp',
             'alt' => 'Tiled steps between black steel handrails, down to a covered stand',
-            'caption' => 'Photo: WXchaser, via Wikimedia Commons (CC0)',
+            'caption' => 'WXchaser, Wikimedia Commons (CC0)',
         ],
         'urbino' => [
             'file' => 'urbino-courtyard.webp',
             'alt' => 'A stone courtyard in Urbino with arches and tiled roofs',
-            'caption' => 'Photo: Julian Lupyan, via Wikimedia Commons (CC0)',
+            'caption' => 'Julian Lupyan, Wikimedia Commons (CC0)',
         ],
         'chochikukyo' => [
             'file' => 'chochikukyo-model.webp',
             'alt' => 'A cut-away model of the Chochikukyo house on a grass base, in an exhibition',
-            'caption' => 'Photo: 1904.CC, via Wikimedia Commons (CC0)',
+            'caption' => '1904.CC, Wikimedia Commons (CC0)',
         ],
         'vanvitelli' => [
             'file' => 'vanvitelli-sketch.webp',
@@ -207,7 +207,7 @@ return [
             'blocks' => [
                 $text('<p>Tell us about the place, what you would like to build and when. We answer every message within a week, and the first visit is free within the Valencia region.</p>'),
                 $b('core/form', ['form' => '@form']),
-                $text('<p>Taller Arroyo &amp; Lind, Valencia. This is a demonstration site: the studio is invented, and messages sent here are not read.</p>'),
+                $text('<p>Taller Arroyo &amp; Lind, Valencia. This is a demonstration site: the studio is invented, and what you send here is deleted when the demo resets, every hour.</p>'),
             ],
             'es' => [
                 'title' => 'Empezar un proyecto',
@@ -216,7 +216,7 @@ return [
                 'blocks' => [
                     $text('<p>Cuéntanos sobre el lugar, qué te gustaría construir y cuándo. Respondemos a cada mensaje en una semana, y la primera visita es gratuita en la Comunidad Valenciana.</p>'),
                     $b('core/form', ['form' => '@form']),
-                    $text('<p>Taller Arroyo &amp; Lind, Valencia. Este es un sitio de demostración: el estudio es inventado y nadie lee los mensajes que se envían aquí.</p>'),
+                    $text('<p>Taller Arroyo &amp; Lind, Valencia. Este es un sitio de demostración: el estudio es inventado y lo que envíes aquí se borra cuando la demo se restablece, cada hora.</p>'),
                 ],
             ],
         ],

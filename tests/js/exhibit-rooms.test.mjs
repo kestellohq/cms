@@ -1,6 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { credit, photosOf, plateNumber, plateRows, roomName, roomOf, talkDate } from '../../content/themes/exhibit/resources/js/components/rooms.js';
+import {
+    credit,
+    photosOf,
+    plateNumber,
+    plateRows,
+    programme,
+    roomLede,
+    roomName,
+    roomOf,
+    talkDate,
+} from '../../content/themes/exhibit/resources/js/components/rooms.js';
 
 // a translate function that marks what it translated and fills {placeholders}
 const __ = (text, values = {}) => `«${text.replace(/\{(\w+)\}/g, (_, k) => values[k])}»`;
@@ -76,4 +86,27 @@ test('every photograph an entry carries, each once', () => {
     const pdf = { id: 3, url: '/c.pdf', kind: 'document' };
     assert.deepEqual(photosOf({ cover: a, photos: [a, b, pdf], seo: { image: b }, year: 2024 }), [a, b]);
     assert.deepEqual(photosOf(null), []);
+});
+
+test('talks read as a programme: the coming ones soonest first, then the ones held, latest first', () => {
+    const now = new Date('2026-06-01T12:00:00Z');
+    const talk = (id, starts) => ({ id, fields: { starts } });
+    const order = programme(
+        [talk(1, '2026-05-01T18:00:00Z'), talk(2, '2026-07-01T18:00:00Z'), talk(3, '2026-06-10T18:00:00Z'), talk(4, '2026-05-20T18:00:00Z')],
+        now,
+    ).map((t) => t.id);
+    assert.deepEqual(order, [3, 2, 4, 1]);
+    assert.deepEqual(
+        programme([{ id: 5, published_at: '2026-01-01T00:00:00Z' }], now).map((t) => t.id),
+        [5],
+        'a talk without a start counts from when it was published',
+    );
+});
+
+test("a room the theme knows has its own line, in the page's language", () => {
+    const __ = (s) => `«${s}»`;
+    assert.equal(roomLede('team', 'Admin text', __), '«The people who work at the studio.»');
+    assert.equal(roomLede('events', 'Our events', __), 'Our events', 'another type keeps its own description');
+    assert.equal(roomLede('events', null, __), '');
+    assert.equal(roomName('team', 'Team', __), '«People»');
 });

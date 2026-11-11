@@ -27,6 +27,7 @@ const tagline = computed(() => page.props.site?.titles?.tagline || page.props.si
 const projects = computed(() => props.rooms.projects ?? null);
 const talks = computed(() => props.rooms.talks ?? null);
 const journal = computed(() => props.rooms.post ?? null);
+const people = computed(() => props.rooms.team ?? null);
 const [large, small] = [computed(() => projects.value?.entries?.[0] ?? null), computed(() => projects.value?.entries?.[1] ?? null)];
 
 // a room's number is its place in the rooms menu, so the walls and the signs agree
@@ -97,7 +98,15 @@ const meta = (e) =>
             <span v-if="numberOf(intro.path)" class="room-sign__no">{{ numberOf(intro.path) }}</span>
             <Link :href="intro.path">{{ intro.title }}</Link>
         </h2>
-        <p v-if="intro.description" class="wall-lede">{{ intro.description }}</p>
+        <ul v-if="people?.entries?.length" class="people">
+            <li v-for="e in people.entries" :key="e.id" class="plate person">
+                <h3 class="plate__title">
+                    <Link :href="e.path">{{ e.title }}</Link>
+                </h3>
+                <p v-if="e.fields?.role">{{ e.fields.role }}</p>
+            </li>
+        </ul>
+        <p v-else-if="intro.description" class="wall-lede">{{ intro.description }}</p>
     </section>
 
     <section v-if="talks?.entries?.length" class="wall room-talks">
