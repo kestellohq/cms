@@ -40,7 +40,7 @@ final class PreviewEmail extends EmailEndpoint
         $message = self::message($request, $id);
         $brand = MailBrand::site();
 
-        return ['subject' => $message->subject, 'html' => $message->render($brand), 'text' => $message->text($brand)];
+        return ['subject' => $message->subject, 'html' => $message->render($brand, $id), 'text' => $message->text($brand)];
     }
 
     /** The email with sample values in the body's language, with its draft or what is saved. */

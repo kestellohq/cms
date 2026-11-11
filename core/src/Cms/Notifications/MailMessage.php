@@ -6,6 +6,7 @@ namespace Kestello\Cms\Notifications;
 
 use Kestello\Cms\Mail\MailBrand;
 use Kestello\Cms\Mail\MailLayout;
+use Kestello\Cms\Mail\ThemeEmails;
 use Kestello\Framework\Mail\PlainText;
 use Kestello\Support\Html;
 
@@ -203,10 +204,14 @@ final class MailMessage
         return $this->blocks;
     }
 
-    /** The HTML part. A string brand is the site's name with Kestello's colours. */
-    public function render(MailBrand|string $brand = 'Kestello'): string
+    /**
+     * The HTML part. A string brand is the site's name with Kestello's
+     * colours. With the email's id ("auth.password_reset"), the active
+     * theme's markup for it is used when the theme has some (ThemeEmails).
+     */
+    public function render(MailBrand|string $brand = 'Kestello', ?string $id = null): string
     {
-        return $this->html ?? MailLayout::html($this->subject, $this->blocks, self::brand($brand));
+        return $this->html ?? MailLayout::html($this->subject, $this->blocks, self::brand($brand), $id !== null ? ThemeEmails::find($id) : null);
     }
 
     /** The plain-text part: the same words in the same order, the site's name last. */

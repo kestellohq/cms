@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Mail;
 
+use Kestello\Framework\Mail\MailTemplate;
 use Kestello\Support\Html;
 use Kestello\Support\Translator;
 
@@ -28,6 +29,9 @@ use Kestello\Support\Translator;
  * The first button's address is also written out at the end, for clients
  * that hide buttons.
  *
+ * A theme can lay emails out itself (ThemeEmails): its file then wraps the
+ * same rendered blocks, and Kestello's layout is used when it fails its check.
+ *
  * @internal MailMessage::render() and text() are the public way in.
  */
 final class MailLayout
@@ -37,38 +41,48 @@ final class MailLayout
     public const int IMAGE_WIDTH = 496;
 
     /** @param list<array<string, mixed>> $blocks */
-    public static function html(string $subject, array $blocks, MailBrand $brand): string
+    public static function html(string $subject, array $blocks, MailBrand $brand, ?ThemeEmail $theme = null): string
     {
         $e = static fn(string $s): string => Html::escape($s);
         $c = $brand->color(...);
         $body = '';
+        $named = [];
         foreach ($blocks as $b) {
-            $body .= match ($b['type']) {
-                'heading' => '<h1 class="k-ink" style="margin:0 0 16px;font-size:20px;line-height:1.3;color:' . $c('ink') . '">' . $e($b['text']) . '</h1>',
-                'paragraph' => '<p style="margin:0 0 16px;line-height:1.6">' . nl2br($e($b['text']), false) . '</p>',
-                'button' => '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0"><tr><td class="k-btn" style="border-radius:8px;background:' . $c('accent') . '">'
-                    . '<a class="k-btn" href="' . $e($b['url']) . '" style="display:inline-block;padding:12px 20px;border-radius:8px;background:' . $c('accent') . ';color:' . $c('accentInk') . ';font-weight:600;text-decoration:none">' . $e($b['label']) . '</a>'
-                    . '</td></tr></table>',
-                'rows' => self::rows($b['rows'], $c),
-                'code' => '<p class="k-code" style="margin:0 0 16px;padding:12px 16px;border-radius:8px;background:' . $c('page') . ';font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;letter-spacing:.04em;overflow-wrap:anywhere">' . $e($b['text']) . '</p>',
-                'note' => '<p class="k-muted" style="margin:0 0 16px;font-size:13px;line-height:1.5;color:' . $c('muted') . '">' . nl2br($e($b['text']), false) . '</p>',
-                'image' => self::image($b),
-                'divider' => '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:8px 0 24px"><tr><td class="k-row" style="border-top:1px solid ' . $c('line') . ';font-size:0;line-height:0">&nbsp;</td></tr></table>',
-                default => throw new \InvalidArgumentException("Unknown email block \"{$b['type']}\"."),
-            };
+            $html = self::block($b, $c, $e);
+            $body .= $html;
+            if (is_string($b['name'] ?? null)) {
+                $named[$b['name']] = $html;
+            }
         }
         $link = self::firstLink($blocks);
         if ($link !== null) {
             $body .= '<p class="k-muted" style="margin:24px 0 0;font-size:12px;line-height:1.5;color:' . $c('muted') . ';overflow-wrap:anywhere">' . $e(Translator::get('If the button does not work, copy this link into your browser:')) . '<br>' . $e($link) . '</p>';
         }
-        $font = $e($brand->font);
-        $logo = '';
+        $img = '';
         if ($brand->logo !== null) {
             $height = MailBrand::LOGO_HEIGHT;
             $width = max(1, (int) round($brand->logo['width'] * $height / $brand->logo['height']));
-            $logo = '<tr><td style="padding:0 0 16px;text-align:start"><img src="' . $e($brand->logo['url']) . '" alt="' . $e($brand->name) . '" width="' . $width . '" height="' . $height . '" style="display:block;border:0;height:' . $height . 'px;width:' . $width . 'px;max-width:100%"></td></tr>';
+            $img = '<img src="' . $e($brand->logo['url']) . '" alt="' . $e($brand->name) . '" width="' . $width . '" height="' . $height . '" style="display:block;border:0;height:' . $height . 'px;width:' . $width . 'px;max-width:100%">';
         }
-        $footer = $brand->footer !== '' ? '<br>' . implode('<br>', array_map($e, preg_split('/\R/', $brand->footer) ?: [])) : '';
+        $footer = implode('<br>', array_map($e, $brand->footer !== '' ? preg_split('/\R/', $brand->footer) ?: [] : []));
+        if ($theme !== null) {
+            $themed = self::themed($theme, $subject, $body, $named, $img, $footer, $brand, $blocks);
+            if ($themed !== null) {
+                return $themed;
+            }
+        }
+
+        return self::own($subject, $body, $img, $footer, $brand);
+    }
+
+    /** Kestello's own layout around the rendered blocks. */
+    private static function own(string $subject, string $body, string $img, string $footer, MailBrand $brand): string
+    {
+        $e = static fn(string $s): string => Html::escape($s);
+        $c = $brand->color(...);
+        $font = $e($brand->font);
+        $logo = $img !== '' ? '<tr><td style="padding:0 0 16px;text-align:start">' . $img . '</td></tr>' : '';
+        $footer = $footer !== '' ? '<br>' . $footer : '';
 
         return '<!DOCTYPE html><html lang="' . $e(str_replace('_', '-', Translator::locale())) . '" dir="' . Translator::direction() . '">'
             . '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">'
@@ -79,6 +93,65 @@ final class MailLayout
             . '<td class="k-card" style="padding:32px;border-radius:14px;background:' . $c('card') . ';font-family:' . $font . ';font-size:16px;color:' . $c('ink') . ';text-align:start">' . $body . '</td>'
             . '</tr><tr><td class="k-muted" style="padding:16px 0 0;font-family:' . $font . ';font-size:12px;line-height:1.5;color:' . $c('muted') . ';text-align:center">' . $e($brand->name) . $footer . '</td></tr></table>'
             . '</td></tr></table></body></html>';
+    }
+
+    /**
+     * The theme's file around the rendered blocks, or null when it fails its
+     * check (logged, so the theme's author can see why).
+     *
+     * @param array<string, string> $named a named block's HTML by name
+     * @param list<array<string, mixed>> $blocks
+     */
+    private static function themed(ThemeEmail $theme, string $subject, string $body, array $named, string $img, string $footer, MailBrand $brand, array $blocks): ?string
+    {
+        $names = $theme->id === null ? null : array_keys($named);
+        $problems = ThemeEmails::problems($theme->html, $names, $theme->locked);
+        if ($problems !== []) {
+            error_log("[kestello] {$theme->file} is not used for this email (" . implode('; ', $problems) . "); Kestello's own layout is.");
+
+            return null;
+        }
+        $brandData = ['font' => $brand->font];
+        foreach (array_keys(MailBrand::DEFAULT_COLORS) as $role) {
+            $brandData[$role] = $brand->color($role);
+        }
+
+        return MailTemplate::render($theme->html, [
+            'subject' => $subject,
+            'lang' => str_replace('_', '-', Translator::locale()),
+            'dir' => Translator::direction(),
+            'site' => ['name' => $brand->name],
+            'brand' => $brandData,
+            'blocks' => $body,
+            'block' => $named,
+            'logo' => $img,
+            'footer' => $footer,
+            'dark_css' => self::darkCss($brand),
+        ]);
+    }
+
+    /**
+     * One block's HTML.
+     *
+     * @param array<string, mixed> $b
+     * @param \Closure(string): string $c
+     * @param \Closure(string): string $e
+     */
+    private static function block(array $b, \Closure $c, \Closure $e): string
+    {
+        return match ($b['type']) {
+            'heading' => '<h1 class="k-ink" style="margin:0 0 16px;font-size:20px;line-height:1.3;color:' . $c('ink') . '">' . $e($b['text']) . '</h1>',
+            'paragraph' => '<p style="margin:0 0 16px;line-height:1.6">' . nl2br($e($b['text']), false) . '</p>',
+            'button' => '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0"><tr><td class="k-btn" style="border-radius:8px;background:' . $c('accent') . '">'
+                . '<a class="k-btn" href="' . $e($b['url']) . '" style="display:inline-block;padding:12px 20px;border-radius:8px;background:' . $c('accent') . ';color:' . $c('accentInk') . ';font-weight:600;text-decoration:none">' . $e($b['label']) . '</a>'
+                . '</td></tr></table>',
+            'rows' => self::rows($b['rows'], $c),
+            'code' => '<p class="k-code" style="margin:0 0 16px;padding:12px 16px;border-radius:8px;background:' . $c('page') . ';font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;letter-spacing:.04em;overflow-wrap:anywhere">' . $e($b['text']) . '</p>',
+            'note' => '<p class="k-muted" style="margin:0 0 16px;font-size:13px;line-height:1.5;color:' . $c('muted') . '">' . nl2br($e($b['text']), false) . '</p>',
+            'image' => self::image($b),
+            'divider' => '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:8px 0 24px"><tr><td class="k-row" style="border-top:1px solid ' . $c('line') . ';font-size:0;line-height:0">&nbsp;</td></tr></table>',
+            default => throw new \InvalidArgumentException("Unknown email block \"{$b['type']}\"."),
+        };
     }
 
     /**
