@@ -114,11 +114,15 @@ final class DatabaseTest extends TestCase
             $this->assertThrows(\PDOException::class, fn() => $c->table('t_alter')->insert(['aa' => 'y', 'b' => 'same']), "{$name}: unique added by alter");
             $this->assertSame(1, (int) $c->table('t_alter')->value('flag'), "{$name}: boolean default");
 
+            $this->assertTrue($schema->hasIndex('t_alter', 'uniq_t_alter_b'), "{$name}: an index added by alter is found");
+            $this->assertTrue($schema->hasIndex('t_posts', 'idx_t_posts_published_created_at'), "{$name}: a composite index is found");
+            $this->assertFalse($schema->hasIndex('t_posts', 'idx_t_posts_title'), $name);
             $schema->table('t_alter', function (Blueprint $t): void {
                 $t->dropUnique('b');
                 $t->dropColumn('b');
             });
             $this->assertFalse($schema->hasColumn('t_alter', 'b'), $name);
+            $this->assertFalse($schema->hasIndex('t_alter', 'uniq_t_alter_b'), "{$name}: a dropped index is gone");
 
             $schema->rename('t_alter', 't_renamed');
             $this->assertTrue($schema->hasTable('t_renamed'), $name);
@@ -307,13 +311,26 @@ final class DatabaseTest extends TestCase
     }
 
     /**
+     * Migrations that bring sites installed from a release candidate up to the shape a new
+     * install gets, where a create migration changed after that release. Each checks before it
+     * changes anything, so it does nothing on a new install. Temporary: they go once no site
+     * runs a release candidate.
+     */
+    private const array CATCH_UP = ['2026_11_11_000002_bring_released_tables_up_to_date.php'];
+
+    /**
      * Until the first release there is nothing to upgrade from: each core migration creates its
      * tables in their final shape, and none alters, renames or rewrites what another one made.
+     * The catch-up migrations for release candidates (CATCH_UP) are the exception.
      */
     public function testCoreMigrationsAreACleanSlate(): void
     {
         $files = glob(dirname(__DIR__, 2) . '/core/database/migrations/*.php') ?: [];
         $this->assertTrue($files !== [], 'core migrations found');
+        foreach (self::CATCH_UP as $file) {
+            $this->assertTrue(in_array(dirname(__DIR__, 2) . '/core/database/migrations/' . $file, $files, true), "{$file}: a catch-up migration that exists");
+        }
+        $files = array_filter($files, static fn(string $path): bool => !in_array(basename($path), self::CATCH_UP, true));
         $forbidden = [
             '/->table\(/' => 'changes an existing table, or its rows',
             '/\b(dropColumn|renameColumn|dropUnique|dropIndex|dropForeign)\(/' => 'changes an existing table',

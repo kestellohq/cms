@@ -147,6 +147,26 @@ final class Schema
     }
 
     /**
+     * The names of a table's indexes, as the database reports them: the ones
+     * Blueprint made are idx_<table>_<columns> and uniq_<table>_<columns>;
+     * a primary key's name differs per database.
+     *
+     * @return list<string>
+     */
+    public function indexes(string $table): array
+    {
+        [$sql, $bindings] = $this->connection->schemaGrammar()->compileIndexes($table);
+
+        return array_map(static fn(array $r): string => (string) ($r['name'] ?? $r['NAME'] ?? ''), $this->connection->select($sql, $bindings));
+    }
+
+    /** Whether a table has an index of this name (see indexes()). */
+    public function hasIndex(string $table, string $name): bool
+    {
+        return in_array(strtolower($name), array_map('strtolower', $this->indexes($table)), true);
+    }
+
+    /**
      * Run $callback with foreign key checks off (dropping many tables, or
      * loading rows in any order, as a restore does).
      *
