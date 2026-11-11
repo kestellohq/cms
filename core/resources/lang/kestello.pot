@@ -387,6 +387,10 @@ msgstr ""
 msgid "Activate"
 msgstr ""
 
+#: core/resources/js/pages/admin/system/Plugins.vue
+msgid "Activate again"
+msgstr ""
+
 #: core/resources/js/components/packages/PackageReviewModal.vue
 msgid "Activate it after installing"
 msgstr ""

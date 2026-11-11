@@ -4,6 +4,7 @@ import { ApiError, confirm, formatDateTime, notify, useApi, useCan, __ } from '@
 import { KAlert, KBadge, KButton, KEmpty, KField, KFileInput, KIcon, KModal, KPageHeader } from '@kestello/ui';
 import PackageReviewModal from '../../../components/packages/PackageReviewModal.vue';
 import { permissionRows } from '../../../components/packages/permissions.js';
+import { pluginActions } from '../../../components/packages/plugin-actions.js';
 import StoppedUpdate from '../../../components/updates/StoppedUpdate.vue';
 import { rememberSwitchBack, switchBackOutcome, takeSwitchBack } from '../../../components/updates/switch-back.js';
 
@@ -219,14 +220,24 @@ async function upload() {
                         @click="switchBack(p)"
                         >{{ __('Switch back to {v}', { v: p.switch_back.to }) }}</KButton
                     >
-                    <KButton v-if="p.status === 'inactive'" size="sm" variant="primary" :loading="busy === `activate:${p.slug}`" @click="act(p, 'activate')">{{
-                        __('Activate')
-                    }}</KButton>
-                    <KButton v-else size="sm" :loading="busy === `deactivate:${p.slug}`" :disabled="p.required_by.length > 0" @click="act(p, 'deactivate')">{{
-                        __('Deactivate')
-                    }}</KButton>
                     <KButton
-                        v-if="p.status === 'inactive'"
+                        v-if="pluginActions(p).activate"
+                        size="sm"
+                        variant="primary"
+                        :loading="busy === `activate:${p.slug}`"
+                        @click="act(p, 'activate')"
+                        >{{ p.status === 'suspended' ? __('Activate again') : __('Activate') }}</KButton
+                    >
+                    <KButton
+                        v-if="pluginActions(p).deactivate"
+                        size="sm"
+                        :loading="busy === `deactivate:${p.slug}`"
+                        :disabled="p.required_by.length > 0"
+                        @click="act(p, 'deactivate')"
+                        >{{ __('Deactivate') }}</KButton
+                    >
+                    <KButton
+                        v-if="pluginActions(p).remove"
                         size="sm"
                         variant="ghost"
                         icon="trash"
