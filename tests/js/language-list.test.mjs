@@ -7,6 +7,7 @@ import {
     codes,
     dropped,
     localPath,
+    noteShared,
     prefixes,
     remove,
     setText,
@@ -107,4 +108,18 @@ test('a prefix in a language with its own word', () => {
     assert.equal(localPath('/blog/category/x', paths), '/categoria/x', 'the longest first');
     assert.equal(localPath('/blogroll/', paths), '/blogroll/', 'a whole segment only');
     assert.equal(localPath('/blog/', undefined), '/blog/');
+});
+
+test('shared fields say so once there is a translation', () => {
+    const fields = [
+        { name: 'client', translatable: true, help: '' },
+        { name: 'year', translatable: false, help: '' },
+        { name: 'photo', translatable: false, help: 'Wide.' },
+    ];
+    assert.equal(noteShared(fields, false, 'Shared.'), fields, 'no translations: as they are');
+    assert.deepEqual(
+        noteShared(fields, true, 'Shared.').map((f) => f.help),
+        ['', 'Shared.', 'Wide. Shared.'],
+    );
+    assert.equal(fields[1].help, '', "the type's fields are not changed");
 });

@@ -183,6 +183,10 @@ msgstr ""
 msgid "A dropdown"
 msgstr ""
 
+#: core/resources/js/components/content-types/FieldSettings.vue
+msgid "A field the same in every language is copied to each translation when it is saved: a price, a date, a photo."
+msgstr ""
+
 #: core/resources/js/components/updates/PackageUpdates.vue
 msgid "A key ending in {last4} is saved."
 msgstr ""
@@ -979,6 +983,14 @@ msgstr ""
 #: core/resources/js/pages/admin/appearance/Styles.vue
 #: core/resources/js/pages/admin/appearance/Themes.vue
 msgid "As designed"
+msgstr ""
+
+#: core/resources/js/components/content-types/FieldSettings.vue
+msgid "As its type: the same in every language"
+msgstr ""
+
+#: core/resources/js/components/content-types/FieldSettings.vue
+msgid "As its type: written in each language"
 msgstr ""
 
 #: core/resources/js/pages/admin/emails/Index.vue
@@ -4323,6 +4335,10 @@ msgstr ""
 msgid "In a template: the body of the entry being viewed."
 msgstr ""
 
+#: core/resources/js/components/content-types/FieldSettings.vue
+msgid "In other languages"
+msgstr ""
+
 #: core/resources/js/components/content/LinkedFrom.vue
 #: core/resources/js/components/languages/TranslationLinks.vue
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -7034,6 +7050,10 @@ msgstr ""
 msgid "Per entry. 0 keeps none."
 msgstr ""
 
+#: core/resources/js/components/content-types/FieldList.vue
+msgid "Per language"
+msgstr ""
+
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Per visitor and hour"
 msgstr ""
@@ -8175,6 +8195,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "Same as {language} ({menu})"
+msgstr ""
+
+#: core/resources/js/components/content-types/FieldList.vue
+msgid "Same in every language"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDesign.vue
@@ -10183,6 +10207,14 @@ msgstr ""
 msgid "The same entry in the site's other languages"
 msgstr ""
 
+#: core/resources/js/components/content-types/FieldSettings.vue
+msgid "The same in every language"
+msgstr ""
+
+#: core/resources/js/pages/admin/content/Edit.vue
+msgid "The same in every language: saving it here changes the translations too."
+msgstr ""
+
 #: core/resources/js/pages/admin/content-types/Edit.vue
 msgid "The same structure for a theme or plugin's boot() method. Declared in code, it takes over from the one built here, so delete this one once the code is live."
 msgstr ""
@@ -11978,6 +12010,10 @@ msgstr ""
 
 #: core/src/Cms/Mail/EmailEdit.php
 msgid "Write something here, or remove the block."
+msgstr ""
+
+#: core/resources/js/components/content-types/FieldSettings.vue
+msgid "Written in each language"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue

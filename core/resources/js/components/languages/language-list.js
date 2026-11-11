@@ -111,3 +111,13 @@ export function localPath(path, paths) {
         .find((from) => path === from || path.startsWith(`${from.replace(/\/$/, '')}/`));
     return found ? paths[found] + path.slice(found.length) : path;
 }
+
+/**
+ * An entry's fields with a note on those its translations share
+ * (translatable: false), once it has a translation: saving one changes it
+ * in every language.
+ */
+export function noteShared(fields, hasTranslations, note) {
+    if (!hasTranslations) return fields;
+    return (fields ?? []).map((f) => (f.translatable === false ? { ...f, help: f.help ? `${f.help} ${note}` : note } : f));
+}
