@@ -106,6 +106,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- Webhook deliveries are queued on the `default` queue. They went to a `webhooks` queue that neither the cron task nor `queue:work` reads, so on a site with a background queue they were never sent. A test now checks that every queue core names is one the default workers read.
 - The test email, its description in Site → Emails and the error when a test send fails now name the settings tab as it is labelled, **Settings → Email** (they said "Settings → Mail"), and Email logo’s help names **Logo or photo** under **Search and sharing** (it said "Search engines").
 - Form notifications use the same email layout as everything else the site sends, with the answers as rows, a plain-text part, and the button to the submission in the admin. Before, they were their own bare HTML.
 - Notification emails show the site's name at the foot (Settings → General) instead of the `app.name` from config.
