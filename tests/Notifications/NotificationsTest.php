@@ -169,9 +169,8 @@ final class NotificationsTest extends AuthTestCase
         $this->assertSame([], $this->json($this->api('GET', '/me/notifications?unread=1'))['data']);
 
         $this->cms->notifications->type(OrderShipped::class, 'Order shipped', 'When an order leaves the warehouse');
-        $prefs = $this->json($this->api('GET', '/me/notification-preferences'))['data'];
-        $this->assertSame('order-shipped', $prefs[0]['type']);
-        $this->assertSame([['channel' => 'database', 'enabled' => true], ['channel' => 'mail', 'enabled' => true]], $prefs[0]['channels']);
+        $prefs = array_column($this->json($this->api('GET', '/me/notification-preferences'))['data'], null, 'type');
+        $this->assertSame([['channel' => 'database', 'enabled' => true], ['channel' => 'mail', 'enabled' => true]], $prefs['order-shipped']['channels']);
         $this->assertSame(204, $this->api('PUT', '/me/notification-preferences', ['preferences' => [['type' => 'order-shipped', 'channel' => 'mail', 'enabled' => false]]])->statusCode());
         $this->assertSame(['mail'], $this->cms->notifications->disabledChannels((int) $ana['id'], 'order-shipped'));
         $this->assertSame(422, $this->api('PUT', '/me/notification-preferences', ['preferences' => [['type' => 'nope', 'channel' => 'mail', 'enabled' => false]]])->statusCode());
@@ -194,7 +193,7 @@ final class NotificationsTest extends AuthTestCase
         $security = new Principal((int) $bo['id'], [], 'session', ['security.manage']);
         $this->assertSame(['order-shipped', 'security-alert'], array_keys($n->typesFor($security)), 'any one of the capabilities is enough');
         $admin = new Principal(1, [], 'session', ['*']);
-        $this->assertSame(['order-shipped', 'queued-digest', 'security-alert'], array_keys($n->typesFor($admin)));
+        $this->assertSame(['new-sign-up', 'order-shipped', 'queued-digest', 'security-alert'], array_keys($n->typesFor($admin)), "with core's own for people who manage people");
 
         $this->api('POST', '/auth/session', ['login' => 'bo', 'password' => self::PASSWORD]);
         $this->assertSame(['order-shipped'], array_column($this->json($this->api('GET', '/me/notification-preferences'))['data'], 'type'), 'a member sees only what can reach them');
@@ -203,7 +202,7 @@ final class NotificationsTest extends AuthTestCase
         $this->assertSame([], $n->disabledChannels((int) $bo['id'], 'queued-digest'), 'nothing was stored');
 
         $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD]);
-        $this->assertSame(['order-shipped', 'queued-digest', 'security-alert'], array_column($this->json($this->api('GET', '/me/notification-preferences'))['data'], 'type'));
+        $this->assertSame(['new-sign-up', 'order-shipped', 'queued-digest', 'security-alert'], array_column($this->json($this->api('GET', '/me/notification-preferences'))['data'], 'type'));
         $this->assertSame(204, $this->api('PUT', '/me/notification-preferences', ['preferences' => [['type' => 'queued-digest', 'channel' => 'mail', 'enabled' => false]]])->statusCode());
     }
 
@@ -218,13 +217,13 @@ final class NotificationsTest extends AuthTestCase
             (new WebhooksModule())->boot($this->cms);
             $roles = $this->cms->auth->roles;
             $as = fn(string $role): array => array_keys($this->cms->notifications->typesFor(new Principal(1, [], 'session', $roles->capabilitiesFor($role))));
-            $all = ['content-review', 'content-comment', 'site-health', 'webhook-disabled'];
+            $all = ['new-sign-up', 'content-review', 'content-comment', 'site-health', 'webhook-disabled'];
             $this->assertSame($all, array_keys($this->cms->notifications->types()), 'the core types');
 
             $this->assertSame([], $as('user'), 'a member gets none of them');
             $this->assertSame(['content-review', 'content-comment'], $as('contributor'), 'people who use the content editor get reviews and comments');
             $this->assertSame(['content-review', 'content-comment'], $as('editor'));
-            $this->assertSame($all, $as('admin'), 'administrators get Site Health and webhook notices too');
+            $this->assertSame($all, $as('admin'), 'administrators get sign-ups, Site Health and webhook notices too');
         } finally {
             Model::resetRegistry();
         }

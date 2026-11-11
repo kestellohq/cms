@@ -13,7 +13,9 @@ use Kestello\Cms\Auth\External\Identities;
 use Kestello\Cms\Auth\External\IdentityResolver;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Events\IdentityLinked;
+use Kestello\Cms\Events\UserRegistered;
 use Kestello\Cms\Extension\Provider;
+use Kestello\Cms\Health\Administrators;
 use Kestello\Contracts\Security\SecretStore;
 use Kestello\Contracts\Session\SessionStore;
 use Kestello\Framework\Cache\ArrayStore;
@@ -132,6 +134,8 @@ final class AuthModule extends Provider
         (new AuditSubscriber($cms->audit))->subscribe($cms->events);
         $cms->events->on(IdentityLinked::class, static fn(IdentityLinked $e) => self::notifyLinked($cms, $e));
         $cms->events->on(\Kestello\Cms\Events\LoginFailed::class, static fn(\Kestello\Cms\Events\LoginFailed $e) => self::notifySecondFactorFailures($cms, $e));
+        $cms->notifications->type(NewSignUpNotification::class, 'New sign-ups', 'When someone makes their own account', capability: 'users.manage');
+        $cms->events->on(UserRegistered::class, static fn(UserRegistered $e) => self::notifySignUp($cms, $e));
 
         $r = $cms->routes;
         $r->get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -189,6 +193,29 @@ final class AuthModule extends Provider
             self::mail($cms, 'auth.sign_in_method_added', (string) $user['email'], ['site' => $site, 'name' => (string) $user['username'], 'provider' => $e->provider, 'label' => $label], $site);
         } catch (\Throwable $ex) {
             error_log('[auth] could not send the account-linked email: ' . $ex->getMessage());
+        }
+    }
+
+    /** Tell the people who manage people that someone made their own account (not one made in the admin or with user:create). */
+    private static function notifySignUp(Cms $cms, UserRegistered $e): void
+    {
+        $method = match (true) {
+            $e->via === 'email' => 'email',
+            str_starts_with($e->via, 'external:') => $cms->auth->findAuthenticator(substr($e->via, 9))?->label() ?? substr($e->via, 9),
+            default => null,
+        };
+        if ($method === null) {
+            return;
+        }
+        try {
+            $user = QueryBuilder::table('users')->where('id', $e->userId)->first();
+            $to = array_values(array_diff(Administrators::ids($cms, 'users.manage'), [$e->userId]));
+            if ($user === null || $to === []) {
+                return;
+            }
+            $cms->notifications->send($to, new NewSignUpNotification($e->userId, (string) $user['username'], (string) $user['email'], $method, (string) $cms->config->get('app.url', '')));
+        } catch (\Throwable $ex) {
+            error_log('[auth] could not tell administrators about a new sign-up: ' . $ex->getMessage());
         }
     }
 

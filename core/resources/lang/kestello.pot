@@ -6681,6 +6681,14 @@ msgstr ""
 msgid "Open the webhook"
 msgstr ""
 
+#: core/src/Cms/Auth/NewSignUpNotification.php
+msgid "Open their profile"
+msgstr ""
+
+#: core/src/Cms/Auth/NewSignUpNotification.php
+msgid "Open their profile to change their role, or delete the account if you do not know them."
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Open theirs as a draft"
 msgstr ""
@@ -12065,6 +12073,10 @@ msgstr ""
 msgid "You don’t have permission to see this page."
 msgstr ""
 
+#: core/src/Cms/Auth/NewSignUpNotification.php
+msgid "You get this because you can manage people. Turn it off under Your profile → Notifications."
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "You have no access tokens."
 msgstr ""
@@ -12812,6 +12824,14 @@ msgstr ""
 msgid "{edge}: drag, or use the arrow keys, to resize the crop."
 msgstr ""
 
+#: core/src/Cms/Auth/NewSignUpNotification.php
+msgid "{email} made an account by signing in with {provider}."
+msgstr ""
+
+#: core/src/Cms/Auth/NewSignUpNotification.php
+msgid "{email} made an account with the sign-up form."
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Styles.vue
 msgid "{family} is now served from this site."
 msgstr ""
@@ -13166,6 +13186,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Queue.vue
 msgid "{name} progress"
+msgstr ""
+
+#: core/src/Cms/Auth/NewSignUpNotification.php
+msgid "{name} signed up"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Fleet.vue
