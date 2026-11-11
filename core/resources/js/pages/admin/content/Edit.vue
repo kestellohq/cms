@@ -1038,7 +1038,7 @@ const err = (key) => (Array.isArray(errors.value[key]) ? errors.value[key][0] : 
                     </KCard>
 
                     <KCard v-for="tax in taxonomies" :key="tax.name" :title="tax.plural">
-                        <KTermSelect v-model="form.terms[tax.name]" :taxonomy="tax" :disabled="readOnly" />
+                        <KTermSelect v-model="form.terms[tax.name]" :taxonomy="tax" :disabled="readOnly" :locale="multilingual ? language : null" />
                         <p v-if="err(`terms.${tax.name}`)" class="k-field__error">{{ err(`terms.${tax.name}`) }}</p>
                     </KCard>
 

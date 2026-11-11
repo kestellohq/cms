@@ -135,9 +135,13 @@ final class Entries
             }
             $parent = $source->parent_id === null ? null : Entry::query()->find($source->parent_id);
             $parent = $parent instanceof Entry ? $parent->translation($locale, published: false) : null;
-            $terms = [];
+            $terms = [];      // each term's translation into $locale where it has one, else the term itself
             foreach ($this->terms->summaries([(int) $source->getKey()])[(int) $source->getKey()] ?? [] as $taxonomy => $list) {
-                $terms[$taxonomy] = array_map(static fn(array $t): int => $t['id'], $list);
+                $terms[$taxonomy] = array_values(array_unique(array_map(static function (array $t) use ($locale): int {
+                    $term = Term::query()->find($t['id']);
+
+                    return $term instanceof Term ? (int) ($term->translation($locale)?->getKey() ?? $t['id']) : $t['id'];
+                }, $list)));
             }
             $copy = $this->create($type, [
                 'locale' => $locale, 'title' => (string) $source->title, 'excerpt' => $source->excerpt, 'data' => $source->data ?? [],
@@ -466,7 +470,7 @@ final class Entries
             $entry->save();
             foreach ($terms as $taxName => $checked) {
                 $tax = $this->content->getTaxonomy($taxName);
-                $this->terms->sync($entry, $tax, $this->terms->ensure($tax, $checked));
+                $this->terms->sync($entry, $tax, $this->terms->ensure($tax, $checked, $entry->language()));
             }
             $this->reindex($entry, $type);
             $this->recordRevision($entry, $type, $p->userId);

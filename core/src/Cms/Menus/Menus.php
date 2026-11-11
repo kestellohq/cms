@@ -345,10 +345,21 @@ final class Menus
             foreach (\Kestello\Cms\Content\Term::onlyInUse(\Kestello\Cms\Content\Term::query()->whereIn('terms.id', array_unique($ids['term'])))->get() as $used) {
                 $inUse[(int) $used->getKey()] = true;
             }
-            foreach (QueryBuilder::table('terms')->whereIn('id', array_unique($ids['term']))->get() as $t) {
+            $rows = QueryBuilder::table('terms')->whereIn('id', array_unique($ids['term']))->get();
+            // in another language, a term's translation names the link (its page lists that language's entries)
+            $translated = [];
+            $groups = array_values(array_unique(array_filter(array_map(static fn(array $t) => (string) ($t['translation_group'] ?? ''), $rows))));
+            if ($language !== '' && $groups !== []) {
+                foreach (QueryBuilder::table('terms')->whereIn('translation_group', $groups)->where('locale', $language)->get() as $t) {
+                    $translated[(string) $t['translation_group']] = $t;
+                }
+            }
+            foreach ($rows as $t) {
                 $tax = $this->content->getTaxonomy((string) $t['taxonomy']);
-                $url = $tax?->getPath() === null ? null : ContentLanguages::localize($tax->getPath() . '/' . $t['slug'], $language);
-                $out['term'][(int) $t['id']] = ['label' => (string) $t['name'], 'url' => $url, 'live' => $url !== null && isset($inUse[(int) $t['id']]), 'type_label' => $tax === null ? '' : Labels::text($tax->singular(), Labels::domain($tax->owner))];
+                $live = isset($inUse[(int) $t['id']]);
+                $shown = (string) $t['locale'] === $language ? $t : ($translated[(string) ($t['translation_group'] ?? '')] ?? $t);
+                $url = $tax?->getPath() === null ? null : ContentLanguages::localize($tax->getPath() . '/' . $shown['slug'], $language);
+                $out['term'][(int) $t['id']] = ['label' => (string) $shown['name'], 'url' => $url, 'live' => $url !== null && $live, 'type_label' => $tax === null ? '' : Labels::text($tax->singular(), Labels::domain($tax->owner))];
             }
         }
 

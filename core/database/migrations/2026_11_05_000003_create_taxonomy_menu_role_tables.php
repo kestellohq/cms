@@ -20,12 +20,15 @@ return new class extends Migration {
             $t->string('taxonomy', 32);
             $t->string('name', 191);
             $t->string('slug', 191);
+            $t->string('locale', 12)->default('');           // '' = the main language, else its code (ContentLanguages)
+            $t->char('translation_group', 26)->nullable();   // shared by a term and its translations
             $t->foreignId('parent_id')->nullable()->constrained('terms')->nullOnDelete();
             $t->text('description')->nullable();
             $t->integer('menu_order')->default(0);
             $t->timestamps();
-            $t->uniqueIndex('taxonomy', 'slug');
+            $t->uniqueIndex('taxonomy', 'locale', 'slug');
             $t->index('taxonomy', 'parent_id');
+            $t->index('translation_group');
         });
         $schema->create('entry_term', function (Blueprint $t): void {
             $t->foreignId('entry_id')->constrained('entries')->cascadeOnDelete();

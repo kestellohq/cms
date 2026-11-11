@@ -116,6 +116,7 @@ final class DemoModeTest extends AuthTestCase
         'POST /media/{id}/restore',
         'POST /menus',
         'POST /taxonomies/{taxonomy}/terms',
+        'POST /taxonomies/{taxonomy}/terms/{id}/translations',
         'PUT /content/{type}/entries/{id}/assignee',
         'PUT /content/{type}/entries/{id}/autosave',
         'PUT /design/styles',

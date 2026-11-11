@@ -50,6 +50,7 @@ final class ApiModule extends Provider
         Endpoints\Content\ListTaxonomies::class,
         Endpoints\Content\ListTerms::class,
         Endpoints\Content\CreateTerm::class,
+        Endpoints\Content\CreateTermTranslation::class,
         Endpoints\Content\UpdateTerm::class,
         Endpoints\Content\DeleteTerm::class,
         Endpoints\Menus\ListMenus::class,

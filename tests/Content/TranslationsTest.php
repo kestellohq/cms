@@ -197,4 +197,26 @@ final class TranslationsTest extends AuthTestCase
         $prefix->handle(new Request('GET', '/fr/about', '/fr/about', [], [], [], [], [], []), $next);
         $this->assertSame([['/es/admin/content', ''], ['/about', 'es'], ['/fr/about', '']], $seen);
     }
+
+    public function testCategoriesHaveALanguageToo(): void
+    {
+        $terms = new \Kestello\Cms\Content\Terms();
+        $category = $this->cms->content->getTaxonomy('category');
+        $news = $terms->create($category, ['name' => 'News'], $this->me);
+        $hello = $this->publish('post', ['title' => 'Hello', 'terms' => ['category' => [(int) $news->getKey()]]]);
+        $this->inSpanish($hello, ['title' => 'Hola', 'slug' => 'hola']);
+
+        $this->assertSame(['Hola'], array_column($this->page('/es/category/news')['entries'], 'title'), 'not translated yet: the main category, listing Spanish posts');
+        $this->assertSame(['Hello'], array_column($this->page('/category/news')['entries'], 'title'));
+
+        $noticias = $terms->translate($category, $news, 'es', $this->me);
+        $terms->update($category, $noticias, ['name' => 'Noticias', 'slug' => 'noticias'], $this->me);
+        $this->assertSame([301, '/es/category/noticias'], $this->goesTo('/es/category/news'), 'the translation has its own address');
+        $page = $this->page('/es/category/noticias');
+        $this->assertSame(['Noticias', ['Hola'], '/es/category/noticias'], [$page['title'], array_column($page['entries'], 'title'), $page['seo']['canonical']], 'the Spanish post still carries the English category, and counts');
+        $this->assertSame(404, $this->visit('/category/noticias')->statusCode(), 'a Spanish category is not in English');
+
+        $again = $this->entries->translate($this->publish('post', ['title' => 'Second', 'terms' => ['category' => [(int) $news->getKey()]]]), 'es', $this->me);
+        $this->assertSame([(int) $noticias->getKey()], (new \Kestello\Cms\Content\Terms())->idsFor([(int) $again->getKey()])[(int) $again->getKey()]['category'], 'a new translation takes the translated category');
+    }
 }

@@ -632,6 +632,10 @@ msgid "Added “{label}” at the end."
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Terms.vue
+msgid "Added “{name}” in {language}. Translate its name."
+msgstr ""
+
+#: core/resources/js/pages/admin/content/Terms.vue
 msgid "Added “{name}”."
 msgstr ""
 
@@ -4435,6 +4439,10 @@ msgstr ""
 msgid "It did not arrive."
 msgstr ""
 
+#: core/src/Cms/Content/Terms.php
+msgid "It is already in that language."
+msgstr ""
+
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "It is not shown anywhere."
 msgstr ""
@@ -4728,6 +4736,7 @@ msgstr ""
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/content/Index.vue
+#: core/resources/js/pages/admin/content/Terms.vue
 #: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -6486,6 +6495,7 @@ msgid "One improvement is recommended."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Content/ListEntries.php
+#: core/src/Cms/Api/Endpoints/Content/ListTerms.php
 msgid "One language: main (or empty) for the main one, or a code such as es. Default: any, every language"
 msgstr ""
 
@@ -7072,6 +7082,10 @@ msgstr ""
 
 #: core/src/Cms/Redirects/Redirects.php
 msgid "Pick exact, prefix or pattern."
+msgstr ""
+
+#: core/src/Cms/Content/Terms.php
+msgid "Pick one in the same language."
 msgstr ""
 
 #: core/src/Cms/Package/Registry/Registry.php
@@ -9953,6 +9967,10 @@ msgstr ""
 msgid "The kinds of content this site has and the fields each one holds. Types you build here work like the built-in ones: the editor, the API, search and public pages all follow them."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Content/TermEndpoint.php
+msgid "The language it is written in: '' (the main one, the default) or one of the site's other languages. Fixed once created"
+msgstr ""
+
 #: core/src/Cms/Api/Resources/EntryResource.php
 msgid "The language it is written in: '' for the site's main language, else a code such as es"
 msgstr ""
@@ -9973,6 +9991,7 @@ msgstr ""
 msgid "The language this is written in. It stays once saved; translate it into the others afterwards."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Content/CreateTermTranslation.php
 #: core/src/Cms/Api/Endpoints/Content/CreateTranslation.php
 msgid "The language to translate into: one of the site's other languages (GET /content/languages), or '' for the main one"
 msgstr ""
@@ -10207,6 +10226,7 @@ msgid "The site is putting it back. Reload the page in a moment."
 msgstr ""
 
 #: core/src/Cms/Content/Entries.php
+#: core/src/Cms/Content/Terms.php
 msgid "The site isn't written in \"{code}\". Use one of its languages, or leave it empty for the main one."
 msgstr ""
 
@@ -10832,11 +10852,13 @@ msgid "Top right corner"
 msgstr ""
 
 #: core/resources/js/components/languages/TranslationLinks.vue
+#: core/resources/js/pages/admin/content/Terms.vue
 msgid "Translate into {language}"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/content/Index.vue
+#: core/resources/js/pages/admin/content/Terms.vue
 msgid "Translations"
 msgstr ""
 
@@ -12866,11 +12888,13 @@ msgid "{label}: a colour of your own"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Index.vue
+#: core/resources/js/pages/admin/content/Terms.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "{language} (main)"
 msgstr ""
 
 #: core/resources/js/components/languages/TranslationLinks.vue
+#: core/resources/js/pages/admin/content/Terms.vue
 msgid "{language}: {title}"
 msgstr ""
 
