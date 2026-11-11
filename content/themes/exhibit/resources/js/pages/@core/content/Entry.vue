@@ -37,6 +37,8 @@ const trees = computed(() =>
 const body = computed(() =>
     (props.entry.html ?? []).map((k) => ({ key: k, html: props.entry.data?.[k] })).filter((p) => typeof p.html === 'string' && p.html !== ''),
 );
+// an essay is filed under its first category (an exhibition's section), not signed by an account
+const filed = computed(() => props.terms[0]?.terms?.[0] ?? null);
 const date = computed(() =>
     kind.value === 'text' && props.type.archive && props.entry.published_at
         ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'long' }).format(new Date(props.entry.published_at))
@@ -79,7 +81,7 @@ const original = computed(() => (props.translation_missing ? (languages.value[0]
     </section>
 
     <!-- the text, on paper -->
-    <article class="reading" :lang="original?.code">
+    <article class="reading" :class="{ 'reading--essay': kind === 'text' && date }" :lang="original?.code">
         <p v-if="original && asked" class="untranslated" :lang="asked.code" role="note">
             {{ __('This page is not available in {language} yet. Here it is in {original}.', { language: asked.name, original: original.name }) }}
         </p>
@@ -88,7 +90,10 @@ const original = computed(() => (props.translation_missing ? (languages.value[0]
             <h1 data-k-title>{{ entry.title }}</h1>
             <p v-if="date" class="reading__meta">
                 <time :datetime="entry.published_at">{{ date }}</time>
-                <template v-if="entry.author"><span aria-hidden="true"> · </span>{{ entry.author.name }}</template>
+                <template v-if="filed"
+                    ><span aria-hidden="true"> · </span><Link v-if="filed.path" :href="filed.path">{{ filed.name }}</Link
+                    ><span v-else>{{ filed.name }}</span></template
+                >
             </p>
         </header>
         <figure v-if="kind === 'text' && first" class="reading__figure">
@@ -109,5 +114,8 @@ const original = computed(() => (props.translation_missing ? (languages.value[0]
                 </template>
             </p>
         </footer>
+        <p v-if="kind === 'text' && date && type.archive" class="reading__onward">
+            <Link :href="type.archive">← {{ room }}</Link>
+        </p>
     </article>
 </template>

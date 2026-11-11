@@ -26,7 +26,7 @@ export function roomOf(component, props = {}) {
 
 /** A room's name in the page's language, for a type the theme knows; else the type's own. */
 export function roomName(typeName, fallback, __) {
-    const names = { projects: __('Projects'), team: __('Studio'), talks: __('Talks'), post: __('Journal') };
+    const names = { projects: __('Projects'), team: __('People'), talks: __('Talks'), post: __('Journal') };
     return names[typeName] ?? fallback;
 }
 
@@ -96,10 +96,32 @@ export function talkDate(iso, locale, now = new Date()) {
     if (Number.isNaN(at.getTime())) return null;
     return {
         day: new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(at),
-        time: new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(at),
+        time: new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(at),
         year: at.getFullYear(),
         past: at <= now,
     };
+}
+
+/**
+ * Talks as a programme reads them: the coming ones first, the soonest at
+ * the top, then the ones held, the latest first.
+ */
+export function programme(talks, now = new Date()) {
+    const at = (e) => new Date(e.fields?.starts ?? e.published_at ?? 0).getTime() || 0;
+    const coming = talks.filter((e) => at(e) > now.getTime()).sort((a, b) => at(a) - at(b));
+    const held = talks.filter((e) => at(e) <= now.getTime()).sort((a, b) => at(b) - at(a));
+    return [...coming, ...held];
+}
+
+/** A room's line under its name, in the page's language, for the rooms the theme knows; else the type's own description. */
+export function roomLede(typeName, fallback, __) {
+    const ledes = {
+        projects: __('Built work, work on site and studies, newest first.'),
+        talks: __('Evenings at the studio and elsewhere, the next one first.'),
+        team: __('The people who work at the studio.'),
+        post: __('Notes from the studio: places we visited, drawings, and what we are reading.'),
+    };
+    return ledes[typeName] ?? fallback ?? '';
 }
 
 /** Whether a value is an image from the media library, as pages receive it. */

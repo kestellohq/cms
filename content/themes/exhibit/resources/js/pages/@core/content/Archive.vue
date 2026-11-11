@@ -1,7 +1,7 @@
 <script>
 // Exhibit's lists (they replace core's "@core/content/Archive"): projects as
 // a catalogue with the newest face out, talks as a programme, everything
-// else as journal entries.
+// else as a journal: the newest essay laid open, the rest as an index.
 export default { layout: 'Site' };
 </script>
 
@@ -11,7 +11,7 @@ import { Head, Link, usePage } from '@kestello/app';
 import { useI18n } from '@kestello/sdk';
 import Plate from '../../../components/Plate.vue';
 import Print from '../../../components/Print.vue';
-import { plateRows, roomName, talkDate } from '../../../components/rooms.js';
+import { plateRows, programme, roomLede, roomName, talkDate } from '../../../components/rooms.js';
 
 const props = defineProps({
     type: { type: Object, required: true },
@@ -25,14 +25,20 @@ const { __ } = useI18n('exhibit');
 const page = usePage();
 const locale = computed(() => page.props.i18n?.locale ?? 'en');
 
-const kind = computed(() => (props.type.name === 'projects' ? 'projects' : props.type.name === 'talks' ? 'talks' : 'journal'));
+const kind = computed(() => ({ projects: 'projects', talks: 'talks', team: 'people' })[props.type.name] ?? 'journal');
 const heading = computed(() => {
     if (props.date) return __('{period} in {room}', { period: props.date.label, room: roomName(props.type.name, props.type.plural, __) });
     if (props.author) return __('Written by {name}', { name: props.author.name });
     return roomName(props.type.name, props.type.plural, __);
 });
+const first = computed(() => (props.pagination.page === 1 && !props.date && !props.term && !props.author ? (props.entries[0] ?? null) : null));
 const face = computed(() => (kind.value === 'projects' && props.pagination.page === 1 ? (props.entries[0] ?? null) : null));
 const spine = computed(() => (face.value ? props.entries.slice(1) : props.entries));
+const lead = computed(() => (kind.value === 'journal' ? first.value : null));
+const index = computed(() => (lead.value ? props.entries.slice(1) : props.entries));
+// a room the theme knows says what it holds in the page's language; a type's own description is the admin's, in one language
+const lede = computed(() => (props.term ? props.type.description : roomLede(props.type.name, props.type.description, __)));
+const programmed = computed(() => programme(props.entries));
 const meta = (e) =>
     plateRows(e.fields, __)
         .filter((r) => r.key === 'place' || r.key === 'use')
@@ -47,7 +53,7 @@ const pageUrl = (n) => (n <= 1 ? props.type.path : `${props.type.path}?page=${n}
     <Head :title="heading" />
     <section class="wall">
         <h1 class="wall-text">{{ heading }}</h1>
-        <p v-if="type.description" class="wall-lede">{{ type.description }}</p>
+        <p v-if="lede" class="wall-lede">{{ lede }}</p>
         <p v-else-if="date" class="wall-lede">
             <Link :href="date.archive">{{ __('Everything in {room}', { room: roomName(type.name, type.plural, __) }) }}</Link>
         </p>
@@ -80,7 +86,7 @@ const pageUrl = (n) => (n <= 1 ? props.type.path : `${props.type.path}?page=${n}
 
         <!-- talks: the programme -->
         <ol v-else-if="kind === 'talks'" class="programme">
-            <li v-for="e in entries" :key="e.id" class="programme__item" :class="{ programme__past: when(e)?.past }">
+            <li v-for="e in programmed" :key="e.id" class="programme__item" :class="{ programme__past: when(e)?.past }">
                 <p v-if="when(e)" class="programme__date">
                     {{ when(e).day }}<small>{{ when(e).past ? __('Held in {year}', { year: when(e).year }) : when(e).time }}</small>
                 </p>
@@ -93,16 +99,42 @@ const pageUrl = (n) => (n <= 1 ? props.type.path : `${props.type.path}?page=${n}
             </li>
         </ol>
 
-        <!-- the journal -->
-        <ul v-else class="essays">
-            <li v-for="e in entries" :key="e.id">
-                <time v-if="e.published_at" :datetime="e.published_at">{{ fmt(e.published_at) }}</time>
-                <h2 class="essays__title">
+        <!-- people: a wall of name plates, no portraits -->
+        <ul v-else-if="kind === 'people'" class="people">
+            <li v-for="e in entries" :key="e.id" class="plate person">
+                <h2 class="plate__title">
                     <Link :href="e.path">{{ e.title }}</Link>
                 </h2>
-                <p v-if="e.excerpt">{{ e.excerpt }}</p>
+                <p v-if="e.fields?.role">{{ e.fields.role }}</p>
             </li>
         </ul>
+
+        <!-- the journal: the newest essay laid open, then the index -->
+        <template v-else>
+            <article v-if="lead" class="lead-essay">
+                <Print v-if="lead.image" :media="lead.image" size="large" sizes="(min-width: 900px) 56vw, 92vw" priority alt="" />
+                <div class="lead-essay__text">
+                    <time v-if="lead.published_at" :datetime="lead.published_at">{{ fmt(lead.published_at) }}</time>
+                    <h2 class="lead-essay__title">
+                        <Link :href="lead.path">{{ lead.title }}</Link>
+                    </h2>
+                    <p v-if="lead.excerpt">{{ lead.excerpt }}</p>
+                    <span class="lead-essay__read" aria-hidden="true">{{ __('Read') }} →</span>
+                </div>
+            </article>
+            <ol v-if="index.length" class="journal-index">
+                <li v-for="e in index" :key="e.id" class="journal-index__item">
+                    <time v-if="e.published_at" :datetime="e.published_at">{{ fmt(e.published_at) }}</time>
+                    <div>
+                        <h2 class="journal-index__title">
+                            <Link :href="e.path">{{ e.title }}</Link>
+                        </h2>
+                        <p v-if="e.excerpt">{{ e.excerpt }}</p>
+                    </div>
+                    <Print v-if="e.image" :media="e.image" size="medium" sizes="(min-width: 760px) 14rem, 30vw" alt="" />
+                </li>
+            </ol>
+        </template>
 
         <nav v-if="pagination.last > 1" class="pager" :aria-label="__('Pages')">
             <Link v-if="pagination.page > 1" :href="pageUrl(pagination.page - 1)" rel="prev">{{ __('Newer') }}</Link>

@@ -13,7 +13,7 @@ use Kestello\Cms\Extension\ExtensionManager;
 use Kestello\Cms\Extension\SuspensionList;
 use Kestello\Support\Hash;
 
-/** The demo's snapshot and its hourly reset, on a site that already has content (the sample site is DemoContentTest's). */
+/** The demo's snapshot and its hourly reset, mostly on a site that already has content (the sample site is DemoContentTest's). */
 final class DemoSiteTest extends AuthTestCase
 {
     protected bool $demo = true;
@@ -52,6 +52,17 @@ final class DemoSiteTest extends AuthTestCase
         $this->assertSame(1, $this->db->table('entries')->count(), 'a site with content keeps it: no sample site on top');
 
         $this->assertFalse($this->site()->ensure(), 'once');
+    }
+
+    public function testAnEmptySiteIsPreparedFirstAndSnapshottedOnceItIsFilled(): void
+    {
+        $this->db->table('entries')->delete();
+
+        $this->assertFalse($this->site()->ensure(), 'the content types are built now and registered on the next boot');
+        $this->assertSame(['projects', 'talks', 'team'], array_map('strval', $this->db->table('content_models')->orderBy('id')->pluck('name')));
+        $this->assertNull($this->site()->state()['snapshot'], 'no snapshot of a half-made site');
+        $this->assertFalse($this->site()->ensure(), 'until that boot, nothing more happens');
+        $this->assertSame(3, $this->db->table('content_models')->count(), 'and nothing is built twice');
     }
 
     public function testTheResetPutsBackContentUploadsAndAccountsAndSignsEveryoneOut(): void

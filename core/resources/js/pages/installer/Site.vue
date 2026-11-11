@@ -55,9 +55,9 @@ defineProps({ step: Number, error: { type: String, default: null }, site: { type
                     <input type="radio" name="site_kind" value="demo" :checked="site.demo" />
                     <strong>A public demo</strong>
                     <span
-                        >For showing Kestello to others. It starts with a sample bakery site, anyone can sign in as demo with the password demo, and it resets
-                        every hour. Accounts, plugins, updates, backups and settings are locked, and nothing is emailed. You manage it on the server with
-                        bin/cms.</span
+                        >For showing Kestello to others. It starts with a sample architecture studio in English and Spanish, anyone can sign in as demo with the
+                        password demo, and it resets every hour. Accounts, plugins, updates, backups and settings are locked, and nothing is emailed. You manage
+                        it on the server with bin/cms.</span
                     >
                 </label>
             </fieldset>

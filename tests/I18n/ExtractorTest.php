@@ -88,8 +88,10 @@ final class ExtractorTest extends TestCase
         file_put_contents("{$root}/src/Page.vue", "<template>{{ __('Also kept') }}</template>");
         file_put_contents("{$root}/assets/build/app.js", "__('Built')");
         file_put_contents("{$root}/tests/T.php", "<?php __('Test');");
+        file_put_contents("{$root}/src/sample.php", "<?php\n/* Sample content. i18n:extract skips this file. */\nreturn ['title' => 'Casa'];");
+        file_put_contents("{$root}/src/Later.php", "<?php echo __('Kept');\n" . str_repeat("\n", 1200) . '// i18n:extract skips this file, said too late to count');
 
-        $this->assertSame(['Also kept' => ['src/Page.vue'], 'Kept' => ['src/Plugin.php']], (new Extractor())->scan($root, $root)->messages());
+        $this->assertSame(['Also kept' => ['src/Page.vue'], 'Kept' => ['src/Later.php', 'src/Plugin.php']], (new Extractor())->scan($root, $root)->messages());
         $this->assertThrows(\InvalidArgumentException::class, fn() => (new Extractor())->scan($root, "{$root}/missing"));
     }
 }
