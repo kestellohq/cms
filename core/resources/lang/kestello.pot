@@ -495,6 +495,10 @@ msgstr ""
 msgid "Add an Entry content block where the entry's own text should go. Without one, only the blocks above show."
 msgstr ""
 
+#: core/resources/js/components/languages/PathTexts.vue
+msgid "Add another language above to give its addresses their own words."
+msgstr ""
+
 #: core/resources/js/components/languages/SiteTexts.vue
 msgid "Add another language above to name the site in it."
 msgstr ""
@@ -665,6 +669,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Address copied."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Addresses in other languages"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Addresses of content types and categories in each of the other languages, such as /es/proyectos for /projects. Left empty, a language uses the main ones."
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -5903,6 +5915,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "No content changes"
+msgstr ""
+
+#: core/resources/js/components/languages/PathTexts.vue
+msgid "No content type or category has an address of its own yet."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
@@ -12910,6 +12926,18 @@ msgstr ""
 #: core/resources/js/pages/admin/content/Terms.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "{language} (main)"
+msgstr ""
+
+#: core/src/Cms/I18n/TranslatedPaths.php
+msgid "{language}: \"{path}\" can only have lowercase letters, digits and hyphens."
+msgstr ""
+
+#: core/src/Cms/I18n/TranslatedPaths.php
+msgid "{language}: /{code}/{path} already belongs to {owner}."
+msgstr ""
+
+#: core/src/Cms/I18n/TranslatedPaths.php
+msgid "{language}: /{path} is given twice."
 msgstr ""
 
 #: core/src/Cms/I18n/SiteText.php

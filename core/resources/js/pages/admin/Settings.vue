@@ -6,6 +6,7 @@ import { KAlert, KButton, KCard, KExtension, KField, KInput, KPageHeader, KSchem
 import MediaPicker from '../fields/MediaPicker.vue';
 import LanguagesPicker from '../../components/languages/LanguagesPicker.vue';
 import SiteTexts from '../../components/languages/SiteTexts.vue';
+import PathTexts from '../../components/languages/PathTexts.vue';
 
 defineOptions({ layout: 'Admin' });
 
@@ -191,6 +192,17 @@ const whereItShows = computed(() => ({
                                     :languages="drafts.general?.languages ?? stored.languages ?? ''"
                                     :name="drafts.general?.site_name ?? ''"
                                     :tagline="drafts.general?.site_description ?? ''"
+                                    :disabled="disabled"
+                                    @update:model-value="set"
+                                />
+                            </template>
+                            <!-- type and taxonomy addresses in the other languages: {"es": {"/projects": "/proyectos"}} -->
+                            <template #format-paths="{ id, value, set, invalid, disabled }">
+                                <PathTexts
+                                    :id="id"
+                                    :model-value="value ?? ''"
+                                    :languages="drafts.general?.languages ?? stored.languages ?? ''"
+                                    :invalid="invalid"
                                     :disabled="disabled"
                                     @update:model-value="set"
                                 />

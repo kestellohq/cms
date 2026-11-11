@@ -91,3 +91,23 @@ export function setText(value, code, key, text) {
     else delete all[code];
     return Object.keys(all).length ? JSON.stringify(all) : '';
 }
+
+/**
+ * The prefixes a language can translate: each content type's and taxonomy's
+ * own (not top-level pages, which have none), once, the shortest first.
+ */
+export function prefixes(types, taxonomies) {
+    const seen = new Map();
+    for (const owner of [...(types ?? []), ...(taxonomies ?? [])]) {
+        if (owner?.path && !seen.has(owner.path)) seen.set(owner.path, { path: owner.path, label: owner.plural ?? owner.name });
+    }
+    return [...seen.values()].sort((a, b) => a.path.length - b.path.length || a.path.localeCompare(b.path));
+}
+
+/** A type's or taxonomy's prefix in a language with its own word for it: ('/blog/x', { '/blog': '/noticias' }) → '/noticias/x'. */
+export function localPath(path, paths) {
+    const found = Object.keys(paths ?? {})
+        .sort((a, b) => b.length - a.length)
+        .find((from) => path === from || path.startsWith(`${from.replace(/\/$/, '')}/`));
+    return found ? paths[found] + path.slice(found.length) : path;
+}

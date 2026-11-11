@@ -149,14 +149,18 @@ final class ContentLanguages
         return $code === '' ? '' : '/' . $code;
     }
 
-    /** $path as it is addressed in $code: ("/about", "es") → "/es/about"; ("/", "es") → "/es". */
+    /**
+     * $path as it is addressed in $code: ("/about", "es") → "/es/about";
+     * ("/", "es") → "/es"; a type's or taxonomy's prefix the language
+     * translates becomes its own: ("/projects/casa", "es") → "/es/proyectos/casa".
+     */
     public static function localize(string $path, string $code): string
     {
         if ($code === '') {
             return $path;
         }
 
-        return $path === '/' || $path === '' ? self::prefix($code) : self::prefix($code) . '/' . ltrim($path, '/');
+        return $path === '/' || $path === '' ? self::prefix($code) : self::prefix($code) . '/' . ltrim(TranslatedPaths::out($path, $code), '/');
     }
 
     /**

@@ -48,9 +48,10 @@ final class ListLanguages extends ContentEndpoint
         $counts = QueryBuilder::table('entries')->whereNull('deleted_at')->groupBy('locale')->select('locale')->selectRaw('COUNT(*) AS n')->get();
         $count = static fn(string $code): int => (int) (array_values(array_filter($counts, static fn(array $r) => (string) $r['locale'] === $code))[0]['n'] ?? 0);
         $main = SiteLanguage::site();
-        $languages = [['code' => '', 'name' => SiteLanguage::name($main), 'main' => true, 'prefix' => '', 'entries' => $count('')]];
+        $languages = [['code' => '', 'name' => SiteLanguage::name($main), 'main' => true, 'prefix' => '', 'entries' => $count(''), 'paths' => (object) []]];
         foreach (ContentLanguages::others() as $code) {
-            $languages[] = ['code' => $code, 'name' => SiteLanguage::name($code), 'main' => false, 'prefix' => ContentLanguages::prefix($code), 'entries' => $count($code)];
+            $languages[] = ['code' => $code, 'name' => SiteLanguage::name($code), 'main' => false, 'prefix' => ContentLanguages::prefix($code), 'entries' => $count($code),
+                'paths' => (object) (\Kestello\Cms\I18n\TranslatedPaths::all()[$code] ?? [])];      // its own prefixes for types and taxonomies
         }
         $choices = [];
         foreach (ContentLanguages::COMMON as $code) {

@@ -233,4 +233,30 @@ final class TranslationsApiTest extends AuthTestCase
         $this->ok('PATCH', '/settings', ['general' => ['languages' => 'de']]);
         $this->assertNull(\Kestello\Cms\I18n\SiteText::translated('site_name', 'es'), 'a removed language\'s texts are not used');
     }
+
+    public function testAddressesInEachLanguageAreChecked(): void
+    {
+        $this->ok('PATCH', '/settings', ['general' => ['languages' => 'es']]);
+        $key = \Kestello\Cms\I18n\TranslatedPaths::SETTING;
+        $saved = $this->ok('PATCH', '/settings', ['general' => [$key => json_encode([
+            'es' => ['/blog' => ' /noticias/ ', '/category' => 'category', '/nowhere' => 'x'],
+            'fr' => ['/blog' => 'nouvelles'],
+        ])]]);
+        $this->assertSame('{"es":{"/blog":"/noticias"}}', $saved['general'][$key], 'the site\'s languages and declared prefixes only; the same word left out');
+
+        foreach (['Noticias' => 'not a slug', 'tag' => 'another prefix', 'search' => 'the site itself'] as $word => $why) {
+            $errors = $this->refused('PATCH', '/settings', ['general' => [$key => json_encode(['es' => ['/blog' => $word]])]]);
+            $this->assertArrayHasKey('general.' . $key, $errors, $why);
+        }
+        $twice = $this->refused('PATCH', '/settings', ['general' => [$key => json_encode(['es' => ['/blog' => 'cosas', '/category' => 'cosas']])]]);
+        $this->assertStringContainsString('twice', implode(' ', $twice['general.' . $key]));
+
+        $this->ok('POST', '/content/page/entries', ['title' => 'Etiquetas', 'locale' => 'es', 'status' => 'published']);
+        $taken = $this->refused('PATCH', '/settings', ['general' => [$key => json_encode(['es' => ['/category' => 'etiquetas']])]]);
+        $this->assertStringContainsString('Etiquetas', implode(' ', $taken['general.' . $key]), 'a Spanish page already lives there');
+        $this->ok('PATCH', '/settings', ['general' => [$key => json_encode(['es' => ['/category' => 'categorias']])]]);
+
+        $languages = $this->ok('GET', '/content/languages');
+        $this->assertSame(['/category' => '/categorias'], (array) $languages['languages'][1]['paths']);
+    }
 }
