@@ -7,14 +7,18 @@ namespace Kestello\Tests\Webhooks;
 use Kestello\Cms\Blocks\BlocksModule;
 use Kestello\Cms\Content\ContentModule;
 use Kestello\Cms\Media\MediaModule;
+use Kestello\Cms\Queue\JobQueue;
+use Kestello\Cms\Queue\Worker;
 use Kestello\Cms\Webhooks\Signature;
 use Kestello\Cms\Webhooks\Webhooks;
 use Kestello\Cms\Webhooks\WebhooksModule;
+use Kestello\Framework\Cache\ArrayStore;
 use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Database\Model;
 use Kestello\Framework\Http\Client\FakeTransport;
 use Kestello\Framework\Http\Client\HttpClient;
 use Kestello\Framework\Http\Client\PendingRequest;
+use Kestello\Framework\Queue\ArrayQueue;
 use Kestello\Support\Clock;
 use Kestello\Tests\Auth\AuthTestCase;
 use LogicException;
@@ -92,6 +96,19 @@ final class WebhooksTest extends AuthTestCase
         $this->assertSame(['succeeded', 'succeeded'], array_column($log, 'status'));
         $this->assertStringNotContainsString('abcd1234secretvalue', (string) $log[0]['response_body'], 'credentials in the answer are hidden');
         $this->assertSame(1, $this->db->table('audit_log')->where('event', 'webhook.created')->count());
+    }
+
+    public function testTheDefaultWorkerDeliversThem(): void
+    {
+        $backend = new ArrayQueue();
+        $this->cms->queue->setBackend(static fn() => $backend);
+        $this->hook(['entry.created']);
+        $this->api('POST', '/content/post/entries', ['title' => 'Queued', 'status' => 'draft']);
+        $this->assertCount(0, $this->fake->sent, 'queued, not sent during the request');
+
+        // the same queues the cron task and a plain queue:work read
+        (new Worker($this->cms->queue, new ArrayStore(), sleep: static fn() => null))->run(JobQueue::QUEUES, stopWhenEmpty: true, maxJobs: 10);
+        $this->assertCount(1, $this->fake->sent, 'a queue no worker reads would leave it waiting for ever');
     }
 
     public function testRetriesAndTurnsOffAfterRepeatedFailures(): void

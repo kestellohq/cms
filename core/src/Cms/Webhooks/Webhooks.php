@@ -473,7 +473,7 @@ final class Webhooks
             $this->attempt($deliveryId);
             return;
         }
-        ExecutionContext::run('core', fn() => $cms->queue->push(new DeliverWebhook($deliveryId), queue: 'webhooks'));
+        ExecutionContext::run('core', fn() => $cms->queue->push(new DeliverWebhook($deliveryId)));
     }
 
     private function client(): HttpClient

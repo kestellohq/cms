@@ -96,6 +96,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- Webhook deliveries are queued on the `default` queue. They went to a `webhooks` queue that neither the cron task nor `queue:work` reads, so on a site with a background queue they were never sent. A test now checks that every queue core names is one the default workers read.
 - Form notifications use the same email layout as everything else the site sends, with the answers as rows, a plain-text part, and the button to the submission in the admin. Before, they were their own bare HTML.
 - Notification emails show the site's name at the foot (Settings → General) instead of the `app.name` from config.
 - The test email in Settings → Mail is in the site's language and the email layout. Before, it was always in English.
