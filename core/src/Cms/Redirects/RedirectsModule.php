@@ -13,7 +13,7 @@ use WeakMap;
 
 /**
  * Core module: redirects, automatic redirects when published entries move,
- * the "not found" log and the Appearance → Redirects screen.
+ * the "not found" log and the Site → Redirects screen.
  */
 final class RedirectsModule extends Provider
 {
