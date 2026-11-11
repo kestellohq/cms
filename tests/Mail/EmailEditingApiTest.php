@@ -61,6 +61,7 @@ final class EmailEditingApiTest extends AuthTestCase
     {
         $data = $this->json($this->api('GET', '/emails/auth.password_reset?locale=sr'))['data'];
         $this->assertSame('sr', $data['locale']);
+        $this->assertSame(['en', 'sr'], array_column($data['languages'], 'code'), 'the languages to switch between');
         $this->assertSame(['link', 'safety'], $data['locked']);
         $this->assertSame(['site', 'name', 'link', 'minutes'], array_column($data['placeholders'], 'name'));
         $this->assertTrue($data['editable']);

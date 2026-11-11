@@ -218,6 +218,7 @@ const whereItShows = computed(() => ({
                 </KCard>
                 <KCard v-else-if="whereItShows[group.id]" coord="C1" :title="__('Where this shows')">
                     <p class="k-muted">{{ whereItShows[group.id] }}</p>
+                    <KButton v-if="group.id === 'emails'" size="sm" icon="envelope-simple" href="/admin/emails">{{ __('Change the emails') }}</KButton>
                 </KCard>
             </template>
         </div>

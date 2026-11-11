@@ -45,6 +45,9 @@ use Kestello\Support\Translator;
  */
 final class EmailRegistry
 {
+    /** An email id: a lowercase group, a dot and a name ("shop.order_shipped"); it fits email_edits.email. */
+    public const string ID = '[a-z][a-z0-9_-]*\.[a-z0-9_.-]{1,100}';
+
     /** @var array<string, array{id: string, label: string, group: string, description: string, owner: string, sample: array<string, mixed>, locked: list<string>, build: Closure(array<string, mixed>): MailMessage}> */
     private array $emails = [];
 
@@ -68,7 +71,7 @@ final class EmailRegistry
     public function register(string $id, string $label, Closure $build, array $sample, string $group = 'Other', string $description = '', array $locked = []): void
     {
         $owner = ExecutionContext::current();
-        if (preg_match('/^[a-z][a-z0-9_-]*\.[a-z0-9_.-]+$/', $id) !== 1) {
+        if (preg_match('/^' . self::ID . '$/', $id) !== 1 || strlen($id) > 120) {
             throw new InvalidArgumentException("An email id is a lowercase group and name, such as \"shop.order_shipped\", got \"{$id}\".");
         }
         Roles::assertOwnedName($id, $owner, '.');

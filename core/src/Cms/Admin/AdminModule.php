@@ -43,6 +43,8 @@ final class AdminModule extends Provider
         $admin->page('system/audit', '@core/admin/system/Audit', 'Audit log', 'audit.read', ['label' => 'Audit log', 'icon' => 'notebook', 'group' => 'system', 'order' => 30]);
         $admin->page('system/api', '@core/admin/system/Api', 'API', 'admin.access', ['label' => 'API', 'icon' => 'brackets-curly', 'group' => 'system', 'order' => 55]);
         $admin->page('settings', '@core/admin/Settings', 'Settings', 'settings.manage', ['label' => 'Settings', 'icon' => 'gear', 'group' => 'site', 'order' => 10]);
+        $admin->page('emails', '@core/admin/emails/Index', 'Emails', 'emails.manage', ['label' => 'Emails', 'icon' => 'envelope-simple', 'group' => 'site', 'order' => 15]);
+        $admin->page('emails/{id}', '@core/admin/emails/Edit', 'Email', 'emails.manage', where: ['id' => \Kestello\Cms\Mail\EmailRegistry::ID]);
     }
 
 }

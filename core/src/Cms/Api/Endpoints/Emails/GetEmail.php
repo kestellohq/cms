@@ -30,6 +30,32 @@ final class GetEmail extends EmailEndpoint
         return Schema::object(['locale' => Schema::string()->max(12)->optional()->description('One of the site\'s languages; the site\'s own when left out')]);
     }
 
+    public function response(): ?Schema
+    {
+        $edit = Schema::object(['subject' => Schema::string(), 'blocks' => Schema::any()]);
+
+        return Schema::object([
+            'id' => Schema::string(),
+            'label' => Schema::string(),
+            'group' => Schema::string(),
+            'description' => Schema::string(),
+            'owner' => Schema::string(),
+            'locale' => Schema::string()->description('The language this is in'),
+            'languages' => self::languagesSchema()->description('The site\'s languages, to switch between'),
+            'locked' => Schema::list(Schema::string())->description('Blocks every edit must keep'),
+            'placeholders' => Schema::list(Schema::object(['name' => Schema::string(), 'sample' => Schema::string()]))->description('Values the words can use as {name}'),
+            'editable' => Schema::bool()->description('False when its code writes its own HTML'),
+            'original' => $edit->description('What its code writes, with sample values'),
+            'template' => $edit->nullable()->description('An edit that changes nothing, to start from'),
+            'edit' => Schema::object([
+                'subject' => Schema::string(),
+                'blocks' => Schema::any(),
+                'updated_at' => Schema::string()->nullable(),
+                'updated_by' => Schema::int()->nullable(),
+            ])->nullable()->description('The edit saved for this language'),
+        ]);
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $email = self::email($request);
@@ -53,6 +79,7 @@ final class GetEmail extends EmailEndpoint
                 'description' => Labels::text($email['description'], Labels::domain($email['owner'])),
                 'owner' => $email['owner'],
                 'locale' => $locale,
+                'languages' => self::languages(),
                 'locked' => $email['locked'],
                 'placeholders' => array_map(static fn(string $k): array => ['name' => $k, 'sample' => (string) $email['sample'][$k]], EmailEdit::placeholders($email['sample'])),
                 'editable' => !$original->custom(),

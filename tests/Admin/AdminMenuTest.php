@@ -36,7 +36,7 @@ final class AdminMenuTest extends AuthTestCase
         }
 
         $this->assertSame(['main', 'content', 'people', 'appearance', 'site', 'plugins', 'system'], array_keys($groups));
-        $this->assertSame(['core.settings', 'core.system.updates', 'core.system.backups', 'core.system.import', 'core.redirects'], $groups['site'], 'what an owner changes or runs now and then');
+        $this->assertSame(['core.settings', 'core.emails', 'core.system.updates', 'core.system.backups', 'core.system.import', 'core.redirects'], $groups['site'], 'what an owner changes or runs now and then');
         $this->assertSame('core.system.health', $groups['system'][0], 'the tools open with the health check');
         $this->assertNotContains('core.redirects', $groups['appearance'], 'redirects are not about how the site looks');
         $this->assertContains('core.profile', $groups['people'], 'the finder still lists it; the sidebar shows it in its footer');

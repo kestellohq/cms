@@ -22,7 +22,7 @@ use Kestello\Support\Translator;
 abstract class EmailEndpoint extends Endpoint
 {
     /** The route's {id}: a named email, such as auth.password_reset. */
-    protected const string ID = '[a-z][a-z0-9_-]*\.[a-z0-9_.-]{1,100}';
+    protected const string ID = EmailRegistry::ID;
 
     public function capability(): ?string
     {
@@ -51,6 +51,19 @@ abstract class EmailEndpoint extends Endpoint
         }
 
         return self::emails()->get($id);
+    }
+
+    /** @return list<array{code: string, name: string}> the site's languages, each in its own words */
+    protected static function languages(): array
+    {
+        $choices = SiteLanguage::choices();
+
+        return array_map(static fn(string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys($choices), $choices);
+    }
+
+    protected static function languagesSchema(): Schema
+    {
+        return Schema::list(Schema::object(['code' => Schema::string(), 'name' => Schema::string()]));
     }
 
     /** The language asked for (one of the site's), the site's own when none is. */
