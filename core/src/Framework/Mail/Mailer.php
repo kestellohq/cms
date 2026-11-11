@@ -37,20 +37,31 @@ final class Mailer
     }
 
     /**
-     * Send an email.
+     * Send an email. It goes out as multipart/alternative, a text/plain part
+     * and the text/html part, so mail readers that show text and spam
+     * filters both get what they expect. Without $text, the text part is
+     * made from the HTML. A Content-Type header of the caller's own sends
+     * the body as the only part, as given.
      *
      * @param string|array<string> $to      Recipient(s).
      * @param string               $subject Email subject.
      * @param string               $body    HTML body.
      * @param array<string, string> $headers Additional headers.
+     * @param string|null          $text    Plain-text version of the body.
      *
      * @return bool Whether the email was sent successfully.
      */
-    public function send(string|array $to, string $subject, string $body, array $headers = []): bool
+    public function send(string|array $to, string $subject, string $body, array $headers = [], ?string $text = null): bool
     {
         $recipients = self::recipients(is_array($to) ? $to : [$to]);
         $subject = self::oneLine($subject);
         $from = self::address($this->fromAddress);
+        $headers = self::headers($headers);
+        $text = match (true) {
+            array_key_exists('content-type', array_change_key_case($headers)) => '',
+            $text !== null && $text !== '' => $text,
+            default => PlainText::fromHtml($body),
+        };
 
         $defaultHeaders = [
             'MIME-Version' => '1.0',
@@ -60,38 +71,38 @@ final class Mailer
                 : $from,
         ];
 
-        $mergedHeaders = array_merge($defaultHeaders, self::headers($headers));
+        $mergedHeaders = array_merge($defaultHeaders, $headers);
 
         $transport = self::boundTransport();
         if ($transport !== null) {
-            return $transport->send(new Message($recipients, $subject, $body, $mergedHeaders));
+            return $transport->send(new Message($recipients, $subject, $body, $mergedHeaders, $text));
         }
 
         if ($this->useSmtp) {
-            return $this->sendViaSmtp($recipients, $subject, $body, $mergedHeaders);
+            return $this->sendViaSmtp($recipients, $subject, $body, $mergedHeaders, $text);
         }
 
-        return $this->sendViaPhpMail($recipients, $subject, $body, $mergedHeaders);
+        return $this->sendViaPhpMail($recipients, $subject, $body, $mergedHeaders, $text);
     }
 
     /**
      * Send using PHP's built-in mail() function.
      */
-    private function sendViaPhpMail(array $recipients, string $subject, string $body, array $headers): bool
+    private function sendViaPhpMail(array $recipients, string $subject, string $body, array $headers, string $text): bool
     {
-        $headers['Content-Transfer-Encoding'] = 'base64';
+        [$headers, $content] = self::mime($body, $text, $headers);
         $headerString = '';
         foreach ($headers as $name => $value) {
             $headerString .= $name . ': ' . self::encodeHeader($value) . "\r\n";
         }
 
-        return @mail(implode(', ', $recipients), self::encodeHeader($subject), self::encodeBody($body), rtrim($headerString));
+        return @mail(implode(', ', $recipients), self::encodeHeader($subject), $content, rtrim($headerString));
     }
 
     /**
      * Send using SMTP via raw socket connection.
      */
-    private function sendViaSmtp(array $recipients, string $subject, string $body, array $headers): bool
+    private function sendViaSmtp(array $recipients, string $subject, string $body, array $headers, string $text): bool
     {
         try {
             $conn = $this->smtpConnect();
@@ -127,7 +138,7 @@ final class Mailer
             // DATA
             $this->smtpCommand($conn, 'DATA', 354);
 
-            $this->smtpCommand($conn, self::compose($recipients, $subject, $body, $headers) . "\r\n.", 250);
+            $this->smtpCommand($conn, self::compose($recipients, $subject, $body, $headers, $text) . "\r\n.", 250);
 
             // QUIT
             $this->smtpCommand($conn, 'QUIT', 221);
@@ -147,29 +158,62 @@ final class Mailer
 
     /**
      * The message as sent after DATA, without the terminating ".": headers,
-     * a base64 body in 76-character lines, CRLF line endings, and any line
-     * that starts with "." doubled so it can never end the data early.
+     * the body (see mime()), CRLF line endings, and any line that starts
+     * with "." doubled so it can never end the data early.
      *
      * @internal
      * @param list<string>          $recipients already validated
      * @param array<string, string> $headers    already validated
      */
-    public static function compose(array $recipients, string $subject, string $body, array $headers): string
+    public static function compose(array $recipients, string $subject, string $html, array $headers, string $text = ''): string
     {
+        [$headers, $content] = self::mime($html, $text, $headers);
         $headers = ['To' => implode(', ', $recipients), 'Subject' => $subject] + $headers + [
             'Date' => date(DATE_RFC2822),
             'Message-ID' => '<' . bin2hex(random_bytes(16)) . '@' . self::domain($headers['From'] ?? '') . '>',
-            'Content-Transfer-Encoding' => 'base64',
         ];
-        $headers['Content-Transfer-Encoding'] = 'base64';
 
         $out = '';
         foreach ($headers as $name => $value) {
             $out .= $name . ': ' . ($name === 'To' ? $value : self::encodeHeader($value)) . "\r\n";
         }
-        $out .= "\r\n" . self::encodeBody($body);
+        $out .= "\r\n" . $content;
 
         return preg_replace('/^\./m', '..', rtrim($out, "\r\n")) ?? '';
+    }
+
+    /**
+     * The body as it goes on the wire, and the headers that describe it.
+     * With a text part: multipart/alternative (RFC 2046), the text/plain part
+     * first and the text/html part last, as readers show the last part they
+     * understand. Each part is UTF-8 in base64, in 76-character lines; text
+     * line breaks become CRLF first, as RFC 2046 asks of text before it is
+     * encoded. The boundary starts with "=_", which base64 never contains.
+     * Without a text part: the HTML alone, as before.
+     *
+     * @internal
+     * @param array<string, string> $headers
+     * @return array{0: array<string, string>, 1: string} headers, body
+     */
+    public static function mime(string $html, string $text, array $headers, ?string $boundary = null): array
+    {
+        if ($text === '') {
+            $headers['Content-Transfer-Encoding'] = 'base64';
+
+            return [$headers, self::encodeBody($html)];
+        }
+
+        $boundary ??= '=_' . bin2hex(random_bytes(16));
+        $headers['Content-Type'] = 'multipart/alternative; boundary="' . $boundary . '"';
+        unset($headers['Content-Transfer-Encoding']);
+        $part = static fn(string $type, string $content): string => "--{$boundary}\r\n"
+            . "Content-Type: {$type}; charset=UTF-8\r\n"
+            . "Content-Transfer-Encoding: base64\r\n\r\n"
+            . self::encodeBody($content) . "\r\n";
+
+        return [$headers, $part('text/plain', (string) preg_replace('/\r\n|\r|\n/', "\r\n", $text))
+            . $part('text/html', $html)
+            . "--{$boundary}--"];
     }
 
     /** @return list<string> */
@@ -308,6 +352,7 @@ final class Mailer
     private function loadSettings(?array $override): void
     {
         $settings = $override === null ? Settings::getInstance() : new class ($override) {
+            /** @param array<string, string> $values */
             public function __construct(private array $values) {}
 
             public function get(string $key, mixed $default = null): mixed

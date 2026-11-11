@@ -14,6 +14,7 @@ use Kestello\Cms\Auth\External\IdentityResolver;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Events\IdentityLinked;
 use Kestello\Cms\Extension\Provider;
+use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Contracts\Security\SecretStore;
 use Kestello\Contracts\Session\SessionStore;
 use Kestello\Framework\Cache\ArrayStore;
@@ -26,7 +27,7 @@ use Kestello\Framework\Mail\Mailer;
 use Kestello\Framework\Session\Session;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Support\AppKey;
-use Kestello\Support\Html;
+use Kestello\Support\Translator;
 
 /**
  * Core module: login, second factor, password reset, email sign-up, and the
@@ -70,7 +71,7 @@ final class AuthModule extends Provider
             (bool) $config('revoke_on_password_change', true),
         ));
         if (!$c->has('auth.mail')) {
-            $c->singleton('auth.mail', static fn(): Closure => static fn(string $to, string $subject, string $html): bool => (new Mailer())->send($to, $subject, $html));
+            $c->singleton('auth.mail', static fn(): Closure => static fn(string $to, string $subject, string $html, string $text = ''): bool => (new Mailer())->send($to, $subject, $html, [], $text));
         }
         $c->singleton(Identities::class, static fn(): Identities => new Identities());
         $c->singleton(NewAccounts::class, static fn(): NewAccounts => new NewAccounts(
@@ -187,13 +188,20 @@ final class AuthModule extends Provider
             }
             [$site] = self::site($cms);
             $label = $cms->auth->findAuthenticator($e->provider)?->label() ?? $e->provider;
-            $html = '<p>Hello ' . Html::escape((string) $user['username']) . ',</p>'
-                . '<p>A ' . Html::escape($e->provider) . ' account was connected to your ' . Html::escape($site) . ' account ("' . Html::escape($label) . '"). It can now be used to sign in.</p>'
-                . '<p>If this wasn\'t you, change your password and disconnect it from your profile right away.</p>';
-            ($cms->container->make('auth.mail'))((string) $user['email'], "New sign-in method on {$site}", $html);
+            $message = MailMessage::make(Translator::get('New sign-in method on {site}', ['site' => $site]))
+                ->greeting(Translator::get('Hi {name},', ['name' => (string) $user['username']]))
+                ->line(Translator::get('A {provider} account was connected to your {site} account (“{label}”). It can now be used to sign in.', ['provider' => $e->provider, 'site' => $site, 'label' => $label]))
+                ->line(Translator::get('If this wasn’t you, change your password and disconnect it from your profile right away.'));
+            self::mail($cms, (string) $user['email'], $message, $site);
         } catch (\Throwable $ex) {
             error_log('[auth] could not send the account-linked email: ' . $ex->getMessage());
         }
+    }
+
+    /** Send one of the account emails above through auth.mail, as HTML with its plain-text part. */
+    private static function mail(Cms $cms, string $to, MailMessage $message, string $site): void
+    {
+        ($cms->container->make('auth.mail'))($to, $message->subject, $message->render($site), $message->text($site));
     }
 
     /** Wrong second-factor codes that tell an account's owner their password is known. */
@@ -216,10 +224,11 @@ final class AuthModule extends Provider
                 return;
             }
             [$site] = self::site($cms);
-            $html = '<p>Hello ' . Html::escape((string) $user['username']) . ',</p>'
-                . '<p>Someone entered your ' . Html::escape($site) . ' password correctly, then a wrong two-factor code ' . self::SECOND_FACTOR_WARNING . ' times in the last hour. Two-factor authentication stopped them, but they know your password.</p>'
-                . '<p>Sign in and change your password now. If you made these attempts yourself, you can ignore this email.</p>';
-            ($cms->container->make('auth.mail'))((string) $user['email'], "Someone has your {$site} password", $html);
+            $message = MailMessage::make(Translator::get('Someone has your {site} password', ['site' => $site]))
+                ->greeting(Translator::get('Hi {name},', ['name' => (string) $user['username']]))
+                ->line(Translator::get('{count, plural, one {Someone entered your {site} password correctly, then a wrong two-factor code # time in the last hour.} other {Someone entered your {site} password correctly, then a wrong two-factor code # times in the last hour.}} Two-factor authentication stopped them, but they know your password.', ['count' => self::SECOND_FACTOR_WARNING, 'site' => $site]))
+                ->line(Translator::get('Sign in and change your password now. If you made these attempts yourself, you can ignore this email.'));
+            self::mail($cms, (string) $user['email'], $message, $site);
         } catch (\Throwable $ex) {
             error_log('[auth] could not send the two-factor warning email: ' . $ex->getMessage());
         }

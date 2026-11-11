@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Notifications;
 
+use Kestello\Framework\Mail\PlainText;
 use Kestello\Support\Html;
 use Kestello\Support\Translator;
 
 /**
  * A simple, accessible transactional email: subject, greeting, lines,
- * one action button, closing lines. Everything is escaped.
+ * one action button, closing lines. Everything is escaped. render() is the
+ * HTML part and text() the plain-text part sent with it.
  *
  * @api
  */
@@ -85,5 +87,26 @@ final class MailMessage
             . '<body style="margin:0;padding:24px;background:#f8f7f3;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111827">'
             . '<div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:14px;padding:32px">' . $body . '</div>'
             . '<p style="max-width:560px;margin:16px auto 0;font-size:12px;color:#64748b;text-align:center">' . $e($siteName) . '</p></body></html>';
+    }
+
+    /**
+     * The plain-text version of render(): the same words, the action as its
+     * label and address, and the site name last. Lines end in "\n"; the
+     * Mailer turns them into CRLF.
+     */
+    public function text(string $siteName = 'Kestello'): string
+    {
+        if ($this->html !== null) {
+            return PlainText::fromHtml($this->html);
+        }
+        $blocks = $this->greeting !== '' ? [$this->greeting] : [];
+        array_push($blocks, ...$this->intro);
+        if ($this->action !== null) {
+            $blocks[] = $this->action['label'] . "\n" . $this->action['url'];
+        }
+        array_push($blocks, ...$this->outro);
+        $blocks[] = $siteName;
+
+        return implode("\n\n", $blocks);
     }
 }

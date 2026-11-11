@@ -34,7 +34,7 @@ abstract class AuthTestCase extends TestCase
     protected Cms $cms;
     protected Connection $db;
     protected DatabaseSessionStore $sessions;
-    /** @var list<array{to: string, subject: string, html: string}> */
+    /** @var list<array{to: string, subject: string, html: string, text: string}> */
     protected array $mail = [];
     protected bool $csrfValid = true;
     protected ?int $sessionUser = null;
@@ -64,8 +64,8 @@ abstract class AuthTestCase extends TestCase
         Cms::setInstance($this->cms);
         $c = $this->cms->container;
         $c->instance(Cms::class, $this->cms);
-        $c->instance('auth.mail', function (string $to, string $subject, string $html): bool {
-            $this->mail[] = compact('to', 'subject', 'html');
+        $c->instance('auth.mail', function (string $to, string $subject, string $html, string $text = ''): bool {
+            $this->mail[] = compact('to', 'subject', 'html', 'text');
             return true;
         });
 

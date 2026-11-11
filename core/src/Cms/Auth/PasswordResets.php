@@ -6,10 +6,11 @@ namespace Kestello\Cms\Auth;
 
 use Closure;
 use Kestello\Cms\Events\PasswordResetRequested;
+use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Events\EventDispatcher;
 use Kestello\Framework\Http\RateLimiter;
-use Kestello\Support\Html;
+use Kestello\Support\Translator;
 use Kestello\Support\Url;
 
 /**
@@ -27,7 +28,7 @@ final class PasswordResets
     public const int TTL = 3600;
 
     /**
-     * @param Closure(string $to, string $subject, string $html): bool $mail
+     * @param Closure(string $to, string $subject, string $html, string $text): bool $mail
      */
     public function __construct(
         private readonly RateLimiter $limiter,
@@ -71,17 +72,7 @@ final class PasswordResets
         ]);
 
         $link = Url::withQuery(rtrim($this->baseUrl, '/') . '/reset-password', ['token' => $token]);
-        $to = (string) $user['email'];
-        $subject = "Reset your {$this->siteName} password";
-        $html = $this->message($user, $link);
-        $id = (int) $user['id'];
-        $mail = $this->mail;
-        // After the response: a slow SMTP handshake must not tell anyone that this address has an account.
-        \Kestello\Cms\System\WebRunner::defer(static function () use ($mail, $to, $subject, $html, $id): void {
-            if (!$mail($to, $subject, $html)) {
-                error_log('[kestello] password reset email to user #' . $id . ' could not be sent');
-            }
-        });
+        AccountMail::send($this->mail, (string) $user['email'], $this->message($user, $link), $this->siteName, 'password reset email to user #' . (int) $user['id'] . ' could not be sent');
 
         $this->events?->dispatch(new PasswordResetRequested((int) $user['id'], $ip));
     }
@@ -146,18 +137,15 @@ final class PasswordResets
     }
 
     /** @param array<string, mixed> $user */
-    private function message(array $user, string $link): string
+    private function message(array $user, string $link): MailMessage
     {
-        $name = Html::escape((string) ($user['username'] ?? ''));
-        $site = Html::escape($this->siteName);
-        $href = Html::escape($link);
-        $minutes = intdiv(self::TTL, 60);
+        $site = ['site' => $this->siteName];
 
-        return <<<HTML
-            <p>Hi {$name},</p>
-            <p>Someone asked to reset the password for your {$site} account. If it was you, choose a new password here:</p>
-            <p><a href="{$href}">Reset my password</a></p>
-            <p>The link works once and expires in {$minutes} minutes. If you didn't ask for this, ignore this email: your password stays the same.</p>
-            HTML;
+        return MailMessage::make(Translator::get('Reset your {site} password', $site))
+            ->greeting(Translator::get('Hi {name},', ['name' => (string) ($user['username'] ?? '')]))
+            ->line(Translator::get('Someone asked to reset the password for your {site} account. If it was you, choose a new password with the button below.', $site))
+            ->action(Translator::get('Reset my password'), $link)
+            ->line(Translator::get('{minutes, plural, one {The link works once and expires in # minute.} other {The link works once and expires in # minutes.}}', ['minutes' => intdiv(self::TTL, 60)]))
+            ->line(Translator::get('If you didn’t ask for this, ignore this email: your password stays the same.'));
     }
 }

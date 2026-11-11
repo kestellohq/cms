@@ -3283,12 +3283,6 @@ parameters:
 			path: core/src/Framework/Mail/Mailer.php
 
 		-
-			message: '#^Method class@anonymous/core/src/Framework/Mail/Mailer\.php\:310\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Mail/Mailer.php
-
-		-
 			message: '#^Method Kestello\\Framework\\Redis\\RedisClient\:\:eval\(\) has parameter \$args with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
