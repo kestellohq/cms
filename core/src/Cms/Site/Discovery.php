@@ -39,7 +39,7 @@ final class Discovery
         $term = null;
         if ($taxName !== null) {
             $tax = $cms->content->getTaxonomy($taxName);
-            $term = $tax === null ? null : Term::query()->of($tax->name)->where('slug', (string) $slug)->first();
+            $term = $tax === null ? null : Term::findPublic($tax->name, (string) $slug, \Kestello\Cms\I18n\ContentLanguages::current());
             if ($term === null) {
                 return Response::notFound();
             }
@@ -70,7 +70,7 @@ final class Discovery
         $query = Entry::query()->whereIn('type', array_keys($byName) ?: ['-'])->published()->with('author')
             ->orderByDesc('published_at')->orderByDesc('id')->limit($limit * 2);
         if ($term !== null) {
-            $query->whereExists(static fn(QueryBuilder $q) => $q->from('entry_term')->whereColumn('entry_term.entry_id', '=', 'entries.id')->where('entry_term.term_id', $term->getKey()));
+            $query->whereExists(static fn(QueryBuilder $q) => $q->from('entry_term')->whereColumn('entry_term.entry_id', '=', 'entries.id')->whereIn('entry_term.term_id', $term->groupIds()));
         }
         $entries = array_slice(array_values(array_filter($query->get()->all(), static fn(Entry $e) => !Seo::hidden($e))), 0, $limit);
 
@@ -317,7 +317,7 @@ final class Discovery
                 return [];
             }
             foreach ($terms as $t) {
-                $urls[] = ['loc' => $base . $t->path($tax), 'lastmod' => null, 'images' => []];
+                $urls[] = ['loc' => $base . $t->url($tax), 'lastmod' => null, 'images' => []];
             }
         } else {
             return [];

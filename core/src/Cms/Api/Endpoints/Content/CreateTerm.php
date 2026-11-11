@@ -26,7 +26,7 @@ final class CreateTerm extends TermEndpoint
     }
     public function body(): ?Schema
     {
-        return self::termBody();
+        return self::termBody(create: true);
     }
 
     public function handle(ApiRequest $request): mixed

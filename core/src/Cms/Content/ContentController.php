@@ -255,19 +255,29 @@ final class ContentController
         ]);
     }
 
-    /** A term's page: its published entries, newest first (all types the taxonomy applies to). */
+    /**
+     * A term's page: its published entries in the page's language, newest
+     * first (all types the taxonomy applies to). The term is the one written
+     * in that language, else the main language's; entries tagged with any
+     * translation of it count. An address with the main language's slug
+     * redirects to the translation's.
+     */
     public static function term(Cms $cms, Request $request, string $taxName, string $slug): Response
     {
         $tax = $cms->content->getTaxonomy($taxName);
-        $term = $tax === null ? null : Term::query()->of($tax->name)->where('slug', $slug)->first();
+        $language = ContentLanguages::current();
+        $term = $tax === null ? null : Term::findPublic($tax->name, $slug, $language);
         if ($term === null) {
             return Response::notFound();
+        }
+        if ($term->language() !== $language && ($translation = $term->translation($language)) !== null && $translation->slug !== $term->slug) {
+            return Response::redirect(self::here((string) $translation->path($tax)), 301);
         }
         $types = array_values(array_filter(array_map($cms->content->get(...), $tax->getTypes()), static fn($t) => $t !== null && $t->getPath() !== null));
         $byName = array_combine(array_map(static fn(ContentType $t) => $t->name, $types), $types);
         $page = max(1, min(10000, (int) ($request->query['page'] ?? 1)));
         $result = Entry::query()->where('entries.locale', ContentLanguages::current())->whereIn('type', array_keys($byName) ?: ['-'])->published()->with('author')
-            ->whereExists(static fn(\Kestello\Framework\Database\QueryBuilder $q) => $q->from('entry_term')->whereColumn('entry_term.entry_id', '=', 'entries.id')->where('entry_term.term_id', $term->getKey()))
+            ->whereExists(static fn(\Kestello\Framework\Database\QueryBuilder $q) => $q->from('entry_term')->whereColumn('entry_term.entry_id', '=', 'entries.id')->whereIn('entry_term.term_id', $term->groupIds()))
             ->orderByDesc('published_at')->orderByDesc('id')->paginate(10, $page);
         if (($page > $result['last_page'] && $page > 1) || $result['total'] === 0) {
             return Response::notFound();    // a term only drafts use has no public page yet

@@ -154,4 +154,57 @@ final class TranslationsApiTest extends AuthTestCase
         $this->ok('PUT', '/menus/locations', ['locale' => 'es', 'locations' => ['primary' => null]]);
         $this->assertCount(3, $public('es'), 'back to the main menu');
     }
+
+    public function testCategoriesAreTranslated(): void
+    {
+        $this->ok('PATCH', '/settings', ['general' => ['languages' => 'es']]);
+        $news = $this->ok('POST', '/taxonomies/category/terms', ['name' => 'News']);
+        $this->assertSame(['', [], '/category/news'], [$news['locale'], $news['translations'], $news['path']]);
+
+        $es = $this->ok('POST', "/taxonomies/category/terms/{$news['id']}/translations", ['locale' => 'es']);
+        $this->assertSame(['es', 'News', 'news', '/es/category/news'], [$es['locale'], $es['name'], $es['slug'], $es['path']], 'slugs are unique per language');
+        $this->assertSame([['locale' => '', 'id' => $news['id'], 'title' => 'News']], $es['translations']);
+        $this->refused('POST', "/taxonomies/category/terms/{$news['id']}/translations", ['locale' => 'es'], 409);
+        $this->assertArrayHasKey('locale', $this->refused('POST', "/taxonomies/category/terms/{$news['id']}/translations", ['locale' => 'fr']));
+
+        $viajes = $this->ok('POST', '/taxonomies/category/terms', ['name' => 'Viajes', 'locale' => 'es']);
+        $this->assertSame(['es', 'viajes'], [$viajes['locale'], $viajes['slug']]);
+        $this->assertArrayHasKey('locale', $this->refused('POST', '/taxonomies/category/terms', ['name' => 'Reisen', 'locale' => 'de']));
+        $this->assertArrayHasKey('parent_id', $this->refused('POST', '/taxonomies/category/terms', ['name' => 'Local', 'locale' => 'es', 'parent_id' => $news['id']]), 'a parent in the same language');
+        $this->ok('POST', '/taxonomies/category/terms', ['name' => 'Local', 'parent_id' => $news['id']]);
+        $local = $this->ok('GET', '/taxonomies/category/terms?locale=main&search=Local')[0];
+        $this->assertSame('es', $this->ok('POST', "/taxonomies/category/terms/{$local['id']}/translations", ['locale' => 'es'])['locale']);
+        $spanishLocal = $this->ok('GET', '/taxonomies/category/terms?locale=es&search=Local')[0];
+        $this->assertSame($es['id'], $spanishLocal['parent_id'], 'under the translation of its parent');
+
+        $names = fn(string $query): array => array_column($this->ok('GET', '/taxonomies/category/terms?' . $query), 'name');
+        $this->assertContains('Viajes', $names('locale=es'));
+        $this->assertNotContains('Viajes', $names('locale=main'));
+        $this->assertContains('Viajes', $names(''), 'every language by default');
+        $rows = array_column($this->ok('GET', '/taxonomies/category/terms?locale=main'), null, 'name');
+        $this->assertSame(['es'], array_column($rows['News']['translations'], 'locale'));
+
+        $this->ok('POST', '/content/post/entries', ['title' => 'Hola', 'locale' => 'es', 'terms' => ['tag' => ['Viaje']]]);
+        $created = $this->ok('GET', '/taxonomies/tag/terms?locale=es');
+        $this->assertSame([['Viaje', 'es']], array_map(static fn(array $t) => [$t['name'], $t['locale']], $created), 'a tag typed on a Spanish post is Spanish');
+    }
+
+    public function testMenuCategoryLinksFollowTheLanguage(): void
+    {
+        $this->ok('PATCH', '/settings', ['general' => ['languages' => 'es']]);
+        $news = $this->ok('POST', '/taxonomies/category/terms', ['name' => 'News']);
+        $this->ok('POST', '/content/post/entries', ['title' => 'Opening', 'status' => 'published', 'terms' => ['category' => [$news['id']]]]);
+        $menu = $this->ok('POST', '/menus', ['name' => 'Main', 'items' => [['kind' => 'term', 'ref' => $news['id']]]]);
+        $this->ok('PUT', '/menus/locations', ['locations' => ['primary' => $menu['id']]]);
+        $public = fn(string $code): array => array_map(
+            static fn(array $i) => [$i['label'], $i['url']],
+            ContentLanguages::within($code, fn() => $this->cms->container->make(Menus::class)->forLocations())['primary'],
+        );
+
+        $this->assertSame([['News', '/es/category/news']], $public('es'));
+        $es = $this->ok('POST', "/taxonomies/category/terms/{$news['id']}/translations", ['locale' => 'es']);
+        $this->ok('PATCH', "/taxonomies/category/terms/{$es['id']}", ['name' => 'Noticias', 'slug' => 'noticias']);
+        $this->assertSame([['Noticias', '/es/category/noticias']], $public('es'), 'the translation names the link');
+        $this->assertSame([['News', '/category/news']], $public(''));
+    }
 }

@@ -7,8 +7,8 @@ namespace Kestello\Cms\Content;
 use Kestello\Framework\Database\QueryBuilder;
 
 /**
- * The translations of entries, for lists and the editor: for each entry,
- * the other entries in its translation group, read in one query.
+ * The translations of entries and terms, for lists and the editor: for
+ * each one, the others in its translation group, read in one query.
  *
  * @api
  */
@@ -36,6 +36,33 @@ final class Translations
             foreach ($groups[(string) $row['translation_group']] ?? [] as $id) {
                 if ((int) $row['id'] !== $id) {
                     $out[$id][] = ['locale' => (string) $row['locale'], 'id' => (int) $row['id'], 'status' => (string) $row['status'], 'title' => (string) $row['title']];
+                }
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param list<Term> $terms
+     * @return array<int, list<array{locale: string, id: int, title: string}>> by term id, without the term itself, ordered by language (title: the name)
+     */
+    public static function ofTerms(array $terms): array
+    {
+        $groups = [];
+        foreach ($terms as $term) {
+            if (($term->translation_group ?? '') !== '') {
+                $groups[(string) $term->translation_group][] = (int) $term->getKey();
+            }
+        }
+        if ($groups === []) {
+            return [];
+        }
+        $out = [];
+        foreach (QueryBuilder::table('terms')->whereIn('translation_group', array_keys($groups))->orderBy('locale')->select('id', 'translation_group', 'locale', 'name')->get() as $row) {
+            foreach ($groups[(string) $row['translation_group']] ?? [] as $id) {
+                if ((int) $row['id'] !== $id) {
+                    $out[$id][] = ['locale' => (string) $row['locale'], 'id' => (int) $row['id'], 'title' => (string) $row['name']];
                 }
             }
         }

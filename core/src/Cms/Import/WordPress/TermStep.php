@@ -59,7 +59,7 @@ final class TermStep
         }
 
         // already here (made by hand, or by another import): use it
-        $id = Term::query()->where('taxonomy', $taxonomy->name)->whereIn('slug', array_values(array_unique([(string) $p['slug'], Str::slug((string) $p['slug'])])))->value('id');
+        $id = Term::query()->where('taxonomy', $taxonomy->name)->where('locale', '')->whereIn('slug', array_values(array_unique([(string) $p['slug'], Str::slug((string) $p['slug'])])))->value('id');
         $existing = $id === null ? null : Term::query()->find((int) $id);
         if ($existing instanceof Term) {
             $this->run->map->put('term', $key, SourceMap::FOUND, (int) $existing->getKey(), $checksum, self::hash($existing));
