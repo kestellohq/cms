@@ -50,10 +50,9 @@ final class DeleteUserCommand extends Command
         }
         $id = (int) $user['id'];
 
-        $superRoles = array_keys(array_filter($cms->auth->roles->roles(), static fn(array $r): bool => in_array('*', $r['capabilities'], true)));
-        if (in_array($user['role'], $superRoles, true)
-            && QueryBuilder::table('users')->whereIn('role', $superRoles)->where('is_active', 1)->where('id', '!=', $id)->count() === 0) {
-            $this->output->error("{$user['username']} is the last administrator. Make someone else an administrator first.");
+        $refusal = AccountDeletion::refusal($cms, $user, 'cli', null);
+        if ($refusal !== null) {
+            $this->output->error("{$user['username']} cannot be deleted. {$refusal}");
 
             return 1;
         }
@@ -65,7 +64,7 @@ final class DeleteUserCommand extends Command
             return 1;
         }
 
-        AccountDeletion::delete($cms, $id);
+        AccountDeletion::delete($cms, $id, 'cli');
         $cms->audit->record('users.deleted', ['user', $id], ['username' => $user['username'], 'email' => $user['email'], 'via' => 'cli'], null);
 
         $this->output->success("  Deleted {$user['username']}.");

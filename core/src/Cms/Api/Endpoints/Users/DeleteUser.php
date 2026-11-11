@@ -48,11 +48,12 @@ final class DeleteUser extends Endpoint
             throw ApiProblem::conflict('You cannot delete your own account.');
         }
         self::guardSuper($request, (string) $user['role']);
-        if (self::isSuperRole((string) $user['role']) && self::otherActiveSupers($id) === 0) {
-            throw ApiProblem::conflict('This is the last administrator.');
+        $refusal = AccountDeletion::refusal(self::cms(), $user, 'admin', $request->userId());
+        if ($refusal !== null) {
+            throw ApiProblem::conflict($refusal);
         }
 
-        AccountDeletion::delete(self::cms(), $id);
+        AccountDeletion::delete(self::cms(), $id, 'admin', $request->userId());
         self::audit($request, 'users.deleted', $id, ['username' => $user['username'], 'email' => $user['email']]);
 
         return null;

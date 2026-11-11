@@ -3962,6 +3962,10 @@ msgstr ""
 msgid "If the button does not work, copy this link into your browser:"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Auth/DeleteMyAccount.php
+msgid "If you did not do this, reply to this email or contact the site at once."
+msgstr ""
+
 #: core/src/Cms/Health/PlatformChangedNotification.php
 msgid "If you did not expect this, review the settings and the audit log now."
 msgstr ""
@@ -11236,6 +11240,10 @@ msgstr ""
 msgid "Your access"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Auth/DeleteMyAccount.php
+msgid "Your account was deleted"
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Your account, how you sign in, and what Kestello tells you about."
 msgstr ""
@@ -11317,6 +11325,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Your unsaved changes will be lost."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Auth/DeleteMyAccount.php
+msgid "Your {site} account and the data kept with it were deleted at your request. You are signed out everywhere."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Auth/DeleteMyAccount.php
+msgid "Your {site} account was deleted"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
