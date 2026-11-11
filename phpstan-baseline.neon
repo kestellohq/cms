@@ -259,43 +259,13 @@ parameters:
 			path: core/src/Cms/Api/Resources/EntryResource.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Api/Resources/EntryResource.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$menu_order\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Api/Resources/EntryResource.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Api/Resources/EntryResource.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
 			identifier: property.notFound
 			count: 1
 			path: core/src/Cms/Api/Resources/EntryResource.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$template\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Api/Resources/EntryResource.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$updated_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Api/Resources/EntryResource.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$version\.$#'
 			identifier: property.notFound
 			count: 1
 			path: core/src/Cms/Api/Resources/EntryResource.php
@@ -511,12 +481,6 @@ parameters:
 			path: core/src/Cms/Blocks/Bindings.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Blocks/Bindings.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -602,12 +566,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Blocks/CoreBlocks.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
 			identifier: property.notFound
 			count: 1
 			path: core/src/Cms/Blocks/CoreBlocks.php
@@ -727,12 +685,6 @@ parameters:
 			path: core/src/Cms/Content/ContentController.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Content/ContentController.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -781,45 +733,9 @@ parameters:
 			path: core/src/Cms/Content/ContentController.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author_id\.$#'
-			identifier: property.notFound
-			count: 4
-			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$menu_order\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: core/src/Cms/Content/Entries.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
 			identifier: property.notFound
 			count: 4
-			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$template\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$version\.$#'
-			identifier: property.notFound
-			count: 2
 			path: core/src/Cms/Content/Entries.php
 
 		-
@@ -923,12 +839,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/src/Cms/Content/Entry.php
 
 		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
@@ -1309,12 +1219,6 @@ parameters:
 			path: core/src/Cms/Content/ReviewNotification.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/src/Cms/Content/Reviews.php
-
-		-
 			message: '#^Parameter \#1 \$entry of method Kestello\\Cms\\Content\\Reviews\:\:editUrl\(\) expects Kestello\\Cms\\Content\\Entry, Kestello\\Framework\\Database\\Model given\.$#'
 			identifier: argument.type
 			count: 1
@@ -1541,12 +1445,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: core/src/Cms/Design/ThemeStyles.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$template\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Design/ThemeTemplates.php
 
 		-
 			message: '#^Method Kestello\\Cms\\Design\\ThemeTemplates\:\:references\(\) return type has no value type specified in iterable type array\.$#'
@@ -2023,28 +1921,10 @@ parameters:
 			path: core/src/Cms/Redirects/Redirects.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Redirects/RedirectsModule.php
-
-		-
 			message: '#^Method Kestello\\Cms\\Search\\DatabaseEngine\:\:tagFilter\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: core/src/Cms/Search/DatabaseEngine.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Search/SearchManager.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
-			identifier: property.notFound
-			count: 4
-			path: core/src/Cms/Search/SearchManager.php
 
 		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'

@@ -10071,6 +10071,10 @@ msgstr ""
 msgid "The site is putting it back. Reload the page in a moment."
 msgstr ""
 
+#: core/src/Cms/Content/Entries.php
+msgid "The site isn't written in \"{code}\". Use one of its languages, or leave it empty for the main one."
+msgstr ""
+
 #: core/resources/js/pages/admin/Settings.vue
 msgid "The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks."
 msgstr ""

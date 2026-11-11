@@ -21,8 +21,8 @@ return new class extends Migration {
             $t->string('slug', 191);
             $t->foreignId('parent_id')->nullable()->constrained('entries')->nullOnDelete();
             $t->foreignId('author_id')->nullable()->constrained('users')->nullOnDelete();
-            $t->string('locale', 12)->default('');           // multilingual (v2)
-            $t->char('translation_group', 26)->nullable();   // multilingual (v2)
+            $t->string('locale', 12)->default('');           // '' = the main language, else its code (ContentLanguages)
+            $t->char('translation_group', 26)->nullable();   // shared by an entry and its translations
             $t->string('template', 100)->nullable();
             $t->text('excerpt')->nullable();
             $t->json('data')->nullable();
@@ -32,7 +32,8 @@ return new class extends Migration {
             $t->timestamps();
             $t->softDeletes();
             $t->index('type', 'status', 'published_at');
-            $t->index('type', 'slug');
+            $t->index('type', 'locale', 'slug');
+            $t->index('translation_group');
             $t->index('parent_id');
             $t->index('author_id');
         });

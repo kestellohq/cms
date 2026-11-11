@@ -11,6 +11,7 @@ use Kestello\Cms\Events\EntryReviewed;
 use Kestello\Cms\Events\EntrySaved;
 use Kestello\Cms\Events\EntrySubmitted;
 use Kestello\Cms\Events\EntryTrashed;
+use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Contracts\Auth\Principal;
 use Kestello\Contracts\Cache\LockTimeout;
 use Kestello\Contracts\Cache\Store;
@@ -85,18 +86,78 @@ final class Entries
 
     // ── writes ───────────────────────────────────────────────────────
 
-    /** @param array<string, mixed> $input title, slug, status, data, terms ({taxonomy: [ids or new names]}), excerpt, parent_id, author_id, template, menu_order, published_at */
+    /**
+     * @param array<string, mixed> $input title, slug, status, data, terms ({taxonomy: [ids or new names]}), excerpt, parent_id, author_id, template, menu_order, published_at,
+     *                                    locale (one of the site's other languages; default the main one, fixed once created)
+     */
     public function create(ContentType $type, array $input, Principal $p): Entry
     {
         if (!$this->can($p, $type, 'create')) {
             throw ContentException::forbidden("You can't create " . strtolower($type->plural()) . '.');
         }
+        $locale = self::language($input['locale'] ?? '');
         $entry = (new Entry())->forceFill([
             'type' => $type->name, 'status' => 'draft', 'title' => '', 'slug' => '', 'author_id' => $p->userId,
-            'locale' => '', 'data' => [], 'menu_order' => 0, 'version' => 0,
+            'locale' => $locale, 'data' => [], 'menu_order' => 0, 'version' => 0,
         ]);
 
         return $this->write($type, $entry, $input, $p, null, true);
+    }
+
+    /**
+     * A draft of $source in another language, linked to it as its
+     * translation: the same fields and terms to translate from, its parent's
+     * translation as parent (none when that has no translation yet), and a
+     * slug from the title. An existing translation is a conflict, not a copy.
+     *
+     * @param string $locale one of the site's other languages, or '' for the main one
+     */
+    public function translate(Entry $source, string $locale, Principal $p): Entry
+    {
+        $type = $this->typeOf($source);
+        $locale = self::language($locale);
+        if ($locale === $source->language()) {
+            throw ContentException::invalid(['locale' => ['This ' . strtolower($type->singular()) . ' is already in that language.']]);
+        }
+        if (!$this->can($p, $type, 'edit', $source)) {
+            throw ContentException::forbidden("You can't edit this " . strtolower($type->singular()) . '.');
+        }
+        if (($existing = $source->translation($locale, published: false)) !== null) {
+            throw ContentException::conflict('This ' . strtolower($type->singular()) . ' already has that translation (#' . $existing->getKey() . ').');
+        }
+
+        return DatabaseManager::getConnection()->transaction(function () use ($source, $locale, $type, $p): Entry {
+            $group = (string) ($source->translation_group ?? '');
+            if ($group === '') {
+                $group = Str::ulid();
+                Entry::query()->where('id', $source->getKey())->update(['translation_group' => $group]);
+                $source->forceFill(['translation_group' => $group]);
+            }
+            $parent = $source->parent_id === null ? null : Entry::query()->find($source->parent_id);
+            $parent = $parent instanceof Entry ? $parent->translation($locale, published: false) : null;
+            $terms = [];
+            foreach ($this->terms->summaries([(int) $source->getKey()])[(int) $source->getKey()] ?? [] as $taxonomy => $list) {
+                $terms[$taxonomy] = array_map(static fn(array $t): int => $t['id'], $list);
+            }
+            $copy = $this->create($type, [
+                'locale' => $locale, 'title' => (string) $source->title, 'excerpt' => $source->excerpt, 'data' => $source->data ?? [],
+                'terms' => $terms, 'parent_id' => $parent?->getKey(), 'template' => $source->template, 'menu_order' => (int) $source->menu_order,
+            ], $p);
+            Entry::query()->where('id', $copy->getKey())->update(['translation_group' => $group]);
+
+            return $copy->forceFill(['translation_group' => $group]);
+        });
+    }
+
+    /** A language an entry can be written in: '' (the main one) or one of the other languages; anything else is an error. */
+    private static function language(mixed $value): string
+    {
+        $code = is_string($value) ? trim($value) : '';
+        if ($code !== '' && !ContentLanguages::has($code)) {
+            throw ContentException::invalid(['locale' => [Translator::get('The site isn\'t written in "{code}". Use one of its languages, or leave it empty for the main one.', ['code' => $code])]]);
+        }
+
+        return $code;
     }
 
     /** $expectedVersion: the version the editor loaded; a newer one in the database is a conflict. */
@@ -234,9 +295,14 @@ final class Entries
 
     // ── reading ──────────────────────────────────────────────────────
 
-    /** A published entry of $type at $path (relative to the type's prefix, no leading slash). */
-    public function findPublic(ContentType $type, string $path): ?Entry
+    /**
+     * A published entry of $type at $path (relative to the type's prefix, no
+     * leading slash) in $language ('' = the main language; default: the
+     * language of the page being answered).
+     */
+    public function findPublic(ContentType $type, string $path, ?string $language = null): ?Entry
     {
+        $language ??= ContentLanguages::current();
         $segments = array_values(array_filter(explode('/', trim($path, '/')), static fn($s) => $s !== ''));
         if ($segments === [] || count($segments) > self::MAX_DEPTH + 1) {
             return null;
@@ -253,12 +319,12 @@ final class Entries
                 return null;
             }
 
-            return Entry::query()->ofType($type->name)->published()->where('slug', $slug)->first();
+            return Entry::query()->ofType($type->name)->inLanguage($language)->published()->where('slug', $slug)->first();
         }
         $parent = null;
         $entry = null;
         foreach ($segments as $i => $slug) {
-            $q = Entry::query()->ofType($type->name)->where('slug', $slug);
+            $q = Entry::query()->ofType($type->name)->inLanguage($language)->where('slug', $slug);
             $parent === null ? $q->whereNull('parent_id') : $q->where('parent_id', $parent);
             // every parent on the way must be public too: a draft parent hides its children
             $entry = $q->published()->first();
@@ -570,9 +636,9 @@ final class Entries
             $base = (string) $entry->slug;
         }
 
-        $slug = $this->uniqueSlug($type, $base, $parentId, $entry->getKey());
+        $slug = $this->uniqueSlug($type, $base, $parentId, $entry->getKey(), $entry->language());
         for ($i = 2; $this->reservedBy($type, $slug, $parentId) !== null; $i++) {      // a title like "Blog": take blog-2
-            $slug = $this->uniqueSlug($type, "{$base}-{$i}", $parentId, $entry->getKey());
+            $slug = $this->uniqueSlug($type, "{$base}-{$i}", $parentId, $entry->getKey(), $entry->language());
         }
 
         return $slug;
@@ -596,6 +662,9 @@ final class Entries
         if (in_array($slug, self::RESERVED_PATHS, true)) {
             return 'the site itself';
         }
+        if (ContentLanguages::has($slug)) {
+            return 'the pages in that language';
+        }
         foreach ($this->content->types() as $other) {
             if ($other->name !== $type->name && ($other->getPath() ?? '') !== '' && explode('/', trim((string) $other->getPath(), '/'))[0] === $slug) {
                 return 'the ' . mb_strtolower($other->plural()) . ' archive';
@@ -617,11 +686,11 @@ final class Entries
         return null;
     }
 
-    /** $base, or $base-2, $base-3… unique among the type's entries with the same parent (trash included). */
-    public function uniqueSlug(ContentType $type, string $base, ?int $parentId, int|string|null $exceptId = null): string
+    /** $base, or $base-2, $base-3… unique among the type's entries in $language with the same parent (trash included). */
+    public function uniqueSlug(ContentType $type, string $base, ?int $parentId, int|string|null $exceptId = null, string $language = ''): string
     {
         $base = trim(mb_substr($base, 0, 180), '-') ?: 'entry';
-        $taken = Entry::query()->withTrashed()->ofType($type->name)
+        $taken = Entry::query()->withTrashed()->ofType($type->name)->inLanguage($language)
             ->where(fn(QueryBuilder $q) => $q->where('slug', $base)->orWhereLike('slug', QueryBuilder::escapeLike($base) . '-%'))
             ->when($type->isHierarchical(), fn($q) => $parentId === null ? $q->whereNull('parent_id') : $q->where('parent_id', $parentId))
             ->when($exceptId !== null, fn($q) => $q->where('id', '!=', $exceptId))
@@ -646,9 +715,12 @@ final class Entries
         }
         $current = $parentId;
         for ($depth = 0; $current !== null && $depth < self::MAX_DEPTH; $depth++) {
-            $row = QueryBuilder::table('entries')->select('id', 'type', 'parent_id', 'deleted_at')->where('id', $current)->first();
+            $row = QueryBuilder::table('entries')->select('id', 'type', 'parent_id', 'locale', 'deleted_at')->where('id', $current)->first();
             if ($row === null || ($depth === 0 && ($row['type'] !== $type->name || $row['deleted_at'] !== null))) {
                 return 'Pick an existing ' . strtolower($type->singular()) . '.';
+            }
+            if ($depth === 0 && (string) $row['locale'] !== $entry->language()) {
+                return 'Pick a ' . strtolower($type->singular()) . ' in the same language.';
             }
             if ($entry->getKey() !== null && (int) $row['id'] === $entry->getKey() && $depth > 0) {
                 return 'That would put the entry inside itself.';
