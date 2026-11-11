@@ -5116,6 +5116,10 @@ msgid "Logo and footer"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Logo in dark mode"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Logo or photo"
 msgstr ""
 
@@ -8858,6 +8862,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Shown in the browser tab, emails and the admin."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Shown instead of the logo when a mail app is in dark mode, such as a light version of a dark logo. Apple Mail and Outlook show it; mail apps that do not tell an email they are dark keep the logo."
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue

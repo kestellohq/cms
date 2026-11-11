@@ -180,12 +180,14 @@ final class SiteSettings
                     'email_show_logo' => Schema::bool()->optional()->description('Without a logo, the site name is shown at the foot only.'),
                     'email_logo' => Schema::int()->min(0)->format('media')->optional()
                         ->description('Left empty, the Logo or photo from Search and sharing is used. It is shown 40 pixels tall.'),
+                    'email_logo_dark' => Schema::int()->min(0)->format('media')->optional()
+                        ->description('Shown instead of the logo when a mail app is in dark mode, such as a light version of a dark logo. Apple Mail and Outlook show it; mail apps that do not tell an email they are dark keep the logo.'),
                     'email_footer' => Schema::string()->max(500)->format('multiline')->optional()
                         ->description('Under the site name in every email, such as a postal address or a line about the site.'),
                 ]),
-                'labels' => ['email_show_logo' => 'Show a logo', 'email_logo' => 'Email logo', 'email_footer' => 'Footer text'],
+                'labels' => ['email_show_logo' => 'Show a logo', 'email_logo' => 'Email logo', 'email_logo_dark' => 'Logo in dark mode', 'email_footer' => 'Footer text'],
                 'secrets' => [],
-                'defaults' => ['email_show_logo' => true, 'email_logo' => 0, 'email_footer' => ''],
+                'defaults' => ['email_show_logo' => true, 'email_logo' => 0, 'email_logo_dark' => 0, 'email_footer' => ''],
                 'capability' => 'emails.manage',
             ] + $core,
             'accounts' => [

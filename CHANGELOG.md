@@ -6,6 +6,8 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- **Settings → Emails → Logo in dark mode**: a second logo that mail apps in dark mode show instead of the email logo, such as a light version of a dark logo, so it stays readable on a dark background. Apple Mail and Outlook swap them; mail apps that do not tell an email they are dark keep the logo. `MailBrand` takes it as `darkLogo`, and a theme's email layout gets both through `{!! logo !!}` and `{!! dark_css !!}`.
+- `docker/Dockerfile` builds a production image with `--target production`: no Xdebug, errors logged instead of shown, a larger OPcache. A plain build still makes the development image.
 - A seed's settings can name a file from its `media/` folder with `"@media:<file>"`, as pages already could, for settings that hold an image: `"seo": {"seo_publisher_logo": "@media:logo.png"}` sets the site's logo, which emails use too. A name with no file in `media/` stops the seed before it writes anything.
 - **New sign-ups**: when someone makes their own account, with the sign-up form or by signing in with a provider, the people whose role can manage people (`users.manage`) get a notification in the admin and by email, with a link to the new person's profile. Each of them can turn it off under **Your profile → Notifications**. Accounts made in the admin or with `user:create` are not announced.
 - `i18n:extract` leaves out a file that says "i18n:extract skips this file" in its first lines: sample content written in its own language, which the translator never shows. Core's demo content uses it, so the template no longer lists the sample site's words.
@@ -114,6 +116,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- Pages are sent with `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin` beside their Content-Security-Policy, so a browser never runs a file as another type, and other sites see only the site's address, not the page and its query. A page that sets its own keeps it.
 - Webhook deliveries are queued on the `default` queue. They went to a `webhooks` queue that neither the cron task nor `queue:work` reads, so on a site with a background queue they were never sent. A test now checks that every queue core names is one the default workers read.
 - The test email, its description in Site → Emails and the error when a test send fails now name the settings tab as it is labelled, **Settings → Email** (they said "Settings → Mail"), and Email logo’s help names **Logo or photo** under **Search and sharing** (it said "Search engines").
 - Form notifications use the same email layout as everything else the site sends, with the answers as rows, a plain-text part, and the button to the submission in the admin. Before, they were their own bare HTML.

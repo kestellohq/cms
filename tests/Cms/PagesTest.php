@@ -123,6 +123,12 @@ final class PagesTest extends TestCase
 
         $json = $middleware->handle($this->request(['X-Kestello' => 'true']), fn() => Page::render('@core/auth/Login'));
         $this->assertFalse(isset($json->headers()['Content-Security-Policy']), 'no CSP on JSON');
+        $this->assertFalse(isset($json->headers()['Referrer-Policy']), 'nor the other page headers');
+
+        $this->assertSame(['nosniff', 'strict-origin-when-cross-origin'], [$html->headers()['X-Content-Type-Options'] ?? null, $html->headers()['Referrer-Policy'] ?? null]);
+        $own = $middleware->handle($this->request(), fn() => Page::render('@core/auth/Login')->withHeader('Referrer-Policy', 'no-referrer'));
+        $this->assertSame('no-referrer', $own->headers()['Referrer-Policy'], "a page's own policy stays");
+        $this->assertArrayHasKey('Content-Security-Policy', $own->headers(), 'and the others are still added');
     }
 
     public function testStaleClientIsToldToReload(): void

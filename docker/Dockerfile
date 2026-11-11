@@ -1,5 +1,8 @@
 # The latest stable PHP (8.5.x). The minor version is pinned; rebuilding picks up its patch releases.
-FROM php:8.5-fpm
+#
+#   docker build docker                         the development image (Xdebug, errors shown): the default
+#   docker build --target production docker     for a live site: no Xdebug, errors logged, not shown
+FROM php:8.5-fpm AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -29,12 +32,10 @@ RUN apt-get update && apt-get install -y \
         zip \
         intl \
         bcmath \
-    && pecl install xdebug apcu imagick \
-    && docker-php-ext-enable xdebug apcu imagick \
+    && pecl install apcu imagick \
+    && docker-php-ext-enable apcu imagick \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-COPY php/php.ini /usr/local/etc/php/conf.d/custom.ini
 
 WORKDIR /var/www/html
 
@@ -45,3 +46,11 @@ EXPOSE 9000
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["php-fpm"]
+
+FROM base AS production
+COPY php/production.ini /usr/local/etc/php/conf.d/custom.ini
+
+# The last stage is what a plain build makes: development, with Xdebug.
+FROM base AS development
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+COPY php/php.ini /usr/local/etc/php/conf.d/custom.ini

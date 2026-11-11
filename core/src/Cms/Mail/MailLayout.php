@@ -62,7 +62,12 @@ final class MailLayout
         if ($brand->logo !== null) {
             $height = MailBrand::LOGO_HEIGHT;
             $width = max(1, (int) round($brand->logo['width'] * $height / $brand->logo['height']));
-            $img = '<img src="' . $e($brand->logo['url']) . '" alt="' . $e($brand->name) . '" width="' . $width . '" height="' . $height . '" style="display:block;border:0;height:' . $height . 'px;width:' . $width . 'px;max-width:100%">';
+            $img = '<img class="k-logo" src="' . $e($brand->logo['url']) . '" alt="' . $e($brand->name) . '" width="' . $width . '" height="' . $height . '" style="display:block;border:0;height:' . $height . 'px;width:' . $width . 'px;max-width:100%">';
+            if ($brand->darkLogo !== null) {
+                // hidden until the dark-mode CSS swaps the two; mail apps without it keep the logo
+                $dw = max(1, (int) round($brand->darkLogo['width'] * $height / $brand->darkLogo['height']));
+                $img .= '<img class="k-logo-dark" src="' . $e($brand->darkLogo['url']) . '" alt="' . $e($brand->name) . '" width="' . $dw . '" height="' . $height . '" style="display:none;mso-hide:all;border:0;height:' . $height . 'px;width:' . $dw . 'px;max-width:100%">';
+            }
         }
         $footer = implode('<br>', array_map($e, $brand->footer !== '' ? preg_split('/\R/', $brand->footer) ?: [] : []));
         if ($theme !== null) {
@@ -172,6 +177,7 @@ final class MailLayout
             . 'th.k-row{color:' . $d('muted') . '!important}'
             . '.k-code{background:' . $d('page') . '!important}'
             . '.k-btn{background:' . $d('accent') . '!important;color:' . $d('accentInk') . '!important}'
+            . ($brand->darkLogo !== null ? '.k-logo{display:none!important}.k-logo-dark{display:block!important}' : '')
             . '}';
     }
 
