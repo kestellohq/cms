@@ -13,8 +13,10 @@ use Kestello\Support\Hash;
  * The demo's snapshot and its hourly reset.
  *
  * The first time a demo site boots, it gets its "demo" account and, when
- * it has no content yet, the sample bakery (DemoContent). Then a backup of
- * the whole site is taken: the snapshot. Every RESET_EVERY seconds the
+ * it has no content yet, the sample studio (DemoContent): its content types,
+ * languages and theme on that boot, its content on the next one, which
+ * registers the types. Then a backup of the whole site is taken: the
+ * snapshot. Every RESET_EVERY seconds the
  * scheduler restores it, so visitors' changes and uploads are gone and
  * everyone is signed out.
  *
@@ -79,9 +81,15 @@ final class DemoSite
             return false;
         }
         try {
-            $user = $this->account();
+            $author = $this->cms->auth->principalFor($this->account(), 'cli');
             if (QueryBuilder::table('entries')->count() === 0) {
-                DemoContent::seed($this->cms, $this->cms->auth->principalFor($user, 'cli'));
+                if (!DemoContent::ready($this->cms)) {
+                    DemoContent::prepare($this->cms, $author);
+                    $this->theme(DemoContent::data()['theme']);
+
+                    return false;   // the content types it built are registered on the next boot, which seeds
+                }
+                DemoContent::seed($this->cms, $author);
             }
             $this->snapshot();
 
@@ -89,6 +97,15 @@ final class DemoSite
         } finally {
             flock($lock, LOCK_UN);
             fclose($lock);
+        }
+    }
+
+    /** Switch to the demo's theme when it is installed (Exhibit ships with core); otherwise keep the active one. */
+    private function theme(string $slug): void
+    {
+        $extensions = $this->cms->extensions();
+        if (isset($extensions->themes()[$slug]) && $extensions->activeTheme()?->slug() !== $slug) {
+            $extensions->activateTheme($slug);
         }
     }
 

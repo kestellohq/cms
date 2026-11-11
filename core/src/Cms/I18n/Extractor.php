@@ -22,6 +22,10 @@ use RecursiveIteratorIterator;
  *
  * Only literal strings are found: __($text) cannot be, so pass literals.
  *
+ * A file whose first lines say "i18n:extract skips this file" is left out:
+ * sample content written in its own language, never shown through the
+ * translator (core's demo studio).
+ *
  * @internal
  */
 final class Extractor
@@ -44,6 +48,9 @@ final class Extractor
 
     /** Directories never scanned. */
     public const array SKIP = ['node_modules', 'vendor', 'build', 'storage', 'tests', 'releases', '.git'];
+
+    /** Said in a file's first lines, this keeps it out (see the class comment). */
+    public const string SKIP_FILE = 'i18n:extract skips this file';
 
     /** @var array<string, array<string, true>> msgid => files it is in */
     private array $found = [];
@@ -69,6 +76,9 @@ final class Extractor
         foreach ($list as $path) {
             $relative = ltrim(substr($path, strlen(rtrim($root, '/'))), '/');
             $code = (string) file_get_contents($path);
+            if (str_contains(substr($code, 0, 1000), self::SKIP_FILE)) {
+                continue;
+            }
             $this->add($relative, str_ends_with($path, '.php') ? self::php($code) : self::js($code));
         }
 
