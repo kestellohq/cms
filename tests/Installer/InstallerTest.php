@@ -118,7 +118,7 @@ final class InstallerTest extends TestCase
 
         $folders = InstallerController::prepareFolders($paths);
 
-        $this->assertSame(['config', 'storage', 'storage/cache', 'storage/compiled', 'storage/logs', 'storage/sessions', 'content/plugins', 'content/uploads'], array_keys($folders));
+        $this->assertSame(['config', 'storage', 'storage/cache', 'storage/compiled', 'storage/logs', 'storage/sessions', 'storage/app', 'content/plugins'], array_keys($folders));
         foreach ($folders as $label => $dir) {
             $this->assertTrue(is_dir($dir) && is_writable($dir), $label);
         }
@@ -194,5 +194,22 @@ final class InstallerTest extends TestCase
             $this->assertNotSame('', $check['fix'], $check['name']);
             $this->assertContains($check['group'], ['PHP', 'Folders']);
         }
+    }
+
+    public function testTheInstallerChecksTheFolderUploadsGoTo(): void
+    {
+        $paths = new Paths($this->root, dirname(__DIR__, 2) . '/core');
+        $folders = InstallerController::writableFolders($paths);
+
+        // the media library's local disk is storage/app/media (StorageManager, rooted at storage/app)
+        $this->assertSame($paths->storage('app'), $folders['storage/app'] ?? null);
+        $this->assertArrayNotHasKey('content/uploads', $folders, 'nothing is uploaded there');
+    }
+
+    public function testUploadsFollowAnotherStorageFolder(): void
+    {
+        $folders = InstallerController::writableFolders(new Paths($this->root, dirname(__DIR__, 2) . '/core', '/srv/kestello-data'));
+
+        $this->assertSame('/srv/kestello-data/app', $folders['storage/app']);
     }
 }
