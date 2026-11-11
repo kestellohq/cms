@@ -26,11 +26,11 @@ final class InstallZipTest extends TestCase
         foreach ($names as $name) {
             $this->assertStringStartsWith('kestello/', $name, 'one folder to upload');
         }
-        foreach (['.htaccess', 'public/.htaccess', 'public/index.php', 'bin/cms', 'core/VERSION', 'core/bootstrap.php', 'core/resources/assets/build/.vite/manifest.json', 'content/themes/base/theme.json', 'content/themes/base/screenshot.webp', 'LICENSE'] as $needed) {
+        foreach (['.htaccess', 'public/.htaccess', 'public/index.php', 'bin/cms', 'core/VERSION', 'core/bootstrap.php', 'core/resources/assets/build/.vite/manifest.json', 'content/themes/base/theme.json', 'content/themes/base/screenshot.webp', 'content/themes/exhibit/theme.json', 'content/themes/exhibit/resources/lang/es.json', 'LICENSE'] as $needed) {
             $this->assertContains("kestello/{$needed}", $names, $needed);
         }
 
-        $leaked = preg_grep('#^kestello/(tests|tools|docker|config|storage|content/plugins|\.github|\.agents)/|node_modules|/\.(?!htaccess$|vite/)|content/themes/(?!base/)|content/themes/base/tools/|(AGENTS|CLAUDE)\.md$|\.env|package(-lock)?\.json$|^kestello/core/(releases/|current\.php)#', $names);
+        $leaked = preg_grep('#^kestello/(tests|tools|docker|config|storage|content/plugins|\.github|\.agents)/|node_modules|/\.(?!htaccess$|vite/)|content/themes/(?!base/|exhibit/)|content/themes/base/tools/|(AGENTS|CLAUDE)\.md$|\.env|package(-lock)?\.json$|^kestello/core/(releases/|current\.php)#', $names);
         $this->assertSame([], array_values($leaked ?: []));
     }
 
