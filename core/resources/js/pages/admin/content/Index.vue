@@ -3,6 +3,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { Head, Link, usePage } from '@kestello/app';
 import { confirm, notify, useApi, useExtensions, useResource, __ } from '@kestello/sdk';
 import { KAlert, KBadge, KButton, KCard, KExtension, KField, KInput, KPageHeader, KSelect, KTable, KTabs, KWhen } from '@kestello/ui';
+import TranslationLinks from '../../../components/languages/TranslationLinks.vue';
 
 defineOptions({ layout: 'Admin' });
 
@@ -12,7 +13,16 @@ const typeName = computed(() => String(page.props.params?.type ?? ''));
 const types = useResource('/content/types');
 const type = computed(() => (types.data.value ?? []).find((t) => t.name === typeName.value) ?? null);
 
-const filters = reactive({ status: 'any', search: '', sort: '-updated_at', page: 1 });
+// A site in several languages lists one language at a time, the main one first; each row links its translations.
+const languageInfo = useResource('/content/languages');
+const languages = computed(() => languageInfo.data.value?.languages ?? []);
+const multilingual = computed(() => languages.value.length > 1);
+const languageOptions = computed(() => [
+    ...languages.value.map((l) => ({ value: l.code, label: l.main ? __('{language} (main)', { language: l.name }) : l.name })),
+    { value: 'any', label: __('All languages') },
+]);
+
+const filters = reactive({ status: 'any', search: '', sort: '-updated_at', page: 1, locale: '' });
 const rows = ref([]);
 const meta = ref(null);
 const loading = ref(false);
@@ -29,6 +39,8 @@ async function load() {
             sort: filters.sort,
             page: filters.page,
             per_page: 25,
+            // one language at a time only while the site has several: entries in a removed language stay listed
+            locale: !multilingual.value ? 'any' : filters.locale === '' ? 'main' : filters.locale, // '' would be left out of the query
         });
         if (mine !== seq) return;
         // trashing the last entry of the last page: go back a page instead of showing "Page 3 of 2"
@@ -58,17 +70,18 @@ watch(
     },
 );
 watch(
-    () => [filters.status, filters.sort],
+    () => [filters.status, filters.sort, filters.locale],
     () => {
         filters.page = 1;
         load();
     },
 );
 watch(() => filters.page, load);
+watch(multilingual, () => load());
 watch(
     typeName,
     () => {
-        Object.assign(filters, { status: 'any', search: '', sort: '-updated_at', page: 1 });
+        Object.assign(filters, { status: 'any', search: '', sort: '-updated_at', page: 1, locale: '' });
         rows.value = [];
         load();
     },
@@ -104,6 +117,7 @@ const columns = computed(() => [
     { key: 'when', label: trash.value ? __('Trashed') : __('When'), class: 'k-when' },
     { key: 'title', label: __('Title') },
     ...extColumns.value.map((c) => ({ key: c.key, label: c.label, align: c.align })),
+    ...(multilingual.value && !trash.value ? [{ key: 'translations', label: __('Translations') }] : []),
     { key: 'author', label: __('Author') },
     { key: 'status', label: __('Status') },
     { key: 'actions', label: '', align: 'end', width: trash.value ? '220px' : '56px' },
@@ -116,6 +130,11 @@ const sortOptions = computed(() => [
 ]);
 
 const singular = computed(() => type.value?.singular ?? '');
+// "New" on a list filtered to one language starts the entry in it
+const newHref = computed(
+    () =>
+        `/admin/content/${typeName.value}/new${multilingual.value && filters.locale && filters.locale !== 'any' ? `?locale=${encodeURIComponent(filters.locale)}` : ''}`,
+);
 const plural = computed(() => type.value?.plural ?? __('Content'));
 const empty = computed(() => {
     if (filters.search.trim()) return __('No {plural} match “{q}”.', { plural: plural.value.toLowerCase(), q: filters.search.trim() });
@@ -197,7 +216,7 @@ const dateHint = (row) => (trash.value ? '' : row.status === 'scheduled' ? __('G
     <Head :title="plural" />
     <KPageHeader :title="plural" :description="type?.description ?? ''">
         <template v-if="type?.can.create" #actions>
-            <KButton variant="primary" icon="plus" :href="`/admin/content/${typeName}/new`">{{ __('New {item}', { item: singular.toLowerCase() }) }}</KButton>
+            <KButton variant="primary" icon="plus" :href="newHref">{{ __('New {item}', { item: singular.toLowerCase() }) }}</KButton>
         </template>
     </KPageHeader>
 
@@ -208,6 +227,9 @@ const dateHint = (row) => (trash.value ? '' : row.status === 'scheduled' ? __('G
         <div class="k-toolbar" role="search">
             <KField v-slot="{ id }" :label="__('Search titles')" class="k-toolbar__grow">
                 <KInput :id="id" v-model="filters.search" type="search" autocomplete="off" />
+            </KField>
+            <KField v-if="multilingual" v-slot="{ id }" :label="__('Language')">
+                <KSelect :id="id" v-model="filters.locale" :options="languageOptions" />
             </KField>
             <KField v-slot="{ id }" :label="__('Order')">
                 <KSelect :id="id" v-model="filters.sort" :options="sortOptions" />
@@ -231,6 +253,16 @@ const dateHint = (row) => (trash.value ? '' : row.status === 'scheduled' ? __('G
                 <template v-for="col in extColumns" :key="col.id" #[`cell-${col.key}`]="{ row }">
                     <KExtension v-if="col.component" :name="col.component" :owner="col.owner" inline :row="row" :value="row[col.key]" />
                     <span v-else>{{ row[col.key] ?? '—' }}</span>
+                </template>
+                <template #cell-translations="{ row }">
+                    <TranslationLinks
+                        :type="typeName"
+                        :entry="row"
+                        :languages="languages"
+                        :main="languageInfo.data.value?.main ?? ''"
+                        :can-translate="row.can.edit"
+                        compact
+                    />
                 </template>
                 <template #cell-author="{ row }"
                     ><span :class="{ 'k-muted': !row.author }">{{ row.author?.username ?? __('Nobody') }}</span

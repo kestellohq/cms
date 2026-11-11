@@ -27,6 +27,11 @@ final class ContentLanguages
 {
     public const string SETTING = 'languages';
 
+    /** Languages offered when adding one (any other code can be typed). */
+    public const array COMMON = ['ar', 'bg', 'bn', 'bs', 'ca', 'cs', 'cy', 'da', 'de', 'el', 'en', 'es', 'et', 'eu', 'fa', 'fi', 'fr', 'ga', 'gl', 'he', 'hi', 'hr', 'hu',
+        'id', 'is', 'it', 'ja', 'ko', 'lt', 'lv', 'mk', 'ms', 'mt', 'nb', 'nl', 'pl', 'pt', 'pt-br', 'ro', 'ru', 'sk', 'sl', 'sq', 'sr', 'sr-latn', 'sv', 'sw', 'th', 'tr', 'uk',
+        'ur', 'vi', 'zh-hans', 'zh-hant'];
+
     /** At most this many languages besides the main one. */
     public const int MAX = 20;
 
@@ -66,6 +71,41 @@ final class ContentLanguages
         }
 
         return array_slice($codes, 0, self::MAX);
+    }
+
+    /**
+     * Checks a new value for the setting, written as "es, pt-br": the codes
+     * to store, and what is wrong. A code is refused when it isn't one, when
+     * there are more than MAX, or when $owner says something already lives
+     * at /{code} (only for codes not in $current: a language the site has
+     * already holds its address).
+     *
+     * @param callable(string): ?string $owner what answers at /{code} now, or null
+     * @param list<string> $current the other languages now
+     * @return array{0: list<string>, 1: list<string>} the codes, and the errors
+     */
+    public static function check(string $value, string $main, callable $owner, array $current = []): array
+    {
+        $codes = [];
+        $errors = [];
+        foreach (array_filter(array_map('trim', explode(',', $value)), static fn(string $v) => $v !== '') as $raw) {
+            $code = self::code($raw);
+            if ($code === '') {
+                $errors[] = Translator::get('"{code}" isn\'t a language code. Use one such as es, de or pt-br.', ['code' => $raw]);
+            } elseif ($code !== self::code($main) && !in_array($code, $codes, true)) {
+                $codes[] = $code;
+            }
+        }
+        if (count($codes) > self::MAX) {
+            $errors[] = Translator::get('A site can have at most {max} languages besides its main one.', ['max' => self::MAX]);
+        }
+        foreach ($codes as $code) {
+            if (!in_array($code, $current, true) && ($taken = $owner($code)) !== null) {
+                $errors[] = Translator::get('/{code} already belongs to {owner}. Change its address first.', ['code' => $code, 'owner' => $taken]);
+            }
+        }
+
+        return [$codes, $errors];
     }
 
     /** "pt_BR" → "pt-br"; '' when it isn't a language code. */

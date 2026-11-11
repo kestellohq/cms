@@ -10,6 +10,9 @@ use Kestello\Cms\Api\ApiRoute;
 use Kestello\Cms\Api\Endpoint;
 use Kestello\Cms\Api\Schema;
 use Kestello\Cms\Cms;
+use Kestello\Cms\Content\Entries;
+use Kestello\Cms\I18n\ContentLanguages;
+use Kestello\Cms\I18n\SiteLanguage;
 use Kestello\Framework\Settings\Settings;
 
 /**
@@ -76,6 +79,19 @@ final class UpdateSettings extends Endpoint
                 if ($values['site_url'] !== rtrim((string) (SiteSettings::read()['general']['site_url'] ?? ''), '/') && !$request->principal->can('system.manage')) {
                     throw ApiProblem::forbidden('Changing the site address needs the system.manage permission.');
                 }
+            }
+            if ($id === 'general' && array_key_exists(ContentLanguages::SETTING, $values)) {
+                $entries = Cms::instance()?->container->make(Entries::class);
+                [$codes, $errors] = ContentLanguages::check(
+                    (string) $values[ContentLanguages::SETTING],
+                    (string) ($values[SiteLanguage::SETTING] ?? SiteLanguage::site()),
+                    static fn(string $code): ?string => $entries?->languageOwner($code),
+                    ContentLanguages::others(),
+                );
+                if ($errors !== []) {
+                    throw ApiProblem::validation(['general.' . ContentLanguages::SETTING => $errors]);
+                }
+                $values[ContentLanguages::SETTING] = implode(',', $codes);
             }
             if ($values === []) {
                 continue;

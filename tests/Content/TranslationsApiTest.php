@@ -1,0 +1,119 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kestello\Tests\Content;
+
+use Kestello\Cms\Content\ContentModule;
+use Kestello\Cms\I18n\ContentLanguages;
+use Kestello\Cms\I18n\LanguagesModule;
+use Kestello\Framework\Database\Model;
+use Kestello\Framework\Settings\Settings;
+use Kestello\Support\Translator;
+use Kestello\Tests\Auth\AuthTestCase;
+
+/** Languages and translations through the API the admin uses. */
+final class TranslationsApiTest extends AuthTestCase
+{
+    protected function setUp(): void
+    {
+        Model::resetRegistry();
+        parent::setUp();
+        foreach ([new LanguagesModule(), new ContentModule()] as $module) {
+            $module->register($this->cms->container);
+            $module->boot($this->cms);
+        }
+        ContentModule::finalize($this->cms);
+        $this->createUser();
+        $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        Translator::reset();
+        Model::resetRegistry();
+    }
+
+    /** @return array<string, mixed> */
+    private function ok(string $method, string $path, array $body = []): array
+    {
+        $r = $this->api($method, $path, $body);
+        $this->assertSame(200, $r->statusCode(), $r->content());
+
+        return $this->json($r)['data'];
+    }
+
+    /** @return array<string, list<string>> field errors of a refused request */
+    private function refused(string $method, string $path, array $body, int $status = 422): array
+    {
+        $r = $this->api($method, $path, $body);
+        $this->assertSame($status, $r->statusCode(), $r->content());
+
+        return $this->json($r)['errors'] ?? [];
+    }
+
+    public function testLanguagesAreChosenUnderGeneral(): void
+    {
+        $this->ok('PATCH', '/settings', ['general' => ['languages' => 'ES, pt_BR, en, es']]);
+        $this->assertSame('es,pt-br', Settings::getInstance()->get('languages'), 'cleaned up: written as in addresses, no main language, no repeats');
+        $this->assertSame(['es', 'pt-br'], ContentLanguages::others());
+
+        $this->ok('POST', '/content/page/entries', ['title' => 'De', 'status' => 'published']);
+        $errors = $this->refused('PATCH', '/settings', ['general' => ['languages' => 'es, de, api, not a code']]);
+        $text = implode(' ', $errors['general.languages'] ?? []);
+        $this->assertStringContainsString('/de already belongs to the page "De"', $text, 'a page lives there');
+        $this->assertStringContainsString('/api already belongs to the site itself', $text);
+        $this->assertStringContainsString('"not a code" isn\'t a language code', $text);
+        $this->assertSame('es,pt-br', Settings::getInstance()->get('languages'), 'nothing saved');
+
+        $this->ok('PATCH', '/settings', ['general' => ['languages' => '']]);
+        $this->assertSame([], ContentLanguages::others(), 'all removed');
+    }
+
+    public function testTheLanguagesAreListedWithTheirEntries(): void
+    {
+        $this->ok('PATCH', '/settings', ['general' => ['languages' => 'es']]);
+        $about = $this->ok('POST', '/content/page/entries', ['title' => 'About']);
+        $this->ok('POST', "/content/page/entries/{$about['id']}/translations", ['locale' => 'es']);
+
+        $data = $this->ok('GET', '/content/languages');
+        $this->assertSame([['', true, '', 1], ['es', false, '/es', 1]], array_map(static fn(array $l) => [$l['code'], $l['main'], $l['prefix'], $l['entries']], $data['languages']));
+        $codes = array_column($data['choices'], 'code');
+        $this->assertContains('es', $codes);
+        $this->assertNotContains('en', $codes, 'not the main language');
+    }
+
+    public function testAnEntryIsTranslated(): void
+    {
+        $this->ok('PATCH', '/settings', ['general' => ['languages' => 'es']]);
+        $about = $this->ok('POST', '/content/page/entries', ['title' => 'About', 'status' => 'published']);
+        $this->assertSame(['', []], [$about['locale'], $about['translations']]);
+
+        $es = $this->ok('POST', "/content/page/entries/{$about['id']}/translations", ['locale' => 'es']);
+        $this->assertSame(['es', 'draft', 'About', '/es/about'], [$es['locale'], $es['status'], $es['title'], $es['path']]);
+        $this->assertSame([['locale' => '', 'id' => $about['id'], 'status' => 'published', 'title' => 'About']], $es['translations']);
+        $this->assertSame([['locale' => 'es', 'id' => $es['id'], 'status' => 'draft', 'title' => 'About']], $this->ok('GET', "/content/page/entries/{$about['id']}")['translations']);
+
+        $this->refused('POST', "/content/page/entries/{$about['id']}/translations", ['locale' => 'es'], 409);
+        $this->assertArrayHasKey('locale', $this->refused('POST', "/content/page/entries/{$about['id']}/translations", ['locale' => 'fr']));
+
+        $direct = $this->ok('POST', '/content/page/entries', ['title' => 'Contacto', 'locale' => 'es']);
+        $this->assertSame('es', $direct['locale'], 'written in Spanish from the start');
+        $this->assertArrayHasKey('locale', $this->refused('POST', '/content/page/entries', ['title' => 'Kontakt', 'locale' => 'de']));
+        $updated = $this->ok('PATCH', "/content/page/entries/{$direct['id']}", ['title' => 'Contacto 2']);
+        $this->assertSame('es', $updated['locale'], 'a language stays');
+        $spanish = array_column($this->ok('GET', '/content/lookup?types=page&locale=es'), 'title');
+        sort($spanish);
+        $this->assertSame(['About', 'Contacto 2'], $spanish, 'parents in the same language: the translation of About, and Contacto');
+        $this->assertSame(['About'], array_column($this->ok('GET', '/content/lookup?types=page&locale=main&search=About'), 'title'));
+
+        $list = fn(string $query): array => array_column($this->ok('GET', '/content/page/entries?' . $query), 'title');
+        $this->assertSame(['About', 'About', 'Contacto 2'], $list('sort=id'), 'every language by default');
+        $this->assertSame(['About'], $list('sort=id&locale=main'), 'the main language');
+        $this->assertSame(['About'], $list('sort=id&locale='), 'the main language, written empty');
+        $this->assertSame(['About', 'Contacto 2'], $list('sort=id&locale=es'));
+        $rows = $this->ok('GET', '/content/page/entries?sort=id&locale=main');
+        $this->assertSame(['es'], array_column($rows[0]['translations'], 'locale'), 'each row names its translations');
+    }
+}
