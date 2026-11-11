@@ -115,6 +115,9 @@ final class SeedFolderTest extends TestCase
         $this->failsWith('pages/home.json: "@media:gone.jpg" names a file that is not in media/', $this->folder([
             'pages/home.json' => ['title' => 'Home', 'seo' => ['image' => '@media:gone.jpg']],
         ]));
+        $this->failsWith('site.json: "@media:gone.png" in settings names a file that is not in media/', $this->folder([
+            'site.json' => ['settings' => ['seo' => ['seo_publisher_logo' => '@media:gone.png']]],
+        ]));
         $this->failsWith('media "gone.jpg" has alt text but there is no media/gone.jpg', $this->folder(['site.json' => ['media' => ['gone.jpg' => ['alt' => 'x']]]]));
     }
 

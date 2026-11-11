@@ -174,7 +174,7 @@ final class SiteSeeder
             'media' => count($ids),
             'pages' => count($pages) - $updatedPages,
             'menus' => count($plan['menus']) - $updatedMenus,
-            'settings' => $this->settings($plan['settings'], $front, $author),
+            'settings' => $this->settings(self::resolve($plan['settings'], $ids), $front, $author),
             'front_page' => $front,
             'unassigned' => $unassigned,
             'updated' => $updatedPages + $updatedMenus,

@@ -81,7 +81,7 @@ final class SiteSeederTest extends AuthTestCase
 
         return [
             'site.json' => [
-                'settings' => ['general' => ['site_name' => 'Acme']],
+                'settings' => ['general' => ['site_name' => 'Acme'], 'seo' => ['seo_publisher_logo' => '@media:dot.png']],
                 'front_page' => 'home',
                 'menus' => [
                     ['name' => 'Main', 'location' => 'primary', 'items' => [['page' => 'home'], ['page' => 'about', 'label' => 'Who we are'], ['url' => 'https://docs.acme.test/', 'label' => 'Docs', 'children' => [['url' => '/guides', 'label' => 'Guides', 'children' => [['page' => 'home', 'label' => 'Start']]]]]]],
@@ -101,7 +101,7 @@ final class SiteSeederTest extends AuthTestCase
 
         $summary = (new SiteSeeder($this->cms))->seed(SeedFolder::read($dir), $this->author());
 
-        $this->assertSame(['media' => 1, 'pages' => 2, 'menus' => 2, 'settings' => 1], array_intersect_key($summary, array_flip(['media', 'pages', 'menus', 'settings'])));
+        $this->assertSame(['media' => 1, 'pages' => 2, 'menus' => 2, 'settings' => 2], array_intersect_key($summary, array_flip(['media', 'pages', 'menus', 'settings'])));
         $this->assertSame(['Legal'], $summary['unassigned'], 'the theme has no "legal" location');
 
         $home = Entry::query()->find($summary['front_page']);
@@ -115,6 +115,7 @@ final class SiteSeederTest extends AuthTestCase
 
         $settings = Settings::getInstance();
         $this->assertSame(['Acme', (string) $summary['front_page']], [$settings->get('site_name'), $settings->get('front_page')]);
+        $this->assertSame($media, (int) $settings->get('seo_publisher_logo'), 'a setting can name a file too');
         $primary = $this->cms->container->make(Menus::class)->forLocations()['primary'];
         $this->assertSame(['Home', 'Who we are', 'Docs'], array_column($primary, 'label'));
         $this->assertSame('Guides', $primary[2]['children'][0]['label'] ?? null, 'menus nest');
