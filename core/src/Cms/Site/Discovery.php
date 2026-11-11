@@ -66,8 +66,12 @@ final class Discovery
         foreach ($types as $t) {
             $byName[$t->name] = $t;
         }
+        // a feed is in one language: /es/feed has the Spanish posts, at Spanish addresses
+        $language = \Kestello\Cms\I18n\ContentLanguages::current();
+        $self = \Kestello\Cms\I18n\ContentLanguages::localize($self, $language);
+        $home = \Kestello\Cms\I18n\ContentLanguages::localize($home, $language);
         $limit = max(1, min(50, (int) (Settings::getInstance()->get('feed_items') ?: 10)));
-        $query = Entry::query()->whereIn('type', array_keys($byName) ?: ['-'])->published()->with('author')
+        $query = Entry::query()->whereIn('type', array_keys($byName) ?: ['-'])->where('entries.locale', $language)->published()->with('author')
             ->orderByDesc('published_at')->orderByDesc('id')->limit($limit * 2);
         if ($term !== null) {
             $query->whereExists(static fn(QueryBuilder $q) => $q->from('entry_term')->whereColumn('entry_term.entry_id', '=', 'entries.id')->whereIn('entry_term.term_id', $term->groupIds()));
@@ -105,6 +109,7 @@ final class Discovery
             $base . $self . ($format === 'atom' ? '/atom' : ''),
             (string) Settings::getInstance()->get('site_description', ''),
             "tag:{$host},2000:" . $self,
+            $language !== '' ? $language : \Kestello\Cms\I18n\ContentLanguages::code(\Kestello\Cms\I18n\SiteLanguage::site()),
         );
         foreach ($items as $item) {
             $feed->add($item['title'], $item['url'], $item['published'], $item['updated'], $item['summary'], $item['html'], $item['author'], $item['id']);
