@@ -15,6 +15,9 @@ use Kestello\Framework\Database\Orm\Events\ModelEvent;
 /** Core module: site search. */
 final class SearchModule extends Provider
 {
+    /** The languages the search index was last built for: a change rebuilds it. */
+    private const string INDEXED_LANGUAGES = 'search_languages';
+
     public function boot(Cms $cms): void
     {
         $cms->queue->job(IndexEntries::class);
@@ -31,6 +34,19 @@ final class SearchModule extends Provider
         foreach (['saved', 'deleted', 'restored'] as $event) {
             $cms->models->on(Entry::class, $event, $sync);
         }
+
+        // search filters by language on a site in several: when the languages change, every document is indexed again with its own
+        $cms->audit->listen(static function (string $event) use ($cms): void {
+            if ($event !== 'settings.updated') {
+                return;
+            }
+            $languages = implode(',', \Kestello\Cms\I18n\ContentLanguages::others());
+            $settings = \Kestello\Framework\Settings\Settings::getInstance();
+            if ((string) $settings->get(self::INDEXED_LANGUAGES, '') !== $languages) {
+                $settings->set(self::INDEXED_LANGUAGES, $languages);
+                $cms->queue->push(new ReindexSearch());
+            }
+        });
 
         $cms->events->on(PlatformChanged::class, static function (PlatformChanged $e) use ($cms): void {
             if ($e->subsystem === 'search') {

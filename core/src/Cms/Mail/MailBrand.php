@@ -92,15 +92,16 @@ final class MailBrand
     }
 
     /**
-     * The site's look as it is now: its name (Settings → General) unless one
-     * is given, the colours and font its theme maps for email, the email
+     * The site's look as it is now: its name (Settings → General, in the
+     * email's language when the site has it in that one) unless one is given, the colours and font its theme maps for email, the email
      * logo (Settings → Emails, else the publisher logo) and the footer text.
      * Anything that can't be read falls back to the defaults.
      */
     public static function site(?string $name = null): self
     {
         $settings = Settings::getInstance();
-        $name = trim($name ?? (string) $settings->get('site_name', 'Kestello'));
+        // an email is written in its reader's language: the site's name in it, when it has one
+        $name = trim($name ?? \Kestello\Cms\I18n\SiteText::translated('site_name', \Kestello\Cms\I18n\ContentLanguages::code(\Kestello\Support\Translator::locale())) ?? (string) $settings->get('site_name', 'Kestello'));
         $theme = ['light' => [], 'dark' => [], 'font' => null];
         $cms = Cms::instance();
         try {

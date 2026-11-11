@@ -72,6 +72,7 @@ abstract class ContentEndpoint extends Endpoint
             'assignee' => \Kestello\Cms\Content\Reviews::assignees([(int) $entry->getKey()])[(int) $entry->getKey()] ?? null,
             'full' => $full,
             'terms' => (new \Kestello\Cms\Content\Terms())->summaries([(int) $entry->getKey()])[(int) $entry->getKey()] ?? [],
+            'translations' => \Kestello\Cms\Content\Translations::of([$entry])[(int) $entry->getKey()] ?? [],
             'autosave' => $full && $request->userId() !== null ? self::entries()->autosaveFor($entry, $request->userId()) : null,
         ]);
     }
@@ -91,12 +92,15 @@ abstract class ContentEndpoint extends Endpoint
         }
     }
 
-    /** The writable entry fields (content is validated against the type by Entries). */
-    protected static function entryBody(): \Kestello\Cms\Api\Schema
+    /**
+     * The writable entry fields (content is validated against the type by Entries).
+     * $create adds what can only be chosen once: the language.
+     */
+    protected static function entryBody(bool $create = false): \Kestello\Cms\Api\Schema
     {
         $S = \Kestello\Cms\Api\Schema::class;
 
-        return $S::object([
+        return $S::object(($create ? ['locale' => $S::string()->max(12)->optional()->description("The language: one of the site's other languages (GET /content/languages), or '' for the main one")] : []) + [
             'title' => $S::string()->max(255)->optional(),
             'slug' => $S::string()->max(191)->optional(),
             'status' => $S::enum(Entry::STATUSES)->optional(),

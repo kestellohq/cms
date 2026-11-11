@@ -4,7 +4,18 @@ import { __ } from '@kestello/sdk';
 import { KButton, KField, KInput, KSelect, KSwitch } from '@kestello/ui';
 import ConditionsEditor from './ConditionsEditor.vue';
 import FieldList from './FieldList.vue';
-import { adjustForType, followLabel, INDEXABLE, NESTING, NO_DEFAULT, setChoiceLabel, setMultiple } from './fields.js';
+import {
+    adjustForType,
+    followLabel,
+    INDEXABLE,
+    NESTING,
+    NO_DEFAULT,
+    setChoiceLabel,
+    setMultiple,
+    setTranslation,
+    SHARED_TYPES,
+    translationChoice,
+} from './fields.js';
 import { fieldTypeLabel } from './field-labels.js';
 import { DEFAULT_MAX_FILES, DEFAULT_MAX_MB, MOST_FILES } from '../../shared/file-hint.js';
 
@@ -50,6 +61,14 @@ function toggleIn(list, value) {
     const i = list.indexOf(value);
     i === -1 ? list.push(value) : list.splice(i, 1);
 }
+const translationOptions = computed(() => [
+    {
+        value: '',
+        label: SHARED_TYPES.includes(f.value.type) ? __('As its type: the same in every language') : __('As its type: written in each language'),
+    },
+    { value: 'own', label: __('Written in each language') },
+    { value: 'shared', label: __('The same in every language') },
+]);
 const typeChanged = () => adjustForType(f.value, props.meta.options[f.value.type] ?? {}, { taxonomies: props.meta.taxonomies ?? [], depth: props.depth });
 </script>
 
@@ -97,6 +116,14 @@ const typeChanged = () => adjustForType(f.value, props.meta.options[f.value.type
             </KField>
             <KField v-if="f.type !== 'group' && f.type !== 'repeater'" v-slot="{ id }" :label="isForm ? __('Width') : __('Width in the editor')">
                 <KSelect :id="id" v-model="f.width" :options="widthOptions" />
+            </KField>
+            <KField
+                v-if="!isForm && depth === 1"
+                v-slot="{ id }"
+                :label="__('In other languages')"
+                :help="__('A field the same in every language is copied to each translation when it is saved: a price, a date, a photo.')"
+            >
+                <KSelect :id="id" :model-value="translationChoice(f)" :options="translationOptions" @update:model-value="(v) => setTranslation(f, v)" />
             </KField>
             <KField
                 v-slot="{ id }"

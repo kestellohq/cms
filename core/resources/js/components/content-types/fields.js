@@ -36,6 +36,7 @@ export function blankField(type = 'text') {
         indexed: false,
         internal: false,
         searchable: null,
+        translatable: null,
         width: 'full',
         default: null,
         options: {},
@@ -83,4 +84,15 @@ export function setMultiple(f, on) {
     f.indexed = false;
     if (on && f.type === 'file' && Number(f.options.max) <= 1) f.options.max = null;
     return f;
+}
+
+/** Field types whose value every translation shares unless a field says otherwise (as Field::SHARED_TYPES). */
+export const SHARED_TYPES = ['number', 'boolean', 'date', 'datetime', 'color', 'select', 'multi_select', 'media', 'user'];
+
+/** A field's "In other languages" choice for a select: '' (as its type has it), 'own' or 'shared'. */
+export const translationChoice = (f) => (f.translatable === true ? 'own' : f.translatable === false ? 'shared' : '');
+
+/** The field with a choice from translationChoice() applied. Changes it in place. */
+export function setTranslation(f, choice) {
+    f.translatable = choice === 'own' ? true : choice === 'shared' ? false : null;
 }

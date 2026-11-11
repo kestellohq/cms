@@ -9,16 +9,22 @@ import KPicker from './KPicker.vue';
  * New terms stay names in the model until the entry is saved (the server
  * creates them), so abandoning the edit leaves nothing behind.
  *
- *   <KTermSelect v-model="form.terms.category" :taxonomy="{ name, singular, plural, hierarchical, can }" />
+ * With a locale ('' = the main language), it offers the terms written in
+ * that language, plus any picked term from another (a translation keeps
+ * the original's categories until they are translated).
+ *
+ *   <KTermSelect v-model="form.terms.category" :taxonomy="{ name, singular, plural, hierarchical, can }" :locale="'es'" />
  */
 const model = defineModel({ type: Array, default: () => [] });
 const props = defineProps({
     taxonomy: { type: Object, required: true },
     disabled: Boolean,
     id: { type: String, default: '' },
+    locale: { type: String, default: null }, // null: every language
 });
 const api = useApi();
 const base = computed(() => `/taxonomies/${props.taxonomy.name}/terms`);
+const inLanguage = computed(() => (props.locale === null ? {} : { locale: props.locale || 'main' }));
 const item = (t) => ({ id: t.id, label: t.name });
 
 // ── checklist (hierarchical) ─────────────────────────────────────────
@@ -28,14 +34,17 @@ const adding = ref('');
 const loaded = ref(false);
 async function loadAll() {
     try {
-        all.value = (await api.get(base.value)).data;
+        const list = (await api.get(base.value, inLanguage.value)).data;
+        const missing = model.value.filter((v) => typeof v === 'number' && !list.some((t) => t.id === v));
+        const others = missing.length ? (await api.get(base.value, { ids: missing.join(',') })).data.map((t) => ({ ...t, depth: 0 })) : [];
+        all.value = [...list, ...others];
     } catch {
         all.value = [];
     }
     loaded.value = true;
 }
 watch(
-    () => props.taxonomy.name,
+    () => [props.taxonomy.name, props.locale],
     () => {
         if (props.taxonomy.hierarchical) loadAll();
     },
@@ -60,7 +69,7 @@ function addNew() {
 }
 
 // ── picker (flat) ────────────────────────────────────────────────────
-const search = async (q) => (await api.get(base.value, { search: q || undefined, limit: 20 })).data.map(item);
+const search = async (q) => (await api.get(base.value, { search: q || undefined, limit: 20, ...inLanguage.value })).data.map(item);
 const resolve = async (ids) => {
     const numeric = ids.filter((v) => typeof v === 'number');
     const named = ids.filter((v) => typeof v === 'string').map((v) => ({ id: v, label: v, meta: __('new') }));
