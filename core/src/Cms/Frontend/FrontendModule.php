@@ -159,8 +159,10 @@ final class FrontendModule extends Provider
             ],
             'errors' => is_array($errors) && $errors !== [] ? $errors : (object) [],
             'old' => is_array($old) && $old !== [] ? self::withoutSecrets($old) : (object) [],
-            // the plugins' and theme's text in the site's language, for __() in their components
-            'i18n' => ['locale' => Translator::locale(), 'translations' => BrowserCatalogue::url(Translator::locale(), site: true)],
+            // the plugins' and theme's text in the page's language, for __() in their components; prefix starts
+            // the theme's own links in that language ("/es" on a Spanish page, '' in the main language)
+            'i18n' => ['locale' => Translator::locale(), 'translations' => BrowserCatalogue::url(Translator::locale(), site: true),
+                'prefix' => \Kestello\Cms\I18n\ContentLanguages::prefix(\Kestello\Cms\I18n\ContentLanguages::current())],
         ];
 
         $shared = array_replace($shared, $cms->pages->resolve());
