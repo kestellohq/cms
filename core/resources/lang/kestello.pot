@@ -4844,7 +4844,7 @@ msgid "Left edge"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
-msgid "Left empty, the logo from Search engines (the publisher logo) is used. It is shown 40 pixels tall."
+msgid "Left empty, the Logo or photo from Search and sharing is used. It is shown 40 pixels tall."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
