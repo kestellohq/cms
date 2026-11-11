@@ -59,6 +59,7 @@ final class MailBrand
      * @param array<string, string> $colors light colours by role
      * @param array<string, string> $dark dark colours by role; an accent left out stays the light one when it shows on the dark card
      * @param array{url: string, width: int, height: int}|null $logo a whole http(s) address
+     * @param array{url: string, width: int, height: int}|null $darkLogo shown instead in mail apps in dark mode, such as a light version of a dark logo
      */
     public function __construct(
         public readonly string $name,
@@ -67,14 +68,20 @@ final class MailBrand
         array $dark = [],
         public readonly ?array $logo = null,
         public readonly string $footer = '',
+        public readonly ?array $darkLogo = null,
     ) {
         self::check($colors);
         self::check($dark);
         if (preg_match('/[;{}<>"]/', $font) === 1) {
             throw new \InvalidArgumentException('An email font stack cannot contain ; { } < > or double quotes.');
         }
-        if ($logo !== null && (preg_match('#^https?://[^/\s]#i', $logo['url']) !== 1 || $logo['width'] < 1 || $logo['height'] < 1)) {
-            throw new \InvalidArgumentException('An email logo needs a whole http(s) address, a width and a height.');
+        foreach ([$logo, $darkLogo] as $image) {
+            if ($image !== null && (preg_match('#^https?://[^/\s]#i', $image['url']) !== 1 || $image['width'] < 1 || $image['height'] < 1)) {
+                throw new \InvalidArgumentException('An email logo needs a whole http(s) address, a width and a height.');
+            }
+        }
+        if ($darkLogo !== null && $logo === null) {
+            throw new \InvalidArgumentException('An email logo for dark mode replaces the logo, so the email needs a logo too.');
         }
         $this->light = self::readable(array_replace(self::DEFAULT_COLORS, $colors), self::DEFAULT_COLORS);
         $base = array_replace(self::DEFAULT_DARK, $dark);
@@ -94,7 +101,8 @@ final class MailBrand
     /**
      * The site's look as it is now: its name (Settings → General, in the
      * email's language when the site has it in that one) unless one is given, the colours and font its theme maps for email, the email
-     * logo (Settings → Emails, else the publisher logo) and the footer text.
+     * logo (Settings → Emails, else the publisher logo) with its version for
+     * dark mode, and the footer text.
      * Anything that can't be read falls back to the defaults.
      */
     public static function site(?string $name = null): self
@@ -117,8 +125,9 @@ final class MailBrand
             $theme['light'],
             $theme['font'] ?? self::DEFAULT_FONT,
             $theme['dark'],
-            $cms !== null ? self::siteLogo($settings) : null,
+            $logo = $cms !== null ? self::siteLogo($settings) : null,
             trim((string) $settings->get('email_footer', '')),
+            $logo !== null ? MailMedia::image((int) $settings->get('email_logo_dark', 0) ?: null) : null,
         );
     }
 

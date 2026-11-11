@@ -124,12 +124,15 @@ final class MailLayoutTest extends TestCase
         foreach (['k-page', 'k-card', 'k-ink', 'k-muted', 'k-row', 'k-code', 'k-btn'] as $class) {
             $this->assertMatchesRegularExpression('/class="' . $class . '"/', $html, "{$class} is used, so its dark colour applies");
         }
-        $this->assertStringContainsString('<img src="https://bakery.test/media/logo.png?v=1&amp;s=2" alt="Bakery &lt;Ana&gt;" width="120" height="40"', $html, 'the logo, 40 pixels tall, named for the site');
+        $this->assertStringContainsString('<img class="k-logo" src="https://bakery.test/media/logo.png?v=1&amp;s=2" alt="Bakery &lt;Ana&gt;" width="120" height="40"', $html, 'the logo, 40 pixels tall, named for the site');
+        $this->assertStringNotContainsString('k-logo-dark', $html, 'no logo for dark mode: nothing to swap');
         $this->assertStringContainsString('>Bakery &lt;Ana&gt;<br>Main street 1<br>Novi Sad</td>', $html);
         $this->assertStringEndsWith("\n\nBakery <Ana>\nMain street 1\nNovi Sad", $m->text($brand), 'the footer ends the text part too');
 
         $this->assertStringNotContainsString('<img', MailMessage::make('x')->paragraph('y')->render(), 'no logo, no image');
         $this->assertThrows(\InvalidArgumentException::class, fn() => new MailBrand('x', logo: ['url' => '/media/logo.png', 'width' => 10, 'height' => 10]), 'whole http(s) address');
+        $this->assertThrows(\InvalidArgumentException::class, fn() => new MailBrand('x', darkLogo: ['url' => 'https://a.test/l.png', 'width' => 10, 'height' => 10]), 'a logo for dark mode replaces a logo');
+        $this->assertThrows(\InvalidArgumentException::class, fn() => new MailBrand('x', logo: ['url' => 'https://a.test/l.png', 'width' => 10, 'height' => 10], darkLogo: ['url' => 'javascript:x', 'width' => 10, 'height' => 10]), 'whole http(s) address for it too');
     }
 
     public function testBadInputIsRefusedWithAClearMessage(): void

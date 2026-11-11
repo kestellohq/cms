@@ -320,6 +320,15 @@ final class DiscoveryTest extends AuthTestCase
         $own = $upload('email.png', 64, 64);
         $this->settings(['emails' => ['email_logo' => $own['id']]]);
         $this->assertSame(64, \Kestello\Cms\Mail\MailBrand::site()->logo['width'] ?? null, 'an email logo chosen in Settings → Emails wins');
+        $this->assertNull(\Kestello\Cms\Mail\MailBrand::site()->darkLogo, 'no logo for dark mode: the logo stays');
+
+        $light = $upload('email-light.png', 128, 64);
+        $this->settings(['emails' => ['email_logo_dark' => $light['id']]]);
+        $brand = \Kestello\Cms\Mail\MailBrand::site();
+        $this->assertSame([64, 128], [$brand->logo['width'] ?? null, $brand->darkLogo['width'] ?? null], 'a logo for dark mode beside it');
+        $html = \Kestello\Cms\Notifications\MailMessage::make('Hi')->heading('Hi')->render($brand);
+        $this->assertStringContainsString('<img class="k-logo-dark" src="' . $brand->darkLogo['url'] . '" alt="Bakery" width="80" height="40" style="display:none;', $html);
+        $this->assertStringContainsString('.k-logo{display:none!important}.k-logo-dark{display:block!important}}', $html, 'swapped in the dark-mode CSS');
 
         $this->settings(['emails' => ['email_show_logo' => false]]);
         $this->assertNull(\Kestello\Cms\Mail\MailBrand::site()->logo, 'or none at all');

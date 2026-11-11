@@ -84,7 +84,11 @@ final class ZipLimitsTest extends TestCase
     {
         if (class_exists(\ZipArchive::class)) {
             $za = new \ZipArchive();
-            $this->assertTrue($za->open($path, \ZipArchive::CHECKCONS) === true, 'ext-zip opens it');
+            // Not ZipArchive::CHECKCONS: libzip 1.12 refuses an archive with ZIP64 end records whose entries
+            // carry 4-byte data descriptors, which APPNOTE 4.3.9 allows for entries without a ZIP64 field
+            // (Info-ZIP, Python's zipfile and libzip's normal open all read them). unzip -t below checks
+            // every entry's CRC.
+            $this->assertTrue($za->open($path) === true, 'ext-zip opens it');
             $this->assertSame([$count, $contents], [$za->numFiles, $za->getFromName($name)]);
             $za->close();
         }
