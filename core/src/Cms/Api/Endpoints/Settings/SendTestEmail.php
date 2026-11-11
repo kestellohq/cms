@@ -9,10 +9,13 @@ use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
 use Kestello\Cms\Api\Endpoint;
 use Kestello\Cms\Api\Schema;
+use Kestello\Cms\Mail\MailBrand;
+use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Framework\Mail\Mailer;
 use Kestello\Framework\Settings\Settings;
+use Kestello\Support\Translator;
 
-/** Send a test email with the saved mail settings. */
+/** Send a test email with the saved mail settings, in the site's language and email layout. */
 final class SendTestEmail extends Endpoint
 {
     public function route(): ApiRoute
@@ -49,10 +52,21 @@ final class SendTestEmail extends Endpoint
     {
         Settings::getInstance()->reload();
         $mailer = new Mailer();
-        if (!$mailer->sendTest((string) $request->input('to'))) {
+        $brand = MailBrand::site();
+        $message = self::message($brand->name);
+        if (!$mailer->send((string) $request->input('to'), $message->subject, $message->render($brand), [], $message->text($brand))) {
             throw ApiProblem::validation(['to' => ['The email could not be sent. Check the mail settings and the server log.']], 'Sending failed.');
         }
 
         return ['sent' => true, 'via' => $mailer->isSmtpConfigured() ? 'smtp' : 'php-mail'];
+    }
+
+    /** The test email itself. */
+    public static function message(string $site): MailMessage
+    {
+        return MailMessage::make(Translator::get('Test email from {site}', ['site' => $site]))
+            ->heading(Translator::get('Your email settings work'))
+            ->paragraph(Translator::get('This is a test email from {site}. It reached you, so the site can send email with the settings you saved.', ['site' => $site]))
+            ->note(Translator::get('Someone sent this from Settings → Mail on {site}.', ['site' => $site]));
     }
 }

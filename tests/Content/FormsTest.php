@@ -25,8 +25,8 @@ final class FormsTest extends AuthTestCase
     {
         Model::resetRegistry();
         parent::setUp();
-        $this->cms->container->instance('forms.mail', function (array|string $to, string $subject, string $html, array $headers = []): bool {
-            $this->sent[] = compact('to', 'subject', 'html', 'headers');
+        $this->cms->container->instance('forms.mail', function (array|string $to, string $subject, string $html, array $headers = [], ?string $text = null): bool {
+            $this->sent[] = compact('to', 'subject', 'html', 'headers', 'text');
             return true;
         });
         $this->cms->container->instance(\Kestello\Framework\Http\RateLimiter::class, new \Kestello\Framework\Http\RateLimiter(new \Kestello\Framework\Cache\ArrayStore()));
@@ -258,7 +258,11 @@ final class FormsTest extends AuthTestCase
 
         $mail = end($this->sent);
         $this->assertSame('Nova poruka: Contact', $mail['subject']);
-        $this->assertMatchesRegularExpression('~Neko je poslao <strong>Contact</strong> na sajtu [^<]+\.~', $mail['html'], 'the form name stays bold inside the translated sentence');
+        $this->assertStringContainsString('>Nova poruka: Contact</h1>', $mail['html'], 'the heading names the form');
+        $this->assertMatchesRegularExpression('~Neko je poslao Contact na sajtu [^<]+\.~', $mail['html'], 'the sentence is translated whole');
+        $this->assertStringContainsString('Ana &lt;b&gt;', $mail['html']);
+        $this->assertStringContainsString('Neko je poslao Contact na sajtu', $mail['text'], 'with a plain-text part in the same language');
+        $this->assertStringContainsString(": Da\n", $mail['text'] . "\n", 'answers are rows in the text part too');
         $this->assertStringContainsString('>Da</td>', $mail['html']);
         $this->assertStringContainsString('Ana &lt;b&gt;', $mail['html'], 'what visitors type is still escaped');
     }
