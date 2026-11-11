@@ -126,7 +126,10 @@ final class PageCacheMiddleware implements MiddlewareInterface
         }
         ksort($query);
 
-        return hash('sha256', implode("\0", [$version, $navigating ? 'json' : 'html', $request->path, http_build_query($query)]));
+        // the address as asked: /es/about and /about are different pages
+        $path = \Kestello\Cms\I18n\ContentLanguages::localize($request->path, \Kestello\Cms\I18n\ContentLanguages::current());
+
+        return hash('sha256', implode("\0", [$version, $navigating ? 'json' : 'html', $path, http_build_query($query)]));
     }
 
     private function cacheable(Response $response): bool

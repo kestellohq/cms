@@ -5,7 +5,7 @@ export default { layout: 'Site' };
 
 <script setup>
 import { computed, ref } from 'vue';
-import { Head, Link, useRouter } from '@kestello/app';
+import { Head, Link, usePage, useRouter } from '@kestello/app';
 
 const props = defineProps({
     title: { type: String, default: 'Search' },
@@ -16,16 +16,18 @@ const props = defineProps({
     limited: Boolean,
 });
 const router = useRouter();
+const page = usePage();
+const action = computed(() => `${page.props.i18n?.prefix ?? ''}/search`); // in the page's language
 const q = ref(props.query);
 
 function submit() {
-    router.get('/search', { q: q.value.trim(), type: props.type || undefined });
+    router.get(action.value, { q: q.value.trim(), type: props.type || undefined });
 }
 const href = (params) => {
     const s = new URLSearchParams();
     const merged = { q: props.query, type: props.type, ...params };
     for (const [k, v] of Object.entries(merged)) if (v && !(k === 'page' && v === 1)) s.set(k, String(v));
-    return `/search?${s.toString()}`;
+    return `${action.value}?${s.toString()}`;
 };
 const counts = computed(() => Object.fromEntries((props.results?.facets ?? []).map((f) => [f.value, f.count])));
 const allCount = computed(() => (props.results?.facets ?? []).reduce((n, f) => n + f.count, 0));
@@ -40,7 +42,7 @@ const summary = computed(() => {
 <template>
     <Head :title="title" />
     <div class="k-search">
-        <form class="k-search__form" role="search" action="/search" method="get" @submit.prevent="submit">
+        <form class="k-search__form" role="search" :action="action" method="get" @submit.prevent="submit">
             <label class="k-search__label" for="k-search-q">Search the site</label>
             <div class="k-search__bar">
                 <input

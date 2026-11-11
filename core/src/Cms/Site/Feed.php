@@ -35,6 +35,7 @@ final class Feed
      * @param string $home the page the feed belongs to
      * @param string $self the feed's own address
      * @param string|null $id the feed's lasting id; null: made from the site's host and $self
+     * @param string $language what its items are written in, as a lang attribute ("en", "pt-br"); '' leaves it unsaid
      */
     public function __construct(
         private readonly string $title,
@@ -42,6 +43,7 @@ final class Feed
         private readonly string $self,
         private readonly string $description = '',
         private readonly ?string $id = null,
+        private readonly string $language = '',
     ) {
         foreach ([$home, $self] as $address) {
             self::check($address);
@@ -95,6 +97,9 @@ final class Feed
         $w = self::writer();
         $w->startElement('feed');
         $w->writeAttribute('xmlns', 'http://www.w3.org/2005/Atom');
+        if ($this->language !== '') {
+            $w->writeAttribute('xml:lang', $this->language);
+        }
         $w->writeElement('title', $feed['title']);
         if ($feed['description'] !== '') {
             $w->writeElement('subtitle', $feed['description']);
@@ -152,6 +157,9 @@ final class Feed
         $w->writeElement('title', $feed['title']);
         $w->writeElement('link', $feed['home']);
         $w->writeElement('description', $feed['description'] !== '' ? $feed['description'] : $feed['title']);
+        if ($this->language !== '') {
+            $w->writeElement('language', $this->language);
+        }
         $w->startElement('atom:link');
         $w->writeAttribute('href', $feed['self']);
         $w->writeAttribute('rel', 'self');

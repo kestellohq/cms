@@ -26,6 +26,9 @@ const fallback = [
 ];
 const primary = computed(() => (page.props.menus?.primary?.length ? page.props.menus.primary : fallback));
 const footer = computed(() => page.props.menus?.footer ?? []);
+// a site in several languages: links stay in the page's language, and the footer offers the others
+const prefix = computed(() => page.props.i18n?.prefix ?? '');
+const languages = computed(() => page.props.i18n?.languages ?? []);
 const internal = (item) => item.url.startsWith('/') && !item.url.startsWith('//') && !item.target;
 const current = (item) => (path.value === item.url || item.children.some(current) ? 'page' : undefined);
 </script>
@@ -37,7 +40,7 @@ const current = (item) => (path.value === item.url || item.children.some(current
 
         <header class="site-header">
             <div class="site-wrap">
-                <Link class="site-brand" href="/">{{ site }}</Link>
+                <Link class="site-brand" :href="prefix || '/'">{{ site }}</Link>
                 <span v-if="page.component === 'Home'" class="site-sample" :title="__('This front page shows sample content. Replace it with your own.')">{{
                     __('Sample content')
                 }}</span>
@@ -57,7 +60,7 @@ const current = (item) => (path.value === item.url || item.children.some(current
                             </li>
                         </ul>
                     </div>
-                    <Link href="/search" class="site-nav__search" :aria-current="path === '/search' ? 'page' : undefined">
+                    <Link :href="`${prefix}/search`" class="site-nav__search" :aria-current="path === `${prefix}/search` ? 'page' : undefined">
                         <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
                             <circle cx="8.5" cy="8.5" r="5.75" fill="none" stroke="currentColor" stroke-width="2" />
                             <path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -82,6 +85,12 @@ const current = (item) => (path.value === item.url || item.children.some(current
                     <template v-for="item in footer" :key="item.url + item.label">
                         <Link v-if="internal(item)" :href="item.url">{{ item.label }}</Link>
                         <a v-else :href="item.url" :target="item.target ?? undefined" :rel="item.target ? 'noopener' : undefined">{{ item.label }}</a>
+                    </template>
+                </nav>
+                <nav v-if="languages.length" class="site-footer__nav site-languages" :aria-label="__('Language')">
+                    <template v-for="l in languages" :key="l.code">
+                        <span v-if="l.current" :lang="l.code" aria-current="true">{{ l.name }}</span>
+                        <a v-else :href="l.url" :lang="l.code" :hreflang="l.code">{{ l.name }}</a>
                     </template>
                 </nav>
                 <p>{{ __('Built with') }} <a href="https://kestello.dev" rel="noopener">Kestello</a></p>

@@ -173,6 +173,15 @@ final class Request
     }
 
     /**
+     * The same request routed as $path; uri keeps the address the visitor
+     * asked for. A language prefix ("/es/about" routed as "/about") uses it.
+     */
+    public function withPath(string $path): self
+    {
+        return new self($this->method, $this->uri, $path, $this->headers, $this->query, $this->post, $this->cookies, $this->files, $this->server, $this->rawBody);
+    }
+
+    /**
      * Return a request header value (case-insensitive lookup).
      */
     public function header(string $name, string $default = ''): string

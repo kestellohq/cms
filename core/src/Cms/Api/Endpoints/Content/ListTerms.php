@@ -33,6 +33,7 @@ final class ListTerms extends TermEndpoint
             'search' => Schema::string()->max(100)->optional(),
             'ids' => Schema::string()->max(1000)->pattern('[0-9,]*')->optional(),
             'limit' => Schema::int()->min(1)->max(2000)->default(1000),
+            'locale' => Schema::string()->max(12)->default('any')->description('One language: main (or empty) for the main one, or a code such as es. Default: any, every language'),
         ]);
     }
 
@@ -42,6 +43,9 @@ final class ListTerms extends TermEndpoint
         $q = Term::query()->of($tax->name);
         $ids = array_slice(array_values(array_unique(array_map('intval', array_filter(explode(',', (string) $request->query('ids', '')))))), 0, 200);
         $narrowed = false;
+        if (($locale = (string) $request->query('locale')) !== 'any') {
+            $q->where('locale', $locale === 'main' ? '' : $locale);
+        }
         if ($ids !== []) {
             $q->whereIn('id', $ids);
             $narrowed = true;
@@ -51,7 +55,8 @@ final class ListTerms extends TermEndpoint
         }
         $terms = $q->orderBy('menu_order')->orderBy('name')->limit((int) $request->query('limit'))->get()->all();
         $counts = self::terms()->counts($tax);
-        $rows = array_map(static fn(Term $t) => self::row($t, $tax, $counts[$t->getKey()] ?? 0), $terms);
+        $translations = \Kestello\Cms\Content\Translations::ofTerms($terms);
+        $rows = array_map(static fn(Term $t) => self::row($t, $tax, $counts[$t->getKey()] ?? 0, $translations[(int) $t->getKey()] ?? []), $terms);
 
         return $tax->isHierarchical() && !$narrowed ? self::tree($rows) : array_map(static fn($r) => $r + ['depth' => 0], $rows);
     }

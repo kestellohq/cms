@@ -34,21 +34,25 @@ abstract class TermEndpoint extends ContentEndpoint
         return new Terms();
     }
 
-    /** @return array<string, mixed> */
-    protected static function row(Term $term, Taxonomy $tax, ?int $count = null): array
+    /**
+     * @param list<array{locale: string, id: int, title: string}>|null $translations null: read them
+     * @return array<string, mixed>
+     */
+    protected static function row(Term $term, Taxonomy $tax, ?int $count = null, ?array $translations = null): array
     {
         return [
             'id' => $term->getKey(), 'taxonomy' => $tax->name, 'name' => (string) $term->name, 'slug' => (string) $term->slug,
             'parent_id' => $term->parent_id, 'description' => $term->description, 'menu_order' => (int) $term->menu_order,
-            'path' => $term->path($tax), 'count' => $count,
+            'path' => $term->url($tax), 'count' => $count, 'locale' => $term->language(),
+            'translations' => $translations ?? (\Kestello\Cms\Content\Translations::ofTerms([$term])[(int) $term->getKey()] ?? []),
         ];
     }
 
-    protected static function termBody(): \Kestello\Cms\Api\Schema
+    protected static function termBody(bool $create = false): \Kestello\Cms\Api\Schema
     {
         $S = \Kestello\Cms\Api\Schema::class;
 
-        return $S::object([
+        return $S::object(($create ? ['locale' => $S::string()->max(12)->optional()->description("The language it is written in: '' (the main one, the default) or one of the site's other languages. Fixed once created")] : []) + [
             'name' => $S::string()->max(191)->optional(),
             'slug' => $S::string()->max(191)->optional(),
             'parent_id' => $S::int()->min(1)->nullable()->optional(),
