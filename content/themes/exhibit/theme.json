@@ -1,0 +1,12 @@
+{
+  "slug": "exhibit",
+  "name": "Exhibit",
+  "version": "1.0.0",
+  "description": "A studio's work hung as an exhibition: painted walls per room, mounted prints, and label plates filled in from each entry's fields.",
+  "requires": {
+    "core": "^0.1"
+  },
+  "namespace": "Themes\\Exhibit\\",
+  "provider": "Themes\\Exhibit\\Theme",
+  "stylesheets": ["css/theme.css"]
+}

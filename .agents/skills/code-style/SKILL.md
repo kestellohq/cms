@@ -34,7 +34,7 @@ Conventions the formatter doesn't enforce but reviews do:
 
 ## PHP: PHPStan
 
-`phpstan.dist.neon`: level 6, `phpVersion: 80400`, bootstrap `core/bootstrap.php`, paths `core/src`, `core/config`, `core/database`, `bin/cms`, the base theme (`content/themes/base`) and the test fixtures (`tests/fixtures`); local plugins and themes in `content/` are left out so CI and a developer's machine see the same files; `tests/` is scanned for classes only. `return.unusedType` is ignored on purpose (endpoints override nullable contract methods).
+`phpstan.dist.neon`: level 6, `phpVersion: 80400`, bootstrap `core/bootstrap.php`, paths `core/src`, `core/config`, `core/database`, `bin/cms`, the themes that ship with core (`content/themes/base`, `content/themes/exhibit`) and the test fixtures (`tests/fixtures`); local plugins and themes in `content/` are left out so CI and a developer's machine see the same files; `tests/` is scanned for classes only. `return.unusedType` is ignored on purpose (endpoints override nullable contract methods).
 
 `phpstan-baseline.neon` lists findings from before PHPStan was introduced. Rules:
 

@@ -1,0 +1,67 @@
+{
+  "groups": {
+    "walls": "Walls",
+    "prints": "Prints and labels",
+    "type": "Type"
+  },
+  "tokens": {
+    "wall-projects": { "type": "color", "label": "Projects wall", "group": "walls", "value": "#1e3b2c", "help": "The entrance and the projects room." },
+    "wall-studio": { "type": "color", "label": "Studio wall", "group": "walls", "value": "#6e3322" },
+    "wall-talks": { "type": "color", "label": "Talks wall", "group": "walls", "value": "#1c2b4a" },
+    "wall-journal": { "type": "color", "label": "Journal wall", "group": "walls", "value": "#ece6da", "help": "A light wall: its text is dark." },
+    "wall-hall": {
+      "type": "color",
+      "label": "Other pages",
+      "group": "walls",
+      "value": "#e4ded2",
+      "help": "Pages that are not in a room, such as contact or sign in."
+    },
+    "wall-text": { "type": "color", "label": "Text on dark walls", "group": "walls", "value": "#f2eee5" },
+    "mount": { "type": "color", "label": "Print mounts", "group": "prints", "value": "#fbfaf6" },
+    "plate": { "type": "color", "label": "Label plates and paper", "group": "prints", "value": "#f3efe6" },
+    "ink": { "type": "color", "label": "Text on paper", "group": "prints", "value": "#171614" },
+    "ink-2": { "type": "color", "label": "Quiet text on paper", "group": "prints", "value": "#4b4842" },
+    "rule": { "type": "color", "label": "Lines on paper", "group": "prints", "value": "#cfc8ba" },
+    "plaque": {
+      "type": "color",
+      "label": "Plaque",
+      "group": "prints",
+      "value": "#c9a55a",
+      "help": "The brass plaque of the main action, such as Start a project."
+    },
+    "plaque-ink": { "type": "color", "label": "Lettering on the plaque", "group": "prints", "value": "#1a1408" },
+    "font": { "type": "font", "label": "Typeface", "group": "type", "value": "archivo" }
+  },
+  "fonts": {
+    "archivo": { "label": "Archivo (the theme's)", "stack": "'Archivo', 'Helvetica Neue', Arial, sans-serif", "preload": "fonts/archivo-latin.woff2" }
+  },
+  "contrast": [
+    { "fg": "wall-text", "bg": "wall-projects", "label": "Text on the projects wall" },
+    { "fg": "wall-text", "bg": "wall-studio", "label": "Text on the studio wall" },
+    { "fg": "wall-text", "bg": "wall-talks", "label": "Text on the talks wall" },
+    { "fg": "ink", "bg": "wall-journal", "label": "Text on the journal wall" },
+    { "fg": "ink", "bg": "wall-hall", "label": "Text on other pages" },
+    { "fg": "ink-2", "bg": "plate", "label": "Quiet text on label plates" },
+    { "fg": "plaque-ink", "bg": "plaque", "label": "Lettering on the plaque" }
+  ],
+  "variations": {
+    "gallery-white": {
+      "label": "White cube",
+      "values": { "wall-projects": "#2a2a28", "wall-studio": "#3d3b37", "wall-talks": "#22252b", "wall-journal": "#f4f3ef", "wall-hall": "#f4f3ef" }
+    },
+    "terracotta": {
+      "label": "Terracotta",
+      "values": { "wall-projects": "#7a3a24", "wall-studio": "#2f4234", "wall-talks": "#3a2f4a" }
+    }
+  },
+  "email": {
+    "page": "wall-hall",
+    "card": "mount",
+    "ink": "ink",
+    "muted": "ink-2",
+    "line": "rule",
+    "accent": "wall-projects",
+    "accent-ink": "wall-text",
+    "font": "font"
+  }
+}

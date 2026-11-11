@@ -41,8 +41,8 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           changed=$(git diff --name-only "$BASE_SHA"...HEAD)
-          # what site owners, editors and developers get: core, the base theme, bin/cms
-          if printf '%s\n' "$changed" | grep -qE '^(core/(src|config|database|resources/js|resources/assets/css)/|content/themes/base/|bin/cms$)'; then
+          # what site owners, editors and developers get: core, the themes that ship with it, bin/cms
+          if printf '%s\n' "$changed" | grep -qE '^(core/(src|config|database|resources/js|resources/assets/css)/|content/themes/(base|exhibit)/|bin/cms$)'; then
             if ! printf '%s\n' "$changed" | grep -qx 'CHANGELOG.md'; then
               echo "::error file=CHANGELOG.md::Add a line under ## [Unreleased] for this change (see CONTRIBUTING.md), or ask a maintainer for the \"no changelog\" label if nobody would notice it."
               exit 1

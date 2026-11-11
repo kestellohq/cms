@@ -81,6 +81,7 @@ The test databases and the matrix are described in [testing](.agents/skills/test
 | `core/resources/lang` | Core's translation template and language packs. |
 | `core/database` | Core migrations. |
 | `content/themes/base` | The base theme that ships with core. |
+| `content/themes/exhibit` | Exhibit, the demo studio's theme, which also ships with core. |
 | `tests/` | PHP tests by area; `tests/js` holds the JavaScript tests; `tests/fixtures` the test plugin. |
 | `tools/` | Pinned development tools, release scripts, GitHub label list. |
 

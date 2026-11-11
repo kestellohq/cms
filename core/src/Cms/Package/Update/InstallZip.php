@@ -26,10 +26,10 @@ final class InstallZip
     public const array FILES = ['.htaccess', 'LICENSE', 'README.md', 'CHANGELOG.md', 'SECURITY.md', 'bin/cms'];
 
     /** Folders, whole, minus what self::keep() refuses. */
-    public const array FOLDERS = ['public', 'core', 'content/themes/base'];
+    public const array FOLDERS = ['public', 'core', 'content/themes/base', 'content/themes/exhibit'];
 
     /** Files a site cannot run without; a build missing one is refused. */
-    private const array REQUIRED = ['.htaccess', 'bin/cms', 'public/index.php', 'public/.htaccess', 'core/VERSION', 'core/bootstrap.php', 'core/resources/assets/build/.vite/manifest.json', 'content/themes/base/theme.json'];
+    private const array REQUIRED = ['.htaccess', 'bin/cms', 'public/index.php', 'public/.htaccess', 'core/VERSION', 'core/bootstrap.php', 'core/resources/assets/build/.vite/manifest.json', 'content/themes/base/theme.json', 'content/themes/exhibit/theme.json'];
 
     /**
      * @return array{zip: string, sha256: string, version: string, files: int}

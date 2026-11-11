@@ -366,13 +366,16 @@ final class ContentController
     }
 
     /**
-     * Entries for a list page, each with its featured image (the type's first image field), loaded in one query.
+     * Entries as lists show them: title, path, excerpt, date, the featured
+     * image (the type's first image field, loaded in one query) and the
+     * sortable fields. Themes use it for lists of their own.
      *
      * @param list<Entry> $entries
      * @param array<string, ContentType> $types by name
      * @return list<array<string, mixed>>
+     * @api
      */
-    private static function presentList(array $entries, array $types): array
+    public static function presentList(array $entries, array $types): array
     {
         \Kestello\Cms\Cache\PageTags::add(...array_map(static fn(string $t) => 'list:' . $t, array_keys($types)));
         $featured = [];
@@ -387,7 +390,27 @@ final class ContentController
         $found = $featured === [] ? [] : \Kestello\Cms\Media\MediaPresenter::many(array_values(array_unique($featured)));
 
         return array_map(static fn(Entry $e) => self::present($e, $types[$e->type], full: false)
-            + ['image' => self::onlyImage(isset($featured[(int) $e->getKey()]) ? \Kestello\Cms\Media\MediaPresenter::value($featured[(int) $e->getKey()], false, $found) : null)], $entries);
+            + ['image' => self::onlyImage(isset($featured[(int) $e->getKey()]) ? \Kestello\Cms\Media\MediaPresenter::value($featured[(int) $e->getKey()], false, $found) : null)]
+            + ['fields' => (object) self::listFields($e, $types[$e->type])], $entries);
+    }
+
+    /**
+     * What a list shows of an entry besides its title: its public sortable
+     * fields (Field::indexed()), which are short by design, such as a
+     * project's year or place. Themes lay out catalogue rows with them.
+     *
+     * @return array<string, mixed>
+     */
+    private static function listFields(Entry $entry, ContentType $type): array
+    {
+        $out = [];
+        foreach ($type->getFields() as $field) {
+            if ($field->isIndexed() && !$field->isInternal() && ($value = $entry->field($field->name)) !== null && $value !== '') {
+                $out[$field->name] = $value;
+            }
+        }
+
+        return $out;
     }
 
     private static function onlyImage(mixed $media): ?array

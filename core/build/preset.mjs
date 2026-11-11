@@ -17,12 +17,18 @@
  *     import map, so every package shares one Vue and one SDK
  *   - output goes to assets/build/ with a Vite manifest the CMS reads (and
  *     assets/build/ssr/ for the optional Node renderer when ssr is true)
+ *   - `import '@kestello/blocks.css'` brings core's block layout and design
+ *     styles, for a page of a theme or plugin that draws a <BlockTree>
+ *     (core's own Entry page imports them; a theme's replacement must too)
  */
 import vue from '@vitejs/plugin-vue';
 import { globSync } from 'node:fs';
 import path from 'node:path';
 
 export const EXTERNAL = [/^vue(\/.*)?$/, '@kestello/app', '@kestello/sdk', '@kestello/ui'];
+
+/** Core's block styles, under one name for every package (see the header). */
+export const BLOCKS_CSS = path.join(import.meta.dirname, '../resources/js/shared/block-layout.css');
 
 /** name => file for every page and layout (plus core's shared modules). */
 export function entries(root, { runtime = false } = {}) {
@@ -50,6 +56,7 @@ export function kestello({ root, outDir, ssr = process.env.KESTELLO_SSR === '1',
         base: './',
         logLevel: 'warn',
         plugins: [vue()],
+        resolve: { alias: { '@kestello/blocks.css': BLOCKS_CSS } },
         build: {
             outDir: ssr ? path.join(out, 'ssr') : out,
             emptyOutDir: true,
