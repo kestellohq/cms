@@ -106,7 +106,6 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
-- A plugin that safe mode suspended can be activated again from Plugins (**Activate again**): it is started in a trial first, and comes back only when it starts. Before, its row offered only Deactivate, so it had to be deactivated and then activated.
 - The test email, its description in Site → Emails and the error when a test send fails now name the settings tab as it is labelled, **Settings → Email** (they said "Settings → Mail"), and Email logo’s help names **Logo or photo** under **Search and sharing** (it said "Search engines").
 - Form notifications use the same email layout as everything else the site sends, with the answers as rows, a plain-text part, and the button to the submission in the admin. Before, they were their own bare HTML.
 - Notification emails show the site's name at the foot (Settings → General) instead of the `app.name` from config.
@@ -119,6 +118,7 @@ Every change people would notice is listed here, newest first. The format follow
 - Site Health's **Image processing** check writes the formats as people write them: "served as WebP and AVIF", not "WEBP AND AVIF", and "WebP, AVIF" in its details.
 - `assertCount()` in `Kestello\Framework\Testing\TestCase` takes any `Countable`, such as an `ArrayObject` or a `SimpleXMLElement`. Its parameter was typed as a class in the testing namespace, so only arrays could be counted.
 - Appearance → Themes shows a preview of Base instead of an empty card: the theme ships its `screenshot.webp`.
+- A plugin that safe mode suspended can be activated again from Plugins (**Activate again**): it is started in a trial first, and comes back only when it starts. Before, its row offered only Deactivate, so it had to be deactivated and then activated.
 - Links to the page chosen as the home page go to `/`. Menus, breadcrumbs, search results, lists of entries and the page's own `path` used its slug address (`/home`), which redirects to `/`, so every click went through a redirect. `Entry::url()` gives the address links should use.
 - `cache:clear` empties the cache. It deleted only files at the top of `storage/cache`, and the cache keeps its entries in subfolders (or in APCu, Redis or the database), so it cleared nothing and reported 0 files. It now empties the configured cache store and the compiled templates, subfolders included.
 - `site:seed` checks a seed's settings with the same rules as the Settings screens and stores them the same way. It wrote them unchecked, so a seed could store a setting that does not exist or a value the screens refuse. Secrets, such as a mail password, are refused in a seed, and `--dry-run` no longer writes the site name and address to `config/app.php`.
