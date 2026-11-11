@@ -26,7 +26,7 @@ final class InstallZipTest extends TestCase
         foreach ($names as $name) {
             $this->assertStringStartsWith('kestello/', $name, 'one folder to upload');
         }
-        foreach (['.htaccess', 'public/.htaccess', 'public/index.php', 'bin/cms', 'core/VERSION', 'core/bootstrap.php', 'core/resources/assets/build/.vite/manifest.json', 'content/themes/base/theme.json', 'content/themes/base/screenshot.webp', 'content/themes/exhibit/theme.json', 'content/themes/exhibit/resources/lang/es.json', 'LICENSE'] as $needed) {
+        foreach (['.htaccess', 'public/.htaccess', 'public/index.php', 'bin/cms', 'core/VERSION', 'core/bootstrap.php', 'core/resources/assets/build/.vite/manifest.json', 'content/themes/base/theme.json', 'content/themes/base/screenshot.webp', 'content/themes/exhibit/theme.json', 'content/themes/exhibit/screenshot.webp', 'content/themes/exhibit/resources/lang/es.json', 'LICENSE'] as $needed) {
             $this->assertContains("kestello/{$needed}", $names, $needed);
         }
 
