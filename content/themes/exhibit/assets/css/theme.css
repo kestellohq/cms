@@ -727,6 +727,119 @@ p {
     color: var(--on-wall-2);
 }
 
+/* the journal's own room: the newest essay laid open, then an index */
+.lead-essay {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: end;
+    padding-bottom: clamp(40px, 6vw, 72px);
+    border-bottom: 2px solid var(--on-wall);
+}
+.lead-essay .print img {
+    aspect-ratio: 4 / 3;
+}
+.lead-essay time,
+.journal-index time {
+    color: var(--on-wall-2);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+.lead-essay__title {
+    margin: 12px 0 16px;
+    font-size: clamp(32px, 4.2vw, 56px);
+    font-weight: 600;
+    font-stretch: 106%;
+    line-height: 1.04;
+    letter-spacing: -0.028em;
+    text-wrap: balance;
+}
+.lead-essay__title a,
+.journal-index__title a {
+    text-decoration: none;
+}
+.lead-essay__title a::after,
+.journal-index__title a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+.lead-essay p {
+    max-width: 30rem;
+    margin: 0;
+    color: var(--on-wall-2);
+    font-size: 19px;
+    line-height: 1.5;
+    text-wrap: pretty;
+}
+.lead-essay__read {
+    display: inline-block;
+    margin-top: 24px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid currentColor;
+    font-size: 15px;
+    font-weight: 600;
+}
+.lead-essay:hover .lead-essay__title,
+.journal-index__item:hover .journal-index__title {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.12em;
+}
+.journal-index {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.journal-index__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr) 14rem;
+    gap: clamp(20px, 3vw, 48px);
+    align-items: start;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--wall-rule);
+}
+.journal-index__item time {
+    padding-top: 8px;
+}
+.journal-index__title {
+    margin: 0 0 8px;
+    font-size: clamp(24px, 2.6vw, 32px);
+    font-weight: 600;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+.journal-index p {
+    max-width: 36rem;
+    margin: 0;
+    color: var(--on-wall-2);
+    font-size: 17px;
+    line-height: 1.5;
+}
+.journal-index .print {
+    box-shadow: none;
+}
+.journal-index .print img {
+    aspect-ratio: 3 / 2;
+}
+@media (max-width: 900px) {
+    .lead-essay {
+        grid-template-columns: 1fr;
+    }
+    .journal-index__item {
+        grid-template-columns: minmax(0, 1fr) 8rem;
+    }
+    .journal-index__item time {
+        grid-column: 1 / -1;
+        padding-top: 0;
+    }
+}
+
 /* --------------------------------------------------------------------------
    A single entry: a project's room, a talk, an essay, a page
    -------------------------------------------------------------------------- */
@@ -835,6 +948,61 @@ p {
 }
 .reading .prose a {
     color: var(--wall-projects);
+}
+/* an essay reads larger, its first paragraph as a standfirst */
+.reading--essay .reading__head {
+    margin-bottom: 40px;
+}
+.reading--essay .reading__head h1 {
+    font-size: clamp(38px, 5.6vw, 76px);
+    line-height: 1.02;
+    text-wrap: balance;
+}
+.reading--essay .reading__meta {
+    margin-top: 20px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+.reading--essay .reading__meta a {
+    color: inherit;
+}
+.reading--essay .reading__figure {
+    max-width: 64rem;
+    margin-bottom: 56px;
+}
+.reading.reading--essay .k-b-text,
+.reading.reading--essay .prose {
+    font-size: 19px;
+    line-height: 1.68;
+    text-wrap: pretty;
+}
+.reading.reading--essay > .k-blocks:first-of-type > .k-b-text:first-child,
+.reading.reading--essay .reading__inner > .prose:first-child > p:first-child {
+    font-size: clamp(22px, 2.2vw, 26px);
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+}
+.reading.reading--essay .k-b-quote blockquote {
+    font-size: clamp(26px, 3vw, 34px);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+}
+.reading.reading--essay .k-b-quote {
+    border-block: 0;
+    border-left: 3px solid var(--wall-studio);
+    padding: 4px 0 4px 24px;
+}
+.reading__onward {
+    max-width: var(--measure);
+    margin: 48px auto 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+.reading__onward a {
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
 }
 .reading__terms {
     max-width: var(--measure);

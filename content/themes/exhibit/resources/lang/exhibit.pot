@@ -78,6 +78,10 @@ msgid "No photograph yet"
 msgstr ""
 
 #: resources/js/pages/@core/content/Archive.vue
+msgid "Notes from the studio: places we visited, drawings, and what we are reading."
+msgstr ""
+
+#: resources/js/pages/@core/content/Archive.vue
 msgid "Nothing has been hung in this room yet."
 msgstr ""
 
@@ -103,6 +107,10 @@ msgstr ""
 
 #: resources/js/components/rooms.js
 msgid "Projects"
+msgstr ""
+
+#: resources/js/pages/@core/content/Archive.vue
+msgid "Read"
 msgstr ""
 
 #: resources/js/layouts/Site.vue

@@ -168,9 +168,7 @@ final class DemoContentTest extends AuthTestCase
         }
         $media = (int) $this->db->table('media')->where('filename', 'concrete-volumes.webp')->value('id');
         $this->assertSame([$media], $this->data('casa-en-las-terrazas', 'es')['photos'], 'a translation shows the same photos');
-        $urbino = $this->data('courtyards-in-urbino', '');
-        $this->assertSame('core/image', $urbino['body'][1]['type']);
-        $this->assertTrue(((array) $urbino['body'][1]['props'])['image'] > 0);
+        $this->assertSame((int) $this->db->table('media')->where('filename', 'urbino-courtyard.webp')->value('id'), $this->data('courtyards-in-urbino', '')['image']);
         $this->assertTrue(is_file(dirname(__DIR__, 2) . '/core/src/Cms/Demo/content/photos/concrete-volumes.webp'), 'the shipped photo stays where it is');
     }
 

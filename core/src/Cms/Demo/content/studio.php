@@ -25,7 +25,7 @@ declare(strict_types=1);
 $b = static fn(string $type, array $props = [], array $children = []): array => ['type' => $type, 'props' => $props, 'children' => $children];
 $heading = static fn(string $text, string $level = '2'): array => $b('core/heading', ['text' => $text, 'level' => $level]);
 $text = static fn(string $html): array => $b('core/text', ['text' => $html]);
-$image = static fn(string $photo): array => $b('core/image', ['image' => '@photo:' . $photo]);
+$quote = static fn(string $text): array => $b('core/quote', ['text' => $text]);
 
 return [
     'theme' => 'exhibit',
@@ -357,10 +357,14 @@ return [
                 'data' => ['image' => '@photo:vanvitelli', 'body' => [
                     $text('<p>The Metropolitan Museum of Art keeps a sheet of studies by Luigi Vanvitelli: a wall with a doorway, and two smaller sketches beside it trying other windows. Nothing on it is finished. Each line is there to decide something.</p>'),
                     $text('<p>That is the kind of drawing we try to make on a first visit: fast, a little wrong, and clear about the one question it is asking.</p>'),
+                    $quote('A drawing that tries to answer everything answers nothing.'),
+                    $text('<p>We pinned a copy above the big table. When a sketch of ours starts to fill up with detail, someone points at it, and we start again on a smaller sheet.</p>'),
                 ]],
                 'es' => ['title' => 'Aprender de los bocetos de Vanvitelli', 'slug' => 'bocetos-de-vanvitelli', 'excerpt' => 'Una hoja de estudios rápidos para una puerta, y lo que dice sobre dibujar para decidir.', 'data' => ['body' => [
                     $text('<p>El Metropolitan Museum of Art conserva una hoja de estudios de Luigi Vanvitelli: un muro con una puerta y, al lado, dos bocetos más pequeños que prueban otras ventanas. Nada está terminado. Cada línea está ahí para decidir algo.</p>'),
                     $text('<p>Ese es el tipo de dibujo que intentamos hacer en una primera visita: rápido, algo impreciso y claro sobre la única pregunta que se hace.</p>'),
+                    $quote('Un dibujo que intenta responderlo todo no responde nada.'),
+                    $text('<p>Colgamos una copia encima de la mesa grande. Cuando un boceto nuestro empieza a llenarse de detalles, alguien la señala y empezamos de nuevo en una hoja más pequeña.</p>'),
                 ]]],
             ],
             [
@@ -368,11 +372,15 @@ return [
                 'excerpt' => 'Kōji Fujii\'s house of 1928, cut open in an exhibition model.',
                 'data' => ['image' => '@photo:chochikukyo', 'body' => [
                     $text('<p>Chochikukyo, the house the architect Kōji Fujii built for himself near Kyoto in 1928, was shown in an exhibition as a cut-away model. With the roof off, you can follow how the rooms are arranged for air and shade.</p>'),
-                    $text('<p>We came back and made a cut-away of our own for the house on the terraces.</p>'),
+                    $text('<p>What held us was how plain the model is. Card for the walls, thin strips for the screens, nothing painted. It explains the house the way a section drawing does, but you can walk around it.</p>'),
+                    $quote('With the roof off, a house tells you how it breathes.'),
+                    $text('<p>We came back and made a cut-away of our own for the house on the terraces, in grey card, at one to fifty. It now sits by the door, and clients lift the roof before they sit down.</p>'),
                 ]],
                 'es' => ['title' => 'Una maqueta de Chochikukyo', 'slug' => 'maqueta-de-chochikukyo', 'excerpt' => 'La casa de Kōji Fujii de 1928, abierta en una maqueta de exposición.', 'data' => ['body' => [
                     $text('<p>Chochikukyo, la casa que el arquitecto Kōji Fujii construyó para sí mismo cerca de Kioto en 1928, se mostraba en una exposición como una maqueta seccionada. Sin la cubierta se puede seguir cómo se ordenan las estancias para el aire y la sombra.</p>'),
-                    $text('<p>Volvimos e hicimos una maqueta seccionada propia para la casa en las terrazas.</p>'),
+                    $text('<p>Lo que nos retuvo fue lo sencilla que es la maqueta. Cartón para los muros, tiras finas para los paneles, nada pintado. Explica la casa como lo hace una sección, pero se puede rodear.</p>'),
+                    $quote('Sin la cubierta, una casa te cuenta cómo respira.'),
+                    $text('<p>Volvimos e hicimos una maqueta seccionada propia para la casa en las terrazas, en cartón gris, a escala uno a cincuenta. Ahora está junto a la puerta, y los clientes levantan la cubierta antes de sentarse.</p>'),
                 ]]],
             ],
             [
@@ -380,13 +388,15 @@ return [
                 'excerpt' => 'A week of drawing the courtyards behind the streets.',
                 'data' => ['image' => '@photo:urbino', 'body' => [
                     $text('<p>Behind the streets of Urbino are courtyards: arches on one side, a garden on another, roofs stepping down the hill. We spent a week drawing them.</p>'),
-                    $image('urbino'),
-                    $text('<p>What stays with us is how each courtyard is shared by houses that never quite line up, and how little that matters.</p>'),
+                    $text('<p>Each morning we picked one and stayed until the light left it. By the third day we had stopped measuring and started counting steps instead: from the gate to the well, from the arches to the shade.</p>'),
+                    $quote('Each courtyard is shared by houses that never quite line up, and it matters very little.'),
+                    $text('<p>Back in Valencia, the twelve flats in Ruzafa got a courtyard that does the same: a little out of square, planted, and walked through on the way to every door.</p>'),
                 ]],
                 'es' => ['title' => 'Patios en Urbino', 'slug' => 'patios-en-urbino', 'excerpt' => 'Una semana dibujando los patios detrás de las calles.', 'data' => ['body' => [
                     $text('<p>Detrás de las calles de Urbino hay patios: arcos a un lado, un jardín al otro, tejados que bajan por la ladera. Pasamos una semana dibujándolos.</p>'),
-                    $image('urbino'),
-                    $text('<p>Lo que nos queda es cómo cada patio lo comparten casas que nunca acaban de alinearse, y lo poco que eso importa.</p>'),
+                    $text('<p>Cada mañana elegíamos uno y nos quedábamos hasta que la luz se iba. Al tercer día ya no medíamos: contábamos pasos, de la puerta al pozo, de los arcos a la sombra.</p>'),
+                    $quote('Cada patio lo comparten casas que nunca acaban de alinearse, y eso importa muy poco.'),
+                    $text('<p>De vuelta en Valencia, las doce viviendas de Ruzafa tienen un patio que hace lo mismo: algo fuera de escuadra, plantado y atravesado de camino a cada puerta.</p>'),
                 ]]],
             ],
         ],
