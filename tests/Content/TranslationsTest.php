@@ -8,6 +8,7 @@ use Kestello\Cms\Content\ContentException;
 use Kestello\Cms\Content\ContentModule;
 use Kestello\Cms\Content\Entries;
 use Kestello\Cms\Content\Entry;
+use Kestello\Cms\Content\Field;
 use Kestello\Cms\Frontend\FrontendModule;
 use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Cms\I18n\LanguagePrefix;
@@ -16,6 +17,7 @@ use Kestello\Cms\I18n\PageLanguages;
 use Kestello\Cms\Redirects\RedirectsModule;
 use Kestello\Cms\Site\SiteModule;
 use Kestello\Contracts\Auth\Principal;
+use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
 use Kestello\Framework\Database\Model;
@@ -39,6 +41,17 @@ final class TranslationsTest extends AuthTestCase
             $module->register($this->cms->container);
             $module->boot($this->cms);
         }
+        ExecutionContext::run('plugin:projects', function (): void {
+            $this->cms->content->type('projects')->label('Project', 'Projects')->path('/projects')->fields([
+                Field::text('client'),                          // text: each language its own
+                Field::number('year'),                          // shared by its type
+                Field::image('photo'),                          // shared by its type
+                Field::text('code')->translatable(false),       // shared by choice
+                Field::select('stage', ['built' => 'Built', 'study' => 'Study'])->translatable(),     // its own by choice
+                Field::entry('related', ['projects'], multiple: true),
+                Field::term('topic', 'category'),
+            ]);
+        });
         ContentModule::finalize($this->cms);
         // innermost: sees each page's languages while its request is still being answered
         $this->cms->routes->pushGlobalMiddleware($this->capture = new class implements \Kestello\Framework\Core\Middleware\MiddlewareInterface {
@@ -353,5 +366,45 @@ final class TranslationsTest extends AuthTestCase
         $page = $this->entries->create($this->cms->content->get('page'), ['title' => 'Noticias', 'locale' => 'es', 'status' => 'published'], $this->me);
         $this->assertSame('noticias-2', $page->slug, 'a Spanish page cannot take the Spanish word for posts');
         $this->assertSame('noticias', $this->publish('page', ['title' => 'Noticias'])->slug, 'an English page can');
+    }
+
+    public function testSharedFieldsAreTheSameInEveryLanguage(): void
+    {
+        $fields = array_column($this->cms->content->fields->describe($this->cms->content->get('projects')->getFields()), 'translatable', 'name');
+        $this->assertSame(['client' => true, 'year' => false, 'photo' => false, 'code' => false, 'stage' => true, 'related' => true, 'topic' => true, 'seo' => true], $fields, 'the SEO title and description too: each language its own');
+
+        $house = $this->publish('projects', ['title' => 'House', 'data' => ['client' => 'Ruiz family', 'year' => 2024, 'code' => 'H-1', 'stage' => 'built']]);
+        $casa = $this->inSpanish($house, ['title' => 'Casa', 'slug' => 'casa', 'data' => ['client' => 'Familia Ruiz', 'year' => 2024, 'code' => 'H-1', 'stage' => 'study']]);
+        $version = (int) $casa->fresh()->version;
+
+        $this->entries->update($house->fresh(), ['data' => ['client' => 'The Ruiz family', 'year' => 2025, 'code' => 'H-2', 'stage' => 'built']], $this->me);
+        $casa = $casa->fresh();
+        $this->assertSame(['Familia Ruiz', 2025, 'H-2', 'study'], [$casa->field('client'), $casa->field('year'), $casa->field('code'), $casa->field('stage')], 'shared fields follow; translated ones stay');
+        $this->assertSame($version + 1, (int) $casa->version, 'an editor open on the old values is told');
+
+        $opened = (int) $house->fresh()->version;      // an English editor open now
+        $this->entries->update($casa, ['data' => ['client' => 'Familia Ruiz', 'year' => null, 'code' => 'H-2', 'stage' => 'study']], $this->me);
+        $this->assertNull($house->fresh()->field('year'), 'from either side, emptied too');
+
+        $this->assertThrows(ContentException::class, fn() => $this->entries->update($house->fresh(), ['data' => ['client' => 'x']], $this->me, $opened), 'and saving it is refused, not the old year written back');
+    }
+
+    public function testLinksPointAtThePageLanguage(): void
+    {
+        $terms = new \Kestello\Cms\Content\Terms();
+        $category = $this->cms->content->getTaxonomy('category');
+        $houses = $terms->create($category, ['name' => 'Houses'], $this->me);
+        $casas = $terms->translate($category, $houses, 'es', $this->me);
+        $other = $this->publish('projects', ['title' => 'Other']);
+        $otra = $this->inSpanish($other, ['title' => 'Otra', 'slug' => 'otra']);
+        $draftOnly = $this->publish('projects', ['title' => 'Draft only']);
+        $this->entries->translate($draftOnly, 'es', $this->me);       // a draft: not shown
+        $house = $this->publish('projects', ['title' => 'House', 'data' => ['related' => [(int) $other->getKey(), (int) $draftOnly->getKey()], 'topic' => (int) $houses->getKey()]]);
+        $this->inSpanish($house, ['title' => 'Casa', 'slug' => 'casa']);
+
+        $es = $this->page('/es/projects/casa')['entry']['data'];
+        $this->assertSame([[(int) $otra->getKey(), (int) $draftOnly->getKey()], (int) $casas->getKey()], [$es->related, $es->topic], 'the published translation where there is one');
+        $en = $this->page('/projects/house')['entry']['data'];
+        $this->assertSame([[(int) $other->getKey(), (int) $draftOnly->getKey()], (int) $houses->getKey()], [$en->related, $en->topic]);
     }
 }

@@ -11,7 +11,7 @@ import SharePreviews from '../../../components/content/SharePreviews.vue';
 import StudioPublish from '../../../components/content/StudioPublish.vue';
 import { isNewEntry } from '../../../components/content/entry-state.js';
 import TranslationLinks from '../../../components/languages/TranslationLinks.vue';
-import { localPath } from '../../../components/languages/language-list.js';
+import { localPath, noteShared } from '../../../components/languages/language-list.js';
 import { checkSeo } from '../../../components/content/seo-checks.js';
 
 defineOptions({ layout: 'Admin' });
@@ -25,7 +25,14 @@ const routeId = computed(() => String(page.props.params?.id ?? 'new'));
 const isNew = computed(() => isNewEntry(routeId.value, entry.value));
 const types = useResource('/content/types');
 const type = computed(() => (types.data.value ?? []).find((t) => t.name === typeName.value) ?? null);
-const fields = computed(() => type.value?.fields ?? []);
+// a field its translations share says so once the entry has one
+const fields = computed(() =>
+    noteShared(
+        type.value?.fields ?? [],
+        (entry.value?.translations ?? []).length > 0,
+        __('The same in every language: saving it here changes the translations too.'),
+    ),
+);
 // fields whose conditions aren't met are hidden (their values stay, the server doesn't require them)
 const shown = computed(() => visibleFields(fields.value, form.data ?? {}));
 const mainFields = computed(() =>

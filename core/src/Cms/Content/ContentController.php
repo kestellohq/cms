@@ -440,7 +440,7 @@ final class ContentController
                 }
             }
         }
-        $data = self::resolveMedia($type, $data);
+        $data = self::resolveMedia($type, self::inPageLanguage($type, $data));
         $author = $entry->author;
 
         return [
@@ -454,6 +454,40 @@ final class ContentController
             'html' => $html,
             'blocks' => $trees,
         ];
+    }
+
+    /**
+     * Entry and term fields point at their translations in the page's
+     * language, where they have one: a Spanish page links to Spanish
+     * projects, whichever language the link was picked in.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private static function inPageLanguage(ContentType $type, array $data): array
+    {
+        if (\Kestello\Cms\I18n\ContentLanguages::others() === []) {
+            return $data;
+        }
+        $language = \Kestello\Cms\I18n\ContentLanguages::current();
+        foreach (['entry' => 'entries', 'term' => 'terms'] as $fieldType => $table) {
+            $fields = array_filter($type->getFields(), static fn($f) => $f->type === $fieldType && isset($data[$f->name]) && $data[$f->name] !== []);
+            $ids = [];
+            foreach ($fields as $f) {
+                $ids = array_merge($ids, array_map('intval', (array) $data[$f->name]));
+            }
+            if ($ids === []) {
+                continue;
+            }
+            $map = \Kestello\Cms\Content\Translations::idsIn($table, array_values(array_unique($ids)), $language);
+            foreach ($fields as $f) {
+                $data[$f->name] = is_array($data[$f->name])
+                    ? array_values(array_unique(array_map(static fn($id) => $map[(int) $id] ?? (int) $id, $data[$f->name])))
+                    : ($map[(int) $data[$f->name]] ?? (int) $data[$f->name]);
+            }
+        }
+
+        return $data;
     }
 
     /**

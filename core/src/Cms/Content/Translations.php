@@ -69,4 +69,37 @@ final class Translations
 
         return $out;
     }
+
+    /**
+     * Each of $ids as it is in $language: its translation's id where it has
+     * one (published, for entries), else the id itself. For links stored in
+     * one language and shown in another.
+     *
+     * @param 'entries'|'terms' $table
+     * @param list<int> $ids
+     * @return array<int, int> id => the id to show
+     */
+    public static function idsIn(string $table, array $ids, string $language): array
+    {
+        $map = array_combine($ids, $ids);
+        $rows = $ids === [] ? [] : QueryBuilder::table($table)->whereIn('id', $ids)->whereNotNull('translation_group')->where('locale', '!=', $language)->select('id', 'translation_group')->get();
+        $groups = [];
+        foreach ($rows as $row) {
+            $groups[(string) $row['translation_group']][] = (int) $row['id'];
+        }
+        if ($groups === []) {
+            return $map;
+        }
+        $q = QueryBuilder::table($table)->whereIn('translation_group', array_keys($groups))->where('locale', $language);
+        if ($table === 'entries') {
+            $q->whereNull('deleted_at')->where('status', 'published')->where('published_at', '<=', \Kestello\Framework\Database\Model::freshTimestamp());
+        }
+        foreach ($q->select('id', 'translation_group')->get() as $found) {
+            foreach ($groups[(string) $found['translation_group']] ?? [] as $id) {
+                $map[$id] = (int) $found['id'];
+            }
+        }
+
+        return $map;
+    }
 }

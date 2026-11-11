@@ -422,6 +422,7 @@ final class Entries
 
         $wasPublished = !$new && $entry->isPublished();
         $was = $new ? null : (string) $entry->status;
+        $before = $new ? [] : (array) ($entry->data ?? []);
         $commit = fn() => $this->commit($entry, $type, $p, $status, $title, $slug, $data, $terms, $excerpt, $parentId, $authorId, $template, $menuOrder, $publishedAt, $new);
         if ($this->locks !== null && ($new || $slug !== (string) $entry->slug)) {
             // A new address: another request may be choosing the same one right now. Choose it
@@ -437,6 +438,9 @@ final class Entries
             }
         } else {
             $commit();
+        }
+        if (!$new) {
+            $this->shareFields($entry, $type, $before);
         }
         $this->events?->dispatch(new EntrySaved((int) $entry->getKey(), (string) $entry->type, (string) $entry->title, (string) $entry->status, $new, $p->userId));
         if (!$wasPublished && $entry->isPublished()) {
@@ -794,6 +798,50 @@ final class Entries
         }
 
         return $depth >= self::MAX_DEPTH ? 'Pages can be nested at most ' . self::MAX_DEPTH . ' levels.' : null;
+    }
+
+    /**
+     * The fields every translation shares (Field::translatable(false)) that
+     * this save changed, written to the entry's translations too. Each
+     * translation's version moves on, so an editor open on one with the old
+     * values is told someone else saved it instead of writing them back.
+     *
+     * @param array<string, mixed> $before the entry's data before the save
+     * @return list<int> the translations changed
+     */
+    public function shareFields(Entry $entry, ContentType $type, array $before): array
+    {
+        $group = (string) ($entry->translation_group ?? '');
+        $after = (array) ($entry->data ?? []);
+        $changed = [];
+        foreach ($type->getFields() as $field) {
+            if (!$field->isTranslatable() && ($before[$field->name] ?? null) !== ($after[$field->name] ?? null)) {
+                $changed[$field->name] = $after[$field->name] ?? null;
+            }
+        }
+        if ($group === '' || $changed === []) {
+            return [];
+        }
+        $q = Entry::query();
+        $q->where('translation_group', $group)->where('id', '!=', $entry->getKey())->where('type', $type->name);
+        $updated = [];
+        DatabaseManager::getConnection()->transaction(function () use ($q, $changed, $type, &$updated): void {
+            foreach ($q->get() as $sibling) {
+                $data = (array) ($sibling->data ?? []);
+                foreach ($changed as $name => $value) {
+                    if ($value === null) {
+                        unset($data[$name]);
+                    } else {
+                        $data[$name] = $value;
+                    }
+                }
+                $sibling->forceFill(['data' => $data, 'version' => (int) $sibling->version + 1])->save();
+                $this->reindex($sibling, $type);
+                $updated[] = (int) $sibling->getKey();
+            }
+        });
+
+        return $updated;
     }
 
     /** Rebuild the entry's rows in entry_index from its indexed() fields, and its media and entry links. */
