@@ -7,13 +7,22 @@ export default { layout: 'Site' };
 // the column, spacing, screen sizes and block design: shared by every page that draws blocks
 import '../../shared/block-layout.css';
 import { computed } from 'vue';
-import { BlockTree, Head, KImage, Link } from '@kestello/app';
+import { BlockTree, Head, KImage, Link, usePage } from '@kestello/app';
+import { useI18n } from '@kestello/sdk';
 
 const props = defineProps({
     entry: { type: Object, required: true },
     type: { type: Object, required: true },
     terms: { type: Array, default: () => [] }, // [{ taxonomy, label, terms: [{ name, path }] }]
+    translation_missing: Boolean, // shown in the main language, at an address in another: not translated yet
 });
+const { __ } = useI18n();
+const page = usePage();
+
+// the page's language, and the one the entry is written in (the main one) when it isn't translated yet
+const languages = computed(() => page.props.i18n?.languages ?? []);
+const asked = computed(() => languages.value.find((l) => l.current) ?? null);
+const original = computed(() => (props.translation_missing ? (languages.value[0] ?? null) : null));
 
 // Only rich-text fields (entry.html) are rendered as HTML: they are sanitized on save with the
 // rich-text profile. Every other value stays text.
@@ -33,7 +42,10 @@ const date = computed(() =>
 
 <template>
     <Head :title="entry.title" />
-    <article class="k-entry">
+    <article class="k-entry" :lang="original?.code">
+        <p v-if="original && asked" class="k-entry__untranslated" :lang="asked.code" role="note">
+            {{ __('This page is not available in {language} yet. Here it is in {original}.', { language: asked.name, original: original.name }) }}
+        </p>
         <header class="k-entry__header">
             <Link v-if="type.archive" :href="type.archive" class="k-entry__back">{{ type.plural }}</Link>
             <h1 class="k-entry__title" data-k-title>{{ entry.title }}</h1>
@@ -65,6 +77,13 @@ const date = computed(() =>
 </template>
 
 <style scoped>
+.k-entry__untranslated {
+    margin: 0 0 1.5rem;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid currentColor;
+    font-size: 0.9375rem;
+    opacity: 0.85;
+}
 .k-entry > .k-entry__image {
     margin-bottom: 2rem;
 }

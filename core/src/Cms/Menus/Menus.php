@@ -7,6 +7,7 @@ namespace Kestello\Cms\Menus;
 use Kestello\Cms\Content\ContentException;
 use Kestello\Cms\Content\ContentRegistry;
 use Kestello\Cms\Content\Entry;
+use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Cms\I18n\Labels;
 use Kestello\Framework\Database\Model;
 use Kestello\Framework\Database\QueryBuilder;
@@ -22,7 +23,14 @@ use Kestello\Support\Translator;
  *   url      url: http(s), mailto:, tel:, /path or #anchor
  *
  * Links resolve when a page renders, so renamed or moved entries keep
- * working and unpublished or deleted ones simply drop out.
+ * working and unpublished or deleted ones drop out.
+ *
+ * On a site in several languages each language can put its own menu in a
+ * location; one that hasn't uses the main language's. Either way an entry
+ * item links to the entry's translation in the page's language when one is
+ * published, else to the original under that language's prefix (which
+ * shows it marked as not translated yet), and archives and terms get the
+ * prefix too.
  *
  * @api
  */
@@ -34,21 +42,27 @@ final class Menus
 
     public function __construct(private readonly ContentRegistry $content, private readonly MenuRegistry $registry) {}
 
-    /** @return list<array{id: int, name: string, items: list<array<string, mixed>>, locations: list<string>, updated_at: ?string}> */
+    /**
+     * Every menu, with where it shows: locations in the main language, and
+     * placements in every language ('' is the main one).
+     *
+     * @return list<array{id: int, name: string, items: list<array<string, mixed>>, locations: list<string>, placements: list<array{location: string, locale: string}>, updated_at: ?string}>
+     */
     public function all(): array
     {
-        $locations = [];
-        foreach (QueryBuilder::table('menu_locations')->get() as $row) {
-            $locations[(int) $row['menu_id']][] = (string) $row['location'];
+        $placements = [];
+        foreach (QueryBuilder::table('menu_locations')->orderBy('location')->orderBy('locale')->get() as $row) {
+            $placements[(int) $row['menu_id']][] = ['location' => (string) $row['location'], 'locale' => (string) $row['locale']];
         }
 
         return array_map(static fn(array $m) => [
             'id' => (int) $m['id'], 'name' => (string) $m['name'], 'items' => self::decode($m['items']),
-            'locations' => $locations[(int) $m['id']] ?? [], 'updated_at' => $m['updated_at'],
+            'locations' => array_values(array_column(array_filter($placements[(int) $m['id']] ?? [], static fn(array $p) => $p['locale'] === ''), 'location')),
+            'placements' => $placements[(int) $m['id']] ?? [], 'updated_at' => $m['updated_at'],
         ], QueryBuilder::table('menus')->orderBy('name')->get());
     }
 
-    /** @return array{id: int, name: string, items: list<array<string, mixed>>, locations: list<string>, updated_at: ?string}|null */
+    /** @return array{id: int, name: string, items: list<array<string, mixed>>, locations: list<string>, placements: list<array{location: string, locale: string}>, updated_at: ?string}|null */
     public function find(int $id): ?array
     {
         foreach ($this->all() as $menu) {
@@ -94,11 +108,17 @@ final class Menus
         QueryBuilder::table('menus')->where('id', $id)->delete(); // locations cascade
     }
 
-    /** @return array<string, ?int> location => menu id, for every declared location */
-    public function assignments(): array
+    /**
+     * The menu each declared location has in one language: '' for the main
+     * one. A language's own choices only: null where it uses the main
+     * language's menu.
+     *
+     * @return array<string, ?int> location => menu id
+     */
+    public function assignments(string $locale = ''): array
     {
         $out = array_fill_keys(array_keys($this->registry->locations()), null);
-        foreach (QueryBuilder::table('menu_locations')->get() as $row) {
+        foreach (QueryBuilder::table('menu_locations')->where('locale', $locale)->get() as $row) {
             if (array_key_exists((string) $row['location'], $out)) {
                 $out[(string) $row['location']] = (int) $row['menu_id'];
             }
@@ -107,23 +127,31 @@ final class Menus
         return $out;
     }
 
-    /** Put a menu in a location (null empties it). */
-    public function assign(string $location, ?int $menuId): void
+    /**
+     * Put a menu in a location, in one language ('' = the main one). Null
+     * empties it in the main language, and in another language makes it use
+     * the main language's menu again.
+     */
+    public function assign(string $location, ?int $menuId, string $locale = ''): void
     {
         if (!$this->registry->has($location)) {
             throw ContentException::invalid(['location' => ['The active theme has no such location.']]);
         }
+        if ($locale !== '' && !ContentLanguages::has($locale)) {
+            throw ContentException::invalid(['locale' => [Translator::get('The site has no such language.')]]);
+        }
         if ($menuId !== null && !QueryBuilder::table('menus')->where('id', $menuId)->exists()) {
             throw ContentException::invalid(['menu_id' => ['No such menu.']]);
         }
-        QueryBuilder::table('menu_locations')->where('location', $location)->delete();
+        QueryBuilder::table('menu_locations')->where('location', $location)->where('locale', $locale)->delete();
         if ($menuId !== null) {
-            QueryBuilder::table('menu_locations')->insert(['location' => $location, 'menu_id' => $menuId]);
+            QueryBuilder::table('menu_locations')->insert(['location' => $location, 'locale' => $locale, 'menu_id' => $menuId]);
         }
     }
 
     /**
-     * The menus in every declared location, resolved for the public site.
+     * The menus in every declared location, resolved for the public site
+     * in the language of the page being answered.
      *
      * @return array<string, list<array<string, mixed>>> location => tree
      */
@@ -133,13 +161,17 @@ final class Menus
         if ($locations === []) {
             return [];
         }
+        $language = ContentLanguages::current();
         $rows = QueryBuilder::table('menu_locations')->join('menus', 'menus.id', '=', 'menu_locations.menu_id')
-            ->whereIn('menu_locations.location', array_keys($locations))->select('menu_locations.location', 'menus.items')->get();
+            ->whereIn('menu_locations.location', array_keys($locations))->whereIn('menu_locations.locale', array_values(array_unique(['', $language])))
+            ->select('menu_locations.location', 'menu_locations.locale', 'menus.items')->get();
         $trees = [];
         foreach ($rows as $row) {
-            $trees[(string) $row['location']] = self::decode($row['items']);
+            if ((string) $row['locale'] === $language || !isset($trees[(string) $row['location']])) {     // the language's own menu wins
+                $trees[(string) $row['location']] = self::decode($row['items']);
+            }
         }
-        $links = $this->links($trees);
+        $links = $this->links($trees, language: $language);
         $out = array_fill_keys(array_keys($locations), []);
         foreach ($trees as $location => $items) {
             $out[$location] = $this->present($items, $links);
@@ -267,12 +299,13 @@ final class Menus
     }
 
     /**
-     * Load every entry and term the trees point at, in two queries.
+     * Load every entry and term the trees point at, in a few queries, as
+     * links in $language ('' = the main one, and what the editor sees).
      *
      * @param list<list<array<string, mixed>>> $trees
-     * @return array{entry: array<int, array{label: string, url: ?string, live: bool}>, term: array<int, array{label: string, url: ?string, live: bool}>}
+     * @return array{entry: array<int, array{label: string, url: ?string, live: bool}>, term: array<int, array{label: string, url: ?string, live: bool}>, language: string}
      */
-    private function links(array $trees, bool $includeHidden = false): array
+    private function links(array $trees, bool $includeHidden = false, string $language = ''): array
     {
         $ids = ['entry' => [], 'term' => []];
         $collect = static function (array $items) use (&$collect, &$ids): void {
@@ -286,16 +319,23 @@ final class Menus
         foreach ($trees as $items) {
             $collect($items);
         }
-        $out = ['entry' => [], 'term' => []];
+        $out = ['entry' => [], 'term' => [], 'language' => $language];
         if ($ids['entry'] !== []) {
             // a cached page shows these titles and addresses: it must go when one of them changes
             \Kestello\Cms\Cache\PageTags::add(...array_map(static fn($id) => 'entry:' . (int) $id, array_unique($ids['entry'])));
-            foreach (Entry::query()->whereIn('id', array_unique($ids['entry']))->get() as $e) {
-                if (!$e instanceof Entry) {
-                    continue;
+            $q = Entry::query();
+            $q->whereIn('id', array_values(array_unique($ids['entry'])));
+            $entries = array_filter($q->get()->all(), static fn($e) => $e instanceof Entry);
+            $translations = $this->translationsIn($entries, $language);
+            foreach ($entries as $e) {
+                $link = $this->entryLink($e);
+                $translation = $translations[(string) $e->translation_group] ?? null;
+                if ($translation !== null && ($shown = $this->entryLink($translation))['live']) {
+                    $link = $shown;
+                } elseif ($language !== '' && $e->language() === '' && $link['url'] !== null) {
+                    $link['url'] = ContentLanguages::localize($link['url'], $language);     // the original, marked as not translated yet
                 }
-                $type = $this->content->get((string) $e->type);
-                $out['entry'][(int) $e->getKey()] = ['label' => (string) $e->title, 'url' => $type === null ? null : $e->url($type), 'live' => $e->status === 'published' && $type !== null && $type->getPath() !== null && (!$type->isHierarchical() || $e->publicAncestors() !== null), 'type_label' => $type === null ? '' : Labels::text($type->singular(), Labels::domain($type->owner))];
+                $out['entry'][(int) $e->getKey()] = $link;
             }
         }
         if ($ids['term'] !== []) {
@@ -305,25 +345,82 @@ final class Menus
             foreach (\Kestello\Cms\Content\Term::onlyInUse(\Kestello\Cms\Content\Term::query()->whereIn('terms.id', array_unique($ids['term'])))->get() as $used) {
                 $inUse[(int) $used->getKey()] = true;
             }
-            foreach (QueryBuilder::table('terms')->whereIn('id', array_unique($ids['term']))->get() as $t) {
+            $rows = QueryBuilder::table('terms')->whereIn('id', array_unique($ids['term']))->get();
+            // in another language, a term's translation names the link (its page lists that language's entries)
+            $translated = [];
+            $groups = array_values(array_unique(array_filter(array_map(static fn(array $t) => (string) ($t['translation_group'] ?? ''), $rows))));
+            if ($language !== '' && $groups !== []) {
+                foreach (QueryBuilder::table('terms')->whereIn('translation_group', $groups)->where('locale', $language)->get() as $t) {
+                    $translated[(string) $t['translation_group']] = $t;
+                }
+            }
+            foreach ($rows as $t) {
                 $tax = $this->content->getTaxonomy((string) $t['taxonomy']);
-                $url = $tax?->getPath() === null ? null : $tax->getPath() . '/' . $t['slug'];
-                $out['term'][(int) $t['id']] = ['label' => (string) $t['name'], 'url' => $url, 'live' => $url !== null && isset($inUse[(int) $t['id']]), 'type_label' => $tax === null ? '' : Labels::text($tax->singular(), Labels::domain($tax->owner))];
+                $live = isset($inUse[(int) $t['id']]);
+                $shown = (string) $t['locale'] === $language ? $t : ($translated[(string) ($t['translation_group'] ?? '')] ?? $t);
+                $url = $tax?->getPath() === null ? null : ContentLanguages::localize($tax->getPath() . '/' . $shown['slug'], $language);
+                $out['term'][(int) $t['id']] = ['label' => (string) $shown['name'], 'url' => $url, 'live' => $url !== null && $live, 'type_label' => $tax === null ? '' : Labels::text($tax->singular(), Labels::domain($tax->owner))];
             }
         }
 
         return $out;
     }
 
-    /** @return array{label: string, url: ?string, live: bool, type_label?: string} type_label: what the item is (Page, Category), for the editor */
+    /**
+     * @param array{entry: array<int, array<string, mixed>>, term: array<int, array<string, mixed>>, language: string} $links
+     * @return array{label: string, url: ?string, live: bool, type_label?: string} type_label: what the item is (Page, Category), for the editor
+     */
     private function linkFor(array $item, array $links): array
     {
         return match ($item['kind']) {
             'entry', 'term' => $links[$item['kind']][$item['ref']] ?? ['label' => '', 'url' => null, 'live' => false],
             'archive' => ($type = $this->content->get((string) $item['ref'])) !== null && $type->hasArchive()
-                ? ['label' => $type->plural(), 'url' => (string) $type->getPath(), 'live' => true] : ['label' => '', 'url' => null, 'live' => false],
+                ? ['label' => $type->plural(), 'url' => ContentLanguages::localize((string) $type->getPath(), $links['language']), 'live' => true] : ['label' => '', 'url' => null, 'live' => false],
             default => ['label' => '', 'url' => (string) ($item['url'] ?? ''), 'live' => true],
         };
+    }
+
+    /** @return array{label: string, url: ?string, live: bool, type_label: string} */
+    private function entryLink(Entry $e): array
+    {
+        $type = $this->content->get((string) $e->type);
+
+        return [
+            'label' => (string) $e->title, 'url' => $type === null ? null : $e->url($type),
+            'live' => $e->status === 'published' && $type !== null && $type->getPath() !== null && (!$type->isHierarchical() || $e->publicAncestors() !== null),
+            'type_label' => $type === null ? '' : Labels::text($type->singular(), Labels::domain($type->owner)),
+        ];
+    }
+
+    /**
+     * The published translations into $language of entries in another
+     * language, by translation group, in one query.
+     *
+     * @param array<int, Entry> $entries
+     * @return array<string, Entry>
+     */
+    private function translationsIn(array $entries, string $language): array
+    {
+        $groups = [];
+        foreach ($entries as $e) {
+            if ($language !== '' && $e->language() !== $language && (string) $e->translation_group !== '') {
+                $groups[] = (string) $e->translation_group;
+            }
+        }
+        if ($groups === []) {
+            return [];
+        }
+        $q = Entry::query();
+        $q->whereIn('translation_group', array_values(array_unique($groups)))->where('locale', $language)->where('status', 'published');
+        $out = [];
+        foreach ($q->get() as $t) {
+            if ($t instanceof Entry) {
+                \Kestello\Cms\Cache\PageTags::add('entry:' . (int) $t->getKey());
+                $out[(string) $t->translation_group] = $t;
+            }
+        }
+
+        return $out;
     }
 
     /** @return list<array<string, mixed>> */

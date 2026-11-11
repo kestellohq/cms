@@ -10,6 +10,9 @@ use Kestello\Cms\Api\ApiRoute;
 use Kestello\Cms\Api\Endpoint;
 use Kestello\Cms\Api\Schema;
 use Kestello\Cms\Cms;
+use Kestello\Cms\Content\Entries;
+use Kestello\Cms\I18n\ContentLanguages;
+use Kestello\Cms\I18n\SiteLanguage;
 use Kestello\Framework\Settings\Settings;
 
 /**
@@ -76,6 +79,49 @@ final class UpdateSettings extends Endpoint
                 if ($values['site_url'] !== rtrim((string) (SiteSettings::read()['general']['site_url'] ?? ''), '/') && !$request->principal->can('system.manage')) {
                     throw ApiProblem::forbidden('Changing the site address needs the system.manage permission.');
                 }
+            }
+            if ($id === 'general' && array_key_exists(ContentLanguages::SETTING, $values)) {
+                $entries = Cms::instance()?->container->make(Entries::class);
+                [$codes, $errors] = ContentLanguages::check(
+                    (string) $values[ContentLanguages::SETTING],
+                    (string) ($values[SiteLanguage::SETTING] ?? SiteLanguage::site()),
+                    static fn(string $code): ?string => $entries?->languageOwner($code),
+                    ContentLanguages::others(),
+                );
+                if ($errors !== []) {
+                    throw ApiProblem::validation(['general.' . ContentLanguages::SETTING => $errors]);
+                }
+                $values[ContentLanguages::SETTING] = implode(',', $codes);
+            }
+            if ($id === 'general' && array_key_exists(\Kestello\Cms\I18n\TranslatedPaths::SETTING, $values)) {
+                $entries = Cms::instance()?->container->make(Entries::class);
+                $content = Cms::instance()?->content;
+                $declared = [];
+                foreach ([...($content?->types() ?? []), ...($content?->taxonomies() ?? [])] as $owner) {
+                    if (($owner->getPath() ?? '') !== '') {
+                        $declared[] = (string) $owner->getPath();
+                    }
+                }
+                [$paths, $errors] = \Kestello\Cms\I18n\TranslatedPaths::clean(
+                    json_decode((string) $values[\Kestello\Cms\I18n\TranslatedPaths::SETTING], true),
+                    array_key_exists(ContentLanguages::SETTING, $values) ? array_values(array_filter(explode(',', (string) $values[ContentLanguages::SETTING]))) : ContentLanguages::others(),
+                    $declared,
+                    static fn(string $segment, string $code): ?string => $entries?->translatedPathOwner($segment, $code),
+                );
+                if ($errors !== []) {
+                    throw ApiProblem::validation(['general.' . \Kestello\Cms\I18n\TranslatedPaths::SETTING => $errors]);
+                }
+                $values[\Kestello\Cms\I18n\TranslatedPaths::SETTING] = $paths === [] ? '' : json_encode($paths, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            }
+            if ($id === 'general' && array_key_exists(\Kestello\Cms\I18n\SiteText::SETTING, $values)) {
+                // texts for the languages the site has after this save, kept to the known keys
+                $languages = array_key_exists(ContentLanguages::SETTING, $values)
+                    ? array_values(array_filter(explode(',', (string) $values[ContentLanguages::SETTING]))) : ContentLanguages::others();
+                [$texts, $errors] = \Kestello\Cms\I18n\SiteText::clean(json_decode((string) $values[\Kestello\Cms\I18n\SiteText::SETTING], true), $languages);
+                if ($errors !== []) {
+                    throw ApiProblem::validation(['general.' . \Kestello\Cms\I18n\SiteText::SETTING => $errors]);
+                }
+                $values[\Kestello\Cms\I18n\SiteText::SETTING] = $texts === [] ? '' : json_encode($texts, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             }
             if ($values === []) {
                 continue;

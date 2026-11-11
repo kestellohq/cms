@@ -10,6 +10,8 @@ import PublishChecklist from '../../../components/content/PublishChecklist.vue';
 import SharePreviews from '../../../components/content/SharePreviews.vue';
 import StudioPublish from '../../../components/content/StudioPublish.vue';
 import { isNewEntry } from '../../../components/content/entry-state.js';
+import TranslationLinks from '../../../components/languages/TranslationLinks.vue';
+import { localPath, noteShared } from '../../../components/languages/language-list.js';
 import { checkSeo } from '../../../components/content/seo-checks.js';
 
 defineOptions({ layout: 'Admin' });
@@ -23,7 +25,14 @@ const routeId = computed(() => String(page.props.params?.id ?? 'new'));
 const isNew = computed(() => isNewEntry(routeId.value, entry.value));
 const types = useResource('/content/types');
 const type = computed(() => (types.data.value ?? []).find((t) => t.name === typeName.value) ?? null);
-const fields = computed(() => type.value?.fields ?? []);
+// a field its translations share says so once the entry has one
+const fields = computed(() =>
+    noteShared(
+        type.value?.fields ?? [],
+        (entry.value?.translations ?? []).length > 0,
+        __('The same in every language: saving it here changes the translations too.'),
+    ),
+);
 // fields whose conditions aren't met are hidden (their values stay, the server doesn't require them)
 const shown = computed(() => visibleFields(fields.value, form.data ?? {}));
 const mainFields = computed(() =>
@@ -302,6 +311,18 @@ const barActions = computed(() => {
     ];
 });
 
+// ── languages ────────────────────────────────────────────────────────
+// A site in several languages: a new entry is written in the language picked
+// here (or ?locale= from "New" on a filtered list); afterwards it keeps it,
+// and the Translations card links it to its other languages.
+const languageInfo = useResource('/content/languages');
+const languages = computed(() => languageInfo.data.value?.languages ?? []);
+const multilingual = computed(() => languages.value.length > 1);
+const newLanguage = ref(typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('locale') ?? '') : '');
+const language = computed(() => entry.value?.locale ?? newLanguage.value);
+const languageName = computed(() => languages.value.find((l) => l.code === language.value)?.name ?? language.value);
+const languageOptions = computed(() => languages.value.map((l) => ({ value: l.code, label: l.name })));
+
 // ── saving ───────────────────────────────────────────────────────────
 async function save(nextStatus = null, { force = false } = {}) {
     if (saving.value || readOnly.value) return;
@@ -314,7 +335,7 @@ async function save(nextStatus = null, { force = false } = {}) {
     errors.value = {};
     try {
         if (isNew.value) {
-            const { data } = await api.post(base, { ...body, status: nextStatus ?? 'draft' });
+            const { data } = await api.post(base, { ...body, status: nextStatus ?? 'draft', ...(multilingual.value ? { locale: newLanguage.value } : {}) });
             entry.value = data;
             fill(data);
             notify.success(message(data));
@@ -431,7 +452,13 @@ const editingSlug = ref(false);
 const prefix = computed(() => {
     const p = type.value?.path;
     if (p === null || p === undefined) return null;
-    const parentPath = entry.value?.parent && form.parent_id === entry.value.parent_id ? (entry.value.path ?? '').replace(/[^/]+$/, '') : `${p}/`;
+    // an entry in another language lives under its prefix: /es/about
+    // (and its own word for the type's prefix, when it has one: /es/noticias)
+    const lang = languages.value.find((l) => l.code === language.value);
+    const parentPath =
+        entry.value?.parent && form.parent_id === entry.value.parent_id
+            ? (entry.value.path ?? '').replace(/[^/]+$/, '')
+            : `${lang?.prefix ?? ''}${localPath(`${p}/`, lang?.paths)}`;
     return parentPath || '/';
 });
 const shownSlug = computed(
@@ -450,7 +477,11 @@ const shownSlug = computed(
 // ── parent, author ───────────────────────────────────────────────────
 const lookupItem = (e) => ({ id: e.id, label: e.title || __('(untitled)'), meta: e.path ?? '' });
 const searchParents = async (q) =>
-    (await api.get('/content/lookup', { search: q || undefined, types: typeName.value })).data.filter((e) => e.id !== entry.value?.id).map(lookupItem);
+    (
+        await api.get('/content/lookup', { search: q || undefined, types: typeName.value, locale: multilingual.value ? language.value || 'main' : undefined })
+    ).data
+        .filter((e) => e.id !== entry.value?.id)
+        .map(lookupItem);
 const resolveParents = async (ids) => (await api.get('/content/lookup', { ids: ids.join(','), types: typeName.value })).data.map(lookupItem);
 const userItem = (u) => ({ id: u.id, label: u.username });
 const searchUsers = async (q) => (await api.get('/content/users', { search: q || undefined })).data.map(userItem);
@@ -948,8 +979,23 @@ const err = (key) => (Array.isArray(errors.value[key]) ? errors.value[key][0] : 
                         </template>
                     </KCard>
 
-                    <KCard v-if="type.hierarchical || canReassign || entry || templateOptions.length > 1" :title="__('Details')">
+                    <KCard v-if="type.hierarchical || canReassign || entry || templateOptions.length > 1 || multilingual" :title="__('Details')">
                         <div class="k-form">
+                            <KField
+                                v-if="multilingual && isNew"
+                                v-slot="{ id }"
+                                :label="__('Language')"
+                                :help="__('The language this is written in. It stays once saved; translate it into the others afterwards.')"
+                                :error="err('locale')"
+                            >
+                                <KSelect :id="id" v-model="newLanguage" :options="languageOptions" :disabled="readOnly" />
+                            </KField>
+                            <dl v-else-if="multilingual" class="k-facts">
+                                <div>
+                                    <dt>{{ __('Language') }}</dt>
+                                    <dd>{{ languageName }}</dd>
+                                </div>
+                            </dl>
                             <KField
                                 v-if="templateOptions.length > 1"
                                 v-slot="{ id }"
@@ -1003,7 +1049,7 @@ const err = (key) => (Array.isArray(errors.value[key]) ? errors.value[key][0] : 
                     </KCard>
 
                     <KCard v-for="tax in taxonomies" :key="tax.name" :title="tax.plural">
-                        <KTermSelect v-model="form.terms[tax.name]" :taxonomy="tax" :disabled="readOnly" />
+                        <KTermSelect v-model="form.terms[tax.name]" :taxonomy="tax" :disabled="readOnly" :locale="multilingual ? language : null" />
                         <p v-if="err(`terms.${tax.name}`)" class="k-field__error">{{ err(`terms.${tax.name}`) }}</p>
                     </KCard>
 
@@ -1018,6 +1064,25 @@ const err = (key) => (Array.isArray(errors.value[key]) ? errors.value[key][0] : 
                         @assigned="onAssigned"
                     />
                     <SharePreviews v-if="canPreview" :base="`${base}/${entry.id}`" :singular="type.singular" />
+                    <KCard
+                        v-if="entry && multilingual"
+                        :title="__('Translations')"
+                        :description="
+                            __('This {item} in the site\'s other languages. A new translation starts as a draft with these fields.', {
+                                item: type.singular.toLowerCase(),
+                            })
+                        "
+                    >
+                        <TranslationLinks
+                            :key="entry.id"
+                            :type="typeName"
+                            :entry="entry"
+                            :languages="languages"
+                            :main="languageInfo.data.value?.main ?? ''"
+                            :can-translate="can.edit && !dirty"
+                        />
+                        <p v-if="can.edit && dirty" class="k-muted k-small">{{ __('Save your changes first, so the translation starts from them.') }}</p>
+                    </KCard>
                     <LinkedFrom v-if="entry" :key="entry.id" :base="`${base}/${entry.id}`" />
 
                     <KCard v-if="entry && type.revisions" :title="__('Revisions')" flush>

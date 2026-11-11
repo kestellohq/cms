@@ -4037,6 +4037,14 @@ fieldset.k-content-field > legend {
     font-size: 12.5px;
     color: var(--k-ink-2);
 }
+.k-term-translations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
 
 /* menus screen */
 .k-locations {

@@ -10,7 +10,9 @@ use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\Endpoint;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Content\ContentException;
+use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Cms\Menus\Menus;
+use Kestello\Support\Translator;
 
 /** Shared plumbing: menus need menus.manage. */
 abstract class MenuEndpoint extends Endpoint
@@ -45,6 +47,20 @@ abstract class MenuEndpoint extends Endpoint
         $menu['items'] = self::menus()->describe($menu['items']);
 
         return $menu;
+    }
+
+    /** A language asked for: '' for the main one (main, empty or left out), else a code the site has. */
+    protected static function locale(mixed $value): string
+    {
+        if ($value === null || $value === '' || $value === 'main') {
+            return '';
+        }
+        $code = ContentLanguages::code((string) $value);
+        if (!ContentLanguages::has($code)) {
+            throw ApiProblem::validation(['locale' => [Translator::get('The site has no such language.')]]);
+        }
+
+        return $code;
     }
 
     protected static function attempt(Closure $write): mixed

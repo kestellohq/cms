@@ -20,11 +20,20 @@ use InvalidArgumentException;
  */
 final class Field
 {
+    /**
+     * Field types whose value is the same in every language unless a field
+     * says otherwise (translatable()): a price, a date, a photo. Other
+     * types (text, links to entries and terms, blocks, groups, plugin types)
+     * are written per language.
+     */
+    public const array SHARED_TYPES = ['number', 'boolean', 'date', 'datetime', 'color', 'select', 'multi_select', 'media', 'user'];
+
     private string $label;
     private string $help = '';
     private bool $required = false;
     private bool $indexed = false;
     private bool $internal = false;
+    private ?bool $translatable = null;
     private mixed $default = null;
     private string $width = 'full';
     /** @var array<string, mixed> */
@@ -177,18 +186,29 @@ final class Field
         $this->indexed = $indexed;
         return $this;
     }
-    /** Editors only: left out of public pages and public API output. */
-    /** Show the field in the editor's sidebar (featured images, short settings). */
     /** Leave this field's text out of site search (or put a non-text field in with true). */
     public function searchable(bool $on = true): self
     {
         return $this->option('searchable', $on);
     }
 
+    /**
+     * Written per language (true), or one value every translation shares
+     * (false): saving it in one language saves it in all of them. Unset,
+     * the type decides (SHARED_TYPES). Only top-level fields are shared.
+     */
+    public function translatable(bool $on = true): self
+    {
+        $this->translatable = $on;
+        return $this;
+    }
+
+    /** Show the field in the editor's sidebar (featured images, short settings). */
     public function sidebar(): self
     {
         return $this->width('sidebar');
     }
+    /** Editors only: left out of public pages and public API output. */
     public function internal(bool $internal = true): self
     {
         $this->internal = $internal;
@@ -264,6 +284,18 @@ final class Field
     {
         return $this->indexed;
     }
+    /** Whether each language has its own value (see translatable()). */
+    public function isTranslatable(): bool
+    {
+        return $this->translatable ?? !in_array($this->type, self::SHARED_TYPES, true);
+    }
+
+    /** translatable() as set: null when the type decides. */
+    public function getTranslatable(): ?bool
+    {
+        return $this->translatable;
+    }
+
     public function isInternal(): bool
     {
         return $this->internal;

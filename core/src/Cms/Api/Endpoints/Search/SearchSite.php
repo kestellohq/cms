@@ -39,6 +39,7 @@ final class SearchSite extends Endpoint
             'type' => Schema::string()->max(32)->pattern('[a-z][a-z0-9_-]*')->optional()->description('Only this content type'),
             'page' => Schema::int()->min(1)->max(500)->default(1),
             'per_page' => Schema::int()->min(1)->max(20)->default(10),
+            'locale' => Schema::string()->max(12)->pattern('[A-Za-z0-9_-]*')->default('any')->description('One language: main (or empty) for the main one, or a code such as es. Default: any, every language'),
         ]);
     }
 
@@ -49,9 +50,11 @@ final class SearchSite extends Endpoint
             throw ApiProblem::tooManyRequests(60);
         }
         $type = $request->query('type');
+        $locale = (string) $request->query('locale', 'any');
 
         return $cms->search->search((string) $request->query('q'), [
             'types' => is_string($type) ? [$type] : [], 'page' => (int) $request->query('page', 1), 'per_page' => (int) $request->query('per_page', 10),
+            'language' => $locale === 'any' ? null : ($locale === 'main' ? '' : $locale),
         ]);
     }
 }
