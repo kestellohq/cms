@@ -385,7 +385,7 @@ final class Mailer
      * Send a test email to verify configuration.
      *
      * @deprecated Settings → Mail sends its test email in the site's language and
-     *             layout through Kestello\Cms\Api\Endpoints\Settings\SendTestEmail::message().
+     *             layout as the named email settings.test_email ($cms->emails).
      */
     public function sendTest(string $to): bool
     {

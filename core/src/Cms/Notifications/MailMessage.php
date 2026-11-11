@@ -91,6 +91,29 @@ final class MailMessage
         return $this->add(['type' => 'note', 'text' => $text]);
     }
 
+    /**
+     * An image from a whole http(s) address, such as a media library file
+     * (MailMedia::image()), drawn at most 496 pixels wide. $alt is read
+     * aloud and shown when images are off; '' marks it as decoration.
+     */
+    public function image(string $url, string $alt, int $width, int $height): self
+    {
+        if (!self::isLink($url)) {
+            throw new \InvalidArgumentException("Email images need a whole http(s) address, got \"{$url}\".");
+        }
+        if ($width < 1 || $height < 1) {
+            throw new \InvalidArgumentException('An email image needs its width and height.');
+        }
+
+        return $this->add(['type' => 'image', 'url' => $url, 'alt' => $alt, 'width' => $width, 'height' => $height]);
+    }
+
+    /** A thin line between parts of the email. */
+    public function divider(): self
+    {
+        return $this->add(['type' => 'divider']);
+    }
+
     /** The older name for heading(). */
     public function greeting(string $text): self
     {
@@ -148,6 +171,30 @@ final class MailMessage
         $this->html = $html;
 
         return $this;
+    }
+
+    /**
+     * Add a block taken from another message's blocks(), name included: how
+     * an edited email keeps the blocks of the one it replaces (EmailEdit).
+     *
+     * @param array<string, mixed> $block
+     */
+    public function keep(array $block): self
+    {
+        if (!in_array($block['type'] ?? null, MailLayout::TYPES, true)) {
+            throw new \InvalidArgumentException('Unknown email block type "' . (is_string($block['type'] ?? null) ? $block['type'] : '?') . '".');
+        }
+        $name = $block['name'] ?? null;
+        unset($block['name']);
+        $this->add($block);
+
+        return is_string($name) ? $this->name($name) : $this;
+    }
+
+    /** Whether html() replaced the blocks, so the message can't be edited block by block. */
+    public function custom(): bool
+    {
+        return $this->html !== null;
     }
 
     /** @return list<array<string, mixed>> the blocks, in order */

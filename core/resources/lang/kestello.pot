@@ -133,8 +133,16 @@ msgstr ""
 msgid "A banner: blocks over an image or a colour, such as a heading and a button at the top of a page."
 msgstr ""
 
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "A block is one of: {types}."
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "A box that searches the site and opens the results page."
+msgstr ""
+
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "A button needs a whole address starting with https://, or one of the email’s links such as {example}."
 msgstr ""
 
 #: core/resources/js/ui/builder/DesignColor.vue
@@ -336,6 +344,10 @@ msgstr ""
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Account"
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Account deleted"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue
@@ -772,6 +784,14 @@ msgstr ""
 
 #: core/src/Cms/Api/Resources/MediaResource.php
 msgid "An edited image's original, for people who may edit it (single-item answers only); the URL expires"
+msgstr ""
+
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "An email can have up to {max} blocks."
+msgstr ""
+
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "An email needs at least one block."
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderCanvas.vue
@@ -1639,6 +1659,10 @@ msgstr ""
 #: core/resources/js/pages/fields/MediaPicker.vue
 #: core/resources/js/ui/KMediaPicker.vue
 msgid "Choose an image"
+msgstr ""
+
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "Choose an image from the media library. It must still be there, and the site needs its address (Settings → General)."
 msgstr ""
 
 #: core/resources/js/ui/KBuilder.vue
@@ -2850,6 +2874,10 @@ msgstr ""
 msgid "Email address"
 msgstr ""
 
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Email address changing"
+msgstr ""
+
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Email each submission"
 msgstr ""
@@ -2869,6 +2897,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Emails"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/EmailEndpoint.php
+msgid "Empty keeps the email's own subject. Values go in as {name}."
 msgstr ""
 
 #: core/resources/js/ui/builder/useCanvas.js
@@ -3541,6 +3573,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Form deleted."
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Form submission"
 msgstr ""
 
 #: core/resources/js/components/content-types/field-labels.js
@@ -4382,6 +4418,10 @@ msgstr ""
 msgid "Keep"
 msgstr ""
 
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "Keep it under {max} characters."
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Keep mine"
 msgstr ""
@@ -4400,6 +4440,10 @@ msgstr ""
 
 #: core/src/Cms/Forms/Forms.php
 msgid "Keep submissions or send them by email, or they go nowhere."
+msgstr ""
+
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "Keep the block “{name}”: the email doesn’t work without it."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Storage.vue
@@ -5498,6 +5542,10 @@ msgstr ""
 msgid "New content type"
 msgstr ""
 
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "New email address"
+msgstr ""
+
 #: core/resources/js/components/content-types/FieldList.vue
 #: core/resources/js/components/forms/FormBuilder.vue
 msgid "New field"
@@ -5666,6 +5714,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "No disks can hold media."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/EmailEndpoint.php
+msgid "No email is registered as “{id}”."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Api.vue
@@ -6245,6 +6297,12 @@ msgstr ""
 msgid "One of the forms from Content → Forms."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Emails/EmailEndpoint.php
+#: core/src/Cms/Api/Endpoints/Emails/GetEmail.php
+#: core/src/Cms/Api/Endpoints/Emails/ResetEmail.php
+msgid "One of the site's languages; the site's own when left out"
+msgstr ""
+
 #: core/resources/js/components/content-types/FieldSettings.vue
 msgid "One of the values above."
 msgstr ""
@@ -6674,6 +6732,14 @@ msgstr ""
 #: core/resources/js/pages/admin/Profile.vue
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "Password changed. {s, plural, one {# other session was signed out} other {# other sessions were signed out}} and {t, plural, one {# token revoked} other {# tokens revoked}}."
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Password known to someone else"
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Password reset"
 msgstr ""
 
 #: core/resources/js/pages/admin/users/Index.vue
@@ -8169,6 +8235,10 @@ msgstr ""
 msgid "Sending"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Emails/SendEmailTest.php
+msgid "Sending failed."
+msgstr ""
+
 #: core/src/Cms/Forms/Forms.php
 msgid "Sending…"
 msgstr ""
@@ -8185,6 +8255,10 @@ msgstr ""
 msgid "Sent"
 msgstr ""
 
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sent after someone deletes their own account."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 msgid "Sent again: answered {status}."
 msgstr ""
@@ -8197,12 +8271,48 @@ msgstr ""
 msgid "Sent from"
 msgstr ""
 
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sent from Settings → Mail to check that the site can send email."
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sent instead of the sign-up link when the address already has an account, so nobody learns which addresses do."
+msgstr ""
+
 #: core/resources/js/pages/admin/Settings.vue
 msgid "Sent through your SMTP server. Check the inbox (and spam folder) of {to}."
 msgstr ""
 
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sent to the addresses a form notifies when someone sends it. Each form sets its own subject."
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sent to the new address when someone changes their email. The account keeps the old one until this is confirmed."
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sent to the old address when someone asks to change their email."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Sent to whoever submitted it, and kept with the comments. The {item} goes back to draft."
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sent when a provider such as GitHub or Google is connected to an existing account."
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sent when someone asks to reset their password."
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sent when someone enters the right password but keeps failing the two-step code."
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sent when someone signs up with an address that has no account yet. The link lets them choose a password."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Api.vue
@@ -8534,12 +8644,24 @@ msgstr ""
 msgid "Sign-in and accounts"
 msgstr ""
 
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sign-in method added"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Sign-in provider failed"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Sign-in provider not allowed"
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sign-up for an existing account"
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "Sign-up link"
 msgstr ""
 
 #: core/src/Cms/Console/Package/CoreVerifyCommand.php
@@ -9289,6 +9411,10 @@ msgid "Test connection"
 msgstr ""
 
 #: core/src/Cms/Mail/CoreEmails.php
+msgid "Test email"
+msgstr ""
+
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Test email from {site}"
 msgstr ""
 
@@ -9408,6 +9534,14 @@ msgstr ""
 msgid "The block list could not be loaded."
 msgstr ""
 
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "The block “{name}” is already in this email once."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/EmailEndpoint.php
+msgid "The blocks, in order (see EmailEdit): heading, paragraph, note, button, image, divider, original"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Api.vue
 msgid "The body is not valid JSON."
 msgstr ""
@@ -9434,6 +9568,14 @@ msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
 msgid "The database is backed up, visitors see a short maintenance page, and the site is checked with the new version. If anything is wrong, {v} and the database come back."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/EmailEndpoint.php
+msgid "The email can’t be built like this."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/SendEmailTest.php
+msgid "The email could not be sent. Check Settings → Mail and the server log."
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
@@ -9519,6 +9661,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/UpdateMe.php
 msgid "The language your emails are written in: one of the site's languages, or empty for the site's own."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/ListEmails.php
+msgid "The languages it has an edit in"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -9689,6 +9835,10 @@ msgstr ""
 msgid "The site couldn’t show this page. Try again in a little while."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Emails/EmailEndpoint.php
+msgid "The site has no language “{code}”. It has: {codes}."
+msgstr ""
+
 #: core/src/Cms/Redirects/Redirects.php
 msgid "The site has the maximum of {max} prefix and pattern redirects."
 msgstr ""
@@ -9838,6 +9988,10 @@ msgstr ""
 
 #: core/src/Cms/Webhooks/WebhookDisabledNotification.php
 msgid "The webhook \"{name}\" was turned off"
+msgstr ""
+
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "The words of the block “{name}” can’t be changed."
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Platform.vue
@@ -10004,9 +10158,25 @@ msgstr ""
 msgid "This driver has no settings."
 msgstr ""
 
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "This email has no block named “{name}”."
+msgstr ""
+
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "This email has no value called {name}. It has none."
+msgstr ""
+
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "This email has no value called {name}. It has: {known}."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Users/CreateUser.php
 #: core/src/Cms/Api/Endpoints/Users/UpdateUser.php
 msgid "This email is already in use."
+msgstr ""
+
+#: core/src/Cms/Mail/EmailRegistry.php
+msgid "This email is written in HTML by its code and can’t be edited here."
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -10108,6 +10278,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "This menu is empty. Add pages, posts or links from the left."
+msgstr ""
+
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "This must be text."
 msgstr ""
 
 #: core/resources/js/components/packages/PackageReviewModal.vue
@@ -11320,6 +11494,10 @@ msgstr ""
 msgid "Works for"
 msgstr ""
 
+#: core/src/Cms/Mail/EmailEdit.php
+msgid "Write something here, or remove the block."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "Wrong password"
 msgstr ""
@@ -11415,6 +11593,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Your access"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/SendEmailTest.php
+msgid "Your account has no email address to send to."
 msgstr ""
 
 #: core/src/Cms/Mail/CoreEmails.php
@@ -11524,6 +11706,10 @@ msgstr ""
 msgid "ZIP files. Off by default: archives can hide anything."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Emails/SendEmailTest.php
+msgid "[Test] {subject}"
+msgstr ""
+
 #: core/src/Cms/Import/WordPress/SeoMeta.php
 msgid "_aioseop_description"
 msgstr ""
@@ -11628,6 +11814,10 @@ msgstr ""
 
 #: core/resources/js/components/content-types/ConditionsEditor.vue
 msgid "contains"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/ListEmails.php
+msgid "core, or the plugin that sends it"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/GetSecurity.php
