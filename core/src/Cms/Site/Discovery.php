@@ -35,7 +35,7 @@ final class Discovery
      */
     public static function feed(Cms $cms, Request $request, string $format, ?string $typeName = null, ?string $taxName = null, ?string $slug = null): Response
     {
-        $site = (string) (Settings::getInstance()->get('site_name') ?: $cms->config->get('app.name', 'Kestello'));
+        $site = (string) (\Kestello\Cms\I18n\SiteText::translated('site_name') ?? (Settings::getInstance()->get('site_name') ?: $cms->config->get('app.name', 'Kestello')));
         $term = null;
         if ($taxName !== null) {
             $tax = $cms->content->getTaxonomy($taxName);
@@ -107,7 +107,7 @@ final class Discovery
             $title,
             $base . $home,
             $base . $self . ($format === 'atom' ? '/atom' : ''),
-            (string) Settings::getInstance()->get('site_description', ''),
+            (string) (\Kestello\Cms\I18n\SiteText::translated('site_description') ?? Settings::getInstance()->get('site_description', '')),
             "tag:{$host},2000:" . $self,
             $language !== '' ? $language : \Kestello\Cms\I18n\ContentLanguages::code(\Kestello\Cms\I18n\SiteLanguage::site()),
         );

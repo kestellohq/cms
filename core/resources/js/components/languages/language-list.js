@@ -71,3 +71,23 @@ export function slots(entry, languages) {
 export function badge(code, main = '') {
     return (code || main || '').toUpperCase();
 }
+
+/** The site's texts in other languages, from the setting's JSON: { es: { site_name, site_description } }. */
+export function texts(value) {
+    try {
+        const parsed = JSON.parse(value || '{}');
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+/** The setting with one text changed; empty texts and languages left out ('' when nothing is left). */
+export function setText(value, code, key, text) {
+    const all = texts(value);
+    const own = { ...(all[code] ?? {}), [key]: text };
+    if (!String(text ?? '').trim()) delete own[key];
+    if (Object.keys(own).length) all[code] = own;
+    else delete all[code];
+    return Object.keys(all).length ? JSON.stringify(all) : '';
+}

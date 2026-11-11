@@ -144,7 +144,7 @@ final class FrontendModule extends Provider
 
         $shared = [
             'site' => [
-                'name' => (string) ($settings->get('site_name') ?? $cms->config->get('app.name', 'Kestello')),
+                'name' => (string) (\Kestello\Cms\I18n\SiteText::translated('site_name') ?? $settings->get('site_name') ?? $cms->config->get('app.name', 'Kestello')),     // in the page's language
                 'url' => (string) ($settings->get('site_url') ?? $cms->config->get('app.url', '')),
                 'titles' => \Kestello\Cms\Site\Seo::titles(),
             ],

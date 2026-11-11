@@ -495,6 +495,10 @@ msgstr ""
 msgid "Add an Entry content block where the entry's own text should go. Without one, only the blocks above show."
 msgstr ""
 
+#: core/resources/js/components/languages/SiteTexts.vue
+msgid "Add another language above to name the site in it."
+msgstr ""
+
 #: core/src/Cms/Content/Models/ContentModels.php
 msgid "Add at least one field inside."
 msgstr ""
@@ -5635,6 +5639,10 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "Name and tagline in other languages"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Templates.vue
 msgid "Name in code"
 msgstr ""
@@ -9035,6 +9043,7 @@ msgstr ""
 msgid "Site health"
 msgstr ""
 
+#: core/resources/js/components/languages/SiteTexts.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Site name"
 msgstr ""
@@ -9614,6 +9623,7 @@ msgstr ""
 msgid "Tag"
 msgstr ""
 
+#: core/resources/js/components/languages/SiteTexts.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Tagline"
 msgstr ""
@@ -10233,6 +10243,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Settings.vue
 msgid "The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks. Each other language gets its own addresses, and every page can be translated into it from its editor."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+msgid "The site name and tagline in each of the other languages. Left empty, a language uses the main ones."
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
@@ -12896,6 +12910,10 @@ msgstr ""
 #: core/resources/js/pages/admin/content/Terms.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "{language} (main)"
+msgstr ""
+
+#: core/src/Cms/I18n/SiteText.php
+msgid "{language}: must be at most {max} characters."
 msgstr ""
 
 #: core/resources/js/components/languages/TranslationLinks.vue

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { add, badge, code, codes, dropped, remove, slots } from '../../core/resources/js/components/languages/language-list.js';
+import { add, badge, code, codes, dropped, remove, setText, slots, texts } from '../../core/resources/js/components/languages/language-list.js';
 
 test('codes are written as in addresses', () => {
     assert.equal(code(' pt_BR '), 'pt-br');
@@ -53,4 +53,17 @@ test("an entry's translations are listed per language", () => {
     );
     assert.equal(badge('es'), 'ES');
     assert.equal(badge('', 'en'), 'EN');
+});
+
+test('the site name and tagline per language are one setting', () => {
+    assert.deepEqual(texts(''), {});
+    assert.deepEqual(texts('not json'), {});
+    let value = setText('', 'es', 'site_name', 'Taller');
+    assert.deepEqual(texts(value), { es: { site_name: 'Taller' } });
+    value = setText(value, 'es', 'site_description', 'Arquitectura');
+    value = setText(value, 'de', 'site_name', 'Werkstatt');
+    assert.deepEqual(texts(value), { es: { site_name: 'Taller', site_description: 'Arquitectura' }, de: { site_name: 'Werkstatt' } });
+    value = setText(value, 'de', 'site_name', '  ');
+    assert.deepEqual(Object.keys(texts(value)), ['es'], 'an emptied language goes');
+    assert.equal(setText(setText(value, 'es', 'site_name', ''), 'es', 'site_description', ''), '', 'nothing left: empty');
 });

@@ -92,8 +92,10 @@ final class SiteSettings
                         ->description('The admin, emails and the text your theme shows on its own use this language. Language packs add more.'),
                     ContentLanguages::SETTING => Schema::string()->max(300)->format('languages')->optional()
                         ->description('Languages your content is also written in. Each lives under its code, such as /es for Spanish, and every page can have a translation in it.'),
+                    \Kestello\Cms\I18n\SiteText::SETTING => Schema::string()->max(20000)->format('translations')->optional()
+                        ->description('The site name and tagline in each of the other languages. Left empty, a language uses the main ones.'),
                 ]),
-                'labels' => ['site_name' => 'Site name', 'site_description' => 'Tagline', 'site_url' => 'Site address', 'timezone' => 'Timezone', SiteLanguage::SETTING => 'Language', ContentLanguages::SETTING => 'Other languages'],
+                'labels' => ['site_name' => 'Site name', 'site_description' => 'Tagline', 'site_url' => 'Site address', 'timezone' => 'Timezone', SiteLanguage::SETTING => 'Language', ContentLanguages::SETTING => 'Other languages', \Kestello\Cms\I18n\SiteText::SETTING => 'Name and tagline in other languages'],
                 'secrets' => [],
                 'defaults' => [
                     'site_name' => (string) $config?->get('app.name', ''),
@@ -102,6 +104,7 @@ final class SiteSettings
                     'timezone' => (string) $config?->get('app.timezone', 'UTC'),
                     SiteLanguage::SETTING => SiteLanguage::resolve(null, (string) $config?->get('app.locale', 'en')),
                     ContentLanguages::SETTING => implode(',', ContentLanguages::parse($config?->get('app.languages', []), SiteLanguage::resolve(null, (string) $config?->get('app.locale', 'en')))),
+                    \Kestello\Cms\I18n\SiteText::SETTING => '',
                 ],
             ] + $core,
             'reading' => [
