@@ -2,7 +2,8 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { Head, usePage } from '@kestello/app';
 import { ApiError, confirm, notify, useApi, useResource, __ } from '@kestello/sdk';
-import { KAlert, KButton, KCard, KField, KInput, KPageHeader, KSelect, KTable } from '@kestello/ui';
+import { KAlert, KBadge, KButton, KCard, KField, KInput, KPageHeader, KSelect, KTable } from '@kestello/ui';
+import { badge, slots } from '../../../components/languages/language-list.js';
 
 defineOptions({ layout: 'Admin' });
 
@@ -11,7 +12,18 @@ const api = useApi();
 const name = computed(() => String(page.props.params?.taxonomy ?? ''));
 const taxonomies = useResource('/taxonomies');
 const tax = computed(() => (taxonomies.data.value ?? []).find((t) => t.name === name.value) ?? null);
-const terms = useResource(() => `/taxonomies/${name.value}/terms`);
+
+// ── languages: on a site in several languages the list shows one at a time ──
+const languageInfo = useResource('/content/languages');
+const languages = computed(() => languageInfo.data.value?.languages ?? []);
+const multilingual = computed(() => languages.value.length > 1);
+const mainCode = computed(() => languageInfo.data.value?.main ?? '');
+const languageOptions = computed(() => languages.value.map((l) => ({ value: l.code, label: l.main ? __('{language} (main)', { language: l.name }) : l.name })));
+const termLanguage = ref(''); // '' is the main language
+
+const terms = useResource(() => `/taxonomies/${name.value}/terms`, {
+    query: () => ({ locale: multilingual.value ? termLanguage.value || 'main' : 'any' }),
+});
 
 const filter = ref('');
 const rows = computed(() => {
@@ -38,6 +50,38 @@ function edit(term) {
     document.getElementById('k-term-name')?.focus();
 }
 watch(name, reset);
+watch(termLanguage, reset);
+
+// A translation opens in the form once its language's list has loaded.
+const pendingEdit = ref(null);
+watch(
+    () => terms.data.value,
+    (list) => {
+        const found = pendingEdit.value === null ? null : (list ?? []).find((t) => t.id === pendingEdit.value);
+        if (found) {
+            pendingEdit.value = null;
+            edit(found);
+        }
+    },
+);
+function openTranslation(code, id) {
+    pendingEdit.value = id;
+    if (termLanguage.value === code) terms.reload({ silent: true });
+    else termLanguage.value = code;
+}
+const translating = ref(null);
+async function translate(row, slot) {
+    translating.value = `${row.id}:${slot.code}`;
+    try {
+        const { data } = await api.post(`/taxonomies/${name.value}/terms/${row.id}/translations`, { locale: slot.code });
+        notify.success(__('Added “{name}” in {language}. Translate its name.', { name: data.name, language: slot.name }));
+        openTranslation(slot.code, data.id);
+    } catch (e) {
+        notify.error(e);
+    } finally {
+        translating.value = null;
+    }
+}
 
 // A term can't move under itself or its descendants.
 const descendants = computed(() => {
@@ -71,6 +115,7 @@ async function save() {
     errors.value = {};
     const body = { name: form.name, slug: form.slug || undefined, description: form.description || null };
     if (tax.value.hierarchical) body.parent_id = form.parent_id;
+    if (!editing.value && multilingual.value) body.locale = termLanguage.value;
     try {
         if (editing.value) {
             await api.patch(`/taxonomies/${name.value}/terms/${editing.value.id}`, body);
@@ -112,6 +157,7 @@ async function remove(term) {
 const columns = computed(() => [
     { key: 'name', label: __('Name') },
     { key: 'slug', label: __('Address') },
+    ...(multilingual.value ? [{ key: 'translations', label: __('Translations') }] : []),
     { key: 'count', label: __('Published'), align: 'end', width: '110px' },
     { key: 'actions', label: '', align: 'end', width: '56px' },
 ]);
@@ -187,6 +233,7 @@ const singular = computed(() => (tax.value?.singular ?? '').toLowerCase());
 
         <KCard coord="B1" :class="tax.can.manage ? 'k-span-2' : 'k-span-all'" :title="tax.plural" flush>
             <template #actions>
+                <KSelect v-if="multilingual" v-model="termLanguage" :options="languageOptions" :aria-label="__('Language')" />
                 <label class="k-inline-field"
                     ><span>{{ __('Filter') }}</span
                     ><input
@@ -221,6 +268,32 @@ const singular = computed(() => (tax.value?.singular ?? '').toLowerCase());
                 <template #cell-slug="{ row }">
                     <a v-if="row.path && row.count" :href="row.path" class="k-term-slug" target="_blank" rel="noopener">{{ row.path }}</a>
                     <span v-else class="k-term-slug">{{ row.path ?? row.slug }}</span>
+                </template>
+                <template #cell-translations="{ row }">
+                    <ul class="k-term-translations">
+                        <li v-for="slot in slots(row, languages)" :key="slot.code">
+                            <button
+                                v-if="slot.translation"
+                                type="button"
+                                class="k-link-btn"
+                                :aria-label="__('{language}: {title}', { language: slot.name, title: slot.translation.title })"
+                                @click="openTranslation(slot.code, slot.translation.id)"
+                            >
+                                <KBadge tone="success">{{ badge(slot.code, mainCode) }}</KBadge>
+                            </button>
+                            <KButton
+                                v-else-if="tax.can.manage"
+                                size="sm"
+                                variant="ghost"
+                                icon="plus"
+                                :loading="translating === `${row.id}:${slot.code}`"
+                                :disabled="translating !== null"
+                                :aria-label="__('Translate into {language}', { language: slot.name })"
+                                @click="translate(row, slot)"
+                                >{{ badge(slot.code, mainCode) }}</KButton
+                            >
+                        </li>
+                    </ul>
                 </template>
                 <template #cell-count="{ row }"
                     ><span class="k-num">{{ row.count }}</span></template

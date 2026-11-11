@@ -232,6 +232,9 @@ img {
     gap: 6px 18px;
     flex-wrap: wrap;
 }
+.site-languages [aria-current] {
+    font-weight: 600;
+}
 .site-menu-btn {
     display: none;
     margin-left: auto;

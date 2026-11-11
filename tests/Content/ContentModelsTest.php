@@ -67,11 +67,11 @@ final class ContentModelsTest extends AuthTestCase
     private const array EVENT = [
         'singular' => 'Event', 'plural' => 'Events', 'icon' => 'calendar-dots', 'path' => '/events', 'archive' => true,
         'fields' => [
-            ['id' => 'aaaa0001', 'name' => 'subtitle', 'type' => 'text', 'required' => true, 'options' => ['max' => 120]],
+            ['id' => 'aaaa0001', 'name' => 'subtitle', 'type' => 'text', 'required' => true, 'translatable' => false, 'options' => ['max' => 120]],
             ['id' => 'aaaa0002', 'name' => 'starts', 'type' => 'date', 'indexed' => true, 'width' => 'sidebar'],
-            ['id' => 'aaaa0003', 'name' => 'level', 'type' => 'select', 'options' => ['choices' => [['value' => 'easy', 'label' => 'Easy'], ['value' => 'hard', 'label' => 'Hard']]]],
+            ['id' => 'aaaa0003', 'name' => 'level', 'type' => 'select', 'translatable' => true, 'options' => ['choices' => [['value' => 'easy', 'label' => 'Easy'], ['value' => 'hard', 'label' => 'Hard']]]],
             ['id' => 'aaaa0004', 'name' => 'speakers', 'type' => 'repeater', 'children' => [
-                ['id' => 'aaaa0005', 'name' => 'name', 'type' => 'text'],
+                ['id' => 'aaaa0005', 'name' => 'name', 'type' => 'text', 'translatable' => false],     // nested: follows its parent
             ]],
         ],
     ];
@@ -279,6 +279,7 @@ final class ContentModelsTest extends AuthTestCase
         $copy = $cms->content->get('event');
         $this->assertSame(['subtitle', 'starts', 'level', 'speakers'], array_map(static fn($f) => $f->name, $copy->getFields()), 'the export is working PHP');
         $this->assertSame([true, true, ['easy' => 'Easy', 'hard' => 'Hard'], '/events'], [$copy->getField('subtitle')->isRequired(), $copy->getField('starts')->isIndexed(), $copy->getField('level')->getOption('choices'), $copy->getPath()]);
+        $this->assertSame([false, false, true, null], [$copy->getField('subtitle')->isTranslatable(), $copy->getField('starts')->isTranslatable(), $copy->getField('level')->isTranslatable(), $copy->getField('speakers')->getChildren()[0]->getTranslatable()], 'shared or not, as chosen; else as the type has it');
 
         $this->assertSame(409, $this->api('DELETE', "/content-models/{$model['id']}")->statusCode(), 'not while entries use it');
         $this->api('DELETE', "/content/event/entries/{$event['id']}");                   // the trash

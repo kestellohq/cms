@@ -68,7 +68,7 @@ final class StructuredData
         }
 
         $settings = Settings::getInstance();
-        $site = (string) ($props['site']['name'] ?? $settings->get('site_name', ''));
+        $site = (string) ($props['site']['name'] ?? \Kestello\Cms\I18n\SiteText::translated('site_name') ?? $settings->get('site_name', ''));
         $language = str_replace('_', '-', Translator::locale());
         $abs = static fn(string $url): string => preg_match('#^https?://#i', $url) === 1 ? $url : $base . '/' . ltrim($url, '/');
         $path = (string) (parse_url($data['url'], PHP_URL_PATH) ?: '/');
@@ -81,7 +81,7 @@ final class StructuredData
             '@id' => $base . '/#website',
             'url' => $base . '/',
             'name' => $site,
-            'description' => (string) $settings->get('site_description', '') ?: null,
+            'description' => (string) (\Kestello\Cms\I18n\SiteText::translated('site_description') ?? $settings->get('site_description', '')) ?: null,
             'publisher' => ['@id' => $publisher['@id']],
             'inLanguage' => $language,
         ], static fn(mixed $v): bool => $v !== null && $v !== '');

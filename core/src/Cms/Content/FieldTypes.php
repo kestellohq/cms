@@ -210,6 +210,7 @@ final class FieldTypes
                 'required' => $f->isRequired(),
                 'indexed' => $f->isIndexed(),
                 'internal' => $f->isInternal(),
+                'translatable' => $f->isTranslatable(),     // false: one value in every language
                 'default' => $f->getDefault(),
                 'width' => $f->getWidth(),
                 'component' => $type->component(),
