@@ -10,8 +10,10 @@ use Kestello\Cms\Auth\Roles;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Events\MailSending;
 use Kestello\Cms\Events\MailSent;
+use Kestello\Cms\I18n\PersonLanguage;
 use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Framework\Core\ExecutionContext;
+use Kestello\Support\Translator;
 
 /**
  * Every email the site can send, by name ($cms->emails), so each one can
@@ -125,14 +127,19 @@ final class EmailRegistry
     }
 
     /**
-     * Build and render a named email for one address. Null when a
-     * MailSending listener stopped it.
+     * Build and render a named email for one address, in its reader's
+     * language: $locale when given, else the language of the account with
+     * that address (PersonLanguage), else the current one (the page's, or
+     * the site's). Null when a MailSending listener stopped it.
      *
      * @param array<string, mixed> $data
      */
-    public function prepare(string $id, string $to, array $data, MailBrand|string|null $brand = null): ?PreparedEmail
+    public function prepare(string $id, string $to, array $data, MailBrand|string|null $brand = null, ?string $locale = null): ?PreparedEmail
     {
-        return $this->prepareMessage($id, $to, $this->message($id, $data, $to), $brand);
+        $build = fn(): ?PreparedEmail => $this->prepareMessage($id, $to, $this->message($id, $data, $to), $brand);
+        $locale ??= PersonLanguage::forAddress($to);
+
+        return $locale !== null && $locale !== '' ? Translator::withLocale($locale, $build) : $build();
     }
 
     /**
@@ -180,9 +187,9 @@ final class EmailRegistry
      * @param array<string, mixed> $data
      * @param Closure(string, string, string, string): bool $transport
      */
-    public function send(string $id, string $to, array $data, Closure $transport, MailBrand|string|null $brand = null): bool
+    public function send(string $id, string $to, array $data, Closure $transport, MailBrand|string|null $brand = null, ?string $locale = null): bool
     {
-        $email = $this->prepare($id, $to, $data, $brand);
+        $email = $this->prepare($id, $to, $data, $brand, $locale);
 
         return $email === null || $this->deliver($email, $transport);
     }

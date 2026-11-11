@@ -23,11 +23,12 @@ final class AccountMail
      *
      * @param Closure(string $to, string $subject, string $html, string $text): bool $mail
      * @param array<string, mixed> $data the named email's values
+     * @param ?string $locale the reader's language when the address isn't (yet) on their account
      */
-    public static function send(Closure $mail, string $id, string $to, array $data, string $siteName, string $failure): void
+    public static function send(Closure $mail, string $id, string $to, array $data, string $siteName, string $failure, ?string $locale = null): void
     {
         $emails = Cms::instance()->emails ?? new EmailRegistry();
-        $email = $emails->prepare($id, $to, $data, $siteName);
+        $email = $emails->prepare($id, $to, $data, $siteName, $locale);
         if ($email === null) {
             return;   // stopped on purpose by a MailSending listener
         }

@@ -17,7 +17,7 @@ use Kestello\Framework\Database\QueryBuilder;
 /**
  * Edit your own profile. Changing your email needs a recent sign-in (it is
  * where password resets go) and only takes effect once a link sent to the
- * new address is opened (EmailChanges); the bio does not.
+ * new address is opened (EmailChanges); the bio and the language do not.
  */
 final class UpdateMe extends Endpoint
 {
@@ -51,6 +51,8 @@ final class UpdateMe extends Endpoint
         return \Kestello\Cms\Api\Schema::object([
             'email' => \Kestello\Cms\Api\Schema::string()->max(255)->format('email')->optional(),
             'bio' => \Kestello\Cms\Api\Schema::string()->max(2000)->nullable()->optional(),
+            'locale' => \Kestello\Cms\Api\Schema::enum(\Kestello\Cms\I18n\PersonLanguage::allowed())->optional()
+                ->description('The language your emails are written in: one of the site\'s languages, or empty for the site\'s own.'),
         ]);
     }
 
@@ -81,6 +83,9 @@ final class UpdateMe extends Endpoint
         }
         if ($request->has('bio')) {
             $changes['bio'] = $request->input('bio');
+        }
+        if ($request->has('locale') && (string) $request->input('locale') !== (string) ($user['locale'] ?? '')) {
+            $changes['locale'] = (string) $request->input('locale');
         }
 
         if ($changes !== []) {

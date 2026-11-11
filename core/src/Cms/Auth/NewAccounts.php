@@ -60,6 +60,7 @@ final readonly class NewAccounts
             'password' => $passwordHash,
             'role' => $this->role($email, $identity),
             'is_active' => 1,
+            'locale' => \Kestello\Cms\I18n\PersonLanguage::atSignUp(),
             'created_at' => $now,
             'updated_at' => $now,
         ]);

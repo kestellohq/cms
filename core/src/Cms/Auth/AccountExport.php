@@ -61,6 +61,7 @@ final class AccountExport
                 'role' => (string) $user['role'],
                 'active' => (bool) $user['is_active'],
                 'bio' => $user['bio'] ?? null,
+                'locale' => (string) ($user['locale'] ?? ''),
                 'has_password' => IdentityResolver::hasUsablePassword($user),
                 'created_at' => self::date($user['created_at'] ?? null),
                 'updated_at' => self::date($user['updated_at'] ?? null),
