@@ -26,7 +26,7 @@ final class ListEmails extends EmailEndpoint
     {
         return Schema::object([
             'site_language' => Schema::string(),
-            'languages' => Schema::list(Schema::object(['code' => Schema::string(), 'name' => Schema::string()])),
+            'languages' => self::languagesSchema(),
             'emails' => Schema::list(Schema::object([
                 'id' => Schema::string(),
                 'label' => Schema::string(),
@@ -52,11 +52,9 @@ final class ListEmails extends EmailEndpoint
                 'edited' => $edited[$id] ?? [],
             ];
         }
-        $choices = SiteLanguage::choices();
-
         return [
             'site_language' => SiteLanguage::site(),
-            'languages' => array_map(static fn(string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys($choices), $choices),
+            'languages' => self::languages(),
             'emails' => $emails,
         ];
     }

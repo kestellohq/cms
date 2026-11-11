@@ -390,6 +390,7 @@ msgstr ""
 msgid "Active people in those roles"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/ui/KTermSelect.vue
 msgid "Add"
@@ -782,6 +783,10 @@ msgstr ""
 msgid "An address on this site, such as /old-page."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Emails/GetEmail.php
+msgid "An edit that changes nothing, to start from"
+msgstr ""
+
 #: core/src/Cms/Api/Resources/MediaResource.php
 msgid "An edited image's original, for people who may edit it (single-item answers only); the URL expires"
 msgstr ""
@@ -924,6 +929,10 @@ msgstr ""
 #: core/resources/js/pages/admin/appearance/Styles.vue
 #: core/resources/js/pages/admin/appearance/Themes.vue
 msgid "As designed"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Index.vue
+msgid "As written"
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
@@ -1221,6 +1230,10 @@ msgstr ""
 msgid "Blocks"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Emails/GetEmail.php
+msgid "Blocks every edit must keep"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Blocks side by side. They stack on small screens."
 msgstr ""
@@ -1286,10 +1299,12 @@ msgstr ""
 msgid "Bulleted list"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Button"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/admin/forms/Edit.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Button text"
@@ -1429,6 +1444,10 @@ msgstr ""
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/auth/ResetPassword.vue
 msgid "Change password"
+msgstr ""
+
+#: core/resources/js/pages/admin/Settings.vue
+msgid "Change the emails"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Users/UpdateUser.php
@@ -1656,6 +1675,7 @@ msgstr ""
 msgid "Choose an email field of this form."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/fields/MediaPicker.vue
 #: core/resources/js/ui/KMediaPicker.vue
 msgid "Choose an image"
@@ -1663,6 +1683,10 @@ msgstr ""
 
 #: core/src/Cms/Mail/EmailEdit.php
 msgid "Choose an image from the media library. It must still be there, and the site needs its address (Settings → General)."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Choose another image"
 msgstr ""
 
 #: core/resources/js/ui/KBuilder.vue
@@ -1747,6 +1771,10 @@ msgstr ""
 
 #: core/resources/js/components/audit/events.js
 msgid "Cleared the not-found list"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Click in a text field first, then pick the value to put there."
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderToolbar.vue
@@ -2195,6 +2223,10 @@ msgstr ""
 msgid "Custom links need a label."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Dark"
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderDesign.vue
 msgid "Dashed"
 msgstr ""
@@ -2551,6 +2583,10 @@ msgstr ""
 msgid "Demo"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Describe it"
+msgstr ""
+
 #: core/resources/js/pages/admin/media/Index.vue
 msgid "Describe the image for people who can't see it. Leave empty only if it is purely decorative."
 msgstr ""
@@ -2679,6 +2715,10 @@ msgstr ""
 msgid "Display"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Divider"
+msgstr ""
+
 #: core/resources/js/components/content-types/FieldSettings.vue
 #: core/resources/js/pages/admin/media/Index.vue
 #: core/resources/js/ui/KMediaPicker.vue
@@ -2801,6 +2841,7 @@ msgid "Earlier imports"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
+#: core/resources/js/pages/admin/emails/Index.vue
 #: core/resources/js/pages/admin/forms/Index.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/src/Cms/Content/ContentModule.php
@@ -2837,7 +2878,12 @@ msgid "Edit “{name}”"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Index.vue
+#: core/resources/js/pages/admin/emails/Index.vue
 msgid "Edited"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Index.vue
+msgid "Edited in {language}"
 msgstr ""
 
 #: core/resources/js/ui/KBlockSettings.vue
@@ -2858,10 +2904,13 @@ msgstr ""
 
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/admin/Profile.vue
+#: core/resources/js/pages/admin/emails/Edit.vue
+#: core/resources/js/pages/admin/emails/Index.vue
 #: core/resources/js/pages/admin/forms/Edit.vue
 #: core/resources/js/pages/admin/forms/Index.vue
 #: core/resources/js/pages/admin/users/Edit.vue
 #: core/resources/js/pages/admin/users/Index.vue
+#: core/src/Cms/Admin/AdminModule.php
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 #: core/src/Cms/Demo/content/bakery.php
 msgid "Email"
@@ -2895,12 +2944,27 @@ msgstr ""
 msgid "Email sign-up proves the address with a link before the account exists."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+#: core/resources/js/pages/admin/emails/Index.vue
+#: core/src/Cms/Admin/AdminModule.php
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Emails"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Emails/EmailEndpoint.php
 msgid "Empty keeps the email's own subject. Values go in as {name}."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Empty keeps the original: {subject}"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Empty keeps the text above."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Empty keeps the words above."
 msgstr ""
 
 #: core/resources/js/ui/builder/useCanvas.js
@@ -3040,6 +3104,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Every day"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Index.vue
+msgid "Every email the site sends. Change the words, add images and buttons, and check each one before it reaches anyone. The colours, logo and footer are under Settings → Emails."
 msgstr ""
 
 #: core/resources/js/pages/admin/Settings.vue
@@ -3241,6 +3309,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Platform.vue
 msgid "Fallback active"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/GetEmail.php
+msgid "False when its code writes its own HTML"
 msgstr ""
 
 #: core/src/Cms/Platform/CoreDrivers.php
@@ -3732,6 +3804,14 @@ msgstr ""
 msgid "Goes live automatically at this time ({zone})."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Goes to"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Goes to the link the site makes for each email."
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Gone"
 msgstr ""
@@ -3846,6 +3926,7 @@ msgstr ""
 msgid "Headers render as <header>, footers as <footer>, sidebars as <aside>."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/ui/KRichText.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Heading"
@@ -3952,6 +4033,10 @@ msgstr ""
 msgid "Home page title"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "How long the link works"
+msgstr ""
+
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "How many"
 msgstr ""
@@ -4042,6 +4127,10 @@ msgstr ""
 msgid "Idle"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "If it wasn’t them"
+msgstr ""
+
 #: core/src/Cms/Mail/CoreEmails.php
 msgid "If it wasn’t you, ignore this email: nothing about your account changed."
 msgstr ""
@@ -4082,6 +4171,7 @@ msgstr ""
 msgid "If you lose your phone, each code signs you in once. Keep them somewhere other than your phone. They are not shown again."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/src/Cms/Blocks/CoreBlocks.php
 #: core/src/Cms/Blocks/CoreSectionBlocks.php
 msgid "Image"
@@ -4243,6 +4333,10 @@ msgstr ""
 
 #: core/resources/js/ui/builder/BuilderToolbar.vue
 msgid "Inline code"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Insert {value}"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -4584,6 +4678,7 @@ msgid "Label of choice {n}"
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Language"
@@ -4732,6 +4827,10 @@ msgstr ""
 msgid "Leave without saving?"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Leave your changes?"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Leave your unsaved changes?"
 msgstr ""
@@ -4779,6 +4878,10 @@ msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
 msgid "License key for {name}"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Light"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderDesign.vue
@@ -4915,6 +5018,10 @@ msgstr ""
 msgid "Login"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Index.vue
+msgid "Logo and footer"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "Logo or photo"
 msgstr ""
@@ -4995,6 +5102,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Templates.vue
 msgid "Made on this site"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Mail app"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -5197,6 +5308,7 @@ msgid "Most recent"
 msgstr ""
 
 #: core/resources/js/components/forms/FormBuilder.vue
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/fields/MediaPicker.vue
 #: core/resources/js/pages/fields/Repeater.vue
@@ -5237,6 +5349,7 @@ msgid "Move to trash"
 msgstr ""
 
 #: core/resources/js/components/forms/FormBuilder.vue
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/fields/MediaPicker.vue
 #: core/resources/js/pages/fields/Repeater.vue
@@ -5468,6 +5581,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
 msgid "Names"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Needed"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Plugins.vue
@@ -6054,6 +6171,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "Not started"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Not updated: {problem}"
 msgstr ""
 
 #: core/resources/js/pages/admin/media/Index.vue
@@ -6832,6 +6953,7 @@ msgstr ""
 
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/admin/appearance/Styles.vue
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/ui/builder/BuilderDesign.vue
 #: core/resources/js/ui/builder/useCanvas.js
 msgid "Phone"
@@ -6879,6 +7001,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Place it in templates with the Template part block."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Plain text"
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreBlocks.php
@@ -7001,6 +7127,7 @@ msgstr ""
 #: core/resources/js/pages/admin/appearance/Styles.vue
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 #: core/resources/js/pages/admin/content/Edit.vue
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/ui/builder/BuilderCanvas.vue
 msgid "Preview"
 msgstr ""
@@ -7015,6 +7142,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Styles.vue
 msgid "Preview of the site"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Preview of {email}"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderCanvas.vue
@@ -7144,6 +7275,10 @@ msgstr ""
 msgid "Publishing"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Put back"
+msgstr ""
+
 #: core/resources/js/components/audit/events.js
 msgid "Put back an update that stopped halfway"
 msgstr ""
@@ -7202,6 +7337,10 @@ msgstr ""
 
 #: core/resources/js/components/audit/events.js
 msgid "Ran a scheduled task"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Read aloud, and shown when images are off. Empty for a decorative image."
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreBlocks.php
@@ -7351,6 +7490,7 @@ msgstr ""
 
 #: core/resources/js/components/forms/FormBuilder.vue
 #: core/resources/js/pages/admin/appearance/Styles.vue
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
 #: core/resources/js/pages/admin/system/Fleet.vue
 #: core/resources/js/ui/KFileInput.vue
@@ -7916,6 +8056,7 @@ msgstr ""
 #: core/resources/js/pages/admin/content-types/Edit.vue
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/content/Terms.vue
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/admin/forms/Edit.vue
 #: core/resources/js/pages/admin/media/Index.vue
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -8000,12 +8141,20 @@ msgstr ""
 msgid "Saved."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Saved. Emails in {language} use it from now on."
+msgstr ""
+
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Saved. Pages showing the form use it straight away."
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
 msgid "Saved. Stored values followed {n} renamed fields."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Saved. The site uses it from now on."
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
@@ -8042,6 +8191,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "Scheduler"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Screen"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Styles.vue
@@ -8209,6 +8362,10 @@ msgstr ""
 msgid "Send link"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Send me a test"
+msgstr ""
+
 #: core/resources/js/pages/auth/ForgotPassword.vue
 msgid "Send reset link"
 msgstr ""
@@ -8297,6 +8454,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Sent to whoever submitted it, and kept with the comments. The {item} goes back to draft."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Sent to {to}, with sample values. It isn’t saved."
 msgstr ""
 
 #: core/src/Cms/Mail/CoreEmails.php
@@ -8461,6 +8622,7 @@ msgid "Short points, each with an icon, such as what is included."
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Styles.vue
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/admin/system/Audit.vue
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 #: core/resources/js/ui/builder/BuilderInspector.vue
@@ -8792,6 +8954,10 @@ msgstr ""
 msgid "Slug"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Small print"
+msgstr ""
+
 #: core/resources/js/components/content-types/FieldSettings.vue
 msgid "Smallest"
 msgstr ""
@@ -8814,6 +8980,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Some blocks need attention before this can be saved."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Some blocks need attention."
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
@@ -9118,6 +9288,7 @@ msgstr ""
 msgid "Subheading"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "Subject"
 msgstr ""
@@ -9189,6 +9360,10 @@ msgstr ""
 msgid "Such as Topics"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Such as {sample}"
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Such as: /old-page,/new-page"
 msgstr ""
@@ -9217,6 +9392,10 @@ msgstr ""
 #: core/resources/js/pages/admin/system/Plugins.vue
 #: core/resources/js/pages/admin/system/Updates.vue
 msgid "Switch back to {v}"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Switch language"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/Themes.vue
@@ -9427,6 +9606,7 @@ msgid "Testimonials"
 msgstr ""
 
 #: core/resources/js/components/content-types/field-labels.js
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/builder/BuilderDesign.vue
 #: core/resources/js/ui/builder/BuilderPatterns.vue
@@ -9505,6 +9685,14 @@ msgstr ""
 msgid "The admin, emails and the text your theme shows on its own use this language. Language packs add more."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "The answers"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "The answers, as a list of labels and values."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "The background worker is importing. You can leave this screen."
 msgstr ""
@@ -9570,12 +9758,24 @@ msgstr ""
 msgid "The database is backed up, visitors see a short maintenance page, and the site is checked with the new version. If anything is wrong, {v} and the database come back."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Emails/GetEmail.php
+msgid "The edit saved for this language"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "The email"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Emails/EmailEndpoint.php
 msgid "The email can’t be built like this."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Emails/SendEmailTest.php
 msgid "The email could not be sent. Check Settings → Mail and the server log."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "The email doesn’t work without it. Its words can change."
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
@@ -9659,6 +9859,10 @@ msgstr ""
 msgid "The language their emails are written in, such as \"sr\"; empty for the site's language"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Emails/GetEmail.php
+msgid "The language this is in"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/UpdateMe.php
 msgid "The language your emails are written in: one of the site's languages, or empty for the site's own."
 msgstr ""
@@ -9685,6 +9889,10 @@ msgstr ""
 
 #: core/resources/js/components/updates/PackageUpdates.vue
 msgid "The license key for {name} was saved."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "The link"
 msgstr ""
 
 #: core/resources/js/pages/admin/NotFound.vue
@@ -9725,6 +9933,10 @@ msgstr ""
 
 #: core/resources/js/components/media/ImageEditor.vue
 msgid "The original can't be shown from this storage, so the image can't be edited here. Restoring the original still works."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "The original email is back."
 msgstr ""
 
 #: core/resources/js/components/media/ImageEditor.vue
@@ -9819,6 +10031,10 @@ msgstr ""
 msgid "The settings saved in the admin are removed. The config file, environment or defaults apply again."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "The site adds this when it has one."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "The site as it is now is backed up first, and put back by itself if the restore fails."
 msgstr ""
@@ -9885,6 +10101,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "The site's language"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/GetEmail.php
+msgid "The site's languages, to switch between"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -10093,6 +10313,10 @@ msgstr ""
 msgid "These settings belong to the {plugin} plugin and are saved with the rest of the site settings."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "They are not saved. Each language keeps its own edit."
+msgstr ""
+
 #: core/resources/js/pages/admin/users/Edit.vue
 msgid "They are signed out on every device and their access tokens stop working."
 msgstr ""
@@ -10179,6 +10403,10 @@ msgstr ""
 msgid "This email is written in HTML by its code and can’t be edited here."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "This email is written in HTML by its code, so it can be previewed and tested but not edited here."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "This entry does not exist, or you cannot see it."
 msgstr ""
@@ -10237,6 +10465,10 @@ msgstr ""
 
 #: core/src/Cms/Forms/Forms.php
 msgid "This form is closed."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "This image is no longer in the media library."
 msgstr ""
 
 #: core/resources/js/components/demo/DemoBar.vue
@@ -10688,6 +10920,7 @@ msgid "Unsaved"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
+#: core/resources/js/pages/admin/emails/Edit.vue
 #: core/resources/js/pages/admin/forms/Edit.vue
 #: core/resources/js/pages/admin/menus/Index.vue
 #: core/resources/js/pages/admin/roles/Index.vue
@@ -10922,6 +11155,14 @@ msgstr ""
 msgid "Use the authenticator app instead"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Use the original"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Use the original email?"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Use the theme's"
 msgstr ""
@@ -11019,6 +11260,14 @@ msgstr ""
 
 #: core/src/Cms/Api/Schema.php
 msgid "Values must be strings, numbers, booleans or null."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/GetEmail.php
+msgid "Values the words can use as {name}"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Values you can use:"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -11223,6 +11472,10 @@ msgstr ""
 #: core/resources/js/pages/admin/system/AddPlugins.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "What it may do"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Emails/GetEmail.php
+msgid "What its code writes, with sample values"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/GetMe.php
@@ -11437,6 +11690,10 @@ msgstr ""
 msgid "Why"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Wide"
+msgstr ""
+
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/builder/useLibrary.js
 msgid "Widgets"
@@ -11457,6 +11714,10 @@ msgstr ""
 msgid "With links_to: only through this top-level field"
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "With sample values. Real emails use each reader’s own."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Withdraw (back to draft)"
 msgstr ""
@@ -11467,6 +11728,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Import.vue
 msgid "WordPress export file"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Index.vue
+msgid "Wording"
 msgstr ""
 
 #: core/resources/js/components/content-types/ChecklistEditor.vue
@@ -11607,6 +11872,10 @@ msgstr ""
 msgid "Your account, how you sign in, and what Kestello tells you about."
 msgstr ""
 
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Your button text"
+msgstr ""
+
 #: core/resources/js/sdk/index.js
 msgid "Your changes on this page are not saved."
 msgstr ""
@@ -11625,6 +11894,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Your current codes stop working."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Your edit in {language} is removed, and the email goes out as the site writes it. Other languages keep theirs."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Your edit is removed, and the email goes out as the site writes it."
 msgstr ""
 
 #: core/src/Cms/Mail/CoreEmails.php
@@ -11688,6 +11965,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Your unsaved changes will be lost."
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "Your words"
 msgstr ""
 
 #: core/src/Cms/Mail/CoreEmails.php
@@ -11882,6 +12163,10 @@ msgstr ""
 
 #: core/resources/js/ui/KBlockList.vue
 msgid "hidden on {screens}"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "https://… or a link value"
 msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
@@ -12394,6 +12679,10 @@ msgstr ""
 #: core/src/Cms/Mail/CoreEmails.php
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{hours, plural, one {The link works once and expires in # hour.} other {The link works once and expires in # hours.}}"
+msgstr ""
+
+#: core/resources/js/pages/admin/emails/Edit.vue
+msgid "{kind} from the email"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Platform.vue
