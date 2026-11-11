@@ -24,7 +24,7 @@ final class FormsModule extends Provider
     {
         $container->singleton(Forms::class, static fn() => new Forms(Cms::instance()));
         if (!$container->has('forms.mail')) {
-            $container->singleton('forms.mail', static fn(): \Closure => static fn(array|string $to, string $subject, string $html, array $headers = []): bool => (new Mailer())->send($to, $subject, $html, $headers));
+            $container->singleton('forms.mail', static fn(): \Closure => static fn(array|string $to, string $subject, string $html, array $headers = [], ?string $text = null): bool => (new Mailer())->send($to, $subject, $html, $headers, $text));
         }
     }
 

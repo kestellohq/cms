@@ -1735,18 +1735,6 @@ parameters:
 			path: core/src/Cms/Forms/Forms.php
 
 		-
-			message: '#^Method Kestello\\Cms\\Forms\\SendFormNotification\:\:body\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Cms/Forms/SendFormNotification.php
-
-		-
-			message: '#^Method Kestello\\Cms\\Forms\\SendFormNotification\:\:body\(\) has parameter \$form with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Cms/Forms/SendFormNotification.php
-
-		-
 			message: '#^Parameter \#2 \$details of static method Kestello\\Cms\\Health\\HealthResult\:\:recommended\(\) expects array\<string, bool\|float\|int\|string\|null\>, array\<string, list\<string\>\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -1967,12 +1955,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: core/src/Cms/Models/User.php
-
-		-
-			message: '#^Property Kestello\\Cms\\Notifications\\MailMessage\:\:\$action type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Cms/Notifications/MailMessage.php
 
 		-
 			message: '#^Method Kestello\\Cms\\Notifications\\Notification\:\:toDatabase\(\) return type has no value type specified in iterable type array\.$#'

@@ -3989,7 +3989,7 @@ msgstr ""
 msgid "If it wasn’t you, ignore this email: nothing about your account changed."
 msgstr ""
 
-#: core/src/Cms/Notifications/MailMessage.php
+#: core/src/Cms/Mail/MailLayout.php
 msgid "If the button does not work, copy this link into your browser:"
 msgstr ""
 
@@ -8715,6 +8715,10 @@ msgstr ""
 msgid "Someone has your {site} password"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Settings/SendTestEmail.php
+msgid "Someone sent this from Settings → Mail on {site}."
+msgstr ""
+
 #: core/src/Cms/Forms/SendFormNotification.php
 msgid "Someone sent {form} on {site}, from {page}."
 msgstr ""
@@ -9249,6 +9253,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Platform.vue
 msgid "Test connection"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SendTestEmail.php
+msgid "Test email from {site}"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/AddPlugins.vue
@@ -10015,6 +10023,10 @@ msgstr ""
 #: core/resources/js/components/demo/DemoBar.vue
 #: core/resources/js/pages/auth/Login.vue
 msgid "This is a demo"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SendTestEmail.php
+msgid "This is a test email from {site}. It reached you, so the site can send email with the settings you saved."
 msgstr ""
 
 #: core/src/Cms/Redirects/Redirects.php
@@ -11370,6 +11382,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Your current codes stop working."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Settings/SendTestEmail.php
+msgid "Your email settings work"
 msgstr ""
 
 #: core/resources/js/pages/admin/forms/Index.vue

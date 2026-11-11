@@ -121,7 +121,7 @@ final class AccountEmailsTest extends AuthTestCase
         foreach ($mail as $i => $m) {
             $this->assertStringStartsWith('<!DOCTYPE html><html lang="en" dir="ltr">', $m['html'], "{$m['subject']}: a whole document, not a fragment");
             $this->assertStringContainsString('<title>' . htmlspecialchars($m['subject']) . '</title>', $m['html']);
-            $this->assertMatchesRegularExpression('#<p style="[^"]*text-align:center">Studio Ana</p></body></html>$#', $m['html'], "{$m['subject']}: the site name is in the footer");
+            $this->assertMatchesRegularExpression('#text-align:center">Studio Ana</td></tr></table></td></tr></table></body></html>$#', $m['html'], "{$m['subject']}: the site name is in the footer");
             $this->assertStringEndsWith("\n\nStudio Ana", $m['text'], "{$m['subject']}: the text part ends with the site name");
             $this->assertStringNotContainsString('<', $m['text'], "{$m['subject']}: the text part has no markup");
             $this->assertStringNotContainsString('—', $m['html'] . $m['text']);

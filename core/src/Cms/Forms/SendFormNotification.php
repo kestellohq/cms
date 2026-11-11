@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Kestello\Cms\Forms;
 
 use Kestello\Cms\Cms;
+use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Contracts\Queue\Job;
 use Kestello\Framework\Settings\Settings;
-use Kestello\Support\Html;
 use Kestello\Support\Translator;
 
 /**
@@ -48,43 +48,49 @@ final class SendFormNotification implements Job
             }
             $subject = $n['subject'] !== '' ? $n['subject'] : Translator::get('New submission: {form}', ['form' => (string) $form['title']]);
             // A refused message fails the job, so the queue retries it instead of losing it.
-            if ($mail($n['to'], str_replace(["\r", "\n"], ' ', $subject), self::body($form, $data, $site, $base, $this->submissionId, $this->page), $headers) === false) {
+            $message = self::message(str_replace(["\r", "\n"], ' ', $subject), $form, $data, $site, $base, $this->submissionId, $this->page);
+            if ($mail($n['to'], $message->subject, $message->render($site), $headers, $message->text($site)) === false) {
                 throw new \RuntimeException('The mail server did not accept the form notification.');
             }
         }
     }
 
-    private static function body(array $form, array $data, string $site, string $base, ?int $id, string $page): string
+    /**
+     * The email: who sent which form, the answers as rows, and a button to
+     * the submission in the admin when the site's address is known.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $data
+     */
+    public static function message(string $subject, array $form, array $data, string $site, string $base, ?int $id, string $page): MailMessage
     {
-        $rows = '';
+        $rows = [];
         foreach ($form['definition']['fields'] as $f) {
             if (!array_key_exists($f['name'], $data)) {
                 continue;
             }
             $v = $data[$f['name']];
-            $text = match (true) {
+            $rows[] = ['label' => (string) $f['label'], 'value' => match (true) {
                 $f['type'] === 'file' => Translator::get('{files} (download them in the admin)', ['files' => implode(', ', array_map(static fn($x) => (string) ($x['name'] ?? ''), is_array($v) ? $v : []))]),
                 $f['type'] === 'boolean' => $v ? Translator::get('Yes') : Translator::get('No'),
                 is_array($v) => implode(', ', array_map(static fn($x) => (string) ($f['options']['choices'][$x] ?? $x), $v)),
                 $f['type'] === 'select' && $v !== null => (string) ($f['options']['choices'][$v] ?? $v),
                 default => (string) ($v ?? ''),
-            };
-            $rows .= '<tr><th align="left" valign="top" style="padding:6px 12px 6px 0;color:#4a5468;font-weight:600">' . Html::escape($f['label'])
-                . '</th><td style="padding:6px 0;white-space:pre-wrap">' . Html::escape($text) . '</td></tr>';
+            }];
         }
-        $link = $id !== null && $base !== ''
-            ? '<p><a href="' . Html::escape($base . '/admin/forms/' . $form['id'] . '/submissions?open=' . $id) . '">' . Html::escape(Translator::get('Open it in the admin')) . '</a></p>'
-            : '';
-        // the form's name goes in bold: a mark stands in for it while the sentence is translated and escaped
-        $mark = "\u{E000}";
-        $intro = $page !== ''
-            ? Translator::get('Someone sent {form} on {site}, from {page}.', ['form' => $mark, 'site' => $site, 'page' => $page])
-            : Translator::get('Someone sent {form} on {site}.', ['form' => $mark, 'site' => $site]);
-        $intro = str_replace($mark, '<strong>' . Html::escape((string) $form['title']) . '</strong>', Html::escape($intro));
+        $title = (string) $form['title'];
+        $message = MailMessage::make($subject)
+            ->heading(Translator::get('New submission: {form}', ['form' => $title]))
+            ->paragraph($page !== ''
+                ? Translator::get('Someone sent {form} on {site}, from {page}.', ['form' => $title, 'site' => $site, 'page' => $page])
+                : Translator::get('Someone sent {form} on {site}.', ['form' => $title, 'site' => $site]))
+            ->rows($rows);
+        $url = $base . '/admin/forms/' . $form['id'] . '/submissions?open=' . $id;
+        if ($id !== null && MailMessage::isLink($url)) {
+            $message->button(Translator::get('Open it in the admin'), $url);
+        }
 
-        return '<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:15px;color:#111827">'
-            . '<p>' . $intro . '</p>'
-            . '<table cellspacing="0" cellpadding="0">' . $rows . '</table>' . $link . '</div>';
+        return $message;
     }
 
     public function retries(): int

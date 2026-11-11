@@ -91,6 +91,18 @@ final class NotificationsTest extends AuthTestCase
         }
     }
 
+    public function testMailCarriesTheSiteNameNotTheAppName(): void
+    {
+        $this->cms->config->set('app.name', 'Config Name');
+        \Kestello\Framework\Settings\Settings::getInstance()->set('site_name', 'Bakery Ana');
+        $ana = $this->createUser();
+        $this->cms->notifications->send((int) $ana['id'], new OrderShipped(42));
+
+        $this->assertStringEndsWith("\n\nBakery Ana", $this->mail[0]['text']);
+        $this->assertStringContainsString('>Bakery Ana</td>', $this->mail[0]['html']);
+        $this->assertStringNotContainsString('Config Name', $this->mail[0]['html'] . $this->mail[0]['text']);
+    }
+
     public function testChannelsInboxAndPreferences(): void
     {
         $ana = $this->createUser();
