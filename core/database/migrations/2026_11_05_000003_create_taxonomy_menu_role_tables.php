@@ -7,7 +7,8 @@ use Kestello\Framework\Database\Migration;
 
 /**
  * Taxonomy terms and their entries,
- * menus and the theme locations they fill, and roles edited in the admin
+ * menus and the theme locations they fill (per content language: '' is
+ * the main one), and roles edited in the admin
  * (stored as changes to the roles code declares).
  */
 return new class extends Migration {
@@ -41,8 +42,10 @@ return new class extends Migration {
             $t->timestamps();
         });
         $schema->create('menu_locations', function (Blueprint $t): void {
-            $t->string('location', 64)->primary();
+            $t->string('location', 64);
+            $t->string('locale', 12)->default('');          // '' = the main language; another language without a row uses its menu
             $t->foreignId('menu_id')->constrained('menus')->cascadeOnDelete();
+            $t->primary('location', 'locale');
         });
         $schema->create('roles', function (Blueprint $t): void {
             $t->string('name', 20)->primary();

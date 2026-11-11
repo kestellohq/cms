@@ -7,6 +7,7 @@ namespace Kestello\Tests\Content;
 use Kestello\Cms\Content\ContentModule;
 use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Cms\I18n\LanguagesModule;
+use Kestello\Cms\Menus\Menus;
 use Kestello\Framework\Database\Model;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Support\Translator;
@@ -23,6 +24,7 @@ final class TranslationsApiTest extends AuthTestCase
             $module->register($this->cms->container);
             $module->boot($this->cms);
         }
+        $this->cms->menus->location('primary', 'Main navigation');
         ContentModule::finalize($this->cms);
         $this->createUser();
         $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
@@ -115,5 +117,41 @@ final class TranslationsApiTest extends AuthTestCase
         $this->assertSame(['About', 'Contacto 2'], $list('sort=id&locale=es'));
         $rows = $this->ok('GET', '/content/page/entries?sort=id&locale=main');
         $this->assertSame(['es'], array_column($rows[0]['translations'], 'locale'), 'each row names its translations');
+    }
+
+    public function testEachLanguageCanHaveItsOwnMenu(): void
+    {
+        $this->ok('PATCH', '/settings', ['general' => ['languages' => 'es']]);
+        $about = $this->ok('POST', '/content/page/entries', ['title' => 'About', 'status' => 'published']);
+        $contact = $this->ok('POST', '/content/page/entries', ['title' => 'Contact', 'status' => 'published']);
+        $sobre = $this->ok('POST', "/content/page/entries/{$about['id']}/translations", ['locale' => 'es']);
+        $main = $this->ok('POST', '/menus', ['name' => 'Main', 'items' => [
+            ['kind' => 'entry', 'ref' => $about['id']], ['kind' => 'entry', 'ref' => $contact['id']], ['kind' => 'archive', 'ref' => 'post'],
+        ]]);
+        $this->ok('PUT', '/menus/locations', ['locations' => ['primary' => $main['id']]]);
+        $public = fn(string $code): array => array_map(
+            static fn(array $i) => [$i['label'], $i['url']],
+            ContentLanguages::within($code, fn() => $this->cms->container->make(Menus::class)->forLocations())['primary'],
+        );
+
+        $this->assertSame([['About', '/about'], ['Contact', '/contact'], ['Posts', '/blog']], $public(''));
+        $this->assertSame([['About', '/es/about'], ['Contact', '/es/contact'], ['Posts', '/es/blog']], $public('es'), 'the main menu, under the prefix: a draft translation is not linked yet');
+
+        $this->ok('PATCH', "/content/page/entries/{$sobre['id']}", ['title' => 'Sobre nosotros', 'slug' => 'sobre', 'status' => 'published']);
+        $this->assertSame([['Sobre nosotros', '/es/sobre'], ['Contact', '/es/contact'], ['Posts', '/es/blog']], $public('es'), 'a published translation is');
+
+        $spanish = $this->ok('GET', '/menus?locale=es')['locations'][0];
+        $this->assertSame([null, $main['id']], [$spanish['menu_id'], $spanish['main_menu_id']], 'Spanish uses the main menu');
+
+        $principal = $this->ok('POST', '/menus', ['name' => 'Principal', 'items' => [['kind' => 'entry', 'ref' => $sobre['id']]]]);
+        $this->assertSame(['primary' => $principal['id']], $this->ok('PUT', '/menus/locations', ['locale' => 'es', 'locations' => ['primary' => $principal['id']]]));
+        $this->assertSame([['Sobre nosotros', '/es/sobre']], $public('es'), 'its own menu');
+        $this->assertSame([['About', '/about'], ['Contact', '/contact'], ['Posts', '/blog']], $public(''), 'the main language keeps its menu');
+        $menus = array_column($this->ok('GET', '/menus')['menus'], null, 'name');
+        $this->assertSame([['primary'], [['location' => 'primary', 'locale' => 'es']]], [$menus['Main']['locations'], $menus['Principal']['placements']]);
+
+        $this->assertArrayHasKey('locale', $this->refused('PUT', '/menus/locations', ['locale' => 'fr', 'locations' => ['primary' => $principal['id']]]));
+        $this->ok('PUT', '/menus/locations', ['locale' => 'es', 'locations' => ['primary' => null]]);
+        $this->assertCount(3, $public('es'), 'back to the main menu');
     }
 }
