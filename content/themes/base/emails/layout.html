@@ -1,0 +1,54 @@
+<!doctype html>
+<!--
+  The Base theme's email layout: the site's name on an enamel sign above the
+  card, as on the site's own pages. Kestello fills the placeholders (see
+  ThemeEmails); colours come from the theme's "email" mapping in styles.json.
+  Copy it into your own theme's emails/ folder to change how every email
+  looks, or add emails/<email id>.html to change one.
+-->
+<html lang="{{ lang }}" dir="{{ dir }}">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="color-scheme" content="light dark" />
+        <meta name="supported-color-schemes" content="light dark" />
+        <title>{{ subject }}</title>
+        <style>
+            {!! dark_css !!}
+        </style>
+    </head>
+    <body class="k-page" style="margin:0;padding:0;background:{{ brand.page }}">
+        <table class="k-page" role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:{{ brand.page }}">
+            <tr>
+                <td align="center" style="padding: 28px 12px">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 560px">
+                        <tr>
+                            <td
+                                class="k-btn"
+                                style="padding:14px 24px;border-radius:10px 10px 0 0;background:{{ brand.accent }};color:{{ brand.accentInk }};font-family:{{ brand.font }};font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:start"
+                            >
+                                {{ site.name }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td
+                                class="k-card"
+                                style="padding:32px;border-radius:0 0 10px 10px;background:{{ brand.card }};font-family:{{ brand.font }};font-size:16px;color:{{ brand.ink }};text-align:start"
+                            >
+                                {!! logo !!} {!! blocks !!}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td
+                                class="k-muted"
+                                style="padding:16px 0 0;font-family:{{ brand.font }};font-size:12px;line-height:1.5;color:{{ brand.muted }};text-align:center"
+                            >
+                                {!! footer !!}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

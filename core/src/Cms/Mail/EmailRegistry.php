@@ -255,7 +255,7 @@ final class EmailRegistry
         $brand = $branded instanceof MailBrand ? $branded : $brand;
         $message = $event->message;
 
-        return new PreparedEmail($id, $to, $message->subject, $message->render($brand), $message->text($brand));
+        return new PreparedEmail($id, $to, $message->subject, $message->render($brand, $id), $message->text($brand));
     }
 
     /**

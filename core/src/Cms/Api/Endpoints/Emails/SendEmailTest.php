@@ -51,7 +51,7 @@ final class SendEmailTest extends EmailEndpoint
         $message = PreviewEmail::message($request, $id);
         $brand = MailBrand::site();
         $subject = Translator::get('[Test] {subject}', ['subject' => $message->subject]);
-        if (!self::transport()($to, $subject, $message->render($brand), $message->text($brand))) {
+        if (!self::transport()($to, $subject, $message->render($brand, $id), $message->text($brand))) {
             throw ApiProblem::validation(['to' => [Translator::get('The email could not be sent. Check Settings → Email and the server log.')]], Translator::get('Sending failed.'));
         }
         self::audit($request, 'email.test_sent', $id, self::locale($request->input('locale')));
