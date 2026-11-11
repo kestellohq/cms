@@ -109,6 +109,39 @@ final class MailMessage
         return $this->button($label, $url);
     }
 
+    /**
+     * Name the block just added, so a named email can lock it (the button
+     * that carries its link) and a theme's template can place it by name.
+     * Names are lowercase and unique within the message.
+     */
+    public function name(string $key): self
+    {
+        if (preg_match('/^[a-z][a-z0-9_]{0,40}$/', $key) !== 1) {
+            throw new \InvalidArgumentException("An email block name is lowercase letters, digits and _, got \"{$key}\".");
+        }
+        if ($this->blocks === []) {
+            throw new \LogicException("Add a block before naming it \"{$key}\".");
+        }
+        if ($this->block($key) !== null) {
+            throw new \InvalidArgumentException("This email already has a block named \"{$key}\".");
+        }
+        $this->blocks[array_key_last($this->blocks)]['name'] = $key;
+
+        return $this;
+    }
+
+    /** @return array<string, mixed>|null the block with that name */
+    public function block(string $key): ?array
+    {
+        foreach ($this->blocks as $block) {
+            if (($block['name'] ?? null) === $key) {
+                return $block;
+            }
+        }
+
+        return null;
+    }
+
     /** Full custom HTML body (trusted: the notification's own code). The blocks are then ignored. */
     public function html(string $html): self
     {

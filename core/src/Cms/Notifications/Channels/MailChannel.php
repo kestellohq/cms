@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kestello\Cms\Notifications\Channels;
 
 use Closure;
+use Kestello\Cms\Cms;
+use Kestello\Cms\Mail\EmailRegistry;
 use Kestello\Cms\Mail\MailBrand;
 use Kestello\Cms\Notifications\Notification;
 use Kestello\Cms\Notifications\Recipient;
@@ -25,8 +27,9 @@ final class MailChannel implements Channel
         if ($message === null || $address === null || filter_var($address, FILTER_VALIDATE_EMAIL) === false) {
             return;
         }
-        $brand = $this->brand ?? MailBrand::site();
-        if (!($this->mailer)($address, $message->subject, $message->render($brand), $message->text($brand))) {
+        $emails = Cms::instance()->emails ?? new EmailRegistry();
+        $email = $emails->prepareMessage('notification.' . $notification->type(), $address, $message, $this->brand);
+        if ($email !== null && !$emails->deliver($email, $this->mailer)) {
             throw new \RuntimeException('The mail server did not accept the message.');
         }
     }

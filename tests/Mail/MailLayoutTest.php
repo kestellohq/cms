@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Kestello\Tests\Mail;
 
-use Kestello\Cms\Api\Endpoints\Settings\SendTestEmail;
 use Kestello\Cms\Forms\SendFormNotification;
+use Kestello\Cms\Mail\CoreEmails;
 use Kestello\Cms\Mail\MailBrand;
 use Kestello\Cms\Mail\MailLayout;
 use Kestello\Cms\Notifications\MailMessage;
@@ -161,13 +161,13 @@ final class MailLayoutTest extends TestCase
             ['name' => 'ok', 'label' => 'Consent', 'type' => 'boolean', 'options' => []],
             ['name' => 'skip', 'label' => 'Not sent', 'type' => 'text', 'options' => []],
         ]]];
-        $m = SendFormNotification::message('New: Contact', $form, ['name' => "Ana\nMarić", 'ok' => true], 'Bakery', 'https://bakery.test', 12, '/contact');
+        $m = CoreEmails::formSubmission(SendFormNotification::data('New: Contact', $form, ['name' => "Ana\nMarić", 'ok' => true], 'Bakery', 'https://bakery.test', 12, '/contact'));
         $this->assertSame(['heading', 'paragraph', 'rows', 'button'], array_column($m->blocks(), 'type'));
         $this->assertSame([['label' => 'Name', 'value' => "Ana\nMarić"], ['label' => 'Consent', 'value' => 'Yes']], $m->blocks()[2]['rows']);
         $this->assertSame('https://bakery.test/admin/forms/7/submissions?open=12', $m->blocks()[3]['url']);
         $this->assertStringContainsString('Someone sent Contact on Bakery, from /contact.', $m->text('Bakery'));
 
-        $noBase = SendFormNotification::message('New: Contact', $form, ['name' => 'Ana'], 'Bakery', '', 12, '');
+        $noBase = CoreEmails::formSubmission(SendFormNotification::data('New: Contact', $form, ['name' => 'Ana'], 'Bakery', '', 12, ''));
         $this->assertNotContains('button', array_column($noBase->blocks(), 'type'), 'no site address, no button to the admin');
     }
 
@@ -175,7 +175,7 @@ final class MailLayoutTest extends TestCase
     {
         Translator::add('core', 'sr', ['Test email from {site}' => 'Probna poruka sa sajta {site}', 'Your email settings work' => 'Podešavanja e-pošte rade']);
         Translator::withLocale('sr', function (): void {
-            $m = SendTestEmail::message('Pekara');
+            $m = CoreEmails::testEmail(['site' => 'Pekara']);
             $this->assertSame('Probna poruka sa sajta Pekara', $m->subject);
             $this->assertStringContainsString('>Podešavanja e-pošte rade</h1>', $m->render('Pekara'));
         });

@@ -6,11 +6,9 @@ namespace Kestello\Cms\Auth;
 
 use Closure;
 use Kestello\Cms\Events\PasswordResetRequested;
-use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Events\EventDispatcher;
 use Kestello\Framework\Http\RateLimiter;
-use Kestello\Support\Translator;
 use Kestello\Support\Url;
 
 /**
@@ -72,7 +70,7 @@ final class PasswordResets
         ]);
 
         $link = Url::withQuery(rtrim($this->baseUrl, '/') . '/reset-password', ['token' => $token]);
-        AccountMail::send($this->mail, (string) $user['email'], $this->message($user, $link), $this->siteName, 'password reset email to user #' . (int) $user['id'] . ' could not be sent');
+        AccountMail::send($this->mail, 'auth.password_reset', (string) $user['email'], ['site' => $this->siteName, 'name' => (string) ($user['username'] ?? ''), 'link' => $link, 'minutes' => intdiv(self::TTL, 60)], $this->siteName, 'password reset email to user #' . (int) $user['id'] . ' could not be sent');
 
         $this->events?->dispatch(new PasswordResetRequested((int) $user['id'], $ip));
     }
@@ -134,18 +132,5 @@ final class PasswordResets
     public function prune(): int
     {
         return QueryBuilder::table(self::TABLE)->where('expires_at', '<', time())->delete();
-    }
-
-    /** @param array<string, mixed> $user */
-    private function message(array $user, string $link): MailMessage
-    {
-        $site = ['site' => $this->siteName];
-
-        return MailMessage::make(Translator::get('Reset your {site} password', $site))
-            ->greeting(Translator::get('Hi {name},', ['name' => (string) ($user['username'] ?? '')]))
-            ->line(Translator::get('Someone asked to reset the password for your {site} account. If it was you, choose a new password with the button below.', $site))
-            ->action(Translator::get('Reset my password'), $link)
-            ->line(Translator::get('{minutes, plural, one {The link works once and expires in # minute.} other {The link works once and expires in # minutes.}}', ['minutes' => intdiv(self::TTL, 60)]))
-            ->line(Translator::get('If you didn’t ask for this, ignore this email: your password stays the same.'));
     }
 }

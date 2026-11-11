@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Kestello\Tests\Auth;
 
-use Kestello\Cms\Api\Endpoints\Auth\DeleteMyAccount;
 use Kestello\Cms\Auth\PersonalAccessTokens;
 use Kestello\Cms\Events\UserDeleted;
 use Kestello\Cms\Events\UserDeleting;
@@ -125,7 +124,7 @@ final class DeleteMyAccountTest extends AuthTestCase
 
     public function testTheGoodbyeEmail(): void
     {
-        $message = DeleteMyAccount::goodbye('Acme');
+        $message = \Kestello\Cms\Mail\CoreEmails::accountDeleted(['site' => 'Acme']);
 
         $this->assertSame('Your Acme account was deleted', $message->subject);
         $this->assertStringContainsString('Your Acme account and the data kept with it were deleted at your request.', $message->render('Acme'));

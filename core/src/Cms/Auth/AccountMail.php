@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Kestello\Cms\Auth;
 
 use Closure;
-use Kestello\Cms\Mail\MailBrand;
-use Kestello\Cms\Notifications\MailMessage;
+use Kestello\Cms\Cms;
+use Kestello\Cms\Mail\EmailRegistry;
 
 /**
- * How core's account emails go out: in the notification layout
- * (MailMessage), as HTML with a plain-text part, after the response.
+ * How core's account emails go out: the named email built and rendered
+ * now (EmailRegistry::prepare, so plugins see it while the request is
+ * still theirs), handed to the mail server after the response.
  *
  * @internal
  */
@@ -21,15 +22,17 @@ final class AccountMail
      * addresses have accounts. A refused message is logged as $failure.
      *
      * @param Closure(string $to, string $subject, string $html, string $text): bool $mail
+     * @param array<string, mixed> $data the named email's values
      */
-    public static function send(Closure $mail, string $to, MailMessage $message, string $siteName, string $failure): void
+    public static function send(Closure $mail, string $id, string $to, array $data, string $siteName, string $failure): void
     {
-        $subject = $message->subject;
-        $brand = MailBrand::site($siteName);
-        $html = $message->render($brand);
-        $text = $message->text($brand);
-        \Kestello\Cms\System\WebRunner::defer(static function () use ($mail, $to, $subject, $html, $text, $failure): void {
-            if (!$mail($to, $subject, $html, $text)) {
+        $emails = Cms::instance()->emails ?? new EmailRegistry();
+        $email = $emails->prepare($id, $to, $data, $siteName);
+        if ($email === null) {
+            return;   // stopped on purpose by a MailSending listener
+        }
+        \Kestello\Cms\System\WebRunner::defer(static function () use ($emails, $email, $mail, $failure): void {
+            if (!$emails->deliver($email, $mail)) {
                 error_log('[kestello] ' . $failure);
             }
         });

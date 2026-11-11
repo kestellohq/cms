@@ -40,6 +40,7 @@ use Kestello\Kernel;
  *   $cms->schedule    recurring tasks (cron)
  *   $cms->storage     file disks (media, public, private, backups, plugin disks)
  *   $cms->notifications  user notifications (inbox, mail, plugin channels)
+ *   $cms->emails         every email the site sends, by name (EmailRegistry)
  *   $cms->health      Site Health checks
  *   $cms->admin       admin pages and menu
  *   $cms->models      ORM: model events, extensions, morph map
@@ -89,6 +90,7 @@ final class Cms
         public readonly \Kestello\Cms\Blocks\BlockRegistry $blocks = new \Kestello\Cms\Blocks\BlockRegistry(),
         public readonly \Kestello\Cms\Hooks\HookRegistry $hooks = new \Kestello\Cms\Hooks\HookRegistry(),
         public readonly \Kestello\Cms\Webhooks\Webhooks $webhooks = new \Kestello\Cms\Webhooks\Webhooks(),
+        public readonly \Kestello\Cms\Mail\EmailRegistry $emails = new \Kestello\Cms\Mail\EmailRegistry(),
     ) {
         $this->hooks->connect($filters);
         \Kestello\Framework\Core\ExecutionContext::run('core', fn() => \Kestello\Cms\Hooks\CoreHooks::declare($this->hooks));
