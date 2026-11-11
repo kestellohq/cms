@@ -11,7 +11,7 @@ use Kestello\Contracts\Notifications\Channel;
 
 final class MailChannel implements Channel
 {
-    /** @param Closure(string $to, string $subject, string $html): bool $mailer */
+    /** @param Closure(string $to, string $subject, string $html, string $text): bool $mailer */
     public function __construct(private readonly Closure $mailer, private readonly string $siteName = 'Kestello') {}
 
     public function send(Recipient $to, Notification $notification): void
@@ -21,7 +21,7 @@ final class MailChannel implements Channel
         if ($message === null || $address === null || filter_var($address, FILTER_VALIDATE_EMAIL) === false) {
             return;
         }
-        if (!($this->mailer)($address, $message->subject, $message->render($this->siteName))) {
+        if (!($this->mailer)($address, $message->subject, $message->render($this->siteName), $message->text($this->siteName))) {
             throw new \RuntimeException('The mail server did not accept the message.');
         }
     }

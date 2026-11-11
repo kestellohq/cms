@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Kestello\Cms\Auth;
 
 use Closure;
+use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Http\RateLimiter;
-use Kestello\Support\Html;
+use Kestello\Support\Translator;
 use Kestello\Support\Url;
 
 /**
@@ -28,7 +29,7 @@ final class EmailChanges
     public const int TTL = 86400;
 
     /**
-     * @param Closure(string $to, string $subject, string $html): bool $mail
+     * @param Closure(string $to, string $subject, string $html, string $text): bool $mail
      */
     public function __construct(
         private readonly RateLimiter $limiter,
@@ -68,8 +69,8 @@ final class EmailChanges
         ]);
 
         $link = Url::withQuery(rtrim($this->baseUrl, '/') . '/confirm-email', ['token' => $token]);
-        $this->send($email, "Confirm your new {$this->siteName} email", $this->confirmation($user, $link), $id);
-        $this->send((string) $user['email'], "Your {$this->siteName} email is being changed", $this->notice($user, $email), $id);
+        $this->send($email, $this->confirmation($user, $link), $id);
+        $this->send((string) $user['email'], $this->notice($user, $email), $id);
 
         return null;
     }
@@ -147,42 +148,30 @@ final class EmailChanges
         return QueryBuilder::table('users')->where('email', $email)->where('id', '!=', $except)->exists();
     }
 
-    private function send(string $to, string $subject, string $html, int $id): void
+    private function send(string $to, MailMessage $message, int $id): void
     {
-        $mail = $this->mail;
-        \Kestello\Cms\System\WebRunner::defer(static function () use ($mail, $to, $subject, $html, $id): void {
-            if (!$mail($to, $subject, $html)) {
-                error_log('[kestello] email change message for user #' . $id . ' could not be sent');
-            }
-        });
+        AccountMail::send($this->mail, $to, $message, $this->siteName, 'email change message for user #' . $id . ' could not be sent');
     }
 
     /** @param array<string, mixed> $user */
-    private function confirmation(array $user, string $link): string
+    private function confirmation(array $user, string $link): MailMessage
     {
-        $name = Html::escape((string) ($user['username'] ?? ''));
-        $site = Html::escape($this->siteName);
-        $href = Html::escape($link);
+        $site = ['site' => $this->siteName];
 
-        return <<<HTML
-            <p>Hi {$name},</p>
-            <p>You asked to use this address for your {$site} account. Confirm it here:</p>
-            <p><a href="{$href}">Use this email address</a></p>
-            <p>The link works once and expires in 24 hours. Until then your account keeps its old address. If you didn't ask for this, ignore this email.</p>
-            HTML;
+        return MailMessage::make(Translator::get('Confirm your new {site} email', $site))
+            ->greeting(Translator::get('Hi {name},', ['name' => (string) ($user['username'] ?? '')]))
+            ->line(Translator::get('You asked to use this address for your {site} account. Confirm it with the button below.', $site))
+            ->action(Translator::get('Use this email address'), $link)
+            ->line(Translator::get('{hours, plural, one {The link works once and expires in # hour.} other {The link works once and expires in # hours.}}', ['hours' => intdiv(self::TTL, 3600)]))
+            ->line(Translator::get('Until then your account keeps its old address. If you didn’t ask for this, ignore this email.'));
     }
 
     /** @param array<string, mixed> $user */
-    private function notice(array $user, string $email): string
+    private function notice(array $user, string $email): MailMessage
     {
-        $name = Html::escape((string) ($user['username'] ?? ''));
-        $site = Html::escape($this->siteName);
-        $new = Html::escape($email);
-
-        return <<<HTML
-            <p>Hi {$name},</p>
-            <p>Someone signed in to your {$site} account asked to change its email address to {$new}. Nothing changes until that address confirms it.</p>
-            <p>If this wasn't you, sign in and change your password, and tell your site's administrator.</p>
-            HTML;
+        return MailMessage::make(Translator::get('Your {site} email is being changed', ['site' => $this->siteName]))
+            ->greeting(Translator::get('Hi {name},', ['name' => (string) ($user['username'] ?? '')]))
+            ->line(Translator::get('Someone signed in to your {site} account asked to change its email address to {email}. Nothing changes until that address confirms it.', ['site' => $this->siteName, 'email' => $email]))
+            ->line(Translator::get('If this wasn’t you, sign in and change your password, and tell your site’s administrator.'));
     }
 }

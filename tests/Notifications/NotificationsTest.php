@@ -102,6 +102,7 @@ final class NotificationsTest extends AuthTestCase
         $this->assertSame('Order #42 shipped', $this->mail[0]['subject']);
         $this->assertContains('&lt;b&gt;Fragile &amp; &lt;glass&gt;&lt;/b&gt;', $this->mail[0]['html'], 'mail content is escaped');
         $this->assertContains('href="https://shop.test/t/1"', $this->mail[0]['html']);
+        $this->assertSame("Hi ana\n\n<b>Fragile & <glass></b>\n\nTrack it\nhttps://shop.test/t/1\n\nKestello", $this->mail[0]['text'], 'a plain-text part goes with the HTML, unescaped');
         $this->assertSame(1, $n->unreadCount((int) $ana['id']));
 
         $n->type(OrderShipped::class, 'Order shipped');

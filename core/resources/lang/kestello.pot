@@ -296,6 +296,10 @@ msgstr ""
 msgid "A whole number."
 msgstr ""
 
+#: core/src/Cms/Auth/AuthModule.php
+msgid "A {provider} account was connected to your {site} account (“{label}”). It can now be used to sign in."
+msgstr ""
+
 #: core/src/Cms/Platform/CoreDrivers.php
 msgid "APCu (memory)"
 msgstr ""
@@ -1851,6 +1855,10 @@ msgstr ""
 msgid "Confirm"
 msgstr ""
 
+#: core/src/Cms/Auth/EmailChanges.php
+msgid "Confirm your new {site} email"
+msgstr ""
+
 #: core/resources/js/sdk/index.js
 msgid "Confirm your password"
 msgstr ""
@@ -3366,6 +3374,14 @@ msgstr ""
 msgid "Find {plural}"
 msgstr ""
 
+#: core/src/Cms/Auth/Registrations.php
+msgid "Finish creating my account"
+msgstr ""
+
+#: core/src/Cms/Auth/Registrations.php
+msgid "Finish creating your {site} account"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Queue.vue
 msgid "Finished"
 msgstr ""
@@ -3807,6 +3823,10 @@ msgstr ""
 msgid "Headings you add show up here, in order."
 msgstr ""
 
+#: core/src/Cms/Auth/Registrations.php
+msgid "Hello,"
+msgstr ""
+
 #: core/resources/js/sdk/index.js
 msgid "Hello, {name}!"
 msgstr ""
@@ -3825,6 +3845,13 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue
 msgid "Here is what changed since you were last here."
+msgstr ""
+
+#: core/src/Cms/Auth/AuthModule.php
+#: core/src/Cms/Auth/EmailChanges.php
+#: core/src/Cms/Auth/PasswordResets.php
+#: core/src/Cms/Auth/Registrations.php
+msgid "Hi {name},"
 msgstr ""
 
 #: core/resources/js/ui/builder/BuilderLayers.vue
@@ -3958,8 +3985,20 @@ msgstr ""
 msgid "Idle"
 msgstr ""
 
+#: core/src/Cms/Auth/Registrations.php
+msgid "If it wasn’t you, ignore this email: nothing about your account changed."
+msgstr ""
+
 #: core/src/Cms/Notifications/MailMessage.php
 msgid "If the button does not work, copy this link into your browser:"
+msgstr ""
+
+#: core/src/Cms/Auth/AuthModule.php
+msgid "If this wasn’t you, change your password and disconnect it from your profile right away."
+msgstr ""
+
+#: core/src/Cms/Auth/EmailChanges.php
+msgid "If this wasn’t you, sign in and change your password, and tell your site’s administrator."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Auth/DeleteMyAccount.php
@@ -3968,6 +4007,18 @@ msgstr ""
 
 #: core/src/Cms/Health/PlatformChangedNotification.php
 msgid "If you did not expect this, review the settings and the audit log now."
+msgstr ""
+
+#: core/src/Cms/Auth/Registrations.php
+msgid "If you didn’t ask for this, ignore this email: no account is created."
+msgstr ""
+
+#: core/src/Cms/Auth/PasswordResets.php
+msgid "If you didn’t ask for this, ignore this email: your password stays the same."
+msgstr ""
+
+#: core/src/Cms/Auth/Registrations.php
+msgid "If you forgot your password, reset it here: {url}"
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
@@ -5448,6 +5499,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/roles/Index.vue
 msgid "New role"
+msgstr ""
+
+#: core/src/Cms/Auth/AuthModule.php
+msgid "New sign-in method on {site}"
 msgstr ""
 
 #: core/src/Cms/Forms/SendFormNotification.php
@@ -7446,6 +7501,10 @@ msgstr ""
 msgid "Reset a role to its defaults"
 msgstr ""
 
+#: core/src/Cms/Auth/PasswordResets.php
+msgid "Reset my password"
+msgstr ""
+
 #: core/resources/js/pages/admin/roles/Index.vue
 msgid "Reset role"
 msgstr ""
@@ -7460,6 +7519,10 @@ msgstr ""
 
 #: core/resources/js/pages/auth/ForgotPassword.vue
 msgid "Reset your password"
+msgstr ""
+
+#: core/src/Cms/Auth/PasswordResets.php
+msgid "Reset your {site} password"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Platform.vue
@@ -8384,11 +8447,16 @@ msgid "Sidebar"
 msgstr ""
 
 #: core/resources/js/pages/auth/Login.vue
+#: core/src/Cms/Auth/Registrations.php
 msgid "Sign in"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Backups.vue
 msgid "Sign in again"
+msgstr ""
+
+#: core/src/Cms/Auth/AuthModule.php
+msgid "Sign in and change your password now. If you made these attempts yourself, you can ignore this email."
 msgstr ""
 
 #: core/resources/js/pages/auth/Login.vue
@@ -8631,8 +8699,20 @@ msgstr ""
 msgid "Someone"
 msgstr ""
 
+#: core/src/Cms/Auth/Registrations.php
+msgid "Someone asked to create a {site} account with this email address. If it was you, choose your password with the button below."
+msgstr ""
+
+#: core/src/Cms/Auth/PasswordResets.php
+msgid "Someone asked to reset the password for your {site} account. If it was you, choose a new password with the button below."
+msgstr ""
+
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "Someone else saved this while you were editing"
+msgstr ""
+
+#: core/src/Cms/Auth/AuthModule.php
+msgid "Someone has your {site} password"
 msgstr ""
 
 #: core/src/Cms/Forms/SendFormNotification.php
@@ -8641,6 +8721,14 @@ msgstr ""
 
 #: core/src/Cms/Forms/SendFormNotification.php
 msgid "Someone sent {form} on {site}."
+msgstr ""
+
+#: core/src/Cms/Auth/EmailChanges.php
+msgid "Someone signed in to your {site} account asked to change its email address to {email}. Nothing changes until that address confirms it."
+msgstr ""
+
+#: core/src/Cms/Auth/Registrations.php
+msgid "Someone tried to create a {site} account with this email address, but you already have one."
 msgstr ""
 
 #: core/src/Framework/Core/ErrorWords.php
@@ -10367,6 +10455,10 @@ msgstr ""
 msgid "Unsaved changes"
 msgstr ""
 
+#: core/src/Cms/Auth/EmailChanges.php
+msgid "Until then your account keeps its old address. If you didn’t ask for this, ignore this email."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Webhooks/WebhookEndpoint.php
 msgid "Until then, deliveries are also signed with the previous secret"
 msgstr ""
@@ -10601,6 +10693,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
 msgid "Use the theme's version"
+msgstr ""
+
+#: core/src/Cms/Auth/EmailChanges.php
+msgid "Use this email address"
 msgstr ""
 
 #: core/resources/js/ui/KMediaPicker.vue
@@ -11176,8 +11272,16 @@ msgstr ""
 msgid "Yes or no"
 msgstr ""
 
+#: core/src/Cms/Auth/Registrations.php
+msgid "You already have a {site} account"
+msgstr ""
+
 #: core/resources/js/layouts/Admin.vue
 msgid "You are all caught up."
+msgstr ""
+
+#: core/src/Cms/Auth/EmailChanges.php
+msgid "You asked to use this address for your {site} account. Confirm it with the button below."
 msgstr ""
 
 #: core/resources/js/pages/admin/roles/Index.vue
@@ -11333,6 +11437,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Auth/DeleteMyAccount.php
 msgid "Your {site} account was deleted"
+msgstr ""
+
+#: core/src/Cms/Auth/EmailChanges.php
+msgid "Your {site} email is being changed"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -11895,6 +12003,11 @@ msgstr ""
 msgid "{count, plural, one {# plugin} other {# plugins}}"
 msgstr ""
 
+#: core/src/Cms/Auth/AuthModule.php
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{count, plural, one {Someone entered your {site} password correctly, then a wrong two-factor code # time in the last hour.} other {Someone entered your {site} password correctly, then a wrong two-factor code # times in the last hour.}} Two-factor authentication stopped them, but they know your password."
+msgstr ""
+
 #: core/src/Cms/Webhooks/WebhookDisabledNotification.php
 msgid "{count} deliveries in a row failed, each after about 21 hours of retries, so Kestello stopped sending to it."
 msgstr ""
@@ -12011,6 +12124,12 @@ msgstr ""
 msgid "{group} settings saved."
 msgstr ""
 
+#: core/src/Cms/Auth/EmailChanges.php
+#: core/src/Cms/Auth/Registrations.php
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{hours, plural, one {The link works once and expires in # hour.} other {The link works once and expires in # hours.}}"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Platform.vue
 msgid "{label} now uses {driver}. Administrators were notified."
 msgstr ""
@@ -12042,6 +12161,11 @@ msgstr ""
 #: core/src/Cms/Forms/Forms.php
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{max, plural, one {Only one file.} other {At most # files.}}"
+msgstr ""
+
+#: core/src/Cms/Auth/PasswordResets.php
+#. ICU message: translate every case, keep the {name, plural, ...} structure.
+msgid "{minutes, plural, one {The link works once and expires in # minute.} other {The link works once and expires in # minutes.}}"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue

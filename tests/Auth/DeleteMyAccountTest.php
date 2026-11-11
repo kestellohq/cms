@@ -47,6 +47,7 @@ final class DeleteMyAccountTest extends AuthTestCase
         $this->assertSame('ana@example.test', $this->mail[0]['to']);
         $this->assertSame('Your Kestello account was deleted', $this->mail[0]['subject']);
         $this->assertStringContainsString('If you did not do this', $this->mail[0]['html']);
+        $this->assertStringContainsString('If you did not do this', $this->mail[0]['text'], 'with its own plain-text part');
     }
 
     public function testItNeedsARecentSignInAndABrowser(): void

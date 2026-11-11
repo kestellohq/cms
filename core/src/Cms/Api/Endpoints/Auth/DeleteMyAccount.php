@@ -81,7 +81,7 @@ final class DeleteMyAccount extends Endpoint
         if ($mail instanceof Closure) {
             $to = (string) $user['email'];
             WebRunner::defer(static function () use ($mail, $to, $message, $site): void {
-                $mail($to, $message->subject, $message->render($site));
+                $mail($to, $message->subject, $message->render($site), $message->text($site));
             });
         }
 
