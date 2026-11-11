@@ -106,6 +106,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- `plugin:check` (and the check when a package is installed) no longer tells authors to use a `<SafeHtml>` component, which doesn't exist. Its warning about `v-html` now says what is safe to bind: HTML the server sanitized, such as an entry's rich text field, never text a visitor typed.
 - The test email, its description in Site → Emails and the error when a test send fails now name the settings tab as it is labelled, **Settings → Email** (they said "Settings → Mail"), and Email logo’s help names **Logo or photo** under **Search and sharing** (it said "Search engines").
 - Form notifications use the same email layout as everything else the site sends, with the answers as rows, a plain-text part, and the button to the submission in the admin. Before, they were their own bare HTML.
 - Notification emails show the site's name at the foot (Settings → General) instead of the `app.name` from config.
