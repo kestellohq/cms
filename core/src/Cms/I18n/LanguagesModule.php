@@ -16,5 +16,7 @@ final class LanguagesModule extends Provider
     public function boot(Cms $cms): void
     {
         $cms->routes->pushGlobalMiddleware(new LanguagePrefix());
+        // the page in the site's other languages, for search engines (a plugin's filter can add or replace them)
+        $cms->filters->add('seo.alternates', static fn(array $alternates): array => [...PageLanguages::alternates(), ...$alternates]);
     }
 }

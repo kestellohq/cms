@@ -10683,6 +10683,10 @@ msgstr ""
 msgid "This page expired"
 msgstr ""
 
+#: core/resources/js/pages/content/Entry.vue
+msgid "This page is not available in {language} yet. Here it is in {original}."
+msgstr ""
+
 #: core/resources/js/ui/KBuilder.vue
 msgid "This page's template has no Entry content block, so these blocks go after everything in the template, for visitors too. Add Entry content to the template to choose where they go."
 msgstr ""

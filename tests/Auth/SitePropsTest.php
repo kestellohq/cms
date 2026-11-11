@@ -13,7 +13,7 @@ final class SitePropsTest extends AuthTestCase
     {
         $this->cms->auth->roles->role('writer', 'Writer', ['read', 'admin.access']);
         $this->cms->auth->roles->role('member', 'Member', ['read']);
-        $this->assertSame(['locale' => 'en', 'translations' => null, 'prefix' => ''], FrontendModule::shared($this->cms)['i18n'], 'English: nothing to load');
+        $this->assertSame(['locale' => 'en', 'translations' => null, 'prefix' => '', 'languages' => []], FrontendModule::shared($this->cms)['i18n'], 'English: nothing to load, and one language');
 
         foreach (['admin' => true, 'writer' => true, 'member' => false] as $role => $admin) {
             $this->createUser(['username' => $role, 'email' => "{$role}@example.test", 'role' => $role]);
