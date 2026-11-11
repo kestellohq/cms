@@ -14,8 +14,6 @@ use Kestello\Cms\Auth\External\IdentityResolver;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Events\IdentityLinked;
 use Kestello\Cms\Extension\Provider;
-use Kestello\Cms\Mail\MailBrand;
-use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Contracts\Security\SecretStore;
 use Kestello\Contracts\Session\SessionStore;
 use Kestello\Framework\Cache\ArrayStore;
@@ -28,7 +26,6 @@ use Kestello\Framework\Mail\Mailer;
 use Kestello\Framework\Session\Session;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Support\AppKey;
-use Kestello\Support\Translator;
 
 /**
  * Core module: login, second factor, password reset, email sign-up, and the
@@ -189,21 +186,20 @@ final class AuthModule extends Provider
             }
             [$site] = self::site($cms);
             $label = $cms->auth->findAuthenticator($e->provider)?->label() ?? $e->provider;
-            $message = MailMessage::make(Translator::get('New sign-in method on {site}', ['site' => $site]))
-                ->greeting(Translator::get('Hi {name},', ['name' => (string) $user['username']]))
-                ->line(Translator::get('A {provider} account was connected to your {site} account (“{label}”). It can now be used to sign in.', ['provider' => $e->provider, 'site' => $site, 'label' => $label]))
-                ->line(Translator::get('If this wasn’t you, change your password and disconnect it from your profile right away.'));
-            self::mail($cms, (string) $user['email'], $message, $site);
+            self::mail($cms, 'auth.sign_in_method_added', (string) $user['email'], ['site' => $site, 'name' => (string) $user['username'], 'provider' => $e->provider, 'label' => $label], $site);
         } catch (\Throwable $ex) {
             error_log('[auth] could not send the account-linked email: ' . $ex->getMessage());
         }
     }
 
-    /** Send one of the account emails above through auth.mail, as HTML with its plain-text part. */
-    private static function mail(Cms $cms, string $to, MailMessage $message, string $site): void
+    /**
+     * Send one of the named account emails above through auth.mail, as HTML with its plain-text part.
+     *
+     * @param array<string, mixed> $data
+     */
+    private static function mail(Cms $cms, string $id, string $to, array $data, string $site): void
     {
-        $brand = MailBrand::site($site);
-        ($cms->container->make('auth.mail'))($to, $message->subject, $message->render($brand), $message->text($brand));
+        $cms->emails->send($id, $to, $data, $cms->container->make('auth.mail'), $site);
     }
 
     /** Wrong second-factor codes that tell an account's owner their password is known. */
@@ -226,11 +222,7 @@ final class AuthModule extends Provider
                 return;
             }
             [$site] = self::site($cms);
-            $message = MailMessage::make(Translator::get('Someone has your {site} password', ['site' => $site]))
-                ->greeting(Translator::get('Hi {name},', ['name' => (string) $user['username']]))
-                ->line(Translator::get('{count, plural, one {Someone entered your {site} password correctly, then a wrong two-factor code # time in the last hour.} other {Someone entered your {site} password correctly, then a wrong two-factor code # times in the last hour.}} Two-factor authentication stopped them, but they know your password.', ['count' => self::SECOND_FACTOR_WARNING, 'site' => $site]))
-                ->line(Translator::get('Sign in and change your password now. If you made these attempts yourself, you can ignore this email.'));
-            self::mail($cms, (string) $user['email'], $message, $site);
+            self::mail($cms, 'auth.password_known', (string) $user['email'], ['site' => $site, 'name' => (string) $user['username'], 'count' => self::SECOND_FACTOR_WARNING], $site);
         } catch (\Throwable $ex) {
             error_log('[auth] could not send the two-factor warning email: ' . $ex->getMessage());
         }

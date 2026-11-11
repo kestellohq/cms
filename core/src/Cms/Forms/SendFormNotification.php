@@ -43,28 +43,32 @@ final class SendFormNotification implements Job
         $base = rtrim((string) (Settings::getInstance()->get('site_url', '') ?: ''), '/');
         $brand = MailBrand::site($site);
         foreach ($form['definition']['notifications'] as $n) {
+            $to = $n['to'];
             $headers = [];
             $reply = $n['reply_to'] !== null ? (string) ($data[$n['reply_to']] ?? '') : '';
             if ($reply !== '' && filter_var($reply, FILTER_VALIDATE_EMAIL) !== false && !preg_match('/[\r\n]/', $reply)) {
                 $headers['Reply-To'] = $reply;
             }
             $subject = $n['subject'] !== '' ? $n['subject'] : Translator::get('New submission: {form}', ['form' => (string) $form['title']]);
-            $message = self::message(str_replace(["\r", "\n"], ' ', $subject), $form, $data, $site, $base, $this->submissionId, $this->page);
+            $values = self::data(str_replace(["\r", "\n"], ' ', $subject), $form, $data, $site, $base, $this->submissionId, $this->page);
+            $transport = static fn(string $_, string $subject, string $html, string $text): bool => $mail($to, $subject, $html, $headers, $text) !== false;
             // A refused message fails the job, so the queue retries it instead of losing it.
-            if ($mail($n['to'], $message->subject, $message->render($brand), $headers, $message->text($brand)) === false) {
+            if (!$cms->emails->send('forms.submission', implode(', ', (array) $to), $values, $transport, $brand)) {
                 throw new \RuntimeException('The mail server did not accept the form notification.');
             }
         }
     }
 
     /**
-     * The email: who sent which form, the answers as rows, and a button to
-     * the submission in the admin when the site's address is known.
+     * The values of the "forms.submission" email: who sent which form, the
+     * answers as rows, and the submission's address in the admin when the
+     * site's address is known.
      *
      * @param array<string, mixed> $form
      * @param array<string, mixed> $data
+     * @return array{subject: string, form: string, site: string, page: string, rows: list<array{label: string, value: string}>, admin_url: ?string}
      */
-    public static function message(string $subject, array $form, array $data, string $site, string $base, ?int $id, string $page): MailMessage
+    public static function data(string $subject, array $form, array $data, string $site, string $base, ?int $id, string $page): array
     {
         $rows = [];
         foreach ($form['definition']['fields'] as $f) {
@@ -80,19 +84,16 @@ final class SendFormNotification implements Job
                 default => (string) ($v ?? ''),
             }];
         }
-        $title = (string) $form['title'];
-        $message = MailMessage::make($subject)
-            ->heading(Translator::get('New submission: {form}', ['form' => $title]))
-            ->paragraph($page !== ''
-                ? Translator::get('Someone sent {form} on {site}, from {page}.', ['form' => $title, 'site' => $site, 'page' => $page])
-                : Translator::get('Someone sent {form} on {site}.', ['form' => $title, 'site' => $site]))
-            ->rows($rows);
         $url = $base . '/admin/forms/' . $form['id'] . '/submissions?open=' . $id;
-        if ($id !== null && MailMessage::isLink($url)) {
-            $message->button(Translator::get('Open it in the admin'), $url);
-        }
 
-        return $message;
+        return [
+            'subject' => $subject,
+            'form' => (string) $form['title'],
+            'site' => $site,
+            'page' => $page,
+            'rows' => $rows,
+            'admin_url' => $id !== null && MailMessage::isLink($url) ? $url : null,
+        ];
     }
 
     public function retries(): int

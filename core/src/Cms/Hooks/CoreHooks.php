@@ -36,6 +36,8 @@ final class CoreHooks
         $hooks->event(Events\EntryCommented::class, '0.1.0', 'Content');
         $hooks->event(Events\EntryAssigned::class, '0.1.0', 'Content');
         $hooks->event(Events\FormSubmitted::class, '0.1.0', 'Forms');
+        $hooks->event(Events\MailSending::class, '0.1.0', 'Email');
+        $hooks->event(Events\MailSent::class, '0.1.0', 'Email');
         $hooks->event(Events\NotificationSent::class, '0.1.0', 'Notifications');
         $hooks->event(Events\NotificationFailed::class, '0.1.0', 'Notifications');
         $hooks->event(Events\JobFailed::class, '0.1.0', 'Background jobs');
@@ -74,6 +76,9 @@ final class CoreHooks
         $hooks->filter('auth.redirect_after_login', '0.1.0', 'string', 'Where to go after signing in, with a password or a provider, or finishing email sign-up. The result must stay on this site.', ['array $user' => 'The user who signed in.'], $auth);
         $hooks->filter('auth.account_url', '0.1.0', 'string', 'Where someone manages their own account, such as after confirming a new email address. The default is the admin profile for people who may use the admin and the front page for everyone else. The result must stay on this site.', ['array $user' => 'The account.'], $auth);
         $hooks->filter('account.export', '0.1.0', 'array', 'The file someone downloads with everything the site keeps about them (GET /api/v1/me/export). Add your own sections under your own key; core\'s sections cannot be replaced. Never add a secret.', ['array $user' => 'The account.'], $auth);
+
+        $hooks->filter('mail.message', '0.1.0', 'MailMessage', 'One named email as built, before it is sent or previewed: add, change or remove blocks. Its locked blocks (such as the link) must stay.', ['string $id' => 'The email, such as auth.password_reset.', 'string $to' => 'The address, empty for a preview.', 'array $data' => 'The values it was built from.'], 'Email');
+        $hooks->filter('mail.branding', '0.1.0', 'MailBrand', 'How one email looks: the name, logo, footer, colours and font, for example per address or per email.', ['string $id' => 'The email, or notification.<type>.', 'string $to' => 'The address.'], 'Email');
 
         $hooks->filter('media.scan', '0.1.0', '?string', 'Check an uploaded file, for example with a virus scanner. Return a message to reject the upload.', ['array $file' => 'filename, mime, size, path, disk and key.'], 'Media');
         $hooks->filter('backup.skip_tables', '0.1.0', 'list', 'Tables to leave out of backups, such as a large log table.', [], 'Backups');

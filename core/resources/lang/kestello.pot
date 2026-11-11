@@ -296,7 +296,7 @@ msgstr ""
 msgid "A whole number."
 msgstr ""
 
-#: core/src/Cms/Auth/AuthModule.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "A {provider} account was connected to your {site} account (“{label}”). It can now be used to sign in."
 msgstr ""
 
@@ -1855,7 +1855,7 @@ msgstr ""
 msgid "Confirm"
 msgstr ""
 
-#: core/src/Cms/Auth/EmailChanges.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Confirm your new {site} email"
 msgstr ""
 
@@ -3386,11 +3386,11 @@ msgstr ""
 msgid "Find {plural}"
 msgstr ""
 
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Finish creating my account"
 msgstr ""
 
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Finish creating your {site} account"
 msgstr ""
 
@@ -3656,6 +3656,10 @@ msgstr ""
 msgid "Get a new link"
 msgstr ""
 
+#: core/src/Cms/Mail/CoreEmails.php
+msgid "GitHub"
+msgstr ""
+
 #: core/src/Cms/Content/Terms.php
 msgid "Give it a name."
 msgstr ""
@@ -3839,7 +3843,7 @@ msgstr ""
 msgid "Headings you add show up here, in order."
 msgstr ""
 
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Hello,"
 msgstr ""
 
@@ -3863,10 +3867,7 @@ msgstr ""
 msgid "Here is what changed since you were last here."
 msgstr ""
 
-#: core/src/Cms/Auth/AuthModule.php
-#: core/src/Cms/Auth/EmailChanges.php
-#: core/src/Cms/Auth/PasswordResets.php
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Hi {name},"
 msgstr ""
 
@@ -4005,7 +4006,7 @@ msgstr ""
 msgid "Idle"
 msgstr ""
 
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "If it wasn’t you, ignore this email: nothing about your account changed."
 msgstr ""
 
@@ -4013,15 +4014,15 @@ msgstr ""
 msgid "If the button does not work, copy this link into your browser:"
 msgstr ""
 
-#: core/src/Cms/Auth/AuthModule.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "If this wasn’t you, change your password and disconnect it from your profile right away."
 msgstr ""
 
-#: core/src/Cms/Auth/EmailChanges.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "If this wasn’t you, sign in and change your password, and tell your site’s administrator."
 msgstr ""
 
-#: core/src/Cms/Api/Endpoints/Auth/DeleteMyAccount.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "If you did not do this, reply to this email or contact the site at once."
 msgstr ""
 
@@ -4029,15 +4030,15 @@ msgstr ""
 msgid "If you did not expect this, review the settings and the audit log now."
 msgstr ""
 
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "If you didn’t ask for this, ignore this email: no account is created."
 msgstr ""
 
-#: core/src/Cms/Auth/PasswordResets.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "If you didn’t ask for this, ignore this email: your password stays the same."
 msgstr ""
 
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "If you forgot your password, reset it here: {url}"
 msgstr ""
 
@@ -5087,6 +5088,7 @@ msgstr ""
 #: core/resources/js/pages/admin/Profile.vue
 #: core/resources/js/pages/admin/forms/Index.vue
 #: core/src/Cms/Demo/content/bakery.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Message"
 msgstr ""
 
@@ -5399,6 +5401,7 @@ msgstr ""
 #: core/resources/js/pages/admin/system/webhooks/Index.vue
 #: core/resources/js/pages/admin/users/Index.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Name"
 msgstr ""
 
@@ -5525,11 +5528,12 @@ msgstr ""
 msgid "New role"
 msgstr ""
 
-#: core/src/Cms/Auth/AuthModule.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "New sign-in method on {site}"
 msgstr ""
 
 #: core/src/Cms/Forms/SendFormNotification.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "New submission: {form}"
 msgstr ""
 
@@ -6366,7 +6370,7 @@ msgstr ""
 msgid "Open in app"
 msgstr ""
 
-#: core/src/Cms/Forms/SendFormNotification.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Open it in the admin"
 msgstr ""
 
@@ -7525,7 +7529,7 @@ msgstr ""
 msgid "Reset a role to its defaults"
 msgstr ""
 
-#: core/src/Cms/Auth/PasswordResets.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Reset my password"
 msgstr ""
 
@@ -7545,7 +7549,7 @@ msgstr ""
 msgid "Reset your password"
 msgstr ""
 
-#: core/src/Cms/Auth/PasswordResets.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Reset your {site} password"
 msgstr ""
 
@@ -8475,7 +8479,7 @@ msgid "Sidebar"
 msgstr ""
 
 #: core/resources/js/pages/auth/Login.vue
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Sign in"
 msgstr ""
 
@@ -8483,7 +8487,7 @@ msgstr ""
 msgid "Sign in again"
 msgstr ""
 
-#: core/src/Cms/Auth/AuthModule.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Sign in and change your password now. If you made these attempts yourself, you can ignore this email."
 msgstr ""
 
@@ -8727,11 +8731,11 @@ msgstr ""
 msgid "Someone"
 msgstr ""
 
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Someone asked to create a {site} account with this email address. If it was you, choose your password with the button below."
 msgstr ""
 
-#: core/src/Cms/Auth/PasswordResets.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Someone asked to reset the password for your {site} account. If it was you, choose a new password with the button below."
 msgstr ""
 
@@ -8739,27 +8743,27 @@ msgstr ""
 msgid "Someone else saved this while you were editing"
 msgstr ""
 
-#: core/src/Cms/Auth/AuthModule.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Someone has your {site} password"
 msgstr ""
 
-#: core/src/Cms/Api/Endpoints/Settings/SendTestEmail.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Someone sent this from Settings → Mail on {site}."
 msgstr ""
 
-#: core/src/Cms/Forms/SendFormNotification.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Someone sent {form} on {site}, from {page}."
 msgstr ""
 
-#: core/src/Cms/Forms/SendFormNotification.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Someone sent {form} on {site}."
 msgstr ""
 
-#: core/src/Cms/Auth/EmailChanges.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Someone signed in to your {site} account asked to change its email address to {email}. Nothing changes until that address confirms it."
 msgstr ""
 
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Someone tried to create a {site} account with this email address, but you already have one."
 msgstr ""
 
@@ -9283,7 +9287,7 @@ msgstr ""
 msgid "Test connection"
 msgstr ""
 
-#: core/src/Cms/Api/Endpoints/Settings/SendTestEmail.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Test email from {site}"
 msgstr ""
 
@@ -10053,7 +10057,7 @@ msgstr ""
 msgid "This is a demo"
 msgstr ""
 
-#: core/src/Cms/Api/Endpoints/Settings/SendTestEmail.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "This is a test email from {site}. It reached you, so the site can send email with the settings you saved."
 msgstr ""
 
@@ -10499,7 +10503,7 @@ msgstr ""
 msgid "Unsaved changes"
 msgstr ""
 
-#: core/src/Cms/Auth/EmailChanges.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Until then your account keeps its old address. If you didn’t ask for this, ignore this email."
 msgstr ""
 
@@ -10739,7 +10743,7 @@ msgstr ""
 msgid "Use the theme's version"
 msgstr ""
 
-#: core/src/Cms/Auth/EmailChanges.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Use this email address"
 msgstr ""
 
@@ -11320,7 +11324,7 @@ msgstr ""
 msgid "Yes or no"
 msgstr ""
 
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "You already have a {site} account"
 msgstr ""
 
@@ -11328,7 +11332,7 @@ msgstr ""
 msgid "You are all caught up."
 msgstr ""
 
-#: core/src/Cms/Auth/EmailChanges.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "You asked to use this address for your {site} account. Confirm it with the button below."
 msgstr ""
 
@@ -11392,7 +11396,7 @@ msgstr ""
 msgid "Your access"
 msgstr ""
 
-#: core/src/Cms/Api/Endpoints/Auth/DeleteMyAccount.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Your account was deleted"
 msgstr ""
 
@@ -11420,7 +11424,7 @@ msgstr ""
 msgid "Your current codes stop working."
 msgstr ""
 
-#: core/src/Cms/Api/Endpoints/Settings/SendTestEmail.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Your email settings work"
 msgstr ""
 
@@ -11483,15 +11487,15 @@ msgstr ""
 msgid "Your unsaved changes will be lost."
 msgstr ""
 
-#: core/src/Cms/Api/Endpoints/Auth/DeleteMyAccount.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Your {site} account and the data kept with it were deleted at your request. You are signed out everywhere."
 msgstr ""
 
-#: core/src/Cms/Api/Endpoints/Auth/DeleteMyAccount.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Your {site} account was deleted"
 msgstr ""
 
-#: core/src/Cms/Auth/EmailChanges.php
+#: core/src/Cms/Mail/CoreEmails.php
 msgid "Your {site} email is being changed"
 msgstr ""
 
@@ -12055,7 +12059,7 @@ msgstr ""
 msgid "{count, plural, one {# plugin} other {# plugins}}"
 msgstr ""
 
-#: core/src/Cms/Auth/AuthModule.php
+#: core/src/Cms/Mail/CoreEmails.php
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{count, plural, one {Someone entered your {site} password correctly, then a wrong two-factor code # time in the last hour.} other {Someone entered your {site} password correctly, then a wrong two-factor code # times in the last hour.}} Two-factor authentication stopped them, but they know your password."
 msgstr ""
@@ -12176,8 +12180,7 @@ msgstr ""
 msgid "{group} settings saved."
 msgstr ""
 
-#: core/src/Cms/Auth/EmailChanges.php
-#: core/src/Cms/Auth/Registrations.php
+#: core/src/Cms/Mail/CoreEmails.php
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{hours, plural, one {The link works once and expires in # hour.} other {The link works once and expires in # hours.}}"
 msgstr ""
@@ -12215,7 +12218,7 @@ msgstr ""
 msgid "{max, plural, one {Only one file.} other {At most # files.}}"
 msgstr ""
 
-#: core/src/Cms/Auth/PasswordResets.php
+#: core/src/Cms/Mail/CoreEmails.php
 #. ICU message: translate every case, keep the {name, plural, ...} structure.
 msgid "{minutes, plural, one {The link works once and expires in # minute.} other {The link works once and expires in # minutes.}}"
 msgstr ""

@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Kestello\Cms\Auth;
 
 use Closure;
-use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Http\RateLimiter;
-use Kestello\Support\Translator;
 use Kestello\Support\Url;
 
 /**
@@ -69,8 +67,8 @@ final class EmailChanges
         ]);
 
         $link = Url::withQuery(rtrim($this->baseUrl, '/') . '/confirm-email', ['token' => $token]);
-        $this->send($email, $this->confirmation($user, $link), $id);
-        $this->send((string) $user['email'], $this->notice($user, $email), $id);
+        $this->send($email, 'auth.email_change_confirm', ['site' => $this->siteName, 'name' => (string) ($user['username'] ?? ''), 'link' => $link, 'hours' => intdiv(self::TTL, 3600)], $id);
+        $this->send((string) $user['email'], 'auth.email_change_notice', ['site' => $this->siteName, 'name' => (string) ($user['username'] ?? ''), 'email' => $email], $id);
 
         return null;
     }
@@ -148,30 +146,9 @@ final class EmailChanges
         return QueryBuilder::table('users')->where('email', $email)->where('id', '!=', $except)->exists();
     }
 
-    private function send(string $to, MailMessage $message, int $id): void
+    /** @param array<string, mixed> $data */
+    private function send(string $to, string $name, array $data, int $id): void
     {
-        AccountMail::send($this->mail, $to, $message, $this->siteName, 'email change message for user #' . $id . ' could not be sent');
-    }
-
-    /** @param array<string, mixed> $user */
-    private function confirmation(array $user, string $link): MailMessage
-    {
-        $site = ['site' => $this->siteName];
-
-        return MailMessage::make(Translator::get('Confirm your new {site} email', $site))
-            ->greeting(Translator::get('Hi {name},', ['name' => (string) ($user['username'] ?? '')]))
-            ->line(Translator::get('You asked to use this address for your {site} account. Confirm it with the button below.', $site))
-            ->action(Translator::get('Use this email address'), $link)
-            ->line(Translator::get('{hours, plural, one {The link works once and expires in # hour.} other {The link works once and expires in # hours.}}', ['hours' => intdiv(self::TTL, 3600)]))
-            ->line(Translator::get('Until then your account keeps its old address. If you didn’t ask for this, ignore this email.'));
-    }
-
-    /** @param array<string, mixed> $user */
-    private function notice(array $user, string $email): MailMessage
-    {
-        return MailMessage::make(Translator::get('Your {site} email is being changed', ['site' => $this->siteName]))
-            ->greeting(Translator::get('Hi {name},', ['name' => (string) ($user['username'] ?? '')]))
-            ->line(Translator::get('Someone signed in to your {site} account asked to change its email address to {email}. Nothing changes until that address confirms it.', ['site' => $this->siteName, 'email' => $email]))
-            ->line(Translator::get('If this wasn’t you, sign in and change your password, and tell your site’s administrator.'));
+        AccountMail::send($this->mail, $name, $to, $data, $this->siteName, 'email change message for user #' . $id . ' could not be sent');
     }
 }

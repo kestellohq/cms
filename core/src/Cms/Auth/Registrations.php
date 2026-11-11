@@ -6,12 +6,10 @@ namespace Kestello\Cms\Auth;
 
 use Closure;
 use Kestello\Cms\Events\UserRegistered;
-use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Events\EventDispatcher;
 use Kestello\Framework\Http\RateLimiter;
 use Kestello\Support\Hash;
-use Kestello\Support\Translator;
 use Kestello\Support\Url;
 
 /**
@@ -102,7 +100,7 @@ final class Registrations
         $user = QueryBuilder::table('users')->where('email', $email)->first();
         if ($user !== null) {
             if ((bool) ($user['is_active'] ?? true)) {
-                $this->send($email, $this->existingMessage($user), 'existing account');
+                $this->send($email, 'auth.sign_up_existing', ['site' => $this->siteName, 'name' => (string) ($user['username'] ?? ''), 'login_url' => $this->url('/login'), 'reset_url' => $this->url('/forgot-password')], 'existing account');
             }
 
             return [];
@@ -119,7 +117,7 @@ final class Registrations
         ]);
 
         $link = Url::withQuery($this->url('/register/complete'), ['token' => $token]);
-        $this->send($email, $this->linkMessage($link), 'sign-up link');
+        $this->send($email, 'auth.sign_up_link', ['site' => $this->siteName, 'link' => $link, 'hours' => intdiv(self::TTL, 3600)], 'sign-up link');
 
         return [];
     }
@@ -195,38 +193,9 @@ final class Registrations
         return rtrim($this->baseUrl, '/') . $path;
     }
 
-    private function send(string $to, MailMessage $message, string $what): void
+    /** @param array<string, mixed> $data */
+    private function send(string $to, string $id, array $data, string $what): void
     {
-        AccountMail::send($this->mail, $to, $message, $this->siteName, "the {$what} email to " . Emails::mask($to) . ' could not be sent');
-    }
-
-    /** The sign-up link, for an address without an account. */
-    private function linkMessage(string $link): MailMessage
-    {
-        $site = ['site' => $this->siteName];
-
-        return MailMessage::make(Translator::get('Finish creating your {site} account', $site))
-            ->greeting(Translator::get('Hello,'))
-            ->line(Translator::get('Someone asked to create a {site} account with this email address. If it was you, choose your password with the button below.', $site))
-            ->action(Translator::get('Finish creating my account'), $link)
-            ->line(Translator::get('{hours, plural, one {The link works once and expires in # hour.} other {The link works once and expires in # hours.}}', ['hours' => intdiv(self::TTL, 3600)]))
-            ->line(Translator::get('If you didn’t ask for this, ignore this email: no account is created.'));
-    }
-
-    /**
-     * The answer to a sign-up for an address that already has an account.
-     *
-     * @param array<string, mixed> $user
-     */
-    private function existingMessage(array $user): MailMessage
-    {
-        $site = ['site' => $this->siteName];
-
-        return MailMessage::make(Translator::get('You already have a {site} account', $site))
-            ->greeting(Translator::get('Hi {name},', ['name' => (string) ($user['username'] ?? '')]))
-            ->line(Translator::get('Someone tried to create a {site} account with this email address, but you already have one.', $site))
-            ->action(Translator::get('Sign in'), $this->url('/login'))
-            ->line(Translator::get('If you forgot your password, reset it here: {url}', ['url' => $this->url('/forgot-password')]))
-            ->line(Translator::get('If it wasn’t you, ignore this email: nothing about your account changed.'));
+        AccountMail::send($this->mail, $id, $to, $data, $this->siteName, "the {$what} email to " . Emails::mask($to) . ' could not be sent');
     }
 }

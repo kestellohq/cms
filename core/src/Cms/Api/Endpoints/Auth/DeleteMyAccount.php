@@ -10,14 +10,11 @@ use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
 use Kestello\Cms\Api\Endpoint;
 use Kestello\Cms\Auth\AccountDeletion;
+use Kestello\Cms\Auth\AccountMail;
 use Kestello\Cms\Auth\Auth;
 use Kestello\Cms\Auth\AuthModule;
 use Kestello\Cms\Cms;
-use Kestello\Cms\Mail\MailBrand;
-use Kestello\Cms\Notifications\MailMessage;
-use Kestello\Cms\System\WebRunner;
 use Kestello\Framework\Database\QueryBuilder;
-use Kestello\Support\Translator;
 
 /**
  * Delete your own account. In a signed-in browser only, after a recent sign-in. The same as
@@ -77,26 +74,11 @@ final class DeleteMyAccount extends Endpoint
         $cms->audit->record('users.deleted', ['user', (string) $id], ['username' => $user['username'], 'email' => $user['email'], 'via' => 'self'], $id);
 
         [$site] = AuthModule::site($cms);
-        $message = self::goodbye($site);
         $mail = $cms->container->has('auth.mail') ? $cms->container->make('auth.mail') : null;
         if ($mail instanceof Closure) {
-            $to = (string) $user['email'];
-            $brand = MailBrand::site($site);
-            [$subject, $html, $text] = [$message->subject, $message->render($brand), $message->text($brand)];
-            WebRunner::defer(static function () use ($mail, $to, $subject, $html, $text): void {
-                $mail($to, $subject, $html, $text);
-            });
+            AccountMail::send($mail, 'auth.account_deleted', (string) $user['email'], ['site' => $site], $site, "the account-deleted email for user #{$id} could not be sent");
         }
 
         return null;
-    }
-
-    /** The email saying the account is gone, so a deletion nobody asked for is noticed. */
-    public static function goodbye(string $site): MailMessage
-    {
-        return MailMessage::make(Translator::get('Your {site} account was deleted', ['site' => $site]))
-            ->greeting(Translator::get('Your account was deleted'))
-            ->line(Translator::get('Your {site} account and the data kept with it were deleted at your request. You are signed out everywhere.', ['site' => $site]))
-            ->line(Translator::get('If you did not do this, reply to this email or contact the site at once.'));
     }
 }

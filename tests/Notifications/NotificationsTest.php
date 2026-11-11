@@ -95,8 +95,13 @@ final class NotificationsTest extends AuthTestCase
     {
         $this->cms->config->set('app.name', 'Config Name');
         \Kestello\Framework\Settings\Settings::getInstance()->set('site_name', 'Bakery Ana');
+        $ids = [];
+        $this->cms->events->on(\Kestello\Cms\Events\MailSent::class, static function (\Kestello\Cms\Events\MailSent $e) use (&$ids): void {
+            $ids[] = $e->id;
+        });
         $ana = $this->createUser();
         $this->cms->notifications->send((int) $ana['id'], new OrderShipped(42));
+        $this->assertSame(['notification.order-shipped'], $ids, 'notification emails go through the same hooks, named by type');
 
         $this->assertStringEndsWith("\n\nBakery Ana", $this->mail[0]['text']);
         $this->assertStringContainsString('>Bakery Ana</td>', $this->mail[0]['html']);
