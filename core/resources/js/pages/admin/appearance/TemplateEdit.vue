@@ -310,7 +310,11 @@ const fieldError = (name) => {
         <KBuilder v-model="form.blocks" :kind="kind" :doc-key="key" :reset-key="historyKey" :disabled="!!busy" :errors="errors">
             <template #document>
                 <p v-if="kind === 'template' && !JSON.stringify(form.blocks).includes('core/entry-content')" class="k-muted k-small k-tpl-ed__hint">
-                    {{ __("Add an Entry content block where the entry's own text should go. Without one, only the blocks above show.") }}
+                    {{
+                        __(
+                            "Add an Entry content block where the entry's own text should go. Without one, the entry's blocks show after everything in this template.",
+                        )
+                    }}
                 </p>
                 <section class="k-tpl-ed__section">
                     <h2>{{ __('Settings') }}</h2>

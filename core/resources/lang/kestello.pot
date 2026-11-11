@@ -470,7 +470,7 @@ msgid "Add after them"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
-msgid "Add an Entry content block where the entry's own text should go. Without one, only the blocks above show."
+msgid "Add an Entry content block where the entry's own text should go. Without one, the entry's blocks show after everything in this template."
 msgstr ""
 
 #: core/src/Cms/Content/Models/ContentModels.php
