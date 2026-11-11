@@ -7,22 +7,44 @@ import { KAlert, KBadge, KButton, KCard, KEmpty, KField, KIcon, KInput, KPageHea
 defineOptions({ layout: 'Admin' });
 
 const api = useApi();
-const overview = useResource('/menus');
+
+// ── languages: on a site in several languages, each can put its own menus in the locations ──
+const languageInfo = useResource('/content/languages');
+const languages = computed(() => languageInfo.data.value?.languages ?? []);
+const multilingual = computed(() => languages.value.length > 1);
+const languageOptions = computed(() => languages.value.map((l) => ({ value: l.code, label: l.main ? __('{language} (main)', { language: l.name }) : l.name })));
+const mainLanguage = computed(() => languages.value.find((l) => l.main)?.name ?? '');
+const locationLanguage = ref(''); // '' is the main language
+
+const overview = useResource('/menus', { query: () => ({ locale: locationLanguage.value || 'main' }) });
 const types = useResource('/content/types');
 const taxonomies = useResource('/taxonomies');
 const MAX_DEPTH = 4;
 
 // ── locations ────────────────────────────────────────────────────────
 const locations = computed(() => overview.data.value?.locations ?? []);
-const menuOptions = computed(() => [
-    { value: '', label: __('No menu') },
-    ...(overview.data.value?.menus ?? []).map((m) => ({ value: String(m.id), label: m.name })),
-]);
+const menuName = (id) => (overview.data.value?.menus ?? []).find((m) => m.id === id)?.name ?? null;
+// in another language, the empty choice means "the main language's menu"
+function menuOptions(location) {
+    const inherited = menuName(location.main_menu_id ?? null);
+    const empty =
+        locationLanguage.value === ''
+            ? __('No menu')
+            : inherited === null
+              ? __('Same as {language} (no menu)', { language: mainLanguage.value })
+              : __('Same as {language} ({menu})', { language: mainLanguage.value, menu: inherited });
+
+    return [{ value: '', label: empty }, ...(overview.data.value?.menus ?? []).map((m) => ({ value: String(m.id), label: m.name }))];
+}
 async function assign(location, value) {
     try {
-        await api.put('/menus/locations', { locations: { [location.name]: value === '' ? null : Number(value) } });
+        await api.put('/menus/locations', { locale: locationLanguage.value || 'main', locations: { [location.name]: value === '' ? null : Number(value) } });
         notify.success(
-            value === '' ? __('{location} is now empty.', { location: location.label }) : __('{location} now shows this menu.', { location: location.label }),
+            value !== ''
+                ? __('{location} now shows this menu.', { location: location.label })
+                : locationLanguage.value === ''
+                  ? __('{location} is now empty.', { location: location.label })
+                  : __('{location} now uses the same menu as {language}.', { location: location.label, language: mainLanguage.value }),
         );
         overview.reload({ silent: true });
     } catch (e) {
@@ -172,7 +194,7 @@ async function create() {
     }
 }
 async function removeMenu() {
-    const where = (overview.data.value?.menus ?? []).find((m) => m.id === selectedId.value)?.locations ?? [];
+    const where = (overview.data.value?.menus ?? []).find((m) => m.id === selectedId.value)?.placements ?? []; // in every language
     const ok = await confirm({
         title: __('Delete “{name}”?', { name: name.value }),
         message: where.length
@@ -362,13 +384,27 @@ const hidden = (it) => it.resolved && !it.resolved.live;
 
     <KAlert v-if="overview.error.value" tone="danger">{{ overview.error.value.message }}</KAlert>
 
-    <KCard v-if="locations.length" coord="A1" :title="__('Theme locations')" :description="__('Which menu shows where. Changes apply right away.')">
+    <KCard
+        v-if="locations.length"
+        coord="A1"
+        :title="__('Theme locations')"
+        :description="
+            multilingual
+                ? __(
+                      'Which menu shows where, in each language. A language without a menu of its own uses the main language\'s, with links to its translations. Changes apply right away.',
+                  )
+                : __('Which menu shows where. Changes apply right away.')
+        "
+    >
+        <template v-if="multilingual" #actions>
+            <KSelect v-model="locationLanguage" :options="languageOptions" :aria-label="__('Language')" />
+        </template>
         <div class="k-locations">
             <KField v-for="loc in locations" :key="loc.name" v-slot="{ id }" :label="loc.label" :help="loc.description">
                 <KSelect
                     :id="id"
                     :model-value="loc.menu_id === null ? '' : String(loc.menu_id)"
-                    :options="menuOptions"
+                    :options="menuOptions(loc)"
                     @update:model-value="assign(loc, $event)"
                 />
             </KField>

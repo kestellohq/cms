@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Content;
 
 use Kestello\Cms\Cms;
+use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Cms\View\Page;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
@@ -22,23 +23,55 @@ final class ContentController
     /** The id of the Entry content slot added after a template that has none (the canvas uses the same). */
     public const CONTENT_FALLBACK = 'kbodyfallback';
 
+    /**
+     * An entry's page. In another language (/es/…) an address with no entry
+     * in that language shows the main language's entry at the same address,
+     * marked as not translated (and not for search engines), unless it has a
+     * translation, whose own address it then redirects to.
+     */
     public static function show(Cms $cms, Request $request, string $typeName, string $path): Response
     {
         $type = $cms->content->get($typeName);
-        $entry = $type === null ? null : $cms->container->make(Entries::class)->findPublic($type, $path);
+        if ($type === null) {
+            return Response::notFound();
+        }
+        $entries = $cms->container->make(Entries::class);
+        $language = ContentLanguages::current();
+        $entry = $entries->findPublic($type, $path);
+        $missing = false;
+        if ($entry === null && $language !== '' && ($original = $entries->findPublic($type, $path, '')) !== null) {
+            $translated = $original->translation($language);
+            if ($translated !== null) {
+                return Response::redirect((string) $translated->url($type) . self::query($request), 301);
+            }
+            [$entry, $missing] = [$original, true];
+        }
         if ($entry === null) {
             return Response::notFound();
         }
-        if ((int) $entry->getKey() === self::frontPageId()) {
-            return Response::redirect('/', 301);      // one address per page: the home page lives at /
+        if ($entry->isFrontPage()) {
+            return Response::redirect(ContentLanguages::localize('/', $language), 301);      // one address per page: the home page lives at / (or /es)
         }
         $canonical = (string) $entry->path($type);
-        if ($canonical !== rtrim((string) $type->getPath(), '/') . '/' . trim($path, '/')) {
+        $asked = ContentLanguages::localize(rtrim((string) $type->getPath(), '/') . '/' . trim($path, '/'), $missing ? '' : $language);
+        if ($canonical !== $asked) {
             // an older address pattern or date: send it to the current one
-            return Response::redirect($canonical . ($request->query !== [] ? '?' . http_build_query($request->query) : ''), 301);
+            return Response::redirect(ContentLanguages::localize($canonical, $missing ? $language : '') . self::query($request), 301);
         }
 
-        return self::render($cms, $request, $type, $entry, (string) $entry->path($type));
+        return self::render($cms, $request, $type, $entry, $canonical, missing: $missing);
+    }
+
+    /** "?page=2", or '' without a query string. */
+    private static function query(Request $request): string
+    {
+        return $request->query !== [] ? '?' . http_build_query($request->query) : '';
+    }
+
+    /** $path in the language of the page being answered: "/blog" is "/es/blog" on a Spanish page. */
+    private static function here(string $path): string
+    {
+        return ContentLanguages::localize($path, ContentLanguages::current());
     }
 
     /**
@@ -85,7 +118,11 @@ final class ContentController
         return is_numeric($id) ? (int) $id : 0;
     }
 
-    /** The chosen home page, rendered at /, or null when none is set or it isn't published. */
+    /**
+     * The chosen home page, rendered at / (and its translation at /es; the
+     * original, marked as not translated, when it has none), or null when
+     * none is set or it isn't published.
+     */
     public static function home(Cms $cms, Request $request): ?Response
     {
         $id = self::frontPageId();
@@ -97,8 +134,10 @@ final class ContentController
         if ($entry === null || $type === null || $type->getPath() === null) {
             return null;
         }
+        $language = ContentLanguages::current();
+        $translated = $language === '' ? $entry : $entry->translation($language);
 
-        return self::render($cms, $request, $type, $entry, '/');
+        return self::render($cms, $request, $type, $translated ?? $entry, $translated === null ? '/' : ContentLanguages::localize('/', $language), missing: $translated === null);
     }
 
     /**
@@ -114,20 +153,24 @@ final class ContentController
             ->withHeader('Cache-Control', 'private, no-store')->withHeader('X-Robots-Tag', 'noindex');
     }
 
-    /** @param array<string, mixed>|null $design set on the editor's canvas */
-    private static function render(Cms $cms, Request $request, ContentType $type, Entry $entry, string $canonical, bool $preview = false, ?array $design = null): Response
+    /**
+     * @param array<string, mixed>|null $design set on the editor's canvas
+     * @param bool $missing the entry stands in for a translation the page's language doesn't have yet
+     */
+    private static function render(Cms $cms, Request $request, ContentType $type, Entry $entry, string $canonical, bool $preview = false, ?array $design = null, bool $missing = false): Response
     {
         $terms = [];
         foreach ($entry->exists() ? (new Terms())->summaries([(int) $entry->getKey()])[(int) $entry->getKey()] ?? [] : [] as $taxName => $list) {
             $tax = $cms->content->getTaxonomy($taxName);
             if ($tax !== null) {
-                $terms[] = ['taxonomy' => $tax->name, 'label' => $tax->plural(), 'terms' => array_map(static fn(array $t) => $t + ['path' => $tax->getPath() === null ? null : $tax->getPath() . '/' . $t['slug']], $list)];
+                $terms[] = ['taxonomy' => $tax->name, 'label' => $tax->plural(), 'terms' => array_map(static fn(array $t) => $t + ['path' => $tax->getPath() === null ? null : self::here($tax->getPath() . '/' . $t['slug'])], $list)];
             }
         }
 
         // Tagged with its parents too: moving, renaming or unpublishing one changes this page's address or visibility.
         if (!$preview) {
             \Kestello\Cms\Cache\PageTags::add('entry:' . $entry->getKey(), 'terms', ...array_map(static fn(int $id) => 'entry:' . $id, $entry->publicAncestors() ?? []));
+            \Kestello\Cms\I18n\PageLanguages::forEntry($entry, $type);
         }
         $ctx = new \Kestello\Cms\Blocks\BlockContext($entry, $type, $request, \Kestello\Cms\Auth\Auth::getInstance()?->user());
         $presented = self::present($entry, $type, full: true, blocks: $ctx);
@@ -138,9 +181,10 @@ final class ContentController
 
         $seo = \Kestello\Cms\Site\Seo::entry($entry, $type, $presented, $canonical)
             + ($type->hasArchive() ? ['feed' => ['title' => $type->plural(), 'url' => $type->getPath() . '/feed']] : []);
-        if ($preview) {
-            $seo['noindex'] = true;
+        if ($preview || $missing) {
+            $seo['noindex'] = true;      // a stand-in in the wrong language is not this language's page
         }
+        $language = $missing ? ['translation_missing' => true] : [];
 
         // a theme template (Appearance → Templates) takes over from the Vue page when there is one
         $templates = $cms->container->has(\Kestello\Cms\Design\ThemeTemplates::class) ? $cms->container->make(\Kestello\Cms\Design\ThemeTemplates::class) : null;
@@ -163,7 +207,7 @@ final class ContentController
                 'entry' => ['id' => $presented['id'], 'title' => $presented['title'], 'path' => $presented['path'], 'published_at' => $presented['published_at']],
                 'template' => ['key' => $template['key'], 'blocks' => $tree],
                 'seo' => $seo,
-            ] + ($design === null ? [] : ['design' => $design]), preload: \Kestello\Cms\Blocks\BlockRegistry::components($tree));
+            ] + $language + ($design === null ? [] : ['design' => $design]), preload: \Kestello\Cms\Blocks\BlockRegistry::components($tree));
 
             return $drafts ? $response->withHeader('Cache-Control', 'private, no-store')->withHeader('X-Robots-Tag', 'noindex') : $response;
         }
@@ -172,9 +216,9 @@ final class ContentController
             'title' => $entry->title,
             'terms' => $terms,
             'entry' => $presented,
-            'type' => ['name' => $type->name, 'singular' => $type->singular(), 'plural' => $type->plural(), 'archive' => $type->hasArchive() ? $type->getPath() : null],
+            'type' => ['name' => $type->name, 'singular' => $type->singular(), 'plural' => $type->plural(), 'archive' => $type->hasArchive() ? self::here((string) $type->getPath()) : null],
             'seo' => $seo,
-        ] + ($design === null ? [] : ['design' => $design]), preload: array_values(array_unique($preload)));
+        ] + $language + ($design === null ? [] : ['design' => $design]), preload: array_values(array_unique($preload)));
     }
 
     /** ?design=draft from someone who may design: unpublished templates, parts and patterns. */
@@ -197,7 +241,7 @@ final class ContentController
             return Response::notFound();
         }
         $page = max(1, min(10000, (int) ($request->query['page'] ?? 1)));
-        $result = Entry::query()->ofType($type->name)->published()->with('author')
+        $result = Entry::query()->ofType($type->name)->inLanguage()->published()->with('author')
             ->orderByDesc('published_at')->orderByDesc('id')->paginate(10, $page);
         if ($page > $result['last_page']) {
             return Response::notFound();
@@ -205,34 +249,45 @@ final class ContentController
 
         return Page::render('@core/content/Archive', [
             'title' => $type->plural(),
-            'type' => ['name' => $type->name, 'singular' => $type->singular(), 'plural' => $type->plural(), 'description' => $type->getDescription(), 'path' => $type->getPath()],
+            'type' => ['name' => $type->name, 'singular' => $type->singular(), 'plural' => $type->plural(), 'description' => $type->getDescription(), 'path' => self::here((string) $type->getPath())],
             'entries' => self::presentList($result['data']->all(), [$type->name => $type]),
             'pagination' => ['page' => $result['current_page'], 'last' => $result['last_page'], 'total' => $result['total']],
             'seo' => self::listSeo((string) $type->getPath(), $page, $type->getDescription(), ['title' => $type->plural(), 'url' => $type->getPath() . '/feed']),
         ]);
     }
 
-    /** A term's page: its published entries, newest first (all types the taxonomy applies to). */
+    /**
+     * A term's page: its published entries in the page's language, newest
+     * first (all types the taxonomy applies to). The term is the one written
+     * in that language, else the main language's; entries tagged with any
+     * translation of it count. An address with the main language's slug
+     * redirects to the translation's.
+     */
     public static function term(Cms $cms, Request $request, string $taxName, string $slug): Response
     {
         $tax = $cms->content->getTaxonomy($taxName);
-        $term = $tax === null ? null : Term::query()->of($tax->name)->where('slug', $slug)->first();
+        $language = ContentLanguages::current();
+        $term = $tax === null ? null : Term::findPublic($tax->name, $slug, $language);
         if ($term === null) {
             return Response::notFound();
+        }
+        if ($term->language() !== $language && ($translation = $term->translation($language)) !== null && $translation->slug !== $term->slug) {
+            return Response::redirect(self::here((string) $translation->path($tax)), 301);
         }
         $types = array_values(array_filter(array_map($cms->content->get(...), $tax->getTypes()), static fn($t) => $t !== null && $t->getPath() !== null));
         $byName = array_combine(array_map(static fn(ContentType $t) => $t->name, $types), $types);
         $page = max(1, min(10000, (int) ($request->query['page'] ?? 1)));
-        $result = Entry::query()->whereIn('type', array_keys($byName) ?: ['-'])->published()->with('author')
-            ->whereExists(static fn(\Kestello\Framework\Database\QueryBuilder $q) => $q->from('entry_term')->whereColumn('entry_term.entry_id', '=', 'entries.id')->where('entry_term.term_id', $term->getKey()))
+        $result = Entry::query()->where('entries.locale', ContentLanguages::current())->whereIn('type', array_keys($byName) ?: ['-'])->published()->with('author')
+            ->whereExists(static fn(\Kestello\Framework\Database\QueryBuilder $q) => $q->from('entry_term')->whereColumn('entry_term.entry_id', '=', 'entries.id')->whereIn('entry_term.term_id', $term->groupIds()))
             ->orderByDesc('published_at')->orderByDesc('id')->paginate(10, $page);
         if (($page > $result['last_page'] && $page > 1) || $result['total'] === 0) {
             return Response::notFound();    // a term only drafts use has no public page yet
         }
+        \Kestello\Cms\I18n\PageLanguages::forTerm($term, $tax);
 
         return Page::render('@core/content/Archive', [
             'title' => $term->name,
-            'type' => ['name' => $tax->name, 'singular' => $tax->singular(), 'plural' => $term->name, 'description' => (string) ($term->description ?? ''), 'path' => $term->path($tax)],
+            'type' => ['name' => $tax->name, 'singular' => $tax->singular(), 'plural' => $term->name, 'description' => (string) ($term->description ?? ''), 'path' => self::here((string) $term->path($tax))],
             'term' => ['id' => $term->getKey(), 'name' => $term->name, 'taxonomy' => ['name' => $tax->name, 'singular' => $tax->singular()]],
             'entries' => self::presentList($result['data']->all(), $byName),
             'pagination' => ['page' => $result['current_page'], 'last' => max(1, $result['last_page']), 'total' => $result['total']],
@@ -258,7 +313,7 @@ final class ContentController
         $end = $start->modify($m === null ? '+1 year' : '+1 month');
         $utc = new \DateTimeZone('UTC');
         $page = max(1, min(10000, (int) ($request->query['page'] ?? 1)));
-        $result = Entry::query()->ofType($type->name)->published()->with('author')
+        $result = Entry::query()->ofType($type->name)->inLanguage()->published()->with('author')
             ->where('published_at', '>=', $start->setTimezone($utc)->format('Y-m-d H:i:s'))
             ->where('published_at', '<', $end->setTimezone($utc)->format('Y-m-d H:i:s'))
             ->orderByDesc('published_at')->orderByDesc('id')->paginate(10, $page);
@@ -270,7 +325,7 @@ final class ContentController
 
         return Page::render('@core/content/Archive', [
             'title' => "{$type->plural()}: {$title}",
-            'type' => ['name' => $type->name, 'singular' => $type->singular(), 'plural' => $title, 'description' => '', 'path' => $path],
+            'type' => ['name' => $type->name, 'singular' => $type->singular(), 'plural' => $title, 'description' => '', 'path' => self::here($path)],
             'date' => ['year' => $y, 'month' => $m, 'archive' => $type->getPath(), 'label' => $type->plural()],
             'entries' => self::presentList($result['data']->all(), [$type->name => $type]),
             'pagination' => ['page' => $result['current_page'], 'last' => $result['last_page'], 'total' => $result['total']],
@@ -292,7 +347,7 @@ final class ContentController
             return Response::notFound();
         }
         $page = max(1, min(10000, (int) ($request->query['page'] ?? 1)));
-        $result = Entry::query()->whereIn('type', array_keys($types))->published()->where('author_id', (int) $user['id'])->with('author')
+        $result = Entry::query()->where('entries.locale', ContentLanguages::current())->whereIn('type', array_keys($types))->published()->where('author_id', (int) $user['id'])->with('author')
             ->orderByDesc('published_at')->orderByDesc('id')->paginate(10, $page);
         if ($result['total'] === 0 || $page > $result['last_page']) {
             return Response::notFound();       // a person who published nothing has no public page
@@ -302,7 +357,7 @@ final class ContentController
 
         return Page::render('@core/content/Archive', [
             'title' => $name,
-            'type' => ['name' => 'author', 'singular' => 'Author', 'plural' => $name, 'description' => '', 'path' => $path],
+            'type' => ['name' => 'author', 'singular' => 'Author', 'plural' => $name, 'description' => '', 'path' => self::here($path)],
             'author' => ['name' => $name],
             'entries' => self::presentList($result['data']->all(), $types),
             'pagination' => ['page' => $result['current_page'], 'last' => $result['last_page'], 'total' => $result['total']],
@@ -355,7 +410,7 @@ final class ContentController
     /** @return array<string, mixed> canonical keeps ?page=N past the first page */
     private static function listSeo(string $path, int $page, string $description, array $feed): array
     {
-        return ['canonical' => $path . ($page > 1 ? '?page=' . $page : ''), 'description' => \Kestello\Cms\Site\Seo::summary($description), 'feed' => $feed, 'kind' => 'collection'];
+        return ['canonical' => self::here($path) . ($page > 1 ? '?page=' . $page : ''), 'description' => \Kestello\Cms\Site\Seo::summary($description), 'feed' => $feed, 'kind' => 'collection'];
     }
 
     /** Public fields only: no internal fields, no author email. */
@@ -385,7 +440,7 @@ final class ContentController
                 }
             }
         }
-        $data = self::resolveMedia($type, $data);
+        $data = self::resolveMedia($type, self::inPageLanguage($type, $data));
         $author = $entry->author;
 
         return [
@@ -399,6 +454,40 @@ final class ContentController
             'html' => $html,
             'blocks' => $trees,
         ];
+    }
+
+    /**
+     * Entry and term fields point at their translations in the page's
+     * language, where they have one: a Spanish page links to Spanish
+     * projects, whichever language the link was picked in.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private static function inPageLanguage(ContentType $type, array $data): array
+    {
+        if (\Kestello\Cms\I18n\ContentLanguages::others() === []) {
+            return $data;
+        }
+        $language = \Kestello\Cms\I18n\ContentLanguages::current();
+        foreach (['entry' => 'entries', 'term' => 'terms'] as $fieldType => $table) {
+            $fields = array_filter($type->getFields(), static fn($f) => $f->type === $fieldType && isset($data[$f->name]) && $data[$f->name] !== []);
+            $ids = [];
+            foreach ($fields as $f) {
+                $ids = array_merge($ids, array_map('intval', (array) $data[$f->name]));
+            }
+            if ($ids === []) {
+                continue;
+            }
+            $map = \Kestello\Cms\Content\Translations::idsIn($table, array_values(array_unique($ids)), $language);
+            foreach ($fields as $f) {
+                $data[$f->name] = is_array($data[$f->name])
+                    ? array_values(array_unique(array_map(static fn($id) => $map[(int) $id] ?? (int) $id, $data[$f->name])))
+                    : ($map[(int) $data[$f->name]] ?? (int) $data[$f->name]);
+            }
+        }
+
+        return $data;
     }
 
     /**

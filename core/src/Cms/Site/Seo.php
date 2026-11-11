@@ -215,7 +215,7 @@ final class Seo
             'page' => (string) ($s->get('seo_title_pattern') ?: SeoTitle::PAGE),
             'home' => (string) ($s->get('seo_home_pattern') ?: SeoTitle::HOME),
             'sep' => isset(SeoTitle::SEPARATORS[$sep]) ? $sep : SeoTitle::SEPARATOR,
-            'tagline' => (string) $s->get('site_description', ''),
+            'tagline' => (string) (\Kestello\Cms\I18n\SiteText::translated('site_description') ?? $s->get('site_description', '')),
         ];
     }
 
@@ -315,7 +315,7 @@ final class Seo
         $tags = [];
         $description = (string) ($seo['description'] ?? '');
         if ($description === '') {
-            $description = (string) Settings::getInstance()->get('site_description', $cms->config->get('app.description', ''));
+            $description = (string) (\Kestello\Cms\I18n\SiteText::translated('site_description') ?? Settings::getInstance()->get('site_description', $cms->config->get('app.description', '')));
         }
         if ($description !== '') {
             $tags[] = ['meta', ['name' => 'description', 'content' => $description]];

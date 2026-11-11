@@ -1,6 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { adjustForType, blankField, followLabel, machine, setChoiceLabel, setMultiple } from '../../core/resources/js/components/content-types/fields.js';
+import {
+    adjustForType,
+    blankField,
+    followLabel,
+    machine,
+    setChoiceLabel,
+    setMultiple,
+    setTranslation,
+    translationChoice,
+} from '../../core/resources/js/components/content-types/fields.js';
 
 test('a label becomes a name', () => {
     assert.equal(machine('Your e-mail'), 'your_e_mail');
@@ -56,4 +65,15 @@ test('a field that holds several values cannot be indexed', () => {
     const f = { type: 'entry', indexed: true, options: {} };
     setMultiple(f, true);
     assert.deepEqual([f.indexed, f.options.multiple], [false, true]);
+});
+
+test('a field is written in each language or shared, or as its type has it', () => {
+    const f = blankField('number');
+    assert.equal(translationChoice(f), '', 'new: as its type');
+    setTranslation(f, 'own');
+    assert.deepEqual([f.translatable, translationChoice(f)], [true, 'own']);
+    setTranslation(f, 'shared');
+    assert.deepEqual([f.translatable, translationChoice(f)], [false, 'shared']);
+    setTranslation(f, '');
+    assert.equal(f.translatable, null);
 });

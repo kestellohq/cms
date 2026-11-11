@@ -38,6 +38,7 @@ final class LookupEntries extends ContentEndpoint
             'ids' => Schema::string()->max(1000)->pattern('[0-9,]*')->optional()->description('Comma separated ids to resolve'),
             'limit' => Schema::int()->min(1)->max(50)->default(20),
             'linkable' => Schema::bool()->optional()->description('Published entries with a public address, for links'),
+            'locale' => Schema::string()->max(12)->optional()->description("Entries in one language only: main (or empty) for the main one, or a code such as es (a parent must be in its child's language)"),
         ]);
     }
 
@@ -72,6 +73,9 @@ final class LookupEntries extends ContentEndpoint
             });
         }
         $ids = array_slice(array_values(array_unique(array_map('intval', array_filter(explode(',', (string) $request->query('ids', '')))))), 0, 100);
+        if (($locale = $request->query('locale')) !== null) {
+            $q->where('locale', $locale === 'main' ? '' : (string) $locale);
+        }
         if ($ids !== []) {
             $q->whereIn('id', $ids);
         } else {
@@ -83,7 +87,7 @@ final class LookupEntries extends ContentEndpoint
 
         return array_map(static fn(Entry $e): array => [
             'id' => $e->getKey(), 'type' => $e->type, 'type_label' => \Kestello\Cms\I18n\Labels::text($types[$e->type]->singular(), \Kestello\Cms\I18n\Labels::domain($types[$e->type]->owner)),
-            'title' => (string) $e->title, 'status' => $e->status, 'path' => $e->path($types[$e->type]),
+            'title' => (string) $e->title, 'status' => $e->status, 'path' => $e->path($types[$e->type]), 'locale' => $e->language(),
         ], $q->get()->all());
     }
 }

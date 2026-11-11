@@ -306,6 +306,8 @@ final class PageRenderer
     {
         $query = array_diff_key($request->query, array_flip(\Kestello\Cms\Cache\PageCacheMiddleware::IGNORED_QUERY));
 
-        return $request->path . ($query === [] ? '' : '?' . http_build_query($query));
+        $path = \Kestello\Cms\I18n\ContentLanguages::localize($request->path, \Kestello\Cms\I18n\ContentLanguages::current());     // as asked: /es/about
+
+        return $path . ($query === [] ? '' : '?' . http_build_query($query));
     }
 }
