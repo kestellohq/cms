@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Auth;
 
 use Closure;
+use Kestello\Cms\I18n\PersonLanguage;
 use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Http\RateLimiter;
 use Kestello\Support\Url;
@@ -67,7 +68,8 @@ final class EmailChanges
         ]);
 
         $link = Url::withQuery(rtrim($this->baseUrl, '/') . '/confirm-email', ['token' => $token]);
-        $this->send($email, 'auth.email_change_confirm', ['site' => $this->siteName, 'name' => (string) ($user['username'] ?? ''), 'link' => $link, 'hours' => intdiv(self::TTL, 3600)], $id);
+        // the new address isn't on the account yet, so its language comes from the account
+        $this->send($email, 'auth.email_change_confirm', ['site' => $this->siteName, 'name' => (string) ($user['username'] ?? ''), 'link' => $link, 'hours' => intdiv(self::TTL, 3600)], $id, PersonLanguage::of($user));
         $this->send((string) $user['email'], 'auth.email_change_notice', ['site' => $this->siteName, 'name' => (string) ($user['username'] ?? ''), 'email' => $email], $id);
 
         return null;
@@ -147,8 +149,8 @@ final class EmailChanges
     }
 
     /** @param array<string, mixed> $data */
-    private function send(string $to, string $name, array $data, int $id): void
+    private function send(string $to, string $name, array $data, int $id, ?string $locale = null): void
     {
-        AccountMail::send($this->mail, $name, $to, $data, $this->siteName, 'email change message for user #' . $id . ' could not be sent');
+        AccountMail::send($this->mail, $name, $to, $data, $this->siteName, 'email change message for user #' . $id . ' could not be sent', $locale);
     }
 }

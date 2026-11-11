@@ -4539,6 +4539,7 @@ msgstr ""
 msgid "Label of choice {n}"
 msgstr ""
 
+#: core/resources/js/pages/admin/Profile.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Language"
@@ -9435,6 +9436,10 @@ msgstr ""
 msgid "The database is backed up, visitors see a short maintenance page, and the site is checked with the new version. If anything is wrong, {v} and the database come back."
 msgstr ""
 
+#: core/resources/js/pages/admin/Profile.vue
+msgid "The emails the site sends you are written in it."
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Content/CheckEntryChecklist.php
 #: core/src/Cms/Api/Endpoints/Content/PreviewEntryBlocks.php
 msgid "The entry being edited; empty for one not saved yet."
@@ -9506,6 +9511,14 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Index.vue
 msgid "The kinds of content this site has and the fields each one holds. Types you build here work like the built-in ones: the editor, the API, search and public pages all follow them."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/UserResource.php
+msgid "The language their emails are written in, such as \"sr\"; empty for the site's language"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/UpdateMe.php
+msgid "The language your emails are written in: one of the site's languages, or empty for the site's own."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -9718,6 +9731,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Fleet.vue
 msgid "The site's home page, starting with https://."
+msgstr ""
+
+#: core/resources/js/pages/admin/Profile.vue
+msgid "The site's language"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -11032,6 +11049,10 @@ msgstr ""
 #: core/resources/js/pages/admin/system/AddPlugins.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
 msgid "What it may do"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/GetMe.php
+msgid "What locale may be set to: the site's languages, each in its own words. More than one means the person can choose."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
