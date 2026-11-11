@@ -10,7 +10,7 @@ export default [
     },
     {
         // as in .gitignore: content/ holds the local site's own plugins and themes, apart from these
-        ignores: ['content/plugins/**', 'content/themes/*', '!content/themes/base'],
+        ignores: ['content/plugins/**', 'content/themes/*', '!content/themes/base', '!content/themes/exhibit'],
     },
     js.configs.recommended,
     ...pluginVue.configs['flat/essential'],

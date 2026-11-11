@@ -42,6 +42,7 @@ content/plugins/*
 !content/plugins/.gitkeep
 content/themes/*
 !content/themes/base/
+!content/themes/exhibit/
 content/uploads/*
 !content/uploads/.gitkeep
 

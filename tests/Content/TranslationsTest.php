@@ -42,11 +42,11 @@ final class TranslationsTest extends AuthTestCase
             $module->boot($this->cms);
         }
         ExecutionContext::run('plugin:projects', function (): void {
-            $this->cms->content->type('projects')->label('Project', 'Projects')->path('/projects')->fields([
+            $this->cms->content->type('projects')->label('Project', 'Projects')->path('/projects')->archive(true)->fields([
                 Field::text('client'),                          // text: each language its own
-                Field::number('year'),                          // shared by its type
+                Field::number('year')->indexed(),               // shared by its type; sortable, so lists show it
                 Field::image('photo'),                          // shared by its type
-                Field::text('code')->translatable(false),       // shared by choice
+                Field::text('code')->translatable(false)->indexed()->internal(),     // shared by choice; editors only, so never in lists
                 Field::select('stage', ['built' => 'Built', 'study' => 'Study'])->translatable(),     // its own by choice
                 Field::entry('related', ['projects'], multiple: true),
                 Field::term('topic', 'category'),
@@ -406,5 +406,13 @@ final class TranslationsTest extends AuthTestCase
         $this->assertSame([[(int) $otra->getKey(), (int) $draftOnly->getKey()], (int) $casas->getKey()], [$es->related, $es->topic], 'the published translation where there is one');
         $en = $this->page('/projects/house')['entry']['data'];
         $this->assertSame([[(int) $other->getKey(), (int) $draftOnly->getKey()], (int) $houses->getKey()], [$en->related, $en->topic]);
+    }
+
+    public function testListsShowSortableFields(): void
+    {
+        $this->publish('projects', ['title' => 'House', 'data' => ['year' => 2024, 'client' => 'Ruiz family', 'code' => 'H-1']]);
+        $this->publish('projects', ['title' => 'Shed']);
+        $items = $this->page('/projects')['entries'];
+        $this->assertSame([['year' => 2024], []], array_map(static fn(array $e) => (array) $e['fields'], array_reverse($items)), 'sortable public fields only, and only when set');
     }
 }

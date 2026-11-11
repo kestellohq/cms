@@ -20,6 +20,7 @@ parameters:
         - bin/cms
         # only what the repository holds: content/ is otherwise the local site's own plugins and themes
         - content/themes/base
+        - content/themes/exhibit
         - tests/fixtures
     excludePaths:
         - core/resources/assets

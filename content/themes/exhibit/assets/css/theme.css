@@ -1,0 +1,905 @@
+/* ==========================================================================
+   Kestello "Exhibit" theme.
+   The site is an exhibition. Each room has a painted wall (--wall), the
+   work hangs on it as mounted prints, and a printed label plate beside each
+   print carries the entry's fields. Wall text is large; labels are small.
+   A page sets its room with a class on .site (room-projects, room-studio,
+   room-talks, room-journal); the hall is the neutral room.
+   ========================================================================== */
+
+@font-face {
+    font-family: "Archivo";
+    src: url("../fonts/archivo-latin.woff2") format("woff2");
+    font-weight: 400 900;
+    font-stretch: 62% 125%;
+    font-display: swap;
+}
+
+:root {
+    /* the walls, one per room */
+    --wall-projects: #1e3b2c; /* deep green */
+    --wall-studio: #6e3322; /* oxide red */
+    --wall-talks: #1c2b4a; /* ink blue */
+    --wall-journal: #ece6da; /* paper: a reading room */
+    --wall-hall: #e4ded2;
+
+    /* lettering on painted walls, and its quieter tint */
+    --wall-text: #f2eee5;
+
+    /* print mounts and label plates */
+    --mount: #fbfaf6;
+    --plate: #f3efe6;
+    --ink: #171614;
+    --ink-2: #4b4842; /* 8.1:1 on the plate */
+    --rule: #cfc8ba;
+    --plaque: #c9a55a; /* the brass plaque: the primary action */
+    --plaque-ink: #1a1408;
+
+    --font: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --measure: 44rem; /* core's block column (block-layout.css), so text, blocks and titles line up */
+    --gutter: clamp(16px, 4vw, 56px);
+    --hang: 0 1px 2px rgb(0 0 0 / 0.22), 0 22px 38px -18px rgb(0 0 0 / 0.55); /* a print on a wall: lit from above */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* core blocks (@core/blocks/*) read these */
+    --block-accent: var(--wall-projects);
+    --block-accent-deep: color-mix(in oklab, var(--wall-projects) 70%, #000);
+    --block-accent-ink: var(--wall-text);
+    --block-muted-bg: var(--plate);
+    --block-inverse-bg: var(--wall-talks);
+    --block-inverse-ink: var(--wall-text);
+    --block-radius: 2px;
+    color-scheme: light;
+}
+
+/* each room paints its wall; text on a painted wall is light, on paper dark.
+   A room can also be one band of a page (the entrance has one per room). */
+.site,
+.room-hall,
+.room-journal {
+    --wall: var(--wall-hall);
+    --on-wall: var(--ink);
+    --on-wall-2: var(--ink-2);
+    --wall-rule: var(--rule);
+}
+.room-projects {
+    --wall: var(--wall-projects);
+}
+.room-studio {
+    --wall: var(--wall-studio);
+}
+.room-talks {
+    --wall: var(--wall-talks);
+}
+.room-journal {
+    --wall: var(--wall-journal);
+}
+.room-projects,
+.room-studio,
+.room-talks {
+    --on-wall: var(--wall-text);
+    --on-wall-2: color-mix(in oklab, var(--wall-text) 74%, var(--wall)); /* tinted from the wall, never grey */
+    --wall-rule: color-mix(in oklab, var(--wall-text) 26%, var(--wall));
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: color-mix(in oklab, var(--ink) 40%, transparent) transparent;
+}
+body {
+    margin: 0;
+    background: var(--wall-hall);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 17px;
+    line-height: 1.6;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+::selection {
+    background: var(--plaque);
+    color: var(--plaque-ink);
+}
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+}
+a:hover {
+    text-decoration-thickness: 2px;
+}
+:focus-visible {
+    outline: 2px solid var(--plaque);
+    outline-offset: 3px;
+}
+h1,
+h2,
+h3 {
+    text-wrap: balance;
+}
+p {
+    text-wrap: pretty;
+}
+
+/* --------------------------------------------------------------------------
+   The building: header with the numbered rooms, the page, the footer
+   -------------------------------------------------------------------------- */
+
+.site {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--wall);
+    color: var(--on-wall);
+    transition: background-color 0.6s var(--ease);
+}
+.site main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.site main > :last-child {
+    flex-grow: 1; /* a short page: the last wall or the paper reaches the footer */
+}
+.site-skip {
+    position: absolute;
+    left: -9999px;
+}
+.site-skip:focus {
+    left: 16px;
+    top: 12px;
+    z-index: 10;
+    padding: 8px 14px;
+    background: var(--plate);
+    color: var(--ink);
+}
+.site-notice {
+    padding: 8px var(--gutter);
+    background: var(--ink);
+    color: var(--plate);
+    font-size: 14px;
+}
+
+.site-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    padding: 22px var(--gutter);
+}
+.site-brand {
+    font-size: 17px;
+    font-weight: 700;
+    font-stretch: 112%;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.site-rooms-nav {
+    margin-left: auto;
+}
+.site-rooms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.site-rooms a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 15px;
+    text-decoration: none;
+    color: var(--on-wall-2);
+}
+.site-rooms a:hover,
+.site-rooms a[aria-current] {
+    color: var(--on-wall);
+}
+.site-rooms a[aria-current] .site-rooms__name {
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+}
+.site-rooms__no {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+.site-langs {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.site-langs a {
+    color: var(--on-wall-2);
+    text-decoration: none;
+}
+.site-langs a:hover {
+    color: var(--on-wall);
+}
+.site-langs [aria-current] {
+    color: var(--on-wall);
+    border-bottom: 1px solid currentColor;
+}
+.site-menu-btn {
+    display: none;
+    margin-left: auto;
+    padding: 6px 12px;
+    border: 1px solid var(--wall-rule);
+    border-radius: 2px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 14px;
+}
+
+.site-footer {
+    padding: 48px var(--gutter) 40px;
+    background: var(--plate);
+    color: var(--ink-2);
+    font-size: 14px;
+}
+.site-footer__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 40px;
+    align-items: baseline;
+}
+.site-footer__name {
+    color: var(--ink);
+    font-weight: 700;
+    font-stretch: 112%;
+}
+.site-footer nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+}
+.site-footer__made {
+    margin-left: auto;
+}
+
+@media (max-width: 760px) {
+    .site-header {
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .site-menu-btn {
+        display: inline-block;
+    }
+    .site-rooms-nav {
+        order: 3;
+        flex-basis: 100%;
+        margin-left: 0;
+    }
+    .site-rooms {
+        display: none;
+        order: 3;
+        flex-basis: 100%;
+        flex-direction: column;
+        gap: 0;
+        margin: 8px 0 0;
+    }
+    .site-rooms.is-open {
+        display: flex;
+    }
+    .site-rooms a {
+        padding: 10px 0;
+        font-size: 20px;
+        border-top: 1px solid var(--wall-rule);
+        width: 100%;
+    }
+    .site-langs {
+        order: 2;
+    }
+    .site-footer__made {
+        margin-left: 0;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   The exhibition's parts: wall text, prints, label plates, the plaque
+   -------------------------------------------------------------------------- */
+
+.wall {
+    padding: clamp(32px, 6vw, 88px) var(--gutter);
+    background: var(--wall);
+    color: var(--on-wall);
+}
+.wall-text {
+    margin: 0;
+    font-size: clamp(40px, 6.2vw, 76px);
+    font-weight: 600;
+    font-stretch: 108%;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    max-width: 14ch;
+}
+.wall-lede {
+    max-width: 40ch;
+    margin: 24px 0 0;
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--on-wall-2);
+}
+.room-sign {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin: 0 0 28px;
+    font-size: clamp(26px, 3.4vw, 40px);
+    font-weight: 600;
+    font-stretch: 108%;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+.room-sign__no {
+    font-size: 0.42em;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--on-wall-2);
+}
+.room-sign a {
+    text-decoration: none;
+}
+.room-sign a:hover {
+    text-decoration: underline;
+}
+
+/* a print: the photograph inside a white mount, hung on the wall */
+.print {
+    margin: 0;
+    padding: clamp(10px, 1.6vw, 22px);
+    background: var(--mount);
+    box-shadow: var(--hang);
+}
+.print img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.print--blank {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    color: var(--ink-2);
+    font-size: 13px;
+}
+.print--blank span {
+    padding: 0 16px;
+    text-align: center;
+}
+
+/* a label plate: the entry's fields, printed */
+.plate {
+    max-width: 30rem;
+    padding: 14px 16px 12px;
+    background: var(--plate);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.45;
+    box-shadow: 0 1px 1px rgb(0 0 0 / 0.18);
+}
+.plate__title {
+    margin: 0 0 2px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+.plate__title a {
+    text-decoration: none;
+}
+.plate__title a:hover {
+    text-decoration: underline;
+}
+.plate__no {
+    float: right;
+    margin-left: 12px;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+}
+.plate dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 12px;
+    margin: 8px 0 0;
+}
+.plate dt {
+    color: var(--ink-2);
+}
+.plate dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+.plate__credit {
+    margin: 8px 0 0;
+    padding-top: 6px;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-2);
+    font-size: 12px;
+}
+
+/* the plaque: the one action a room asks for */
+.plaque {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 32px;
+    padding: 14px 22px;
+    background: var(--plaque);
+    color: var(--plaque-ink);
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    border-radius: 2px;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.35),
+        0 1px 2px rgb(0 0 0 / 0.3),
+        0 10px 18px -12px rgb(0 0 0 / 0.6);
+    transition:
+        transform 0.25s var(--ease),
+        box-shadow 0.25s var(--ease);
+}
+.plaque:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.35),
+        0 2px 3px rgb(0 0 0 / 0.3),
+        0 16px 24px -14px rgb(0 0 0 / 0.6);
+}
+.plaque svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* --------------------------------------------------------------------------
+   The entrance (Home)
+   -------------------------------------------------------------------------- */
+
+.entrance {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(28px, 5vw, 72px);
+    align-items: center;
+    padding: clamp(24px, 5vw, 64px) var(--gutter) clamp(48px, 7vw, 96px);
+}
+.entrance__prints {
+    display: grid;
+    grid-template-columns: 7fr 4fr;
+    gap: clamp(18px, 3vw, 40px);
+    align-items: end;
+}
+.entrance__large .print img {
+    aspect-ratio: 7 / 8;
+}
+.entrance__small {
+    display: grid;
+    gap: 18px;
+    align-content: end;
+}
+.entrance__small .print img {
+    aspect-ratio: 4 / 5;
+}
+.entrance__next {
+    display: inline-block;
+    margin-top: 48px;
+    color: var(--on-wall-2);
+    font-size: 14px;
+    text-decoration: none;
+}
+.entrance__next:hover {
+    color: var(--on-wall);
+}
+
+@media (max-width: 900px) {
+    .entrance {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 520px) {
+    .entrance__prints {
+        grid-template-columns: 1fr;
+    }
+    .entrance__small .print {
+        max-width: 70%;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   A catalogue: rows "spine out", the first one face out
+   -------------------------------------------------------------------------- */
+
+.catalogue {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--wall-rule);
+}
+.catalogue__row {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr) minmax(0, 12rem) 5rem;
+    gap: 16px;
+    align-items: baseline;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--wall-rule);
+}
+.catalogue__no {
+    color: var(--on-wall-2);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+.catalogue__title {
+    margin: 0;
+    font-size: clamp(19px, 2vw, 24px);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+.catalogue__title a {
+    text-decoration: none;
+}
+.catalogue__title a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+.catalogue__row {
+    position: relative;
+}
+.catalogue__row:hover .catalogue__title {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+.catalogue__meta,
+.catalogue__year {
+    color: var(--on-wall-2);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+}
+.catalogue__year {
+    text-align: right;
+}
+.catalogue__row--face {
+    grid-template-columns: 4.5rem minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    padding: 28px 0 36px;
+}
+.catalogue__row--face .catalogue__title {
+    font-size: clamp(26px, 3vw, 36px);
+}
+.catalogue__row--face .print {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+}
+.catalogue__row--face .print img {
+    aspect-ratio: 3 / 2;
+}
+.catalogue__face-text {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+}
+.catalogue__face-text p {
+    margin: 0;
+    color: var(--on-wall-2);
+}
+
+@media (max-width: 760px) {
+    .catalogue__row,
+    .catalogue__row--face {
+        grid-template-columns: 3rem minmax(0, 1fr);
+    }
+    .catalogue__meta {
+        grid-column: 2;
+    }
+    .catalogue__year {
+        display: none;
+    }
+    .catalogue__row--face .print {
+        grid-column: 1 / -1;
+        grid-row: auto;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   The programme (talks) and the journal on the entrance
+   -------------------------------------------------------------------------- */
+
+.programme {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.programme__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+    gap: 8px 32px;
+    padding: 22px 0;
+    border-top: 1px solid var(--wall-rule);
+}
+.programme__date {
+    font-size: clamp(22px, 2.4vw, 30px);
+    font-weight: 600;
+    font-stretch: 108%;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+.programme__date small {
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+    font-weight: 400;
+    font-stretch: 100%;
+    letter-spacing: 0;
+    color: var(--on-wall-2);
+}
+.programme__title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+.programme__title a {
+    text-decoration: none;
+}
+.programme__title a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+.programme__item:hover .programme__title {
+    text-decoration: underline;
+}
+.programme__item p {
+    margin: 6px 0 0;
+    color: var(--on-wall-2);
+}
+.programme__past {
+    opacity: 0.72;
+}
+@media (max-width: 640px) {
+    .programme__item {
+        grid-template-columns: 1fr;
+    }
+}
+
+.essays {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    gap: 0 40px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.essays li {
+    position: relative;
+    padding: 20px 0 24px;
+    border-top: 2px solid var(--on-wall);
+}
+.essays time {
+    color: var(--on-wall-2);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+.essays h3,
+.essays__title {
+    margin: 6px 0 8px;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+.essays h3 a,
+.essays__title a {
+    text-decoration: none;
+}
+.essays h3 a::after,
+.essays__title a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+.essays li:hover h3,
+.essays li:hover .essays__title {
+    text-decoration: underline;
+}
+.essays p {
+    margin: 0;
+    color: var(--on-wall-2);
+}
+
+/* --------------------------------------------------------------------------
+   A single entry: a project's room, a talk, an essay, a page
+   -------------------------------------------------------------------------- */
+
+.work {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: clamp(28px, 4vw, 56px);
+    align-items: end;
+    padding: clamp(24px, 4vw, 48px) var(--gutter) clamp(40px, 6vw, 80px);
+}
+.work__title {
+    margin: 0 0 20px;
+    font-size: clamp(36px, 5.4vw, 68px);
+    font-weight: 600;
+    font-stretch: 108%;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+}
+.work__back {
+    display: inline-block;
+    margin-bottom: 18px;
+    color: var(--on-wall-2);
+    font-size: 14px;
+    text-decoration: none;
+}
+.work__back:hover {
+    color: var(--on-wall);
+}
+.work .print img {
+    aspect-ratio: 3 / 2;
+}
+.hang {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    gap: clamp(24px, 4vw, 56px);
+    padding: 0 var(--gutter) clamp(40px, 6vw, 80px);
+    align-items: start;
+}
+.hang figure {
+    margin: 0;
+}
+.hang figcaption {
+    margin-top: 10px;
+    color: var(--on-wall-2);
+    font-size: 13px;
+}
+@media (max-width: 900px) {
+    .work {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* the reading room: text on paper, whatever the wall */
+.reading {
+    background: var(--plate);
+    color: var(--ink);
+    padding: clamp(32px, 5vw, 72px) var(--gutter) clamp(48px, 7vw, 96px);
+}
+.reading__inner {
+    max-width: var(--measure);
+    margin: 0 auto;
+}
+/* blocks lay out their own column across the page, and wide or full ones leave it */
+.reading > .k-blocks {
+    margin-inline: calc(-1 * var(--gutter));
+}
+.reading > .k-blocks + .k-blocks,
+.reading__inner + .k-blocks {
+    margin-top: 1.5rem;
+}
+.reading__head {
+    max-width: var(--measure);
+    margin: 0 auto 32px;
+}
+.reading__head h1 {
+    margin: 0;
+    font-size: clamp(34px, 4.6vw, 56px);
+    font-weight: 600;
+    font-stretch: 106%;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+}
+.reading__meta {
+    margin: 14px 0 0;
+    color: var(--ink-2);
+    font-size: 14px;
+}
+.reading__figure {
+    max-width: 58rem;
+    margin: 0 auto 40px;
+}
+.reading__figure figcaption {
+    margin-top: 10px;
+    color: var(--ink-2);
+    font-size: 13px;
+}
+.reading .prose {
+    font-size: 18px;
+    line-height: 1.7;
+}
+.reading .prose h2 {
+    margin: 2em 0 0.5em;
+    font-size: 26px;
+    line-height: 1.2;
+}
+.reading .prose a {
+    color: var(--wall-projects);
+}
+.reading__terms {
+    max-width: var(--measure);
+    margin: 40px auto 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-2);
+    font-size: 14px;
+}
+.reading__terms p {
+    margin: 0 0 4px;
+}
+.reading__terms span:first-child {
+    margin-right: 8px;
+    color: var(--ink);
+    font-weight: 600;
+}
+
+/* states printed as wall text */
+.state {
+    margin: 0;
+    padding: 18px 20px;
+    border: 1px solid var(--wall-rule);
+    color: var(--on-wall-2);
+    font-size: 15px;
+}
+.untranslated {
+    max-width: var(--measure);
+    margin: 0 auto 24px;
+    padding: 12px 16px;
+    background: var(--mount);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    font-size: 15px;
+}
+
+.pager {
+    display: flex;
+    gap: 24px;
+    justify-content: space-between;
+    padding: 24px 0 0;
+    color: var(--on-wall-2);
+    font-size: 15px;
+}
+
+/* core blocks on paper: forms keep the plate's look */
+.reading .k-blocks input:not([type="checkbox"], [type="radio"]),
+.reading .k-blocks textarea,
+.reading .k-blocks select {
+    border-radius: 2px;
+    border-color: var(--rule);
+    background: var(--mount);
+}
+.reading .k-blocks button[type="submit"] {
+    border-radius: 2px;
+    background: var(--plaque);
+    color: var(--plaque-ink);
+    font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+}
