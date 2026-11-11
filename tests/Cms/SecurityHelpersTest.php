@@ -101,6 +101,15 @@ final class SecurityHelpersTest extends TestCase
         $this->assertContains('requires.core is "*"', $all);
         $this->assertContains('vendor/lib/Run.php', implode("\n", array_column((new PackageChecker())->check($dir, PackageType::Plugin), 'file')), 'vendor/ is checked');
         $this->assertContains('proc_open()', $all, 'PHP in a file of any name is checked');
+
+        // v-html: the advice names what is safe to bind, not a component that doesn't exist
+        mkdir("$dir/resources/js/pages", 0777, true);
+        file_put_contents("$dir/resources/js/pages/Post.vue", '<template><div v-html="post.body"></div></template>');
+        $vhtml = array_values(array_filter((new PackageChecker())->check($dir, PackageType::Plugin), fn(array $f) => $f['file'] === 'resources/js/pages/Post.vue'));
+        $this->assertCount(1, $vhtml);
+        $this->assertSame('warning', $vhtml[0]['level']);
+        $this->assertContains('server sanitized', $vhtml[0]['message']);
+        $this->assertFalse(str_contains($vhtml[0]['message'], 'SafeHtml'), 'no component of that name exists');
         $this->assertContains('.phar', $all);
     }
 

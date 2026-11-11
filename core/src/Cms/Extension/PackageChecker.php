@@ -156,7 +156,7 @@ final class PackageChecker
 
         foreach (file($path) ?: [] as $n => $lineText) {
             if (preg_match('/\bv-html\s*=/', $lineText) === 1) {
-                $findings[] = $this->finding('warning', $relative, $n + 1, 'v-html renders raw HTML; use <SafeHtml> with server-sanitized content');
+                $findings[] = $this->finding('warning', $relative, $n + 1, 'v-html renders raw HTML: bind only HTML the server sanitized, such as an entry\'s rich text field, never text a visitor typed');
             }
             if (preg_match('/\b(eval|new\s+Function)\s*\(/', $lineText) === 1) {
                 $findings[] = $this->finding('error', $relative, $n + 1, 'dynamic code execution in JavaScript');

@@ -130,6 +130,7 @@ Every change people would notice is listed here, newest first. The format follow
 - The SSR renderer renders a theme or plugin rebuilt while it runs with its new code. It kept the pages it had loaded until restarted, so visitors got the old markup and the browser hydrated different code.
 - A release key or registry root key that can't be read is now logged under its own setting, not under app.packages.trusted_keys.
 - The **Accounts** settings sent people to **Users** to add someone; the menu is **People**.
+- `plugin:check` (and the check when a package is installed) no longer tells authors to use a `<SafeHtml>` component, which doesn't exist. Its warning about `v-html` now says what is safe to bind: HTML the server sanitized, such as an entry's rich text field, never text a visitor typed.
 - On **Roles**, the permissions to import a site, set up webhooks and use **Site → Fleet** are listed under **Site and system** instead of **Signing in**.
 - The **Style** tab's hint for **Tablet** said its changes apply on tablets only; they also reach phones unless **Phone** sets its own, and the hint now says so.
 - In the visual editor, an empty Column, Group, Tab or other block that holds others has room and a hint ("Empty. Click to select it, then add a block.") instead of no size at all, so a new **Columns** block's columns can be clicked on the page.
