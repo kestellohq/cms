@@ -24,7 +24,8 @@ final class CoreHooks
         $accounts = 'Accounts and sign-in';
         foreach ([Events\UserRegistered::class, Events\UserLoggedIn::class, Events\UserLoggedOut::class, Events\LoginFailed::class,
             Events\PasswordChanged::class, Events\PasswordResetRequested::class, Events\TwoFactorEnabled::class, Events\TwoFactorDisabled::class,
-            Events\TokenCreated::class, Events\TokenRevoked::class, Events\SessionRevoked::class, Events\IdentityLinked::class, Events\IdentityUnlinked::class] as $class) {
+            Events\TokenCreated::class, Events\TokenRevoked::class, Events\SessionRevoked::class, Events\IdentityLinked::class, Events\IdentityUnlinked::class,
+            Events\UserDeleting::class, Events\UserDeleted::class] as $class) {
             $hooks->event($class, '0.1.0', $accounts);
         }
         $hooks->event(Events\EntryPublished::class, '0.1.0', 'Content');
