@@ -4729,6 +4729,7 @@ msgstr ""
 #: core/resources/js/pages/admin/content/Edit.vue
 #: core/resources/js/pages/admin/content/Index.vue
 #: core/resources/js/pages/admin/emails/Edit.vue
+#: core/resources/js/pages/admin/menus/Index.vue
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "Language"
@@ -8129,6 +8130,14 @@ msgstr ""
 msgid "Same as administrator access"
 msgstr ""
 
+#: core/resources/js/pages/admin/menus/Index.vue
+msgid "Same as {language} (no menu)"
+msgstr ""
+
+#: core/resources/js/pages/admin/menus/Index.vue
+msgid "Same as {language} ({menu})"
+msgstr ""
+
 #: core/resources/js/ui/builder/BuilderDesign.vue
 msgid "Same padding on every side"
 msgstr ""
@@ -9952,6 +9961,10 @@ msgstr ""
 msgid "The language their emails are written in, such as \"sr\"; empty for the site's language"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Menus/AssignMenuLocations.php
+msgid "The language these choices are for: main (or empty, the default) or a code such as es"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Emails/GetEmail.php
 msgid "The language this is in"
 msgstr ""
@@ -9962,6 +9975,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Content/CreateTranslation.php
 msgid "The language to translate into: one of the site's other languages (GET /content/languages), or '' for the main one"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Menus/ListMenus.php
+msgid "The language whose locations to show: main (or empty) for the main one, or a code such as es"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/UpdateMe.php
@@ -10166,6 +10183,11 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Emails/EmailEndpoint.php
 msgid "The site has no language “{code}”. It has: {codes}."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Menus/MenuEndpoint.php
+#: core/src/Cms/Menus/Menus.php
+msgid "The site has no such language."
 msgstr ""
 
 #: core/src/Cms/Redirects/Redirects.php
@@ -11767,6 +11789,10 @@ msgid "Which addresses"
 msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
+msgid "Which menu shows where, in each language. A language without a menu of its own uses the main language's, with links to its translations. Changes apply right away."
+msgstr ""
+
+#: core/resources/js/pages/admin/menus/Index.vue
 msgid "Which menu shows where. Changes apply right away."
 msgstr ""
 
@@ -12840,6 +12866,7 @@ msgid "{label}: a colour of your own"
 msgstr ""
 
 #: core/resources/js/pages/admin/content/Index.vue
+#: core/resources/js/pages/admin/menus/Index.vue
 msgid "{language} (main)"
 msgstr ""
 
@@ -12853,6 +12880,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/menus/Index.vue
 msgid "{location} now shows this menu."
+msgstr ""
+
+#: core/resources/js/pages/admin/menus/Index.vue
+msgid "{location} now uses the same menu as {language}."
 msgstr ""
 
 #: core/src/Cms/Forms/Forms.php
