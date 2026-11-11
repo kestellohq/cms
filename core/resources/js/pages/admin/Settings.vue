@@ -4,6 +4,7 @@ import { Head } from '@kestello/app';
 import { ApiError, notify, useApi, useResource, useUser, __ } from '@kestello/sdk';
 import { KAlert, KButton, KCard, KExtension, KField, KInput, KPageHeader, KSchemaForm, KTabs } from '@kestello/ui';
 import MediaPicker from '../fields/MediaPicker.vue';
+import LanguagesPicker from '../../components/languages/LanguagesPicker.vue';
 
 defineOptions({ layout: 'Admin' });
 
@@ -116,7 +117,7 @@ const unsavedText = (n) => __('{n, plural, one {# unsaved change} other {# unsav
 // The side card of each core tab: what the settings change, in plain words.
 const whereItShows = computed(() => ({
     general: __(
-        'The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks.',
+        'The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks. Each other language gets its own addresses, and every page can be translated into it from its editor.',
     ),
     reading: __('Addresses, the home page and feeds change what visitors and feed readers get. Old addresses keep working.'),
     seo: __(
@@ -167,6 +168,18 @@ const whereItShows = computed(() => ({
                                     :invalid="invalid"
                                     :disabled="disabled"
                                     @update:model-value="set($event ?? 0)"
+                                />
+                            </template>
+                            <!-- the languages content is also written in: "es,pt-br" -->
+                            <template #format-languages="{ id, value, set, invalid, disabled }">
+                                <LanguagesPicker
+                                    :id="id"
+                                    :model-value="value ?? ''"
+                                    :saved="stored.languages ?? ''"
+                                    :main="drafts.general?.language ?? ''"
+                                    :invalid="invalid"
+                                    :disabled="disabled"
+                                    @update:model-value="set"
                                 />
                             </template>
                         </KSchemaForm>

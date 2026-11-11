@@ -7,6 +7,7 @@ namespace Kestello\Cms\Api\Endpoints\Settings;
 use DateTimeZone;
 use Kestello\Cms\Api\Schema;
 use Kestello\Cms\Cms;
+use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Cms\I18n\Labels;
 use Kestello\Cms\I18n\SiteLanguage;
 use Kestello\Contracts\Auth\Principal;
@@ -89,8 +90,10 @@ final class SiteSettings
                     'timezone' => Schema::enum(DateTimeZone::listIdentifiers())->optional()->description('Dates and scheduled tasks use this clock.'),
                     SiteLanguage::SETTING => Schema::enum(SiteLanguage::choices())->optional()
                         ->description('The admin, emails and the text your theme shows on its own use this language. Language packs add more.'),
+                    ContentLanguages::SETTING => Schema::string()->max(300)->format('languages')->optional()
+                        ->description('Languages your content is also written in. Each lives under its code, such as /es for Spanish, and every page can have a translation in it.'),
                 ]),
-                'labels' => ['site_name' => 'Site name', 'site_description' => 'Tagline', 'site_url' => 'Site address', 'timezone' => 'Timezone', SiteLanguage::SETTING => 'Language'],
+                'labels' => ['site_name' => 'Site name', 'site_description' => 'Tagline', 'site_url' => 'Site address', 'timezone' => 'Timezone', SiteLanguage::SETTING => 'Language', ContentLanguages::SETTING => 'Other languages'],
                 'secrets' => [],
                 'defaults' => [
                     'site_name' => (string) $config?->get('app.name', ''),
@@ -98,6 +101,7 @@ final class SiteSettings
                     'site_url' => (string) $config?->get('app.url', ''),
                     'timezone' => (string) $config?->get('app.timezone', 'UTC'),
                     SiteLanguage::SETTING => SiteLanguage::resolve(null, (string) $config?->get('app.locale', 'en')),
+                    ContentLanguages::SETTING => implode(',', ContentLanguages::parse($config?->get('app.languages', []), SiteLanguage::resolve(null, (string) $config?->get('app.locale', 'en')))),
                 ],
             ] + $core,
             'reading' => [

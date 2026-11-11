@@ -659,27 +659,61 @@ final class Entries
         if ($type->getPath() !== '' || $parentId !== null) {
             return null;
         }
-        if (in_array($slug, self::RESERVED_PATHS, true)) {
-            return 'the site itself';
-        }
         if (ContentLanguages::has($slug)) {
             return 'the pages in that language';
         }
+
+        return $this->rootOwner($slug, $type->name);
+    }
+
+    /**
+     * What the site answers at /{segment}/… besides top-level pages: its own
+     * addresses, another type's or a taxonomy's prefix, or a route a theme or
+     * plugin added. Null when nothing does.
+     */
+    public function rootOwner(string $segment, ?string $exceptType = null): ?string
+    {
+        if (in_array($segment, self::RESERVED_PATHS, true)) {
+            return 'the site itself';
+        }
         foreach ($this->content->types() as $other) {
-            if ($other->name !== $type->name && ($other->getPath() ?? '') !== '' && explode('/', trim((string) $other->getPath(), '/'))[0] === $slug) {
+            if ($other->name !== $exceptType && ($other->getPath() ?? '') !== '' && explode('/', trim((string) $other->getPath(), '/'))[0] === $segment) {
                 return 'the ' . mb_strtolower($other->plural()) . ' archive';
             }
         }
         foreach ($this->content->taxonomies() as $taxonomy) {
-            if (($taxonomy->getPath() ?? '') !== '' && explode('/', trim((string) $taxonomy->getPath(), '/'))[0] === $slug) {
+            if (($taxonomy->getPath() ?? '') !== '' && explode('/', trim((string) $taxonomy->getPath(), '/'))[0] === $segment) {
                 return 'the ' . mb_strtolower($taxonomy->plural()) . ' pages';
             }
         }
         // routes themes and plugins added (the base theme's /about, a plugin's /shop…)
         foreach (\Kestello\Cms\Cms::instance()?->routes->routes() ?? [] as $route) {
             $first = explode('/', trim($route->path, '/'))[0];
-            if ($route->method === 'GET' && $first === $slug && !str_contains($first, '{')) {
+            if ($route->method === 'GET' && $first === $segment && !str_contains($first, '{')) {
                 return 'another page of the site';
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * What already lives at /{code}, which a language with that code would
+     * take over: rootOwner(), or a top-level page with that slug. Null when
+     * the code is free for a language.
+     */
+    public function languageOwner(string $code): ?string
+    {
+        if (($owner = $this->rootOwner($code)) !== null) {
+            return $owner;
+        }
+        foreach ($this->content->types() as $type) {
+            if ($type->getPath() !== '') {
+                continue;
+            }
+            $page = Entry::query()->where('type', $type->name)->where('slug', $code)->whereNull('parent_id')->value('title');
+            if ($page !== null) {
+                return 'the ' . mb_strtolower($type->singular()) . ' "' . $page . '"';
             }
         }
 

@@ -25,6 +25,8 @@ final class ApiModule extends Provider
         Endpoints\Content\ListWaiting::class,
         Endpoints\Content\ListEntries::class,
         Endpoints\Content\GetEntry::class,
+        Endpoints\Content\CreateTranslation::class,
+        Endpoints\Content\ListLanguages::class,
         Endpoints\Content\ListLinkedFrom::class,
         Endpoints\Content\CreateEntry::class,
         Endpoints\Content\UpdateEntry::class,
