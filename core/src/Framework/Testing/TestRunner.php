@@ -93,26 +93,46 @@ final class TestRunner
     }
 
     /**
+     * The *Test.php files at a path: the file itself, or every one under a
+     * folder, sorted. Hidden folders (".site", ".git") are skipped: the
+     * browser tests install a whole Kestello, with its own tests, in
+     * tests/browser/.site.
+     *
+     * @return list<string>
+     */
+    public static function testFiles(string $path): array
+    {
+        if (is_file($path)) {
+            return str_ends_with($path, 'Test.php') ? [$path] : [];
+        }
+        if (!is_dir($path)) {
+            return [];
+        }
+        $visible = new \RecursiveCallbackFilterIterator(
+            new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
+            static fn(\SplFileInfo $file): bool => !($file->isDir() && str_starts_with($file->getFilename(), '.')),
+        );
+        $files = [];
+        foreach (new \RecursiveIteratorIterator($visible) as $file) {
+            if ($file->isFile() && str_ends_with($file->getFilename(), 'Test.php')) {
+                $files[] = $file->getPathname();
+            }
+        }
+        sort($files);
+
+        return $files;
+    }
+
+    /**
      * @return list<class-string<TestCase>>
      */
     private function discover(string $directory): array
     {
-        $files = [];
-        if (is_file($directory) && str_ends_with($directory, 'Test.php')) {
-            $files[] = $directory;      // one test file
-        } elseif (!is_dir($directory)) {
+        if (!is_file($directory) && !is_dir($directory)) {
             fwrite(STDERR, "No tests at {$directory}\n");
             return [];
-        } else {
-            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS));
-            foreach ($iterator as $file) {
-                if ($file->isFile() && str_ends_with($file->getFilename(), 'Test.php')) {
-                    $files[] = $file->getPathname();
-                }
-            }
         }
-
-        sort($files);
+        $files = self::testFiles($directory);
 
         $before = get_declared_classes();
         foreach ($files as $file) {
