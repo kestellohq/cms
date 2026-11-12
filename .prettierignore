@@ -11,6 +11,8 @@ tests/browser/.site/
 tests/browser/.results/
 tests/browser/.update/
 package-lock.json
+# written by php bin/cms schema:snapshot, which CI checks byte for byte
+core/database/schema.json
 *.md
 *.php
 *.neon
