@@ -49,6 +49,50 @@ final class ErrorHandler
     /**
      * Handle an uncaught exception.
      */
+    /**
+     * The response for an exception a request did not handle, logged: JSON
+     * for the API, the debug page with app.debug on, else the plain error
+     * page. Application::run sends it through the same steps as any other
+     * error response (the site's branded error page, its security headers),
+     * so a page that throws is answered like one that returns a 500.
+     */
+    public function response(Throwable $exception, Request $request): Response
+    {
+        $this->logException($exception);
+        $status = $this->resolveStatusCode($exception);
+        if ($status < 400 || $status > 599) {
+            $status = 500;
+        }
+
+        if (str_starts_with($request->path, '/api/') || str_contains($request->header('Accept'), 'application/json')) {
+            return new Response(json_encode($this->formatJsonError($exception, $status), JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE), $status, [
+                'Content-Type' => 'application/json; charset=UTF-8',
+                'Cache-Control' => 'no-store',
+                'X-Content-Type-Options' => 'nosniff',
+            ]);
+        }
+
+        return new Response($this->debug ? $this->renderDebugPage($exception) : $this->productionPage($status), $status, self::pageHeaders());
+    }
+
+    /**
+     * Security headers for the error pages this class writes itself: their
+     * styles are inline and they load nothing else. Pages the site renders
+     * get the site's own policy instead.
+     *
+     * @return array<string, string>
+     */
+    public static function pageHeaders(): array
+    {
+        return [
+            'Content-Type' => 'text/html; charset=UTF-8',
+            'Cache-Control' => 'no-store',
+            'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+            'X-Content-Type-Options' => 'nosniff',
+            'Referrer-Policy' => 'strict-origin-when-cross-origin',
+        ];
+    }
+
     public function handleException(Throwable $exception): void
     {
         $this->logException($exception);
@@ -59,15 +103,24 @@ final class ErrorHandler
         }
 
         $statusCode = $this->resolveStatusCode($exception);
-        http_response_code($statusCode);
+        if (!headers_sent()) {
+            http_response_code($statusCode);
+        }
 
         // JSON response for API requests
         if ($this->isApiRequest()) {
-            header('Content-Type: application/json; charset=UTF-8');
-            echo json_encode($this->formatJsonError($exception, $statusCode), JSON_THROW_ON_ERROR);
+            if (!headers_sent()) {
+                header('Content-Type: application/json; charset=UTF-8');
+            }
+            echo json_encode($this->formatJsonError($exception, $statusCode), JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE);
             return;
         }
 
+        if (!headers_sent()) {
+            foreach (self::pageHeaders() as $name => $value) {
+                header("{$name}: {$value}");
+            }
+        }
         echo $this->debug
             ? $this->renderDebugPage($exception)
             : $this->productionPage($statusCode);

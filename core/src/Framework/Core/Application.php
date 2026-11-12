@@ -85,11 +85,34 @@ final class Application
                 $response = $this->renderErrorPage($request, $response);
             }
         } catch (\Throwable $e) {
-            // Let the ErrorHandler deal with it
-            throw $e;
+            $response = $this->failed($request, $e);
         }
 
         Compression::apply($request, $response)->send();
+    }
+
+    /**
+     * An exception the request didn't handle, as a response: the site's
+     * branded error page with its security headers, like any 500 a page
+     * returns. With app.debug on, the debug page; for the API, JSON; when
+     * the branded page can't be rendered, ErrorHandler's plain page.
+     */
+    public function failed(Request $request, \Throwable $e): Response
+    {
+        $handler = $this->container->has(ErrorHandler::class)
+            ? $this->container->make(ErrorHandler::class)
+            : new ErrorHandler((bool) $this->config->get('app.debug', false), $this->paths->logs());
+        $plain = $handler->response($e, $request);
+
+        if ((bool) $this->config->get('app.debug', false)) {
+            return $plain;
+        }
+        // the branded page sets its own policy: it gets the status alone, not the plain page's headers.
+        // renderErrorPage gives the same object back for the API, JSON, and when it can't render.
+        $bare = new Response('', $plain->statusCode());
+        $branded = $this->renderErrorPage($request, $bare);
+
+        return $branded === $bare ? $plain : $branded;
     }
 
     /**
