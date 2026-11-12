@@ -13,6 +13,7 @@ use Kestello\Contracts\Cache\PageCache;
 use Kestello\Contracts\Cache\Store;
 use Kestello\Framework\Core\Container;
 use Kestello\Framework\Database\Orm\Events\ModelEvent;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Settings\Settings;
 
 /**
@@ -44,7 +45,7 @@ final class PageCacheModule extends Provider
             try {
                 $cache()->purge(...$tags);
             } catch (\Throwable $e) {
-                error_log('[kestello] page cache purge failed: ' . $e->getMessage());
+                Log::error('page cache purge failed: ' . $e->getMessage());
             }
         };
 

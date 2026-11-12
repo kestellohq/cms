@@ -11,6 +11,7 @@ use Kestello\Cms\Content\FieldTypes;
 use Kestello\Cms\I18n\Labels;
 use Kestello\Cms\Media\MediaPresenter;
 use Kestello\Framework\Core\ExecutionContext;
+use Kestello\Framework\Log\Log;
 
 /**
  * $cms->blocks: every block the site knows, and the one path block trees
@@ -420,7 +421,7 @@ final class BlockRegistry
         $count = 0;
         $clean = $this->walk(self::upgrade(self::plain($tree)), null, $allowed, '', 1, $count, $errors, strict: false, draft: $draft);
         if ($errors !== []) {
-            error_log('[blocks] dropped invalid blocks while rendering: ' . implode(' | ', array_slice($errors, 0, 5)));
+            Log::warning('blocks: dropped invalid blocks while rendering: ' . implode(' | ', array_slice($errors, 0, 5)));
         }
         $out = $this->prepareNodes($clean, $ctx);
         $this->resolveMedia($out);
@@ -472,7 +473,7 @@ final class BlockRegistry
                 try {
                     $node = ($def->getPrepare())($node, $ctx, $this);
                 } catch (\Throwable $e) {
-                    error_log("[blocks] {$def->name} failed to prepare: " . $e->getMessage());
+                    Log::error("blocks: {$def->name} failed to prepare: " . $e->getMessage());
                     $node = null;
                 }
                 if ($node === null) {

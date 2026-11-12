@@ -7,6 +7,7 @@ namespace Kestello\Framework\Cache;
 use Closure;
 use Kestello\Contracts\Cache\Lock;
 use Kestello\Contracts\Cache\Store;
+use Kestello\Framework\Log\Log;
 use Throwable;
 
 /**
@@ -125,8 +126,8 @@ final class FailoverStore implements Store
         if (is_dir($dir) || @mkdir($dir, 0775, true)) {
             @touch($this->breakerFile);
         }
-        ($this->log ?? static fn(string $m) => error_log($m))(
-            "[kestello] cache store failed, using fallback for {$this->cooldown}s: {$e->getMessage()}"
+        ($this->log ?? static fn(string $m) => Log::error($m))(
+            "cache store failed, using fallback for {$this->cooldown}s: {$e->getMessage()}"
         );
     }
 }

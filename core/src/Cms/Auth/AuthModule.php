@@ -24,6 +24,7 @@ use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Events\EventDispatcher;
 use Kestello\Framework\Events\Filters;
 use Kestello\Framework\Http\RateLimiter;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Mail\Mailer;
 use Kestello\Framework\Session\Session;
 use Kestello\Framework\Settings\Settings;
@@ -192,7 +193,7 @@ final class AuthModule extends Provider
             $label = $cms->auth->findAuthenticator($e->provider)?->label() ?? $e->provider;
             self::mail($cms, 'auth.sign_in_method_added', (string) $user['email'], ['site' => $site, 'name' => (string) $user['username'], 'provider' => $e->provider, 'label' => $label], $site);
         } catch (\Throwable $ex) {
-            error_log('[auth] could not send the account-linked email: ' . $ex->getMessage());
+            Log::error('auth: could not send the account-linked email: ' . $ex->getMessage());
         }
     }
 
@@ -215,7 +216,7 @@ final class AuthModule extends Provider
             }
             $cms->notifications->send($to, new NewSignUpNotification($e->userId, (string) $user['username'], (string) $user['email'], $method, (string) $cms->config->get('app.url', '')));
         } catch (\Throwable $ex) {
-            error_log('[auth] could not tell administrators about a new sign-up: ' . $ex->getMessage());
+            Log::error('auth: could not tell administrators about a new sign-up: ' . $ex->getMessage());
         }
     }
 
@@ -251,7 +252,7 @@ final class AuthModule extends Provider
             [$site] = self::site($cms);
             self::mail($cms, 'auth.password_known', (string) $user['email'], ['site' => $site, 'name' => (string) $user['username'], 'count' => self::SECOND_FACTOR_WARNING], $site);
         } catch (\Throwable $ex) {
-            error_log('[auth] could not send the two-factor warning email: ' . $ex->getMessage());
+            Log::error('auth: could not send the two-factor warning email: ' . $ex->getMessage());
         }
     }
 

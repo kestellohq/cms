@@ -19,6 +19,8 @@ use Kestello\Framework\Core\Router;
 use Kestello\Framework\Events\Filters;
 use Kestello\Framework\Http\RateLimiter;
 use Kestello\Framework\Http\RateLimitResult;
+use Kestello\Framework\Log\Log;
+use Kestello\Framework\Log\LogLevel;
 use LogicException;
 use Throwable;
 
@@ -130,7 +132,7 @@ final class ApiRegistry
             if ($this->debug) {
                 throw $e;
             }
-            error_log('[kestello] API endpoint refused (' . $owner . '): ' . $e->getMessage());
+            Log::error('API endpoint refused (' . $owner . '): ' . $e->getMessage());
             return;
         }
 
@@ -182,7 +184,7 @@ final class ApiRegistry
         $filtered = $this->filters->apply($name, $data, $row, $principal);
 
         if (!is_array($filtered) || array_diff_key($data, $filtered) !== []) {
-            error_log("[kestello] {$name} filter removed fields; result ignored.");
+            Log::warning("{$name} filter removed fields; result ignored.");
             return $data;
         }
 
@@ -253,7 +255,7 @@ final class ApiRegistry
             $response = $problem->toResponse();
         } catch (Throwable $e) {
             $owner = ExecutionContext::blamed($e) ?? $entry['owner'];
-            error_log(sprintf('[kestello] API %s %s failed [%s] in %s: %s (%s:%d)', $request->method, $request->path, $requestId, $owner, $e->getMessage(), $e->getFile(), $e->getLine()));
+            Log::write(LogLevel::ERROR, "API {$request->method} {$request->path} failed: " . $e->getMessage(), ['exception' => $e], $owner);
             if ($this->container->has(\Kestello\Framework\Core\ErrorHandler::class)) {
                 $this->container->make(\Kestello\Framework\Core\ErrorHandler::class)->count($owner, $e::class . ': ' . $e->getMessage());
             }

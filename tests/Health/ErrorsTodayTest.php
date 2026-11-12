@@ -73,7 +73,9 @@ final class ErrorsTodayTest extends AuthTestCase
         // what handleException() and the request's error response both do first
         (new \ReflectionMethod($handler, 'logException'))->invoke($handler, $e);
         $this->assertSame(1, $handler->tally()?->day()['plugin:ledger']['count'] ?? 0);
-        $this->assertStringContainsString('[plugin:ledger] RuntimeException: the ledger broke', (string) file_get_contents($this->logs . '/' . date('Y-m-d') . '.log'));
+        $line = json_decode(trim((string) file_get_contents($this->logs . '/' . date('Y-m-d') . '.log')), true);
+        $this->assertSame(['error', 'plugin:ledger', 'RuntimeException: the ledger broke'], [$line['level'], $line['owner'], $line['message']], 'logged against the plugin too');
+        $this->assertSame('RuntimeException', $line['context']['exception']['class']);
     }
 
     public function testTheAdminReportsWhatItHitInTheBrowser(): void
@@ -117,7 +119,7 @@ final class ErrorsTodayTest extends AuthTestCase
         $tally->record('admin', 'TypeError: x (/admin)');
         $check = $this->cms->health->run(fresh: true, only: ['core.errors'])['checks'][0];
         $this->assertSame('recommended', $check['status']);
-        $this->assertSame('The site hit 4 errors today (the plugin ledger: 3, the admin in the browser: 1). The details show the last message from each; the full errors are in storage/logs.', $check['message']);
+        $this->assertSame('The site hit 4 errors today (the plugin ledger: 3, the admin in the browser: 1). The details show the last message from each; the full errors are in the log.', $check['message']);
         $this->assertSame(['plugin:ledger' => '3× RuntimeException: the ledger broke', 'admin' => '1× TypeError: x (/admin)'], $check['details']);
     }
 }

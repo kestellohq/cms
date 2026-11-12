@@ -9,6 +9,7 @@ use Kestello\Cms\Auth\Roles;
 use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Database\DatabaseManager;
 use Kestello\Framework\Database\QueryBuilder;
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Json;
 
 /**
@@ -81,13 +82,13 @@ final class AuditLog
             }
             QueryBuilder::table(self::TABLE)->insert($row);
         } catch (\Throwable $e) {
-            error_log('[kestello] audit ' . $event . ' (not stored: ' . $e->getMessage() . '): ' . Json::encode($row));
+            Log::error('audit ' . $event . ' (not stored: ' . $e->getMessage() . '): ' . Json::encode($row));
         }
         foreach ($this->listeners as $listener) {
             try {
                 $listener($event, $subject);
             } catch (\Throwable $e) {
-                error_log('[kestello] audit listener failed for ' . $event . ': ' . $e->getMessage());
+                Log::error('audit listener failed for ' . $event . ': ' . $e->getMessage());
             }
         }
     }

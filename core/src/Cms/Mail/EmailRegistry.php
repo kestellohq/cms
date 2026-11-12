@@ -13,6 +13,7 @@ use Kestello\Cms\Events\MailSent;
 use Kestello\Cms\I18n\PersonLanguage;
 use Kestello\Cms\Notifications\MailMessage;
 use Kestello\Framework\Core\ExecutionContext;
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Translator;
 
 /**
@@ -134,7 +135,7 @@ final class EmailRegistry
         $message = $this->edited($id, $this->original($id, $data), $data, $edit);
         $filtered = Cms::instance()?->filters->apply('mail.message', $message, $id, $to, $data) ?? $message;
         if (!$filtered instanceof MailMessage) {
-            error_log("[kestello] mail.message for \"{$id}\" did not return a MailMessage; the email is sent as built.");
+            Log::warning("mail.message for \"{$id}\" did not return a MailMessage; the email is sent as built.");
             $filtered = $message;
         }
         foreach ($email['locked'] as $name) {
@@ -206,7 +207,7 @@ final class EmailRegistry
         $errors = EmailEdit::validate($edit, $original, $this->get($id)['locked'], $data, self::media(...), sending: true);
         if ($errors !== []) {
             $first = array_key_first($errors);
-            error_log("[kestello] the edit of \"{$id}\" (" . Translator::locale() . ") no longer fits the email ({$first}: {$errors[$first][0]}); it is sent as its code writes it.");
+            Log::warning("the edit of \"{$id}\" (" . Translator::locale() . ") no longer fits the email ({$first}: {$errors[$first][0]}); it is sent as its code writes it.");
 
             return $original;
         }
@@ -246,7 +247,7 @@ final class EmailRegistry
         $event = new MailSending($id, $to, $message);
         $cms?->events->dispatch($event);
         if ($event->cancelled()) {
-            error_log("[kestello] the email \"{$id}\" was stopped: {$event->reason()}");
+            Log::warning("the email \"{$id}\" was stopped: {$event->reason()}");
 
             return null;
         }

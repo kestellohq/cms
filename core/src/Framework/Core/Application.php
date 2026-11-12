@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kestello\Framework\Core;
 
 use Kestello\Framework\Http\RequestId;
+use Kestello\Framework\Log\Log;
+use Kestello\Framework\Log\Logger;
 use RuntimeException;
 
 /**
@@ -154,7 +156,7 @@ final class Application
 
             return $render($request, $response);
         } catch (\Throwable $e) {
-            error_log('[kestello] error page failed: ' . $e->getMessage());
+            Log::error('error page failed: ' . $e->getMessage());
             return $response;
         }
     }
@@ -213,7 +215,11 @@ final class Application
         $debug = (bool) $this->config->get('app.debug', false);
         $logPath = $this->paths->logs();
 
-        $handler = new ErrorHandler(debug: $debug, logPath: $logPath);
+        $logger = Logger::fromEnvironment($logPath, getenv(), $debug);
+        Log::use($logger);
+        $this->container->singleton(Logger::class, fn(): Logger => $logger);
+
+        $handler = new ErrorHandler(debug: $debug, logPath: $logPath, logger: $logger);
         $handler->register();
 
         $this->container->singleton(ErrorHandler::class, fn(): ErrorHandler => $handler);

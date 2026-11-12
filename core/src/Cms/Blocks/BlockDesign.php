@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Blocks;
 
 use Closure;
+use Kestello\Framework\Log\Log;
 
 /**
  * Block design: the styles an editor gives one block (colour, spacing, type,
@@ -112,7 +113,7 @@ final class BlockDesign
             try {
                 $theirs = (array) ($this->provider)();
             } catch (\Throwable $e) {
-                error_log('[kestello] block design presets could not be read: ' . $e->getMessage());
+                Log::error('block design presets could not be read: ' . $e->getMessage());
             }
         }
         $out = [];

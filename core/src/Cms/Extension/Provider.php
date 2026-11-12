@@ -6,6 +6,7 @@ namespace Kestello\Cms\Extension;
 
 use Kestello\Cms\Cms;
 use Kestello\Framework\Core\Container;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Settings\Settings;
 
 /**
@@ -86,7 +87,7 @@ abstract class Provider
         try {
             return \Kestello\Support\AppKey::secretStore()->open($sealed, 'settings.' . $name);
         } catch (\Throwable) {
-            error_log("[kestello] secret {$name} could not be opened (app key changed or value not sealed)");
+            Log::error("secret {$name} could not be opened (app key changed or value not sealed)");
             return null;
         }
     }

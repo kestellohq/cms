@@ -7,6 +7,7 @@ namespace Kestello\Cms\Blocks;
 use Closure;
 use InvalidArgumentException;
 use Kestello\Cms\Content\Entry;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Settings\Settings;
 
 /**
@@ -107,7 +108,7 @@ final class Bindings
         try {
             return ($this->sources[explode('.', $path)[0]]['resolve'])($path, $ctx);
         } catch (\Throwable $e) {
-            error_log("[blocks] binding {$path} failed: " . $e->getMessage());
+            Log::error("blocks: binding {$path} failed: " . $e->getMessage());
 
             return null;
         }

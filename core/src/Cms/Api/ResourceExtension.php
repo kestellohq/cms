@@ -6,6 +6,8 @@ namespace Kestello\Cms\Api;
 
 use Kestello\Contracts\Auth\Principal;
 use Kestello\Framework\Core\ExecutionContext;
+use Kestello\Framework\Log\Log;
+use Kestello\Framework\Log\LogLevel;
 use Throwable;
 
 /**
@@ -67,7 +69,7 @@ final class ResourceExtension
             try {
                 $data[$name] = ExecutionContext::run($field['owner'], static fn() => ($field['resolver'])($row, $principal));
             } catch (Throwable $e) {
-                error_log(sprintf('[kestello] api field %s.%s (%s) failed: %s', $this->resource, $name, $field['owner'], $e->getMessage()));
+                Log::write(LogLevel::ERROR, "API field {$this->resource}.{$name} failed: " . $e->getMessage(), ['exception' => $e], (string) $field['owner']);
             }
         }
 

@@ -10,6 +10,8 @@ use Kestello\Cms\Api\Endpoint;
 use Kestello\Cms\Api\Schema;
 use Kestello\Cms\Cms;
 use Kestello\Framework\Core\ErrorHandler;
+use Kestello\Framework\Log\Log;
+use Kestello\Framework\Log\LogLevel;
 
 /**
  * An error the admin hit in the browser (a screen that failed to draw, a
@@ -75,7 +77,7 @@ final class ReportClientError extends Endpoint
         $container = Cms::instance()?->container;
         $handler = $container !== null && $container->has(ErrorHandler::class) ? $container->make(ErrorHandler::class) : null;
         $handler?->count('admin', $message . ' (' . $screen . ')');
-        error_log(sprintf('[kestello] admin error on %s%s by user %s: %s%s', $screen, $where !== '' ? " ({$where})" : '', (string) ($request->userId() ?? '?'), $message, $stack !== '' ? "\n" . $stack : ''));
+        Log::write(LogLevel::ERROR, 'admin error: ' . $message, array_filter(['screen' => $screen, 'where' => $where, 'user' => $request->userId(), 'stack' => $stack], static fn($v) => $v !== '' && $v !== null), 'admin');
 
         return ['recorded' => true];
     }

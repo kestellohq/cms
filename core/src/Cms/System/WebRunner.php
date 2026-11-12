@@ -6,6 +6,7 @@ namespace Kestello\Cms\System;
 
 use Kestello\Cms\Cms;
 use Kestello\Cms\Schedule\ScheduleRunner;
+use Kestello\Framework\Log\Log;
 
 /**
  * Cron for hosts without cron: after a page has been sent to the visitor,
@@ -51,7 +52,7 @@ final class WebRunner
                 try {
                     $work();
                 } catch (\Throwable $e) {
-                    error_log('[kestello] deferred work failed: ' . $e->getMessage());
+                    Log::error('deferred work failed: ' . $e->getMessage());
                 }
             }
         }
@@ -91,7 +92,7 @@ final class WebRunner
 
             $cms->container->make(ScheduleRunner::class)->run(via: 'web', budget: $budget);
         } catch (\Throwable $e) {
-            error_log('[cron] web runner failed: ' . $e->getMessage());
+            Log::error('cron: web runner failed: ' . $e->getMessage());
         }
     }
 }

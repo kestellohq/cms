@@ -15,6 +15,7 @@ use Kestello\Contracts\Notifications\Channel;
 use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Database\DatabaseManager;
 use Kestello\Framework\Events\EventDispatcher;
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Translator;
 
 /**
@@ -193,7 +194,7 @@ final class Notifier
                     $this->events?->dispatch(new NotificationSent($to->userId, $notification->type(), $name));
                 } catch (\Throwable $e) {
                     $results[$name] = 'failed';
-                    error_log("[kestello] notification {$notification->type()} via {$name} failed: " . $e->getMessage());
+                    Log::error("notification {$notification->type()} via {$name} failed: " . $e->getMessage());
                     $this->events?->dispatch(new NotificationFailed($to->userId, $notification->type(), $name, $e->getMessage()));
                 }
             }

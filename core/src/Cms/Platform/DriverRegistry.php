@@ -7,6 +7,7 @@ namespace Kestello\Cms\Platform;
 use Closure;
 use InvalidArgumentException;
 use Kestello\Framework\Core\Container;
+use Kestello\Framework\Log\Log;
 use Throwable;
 
 /**
@@ -44,7 +45,7 @@ final class DriverRegistry
 
     public function __construct(private readonly Container $container, ?Closure $logger = null)
     {
-        $this->logger = $logger ?? static fn(string $m) => error_log('[kestello] ' . $m);
+        $this->logger = $logger ?? static fn(string $m) => Log::warning($m);
     }
 
     /** @param Closure(string): array{driver: string, options: array<string, mixed>} $resolver */

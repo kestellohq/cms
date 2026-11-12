@@ -17,6 +17,7 @@ use Kestello\Contracts\Search\SearchHit;
 use Kestello\Contracts\Search\SearchQuery;
 use Kestello\Contracts\Search\SearchResults;
 use Kestello\Framework\Core\ExecutionContext;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Queue\SyncQueue;
 use Kestello\Support\Html;
 use Throwable;
@@ -252,7 +253,7 @@ final class SearchManager
             }
         } catch (Throwable $e) {
             // never let search break saving: log it, and retry through the queue when there is a real one
-            error_log('[search] index update failed: ' . $e->getMessage());
+            Log::error('search: index update failed: ' . $e->getMessage());
             if ($syncQueue) {
                 return;
             }
@@ -397,11 +398,11 @@ final class SearchManager
         } catch (Throwable $e) {
             $engine = $this->safeEngineName();
             if ($engine === 'database') {
-                error_log('[search] ' . $e->getMessage());
+                Log::warning('search: ' . $e->getMessage());
 
                 return new SearchResults([], 0, $query->page, $query->perPage, [], 'database');
             }
-            error_log("[search] {$engine} failed, answering from the database: " . $e->getMessage());
+            Log::error("search: {$engine} failed, answering from the database: " . $e->getMessage());
 
             return (new DatabaseEngine())->search($query);
         }

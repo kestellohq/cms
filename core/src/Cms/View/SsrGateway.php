@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\View;
 
+use Kestello\Framework\Log\Log;
+
 /**
  * Optional server-side rendering through the Node renderer (core/ssr/server.mjs).
  *
@@ -101,7 +103,7 @@ final class SsrGateway
         $status = isset($headers[0]) && preg_match('#\s(\d{3})\s#', (string) $headers[0], $m) === 1 ? (int) $m[1] : 0;
 
         if ($response === false || $status !== 200) {
-            error_log('[kestello] SSR unavailable (' . ($status ?: 'no response') . '), rendering client-side');
+            Log::warning('SSR unavailable (' . ($status ?: 'no response') . '), rendering client-side');
             // the SSR server is down: a page cached now would miss its server HTML for the whole cache lifetime
             \Kestello\Cms\Cache\PageTags::until(time() + 60);
             return null;

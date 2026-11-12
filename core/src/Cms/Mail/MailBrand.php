@@ -6,6 +6,7 @@ namespace Kestello\Cms\Mail;
 
 use Kestello\Cms\Cms;
 use Kestello\Cms\Design\ThemeStyles;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Support\Color;
 
@@ -117,7 +118,7 @@ final class MailBrand
                 $theme = $cms->container->make(ThemeStyles::class)->email();
             }
         } catch (\Throwable $e) {
-            error_log('[kestello] email colours: the theme could not be read (' . $e->getMessage() . '); using the defaults.');
+            Log::error('email colours: the theme could not be read (' . $e->getMessage() . '); using the defaults.');
         }
 
         return new self(
@@ -173,7 +174,7 @@ final class MailBrand
     private static function readable(array $c, array $defaults): array
     {
         if (self::ratio($c['ink'], $c['card']) < 4.5) {
-            error_log("[kestello] email colours: text {$c['ink']} on {$c['card']} is too faint; using the default text and card.");
+            Log::warning("email colours: text {$c['ink']} on {$c['card']} is too faint; using the default text and card.");
             foreach (['ink', 'card', 'muted', 'line'] as $role) {
                 $c[$role] = $defaults[$role];
             }

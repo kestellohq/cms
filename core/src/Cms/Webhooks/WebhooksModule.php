@@ -17,6 +17,7 @@ use Kestello\Cms\Events\UserRegistered;
 use Kestello\Cms\Extension\Provider;
 use Kestello\Framework\Database\Orm\Caster;
 use Kestello\Framework\Database\QueryBuilder;
+use Kestello\Framework\Log\Log;
 use Throwable;
 
 /**
@@ -49,7 +50,7 @@ final class WebhooksModule extends Provider
                 }
             } catch (Throwable $e) {
                 // A webhook problem never breaks the save, submission or sign-up that caused it.
-                error_log("[kestello] webhook {$event}: " . $e->getMessage());
+                Log::warning("webhook {$event}: " . $e->getMessage());
             }
         };
         $cms->events->on(EntrySaved::class, static fn(EntrySaved $e) => $send($e->created ? 'entry.created' : 'entry.updated', static fn() => self::entry($cms, $e->entryId)));

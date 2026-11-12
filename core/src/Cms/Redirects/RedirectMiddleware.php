@@ -9,6 +9,7 @@ use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Framework\Core\Middleware\MiddlewareInterface;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
+use Kestello\Framework\Log\Log;
 
 /**
  * After the site answered 404 to a page request: follow a redirect rule if
@@ -39,7 +40,7 @@ final class RedirectMiddleware implements MiddlewareInterface
             }
             $this->redirects->hit($rule['id']);
         } catch (\Throwable $e) {
-            error_log('[redirects] ' . $e->getMessage());     // never turn a 404 into a 500
+            Log::warning('redirects: ' . $e->getMessage());     // never turn a 404 into a 500
             return $response;
         }
 

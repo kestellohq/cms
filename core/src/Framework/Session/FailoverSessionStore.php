@@ -6,6 +6,7 @@ namespace Kestello\Framework\Session;
 
 use Closure;
 use Kestello\Contracts\Session\SessionStore;
+use Kestello\Framework\Log\Log;
 use Throwable;
 
 /**
@@ -105,8 +106,8 @@ final class FailoverSessionStore implements SessionStore
                 if ($this->breakerFile !== null && (is_dir(dirname($this->breakerFile)) || @mkdir(dirname($this->breakerFile), 0775, true))) {
                     @touch($this->breakerFile);
                 }
-                ($this->log ?? static fn(string $m) => error_log($m))(
-                    "[kestello] session store \"{$this->primary->name()}\" failed, using \"{$this->fallback->name()}\": {$e->getMessage()}"
+                ($this->log ?? static fn(string $m) => Log::error($m))(
+                    "session store \"{$this->primary->name()}\" failed, using \"{$this->fallback->name()}\": {$e->getMessage()}"
                 );
             }
         }

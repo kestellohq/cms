@@ -9,6 +9,7 @@ use Kestello\Cms\Frontend\Csp;
 use Kestello\Framework\Core\Paths;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Translator;
 use RuntimeException;
 use Throwable;
@@ -56,7 +57,7 @@ final class PageRenderer
             if ($this->debug) {
                 throw new RuntimeException($message);
             }
-            error_log("[kestello] {$message}");
+            Log::warning($message);
             return $base->withContent('<h1>Page unavailable</h1>')->withHeader('Content-Type', 'text/html; charset=UTF-8');
         }
 
@@ -216,7 +217,7 @@ final class PageRenderer
                 ]);
             }
         } catch (Throwable $e) {
-            error_log('[kestello] saved page HTML skipped: ' . $e->getMessage());     // a full or read-only disk never stops a page
+            Log::warning('saved page HTML skipped: ' . $e->getMessage());     // a full or read-only disk never stops a page
         }
 
         return null;

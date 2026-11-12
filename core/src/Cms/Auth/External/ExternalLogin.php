@@ -19,6 +19,7 @@ use Kestello\Framework\Core\Request;
 use Kestello\Framework\Events\EventDispatcher;
 use Kestello\Framework\Events\Filters;
 use Kestello\Framework\Http\RateLimiter;
+use Kestello\Framework\Log\Log;
 
 /**
  * The redirect sign-in flow (auth.md §4), provider-independent:
@@ -182,7 +183,7 @@ final class ExternalLogin
 
     private function log(string $id, string $detail): void
     {
-        error_log("[auth:{$id}] external sign-in failed: " . mb_substr($detail, 0, 500));
+        Log::error("auth:{$id}: external sign-in failed: " . mb_substr($detail, 0, 500));
     }
 
     private function auth(): Auth

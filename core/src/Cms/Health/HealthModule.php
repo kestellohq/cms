@@ -9,6 +9,8 @@ use Kestello\Cms\Extension\Provider;
 use Kestello\Cms\Platform\PlatformChanged;
 use Kestello\Cms\System\CoreTasks;
 use Kestello\Framework\Database\DatabaseManager;
+use Kestello\Framework\Log\Log;
+use Kestello\Framework\Log\Logger;
 
 /**
  * Core module: Site Health checks, the daily alert task and "infrastructure
@@ -34,12 +36,19 @@ final class HealthModule extends Provider
             try {
                 $cms->notifications->send(Administrators::ids($cms), new PlatformChangedNotification($e->subsystem, $e->previousDriver, $e->driver, $e->reset, $by, (string) $cms->config->get('app.url', '')));
             } catch (\Throwable $ex) {
-                error_log('[kestello] could not notify administrators about a platform change: ' . $ex->getMessage());
+                Log::error('could not notify administrators about a platform change: ' . $ex->getMessage());
             }
         });
 
         $cms->schedule->call(static fn(): string => self::alert($cms), 'health.check')
             ->hourlyAt(23)->description('Runs Site Health and tells administrators about new critical problems.');
+
+        // KESTELLO_LOG_DAYS (14 by default) days of storage/logs; nothing to do when the log goes to stderr
+        $cms->schedule->call(static function () use ($cms): string {
+            $days = (int) (getenv('KESTELLO_LOG_DAYS') ?: 14);
+
+            return Logger::prune($cms->paths->logs(), $days) . " log files older than {$days} days deleted.";
+        }, 'logs.prune')->dailyAt('03:17')->description('Deletes log files older than KESTELLO_LOG_DAYS days (14 by default).');
     }
 
     /** Notify about critical checks that were not critical at the last run. */

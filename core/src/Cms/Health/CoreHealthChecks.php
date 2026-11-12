@@ -203,7 +203,7 @@ final class CoreHealthChecks
 
             return HealthResult::recommended(
                 ($total === 1 ? 'The site hit 1 error today' : "The site hit {$total} errors today") . ' (' . implode(', ', $parts) . '). '
-                . 'The details show the last message from each; the full errors are in storage/logs.',
+                . 'The details show the last message from each; the full errors are in the log.',
                 $details,
             );
         }, 'reliability');

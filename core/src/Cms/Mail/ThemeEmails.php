@@ -6,6 +6,7 @@ namespace Kestello\Cms\Mail;
 
 use Kestello\Cms\Cms;
 use Kestello\Cms\Extension\Package;
+use Kestello\Framework\Log\Log;
 
 /**
  * A theme's own email markup, kept in its code:
@@ -179,7 +180,7 @@ final class ThemeEmails
                     $blocks = array_values(array_filter(array_map(static fn(array $b): ?string => $b['name'] ?? null, $registry->original($name, $registry->get($name)['sample'])->blocks())));
                     $found = self::problems($html, $blocks, $registry->get($name)['locked']);
                 } else {
-                    error_log("[kestello] {$package->slug()}/" . self::FOLDER . "/{$name}.html is for an email no installed package sends (\"{$name}\"); it is used once one does.");
+                    Log::warning("{$package->slug()}/" . self::FOLDER . "/{$name}.html is for an email no installed package sends (\"{$name}\"); it is used once one does.");
                     $found = self::problems($html, []);
                 }
                 foreach ($found as $problem) {

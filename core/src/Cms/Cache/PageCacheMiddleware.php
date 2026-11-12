@@ -12,6 +12,7 @@ use Kestello\Contracts\Cache\PageCache;
 use Kestello\Framework\Core\Middleware\MiddlewareInterface;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Session\Session;
 use Kestello\Framework\Settings\Settings;
 
@@ -54,7 +55,7 @@ final class PageCacheMiddleware implements MiddlewareInterface
         try {
             $hit = $cache->get($key);
         } catch (\Throwable $e) {
-            error_log('[kestello] page cache unavailable: ' . $e->getMessage());
+            Log::error('page cache unavailable: ' . $e->getMessage());
             $hit = null;
         }
         if ($hit !== null) {
@@ -81,7 +82,7 @@ final class PageCacheMiddleware implements MiddlewareInterface
         try {
             $cache->put($key, $page, PageTags::all() ?: ['content'], $ttl);
         } catch (\Throwable $e) {
-            error_log('[kestello] page cache write failed: ' . $e->getMessage());
+            Log::error('page cache write failed: ' . $e->getMessage());
             return $response;
         }
 

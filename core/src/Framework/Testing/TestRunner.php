@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kestello\Framework\Testing;
 
+use Kestello\Framework\Log\Log;
+use Kestello\Framework\Log\Logger;
 use ReflectionClass;
 use ReflectionMethod;
 use Throwable;
@@ -42,6 +44,10 @@ final class TestRunner
     public function run(string|array $directory, ?string $filter = null): bool
     {
         $started = microtime(true);
+        // what the code under test logs goes to a folder of its own, not the site's log
+        $logs = sys_get_temp_dir() . '/kestello-test-logs-' . getmypid();
+        $previous = Log::logger();
+        Log::use(new Logger($logs));
         $classes = [];
         foreach ((array) $directory as $path) {
             $classes = [...$classes, ...$this->discover($path)];
@@ -66,6 +72,15 @@ final class TestRunner
         }
 
         $this->report($count, microtime(true) - $started);
+        Log::use($previous);
+        if ($this->problems === []) {
+            foreach (glob($logs . '/*') ?: [] as $file) {
+                @unlink($file);
+            }
+            @rmdir($logs);
+        } elseif (is_dir($logs)) {
+            ($this->write)("What the code logged: {$logs}\n");
+        }
 
         return $this->problems === [];
     }

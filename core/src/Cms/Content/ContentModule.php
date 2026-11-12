@@ -10,6 +10,7 @@ use Kestello\Cms\Extension\Provider;
 use Kestello\Contracts\Cache\Store;
 use Kestello\Framework\Core\Container;
 use Kestello\Framework\Core\Request;
+use Kestello\Framework\Log\Log;
 
 /**
  * Core module: the page and post types, editorial roles, scheduled
@@ -74,7 +75,7 @@ final class ContentModule extends Provider
             try {
                 return (object) $cms->container->make(\Kestello\Cms\Menus\Menus::class)->forLocations();
             } catch (\Throwable $e) {
-                error_log('[kestello] menus: ' . $e->getMessage());
+                Log::warning('menus: ' . $e->getMessage());
                 return (object) [];
             }
         });

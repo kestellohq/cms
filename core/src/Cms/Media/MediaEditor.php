@@ -12,6 +12,7 @@ use Kestello\Contracts\Media\ImageException;
 use Kestello\Contracts\Media\TransformableImage;
 use Kestello\Contracts\Storage\Disk;
 use Kestello\Contracts\Storage\FileNotFound;
+use Kestello\Framework\Log\Log;
 
 /**
  * Crop, turn and flip images in the media library.
@@ -221,7 +222,7 @@ final class MediaEditor
             $disk->setVisibility($path, $visibility);
         } catch (\Throwable $e) {
             // Some storage (a bucket made public as a whole) has no per-file visibility; the edit still applies.
-            error_log("[media] could not make {$path} {$visibility}: " . $e->getMessage());
+            Log::error("media: could not make {$path} {$visibility}: " . $e->getMessage());
         }
     }
 
