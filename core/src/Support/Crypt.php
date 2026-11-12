@@ -30,7 +30,7 @@ final class Crypt
         return Json::decode(self::decryptString($payload, $purpose));
     }
 
-    public static function encryptString(string $plaintext, string $purpose = 'default'): string
+    public static function encryptString(#[\SensitiveParameter] string $plaintext, string $purpose = 'default'): string
     {
         return AppKey::secretStore()->seal($plaintext, 'crypt.' . $purpose);
     }

@@ -78,7 +78,7 @@ final class ContentController
      * /preview/<token>: the entry as it is saved, whatever its status, for
      * the holder of a preview link (Previews). Never cached or indexed.
      */
-    public static function preview(Cms $cms, Request $request, string $token): Response
+    public static function preview(Cms $cms, Request $request, #[\SensitiveParameter] string $token): Response
     {
         $previews = $cms->container->make(Previews::class);
         $viewer = \Kestello\Cms\Auth\Auth::getInstance()?->user();

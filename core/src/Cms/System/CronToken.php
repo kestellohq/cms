@@ -29,7 +29,7 @@ final class CronToken
         return is_string(self::hash()) && self::hash() !== '';
     }
 
-    public static function verify(string $token): bool
+    public static function verify(#[\SensitiveParameter] string $token): bool
     {
         $hash = self::hash();
 

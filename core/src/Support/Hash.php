@@ -15,7 +15,7 @@ final class Hash
      * Hash a password: Argon2id when PHP has it (no length limit), bcrypt
      * otherwise. Older hashes keep verifying; needsRehash() upgrades them.
      */
-    public static function password(string $password): string
+    public static function password(#[\SensitiveParameter] string $password): string
     {
         return password_hash($password, self::algorithm(), self::options());
     }
@@ -40,7 +40,7 @@ final class Hash
         return defined('PASSWORD_ARGON2ID') ? PASSWORD_ARGON2ID : PASSWORD_BCRYPT;
     }
 
-    public static function verify(string $password, string $hash): bool
+    public static function verify(#[\SensitiveParameter] string $password, string $hash): bool
     {
         return $hash !== '' && password_verify($password, $hash);
     }
@@ -76,7 +76,7 @@ final class Hash
      * Burn the same time as a real verify when there is no user, so response
      * times don't reveal which accounts exist.
      */
-    public static function verifyDummy(string $password): void
+    public static function verifyDummy(#[\SensitiveParameter] string $password): void
     {
         static $dummy = null;
         $dummy ??= self::password('kestello-dummy-' . bin2hex(random_bytes(8)));

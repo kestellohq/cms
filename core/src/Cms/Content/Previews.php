@@ -79,7 +79,7 @@ final class Previews
      *
      * @return array<string, mixed>|null
      */
-    public function resolve(string $token, ?int $viewerId): ?array
+    public function resolve(#[\SensitiveParameter] string $token, ?int $viewerId): ?array
     {
         if (preg_match('/^[A-Za-z0-9_-]{43}$/', $token) !== 1) {
             return null;

@@ -288,7 +288,7 @@ final class Session
      *
      * @return bool
      */
-    public function validateToken(string $token): bool
+    public function validateToken(#[\SensitiveParameter] string $token): bool
     {
         $sessionToken = $_SESSION[self::CSRF_KEY] ?? '';
 

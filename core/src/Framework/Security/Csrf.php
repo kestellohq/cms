@@ -39,7 +39,7 @@ final readonly class Csrf
      *
      * @return bool True when the token matches the session token.
      */
-    public function validateToken(string $token): bool
+    public function validateToken(#[\SensitiveParameter] string $token): bool
     {
         return $this->session->validateToken($token);
     }

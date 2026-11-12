@@ -35,7 +35,7 @@ final class AccountSecurity
      * @param string      $via         profile, reset, admin, cli
      * @param string|null $keepSession hashed id of a session to keep (the user's current one)
      */
-    public function changePassword(int $userId, string $newPassword, string $via, ?string $keepSession = null): PasswordChanged
+    public function changePassword(int $userId, #[\SensitiveParameter] string $newPassword, string $via, ?string $keepSession = null): PasswordChanged
     {
         QueryBuilder::table('users')->where('id', $userId)->update([
             'password' => Hash::password($newPassword),

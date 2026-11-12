@@ -25,7 +25,7 @@ final class Totp
         return self::base32Encode(random_bytes(20));
     }
 
-    public static function code(string $secret, int $step): string
+    public static function code(#[\SensitiveParameter] string $secret, int $step): string
     {
         $key = self::base32Decode($secret);
         $hash = hash_hmac('sha1', pack('J', $step), $key, true);
@@ -44,7 +44,7 @@ final class Totp
      * The matching time step, or null. Steps at or below $lastUsedStep are
      * refused, so a code can't be replayed.
      */
-    public static function verify(string $secret, string $code, ?int $lastUsedStep = null, ?int $time = null): ?int
+    public static function verify(#[\SensitiveParameter] string $secret, #[\SensitiveParameter] string $code, ?int $lastUsedStep = null, ?int $time = null): ?int
     {
         $code = preg_replace('/\s+/', '', $code) ?? '';
         if (preg_match('/^\d{' . self::DIGITS . '}$/', $code) !== 1) {
@@ -64,7 +64,7 @@ final class Totp
     }
 
     /** otpauth:// URI for QR codes. */
-    public static function provisioningUri(string $secret, string $account, string $issuer): string
+    public static function provisioningUri(#[\SensitiveParameter] string $secret, string $account, string $issuer): string
     {
         $label = rawurlencode($issuer) . ':' . rawurlencode($account);
 

@@ -62,6 +62,7 @@ final class Jwt
      * @return array<string, mixed> verified claims
      */
     public static function decode(
+        #[\SensitiveParameter]
         string $token,
         array $keys,
         ?string $iss = null,

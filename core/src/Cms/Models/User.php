@@ -32,7 +32,7 @@ final class User extends Model
     /**
      * Verify a password against the user's hash.
      */
-    public function verifyPassword(string $password): bool
+    public function verifyPassword(#[\SensitiveParameter] string $password): bool
     {
         return password_verify($password, (string) $this->password);
     }
@@ -40,7 +40,7 @@ final class User extends Model
     /**
      * Set the password (hashes it automatically).
      */
-    public function setPassword(string $password): void
+    public function setPassword(#[\SensitiveParameter] string $password): void
     {
         $this->attributes['password'] = \Kestello\Support\Hash::password($password);
     }
