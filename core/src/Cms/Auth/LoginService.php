@@ -32,7 +32,7 @@ final class LoginService
     ) {}
 
     /** First factor: email or username, and password. */
-    public function attempt(string $identifier, string $password, string $ip): LoginResult
+    public function attempt(string $identifier, #[\SensitiveParameter] string $password, string $ip): LoginResult
     {
         $identifier = trim($identifier);
         $user = $identifier === '' ? null : $this->findUser($identifier);
@@ -111,7 +111,7 @@ final class LoginService
     }
 
     /** Second factor: a TOTP code or a recovery code. */
-    public function verifySecondFactor(string $code, string $ip): LoginResult
+    public function verifySecondFactor(#[\SensitiveParameter] string $code, string $ip): LoginResult
     {
         $auth = $this->auth();
         $pending = $auth->pendingSecondFactor();
@@ -149,7 +149,7 @@ final class LoginService
     }
 
     /** Re-enter the password for a sensitive action ("sudo mode"). */
-    public function confirmPassword(int $userId, string $password, string $ip): LoginResult
+    public function confirmPassword(int $userId, #[\SensitiveParameter] string $password, string $ip): LoginResult
     {
         $account = 'user:' . $userId;
         $wait = $this->throttle->reserve('confirm', $ip, $account);

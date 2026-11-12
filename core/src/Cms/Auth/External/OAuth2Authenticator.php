@@ -133,7 +133,7 @@ abstract class OAuth2Authenticator implements RedirectAuthenticator
     }
 
     /** @return array<string, mixed> */
-    protected function exchangeCode(string $code, AuthAttempt $attempt): array
+    protected function exchangeCode(#[\SensitiveParameter] string $code, AuthAttempt $attempt): array
     {
         $form = [
             'grant_type' => 'authorization_code',

@@ -80,7 +80,7 @@ final class TwoFactor
      *
      * @return list<string>|null
      */
-    public function confirmTotp(int $userId, string $code): ?array
+    public function confirmTotp(int $userId, #[\SensitiveParameter] string $code): ?array
     {
         $method = QueryBuilder::table(self::METHODS)->where('user_id', $userId)->whereNull('confirmed_at')->orderBy('id', 'DESC')->first();
         if ($method === null || time() - (int) $method['created_at'] > 3600) {
@@ -106,7 +106,7 @@ final class TwoFactor
      *
      * @return 'totp'|'recovery'|null
      */
-    public function verify(int $userId, string $code): ?string
+    public function verify(int $userId, #[\SensitiveParameter] string $code): ?string
     {
         $method = QueryBuilder::table(self::METHODS)->where('user_id', $userId)->whereNotNull('confirmed_at')->first();
         if ($method === null) {
@@ -167,7 +167,7 @@ final class TwoFactor
         return QueryBuilder::table(self::CODES)->where('user_id', $userId)->whereNull('used_at')->count();
     }
 
-    private function useRecoveryCode(int $userId, string $code): bool
+    private function useRecoveryCode(int $userId, #[\SensitiveParameter] string $code): bool
     {
         $normalized = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $code) ?? '');
         // Crockford: people type O for 0 and I/L for 1.

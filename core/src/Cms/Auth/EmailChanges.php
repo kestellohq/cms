@@ -94,7 +94,7 @@ final class EmailChanges
      *
      * @return array{user_id: int, email: string}|string the change, or why it could not be made
      */
-    public function confirm(string $token, string $ip): array|string
+    public function confirm(#[\SensitiveParameter] string $token, string $ip): array|string
     {
         if (!$this->limiter->hit("auth|email-confirm|ip|{$ip}", 20, 3600)->allowed) {
             return 'Too many attempts. Try again later.';

@@ -40,7 +40,7 @@ final class PasswordPolicy
      * @param array<string, mixed> $user username/email of the account, when known
      * @return list<string> messages; empty when the password is acceptable
      */
-    public function errors(string $password, array $user = []): array
+    public function errors(#[\SensitiveParameter] string $password, array $user = []): array
     {
         $errors = [];
         $length = mb_strlen($password);

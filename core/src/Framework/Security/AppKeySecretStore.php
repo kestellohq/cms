@@ -25,7 +25,7 @@ final class AppKeySecretStore implements SecretStore
     private string $currentId;
 
     /** @param list<string> $previousKeys */
-    public function __construct(string $appKey, array $previousKeys = [])
+    public function __construct(#[\SensitiveParameter] string $appKey, #[\SensitiveParameter] array $previousKeys = [])
     {
         if (!function_exists('sodium_crypto_secretbox')) {
             throw new RuntimeException('The sodium extension is required for encrypted secrets.');
@@ -39,7 +39,7 @@ final class AppKeySecretStore implements SecretStore
         }
     }
 
-    public function seal(string $plaintext, string $context): string
+    public function seal(#[\SensitiveParameter] string $plaintext, string $context): string
     {
         $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
         $box = sodium_crypto_secretbox($plaintext, $nonce, $this->derive($this->currentId, $context));

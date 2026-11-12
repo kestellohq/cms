@@ -80,7 +80,7 @@ final class PasswordResets
      *
      * @return array<string, mixed>|null
      */
-    public function find(string $token): ?array
+    public function find(#[\SensitiveParameter] string $token): ?array
     {
         if (preg_match('/^[A-Za-z0-9_-]{43}$/', $token) !== 1) {
             return null;
@@ -102,7 +102,7 @@ final class PasswordResets
      *
      * @return array<string, list<string>> errors by field (token, password); empty on success
      */
-    public function reset(string $token, string $password, string $ip): array
+    public function reset(#[\SensitiveParameter] string $token, #[\SensitiveParameter] string $password, string $ip): array
     {
         if (!$this->limiter->hit("auth|reset-use|ip|{$ip}", 20, 3600)->allowed) {
             return ['token' => ['Too many attempts. Try again later.']];

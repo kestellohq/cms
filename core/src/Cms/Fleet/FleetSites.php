@@ -61,7 +61,7 @@ final class FleetSites
      * @return array<string, mixed> the stored site, checked once
      * @throws InvalidArgumentException field => message
      */
-    public function add(string $name, string $url, string $token): array
+    public function add(string $name, string $url, #[\SensitiveParameter] string $token): array
     {
         $name = self::name($name);
         $url = self::address($url);
@@ -143,7 +143,7 @@ final class FleetSites
     }
 
     /** @return array<string, mixed> */
-    private function fetch(string $url, string $token): array
+    private function fetch(string $url, #[\SensitiveParameter] string $token): array
     {
         $res = $this->http->request('GET', $url . '/api/v1/fleet/report', ['bearer' => $token, 'timeout' => 15, 'max_redirects' => 0, 'max_bytes' => self::MAX_BYTES]);
         $status = $res->status;
@@ -183,7 +183,7 @@ final class FleetSites
         return $name;
     }
 
-    private static function token(string $token): string
+    private static function token(#[\SensitiveParameter] string $token): string
     {
         $token = trim($token);
         if (strlen($token) < 20 || strlen($token) > 500 || preg_match('/[\x00-\x20\x7f]/', $token) === 1) {

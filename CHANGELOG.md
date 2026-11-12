@@ -172,6 +172,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Security
 
+- Passwords, tokens, secrets and keys no longer appear in stack traces or error logs. The functions that take them mark them `#[\SensitiveParameter]` (50 parameters), and a test fails on any new parameter named like a secret without it. The production image also sets `zend.exception_ignore_args`, so logged traces leave out arguments.
 - Someone who manages roles can no longer change or reset a role that can do what they cannot. Narrowing a stronger role, giving an account it, then resetting the role to its defaults handed that account capabilities its creator never had. The roles screen shows such roles as not editable.
 - A theme's email files are checked for event handlers written without a space (`<img/onerror=…>`) and for `javascript:` links written with entities, and `seo.head` filters can no longer add `on…` attributes. Relative links with a backslash (`/\evil.test`, which browsers read as another site) are refused in rich text and menus.
 - Signing in with a provider (GitHub, Google) creates an account only when the provider confirmed the email address, whatever the registration setting. Before, with registration open, an address the provider hadn't confirmed could start an account, so someone could sign up as an address they don't own.

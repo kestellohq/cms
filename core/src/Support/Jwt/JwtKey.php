@@ -33,7 +33,7 @@ final readonly class JwtKey
         }
     }
 
-    public static function hmac(string $secret, string $alg = 'HS256', ?string $kid = null): self
+    public static function hmac(#[\SensitiveParameter] string $secret, string $alg = 'HS256', ?string $kid = null): self
     {
         if (!str_starts_with($alg, 'HS')) {
             throw new JwtException('HMAC keys need an HS* algorithm.');
@@ -45,7 +45,7 @@ final readonly class JwtKey
         return new self($alg, $secret, $kid, true);
     }
 
-    public static function fromPem(string $pem, string $alg, ?string $kid = null, ?string $passphrase = null): self
+    public static function fromPem(string $pem, string $alg, ?string $kid = null, #[\SensitiveParameter] ?string $passphrase = null): self
     {
         if (!preg_match('/^(RS|ES)\d{3}$/', $alg)) {
             throw new JwtException('PEM keys are for RS* or ES* algorithms.');

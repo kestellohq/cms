@@ -66,7 +66,7 @@ final class Auth
      *
      * @return bool True if authentication succeeded.
      */
-    public function attempt(string $username, string $password, string $usernameColumn = 'email'): bool
+    public function attempt(string $username, #[\SensitiveParameter] string $password, string $usernameColumn = 'email'): bool
     {
         $user = QueryBuilder::table($this->table)
             ->where($usernameColumn, $usernameColumn === 'email' ? Emails::normalize($username) : $username)

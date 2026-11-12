@@ -21,12 +21,12 @@ final class Signature
     /** Messages older (or newer) than this are refused, so a captured one can't be replayed later. */
     public const int TOLERANCE = 300;
 
-    public static function sign(string $secret, int $timestamp, string $body): string
+    public static function sign(#[\SensitiveParameter] string $secret, int $timestamp, string $body): string
     {
         return hash_hmac('sha256', $timestamp . '.' . $body, $secret);
     }
 
-    public static function verify(string $header, string $body, string $secret, int $tolerance = self::TOLERANCE, ?int $now = null): bool
+    public static function verify(string $header, string $body, #[\SensitiveParameter] string $secret, int $tolerance = self::TOLERANCE, ?int $now = null): bool
     {
         $t = null;
         $candidates = [];

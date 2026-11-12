@@ -32,7 +32,7 @@ final class Recovery
         return $expires . '.' . $this->sign($expires);
     }
 
-    public function verify(string $token, ?int $now = null): bool
+    public function verify(#[\SensitiveParameter] string $token, ?int $now = null): bool
     {
         if (preg_match('/^(\d{10,})\.([A-Za-z0-9_-]{43})$/', $token, $m) !== 1) {
             return false;
@@ -43,7 +43,7 @@ final class Recovery
         return $expires > ($now ?? time()) && hash_equals($this->sign($expires), $m[2]);
     }
 
-    public function expiresAt(string $token): ?int
+    public function expiresAt(#[\SensitiveParameter] string $token): ?int
     {
         return preg_match('/^(\d{10,})\./', $token, $m) === 1 ? (int) $m[1] : null;
     }

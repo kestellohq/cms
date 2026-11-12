@@ -127,7 +127,7 @@ abstract class OidcAuthenticator extends OAuth2Authenticator
      * @param list<JwtKey> $keys
      * @return array<string, mixed>
      */
-    private function decode(string $token, array $keys): array
+    private function decode(#[\SensitiveParameter] string $token, array $keys): array
     {
         return Jwt::decode($token, $keys, iss: $this->issuer(), aud: $this->clientId(), maxAge: 3600);
     }

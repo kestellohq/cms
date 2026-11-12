@@ -125,7 +125,7 @@ final class Registrations
     /**
      * The address a token was sent to, when the token is valid.
      */
-    public function find(string $token): ?string
+    public function find(#[\SensitiveParameter] string $token): ?string
     {
         if (preg_match('/^[A-Za-z0-9_-]{43}$/', $token) !== 1) {
             return null;
@@ -145,7 +145,7 @@ final class Registrations
      *
      * @return array{errors: array<string, list<string>>, user: array<string, mixed>|null} errors by field (token, password), or the new user
      */
-    public function complete(string $token, string $password, string $ip): array
+    public function complete(#[\SensitiveParameter] string $token, #[\SensitiveParameter] string $password, string $ip): array
     {
         $fail = static fn(string $field, string ...$messages): array => ['errors' => [$field => array_values($messages)], 'user' => null];
         $expired = 'This link is invalid or has expired. Sign up again to get a new one.';

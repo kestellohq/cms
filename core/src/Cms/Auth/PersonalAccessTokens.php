@@ -46,7 +46,7 @@ final class PersonalAccessTokens
      *
      * @return array{token: array<string, mixed>, user: array<string, mixed>}|null
      */
-    public function verify(string $plain, ?string $ip = null): ?array
+    public function verify(#[\SensitiveParameter] string $plain, ?string $ip = null): ?array
     {
         if (!preg_match('/^' . self::PREFIX . '[0-9a-f]{48}$/', $plain)) {
             return null;
@@ -104,7 +104,7 @@ final class PersonalAccessTokens
         return QueryBuilder::table(self::TABLE)->where('user_id', $userId)->delete();
     }
 
-    public static function hash(string $plain): string
+    public static function hash(#[\SensitiveParameter] string $plain): string
     {
         return hash('sha256', $plain);
     }

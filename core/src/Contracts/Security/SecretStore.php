@@ -15,7 +15,7 @@ namespace Kestello\Contracts\Security;
  */
 interface SecretStore
 {
-    public function seal(string $plaintext, string $context): string;
+    public function seal(#[\SensitiveParameter] string $plaintext, string $context): string;
 
     /** @throws \RuntimeException when the value is tampered with or the key is unknown */
     public function open(string $sealed, string $context): string;

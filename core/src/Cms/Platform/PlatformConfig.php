@@ -192,7 +192,7 @@ final class PlatformConfig
         $this->compile();
     }
 
-    public function seal(string $subsystem, string $option, string $plaintext): string
+    public function seal(string $subsystem, string $option, #[\SensitiveParameter] string $plaintext): string
     {
         return $this->requireSecrets()->seal($plaintext, "platform.{$subsystem}.{$option}");
     }
