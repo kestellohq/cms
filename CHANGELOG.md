@@ -116,6 +116,8 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- The content editor stopped as it opened, with "Cannot access 'V' before initialization" in the browser console: the visual editor's switch read the entry before the page had declared it. **Menus** could stop the same way when you came back to it with the list already loaded. A test now walks every component's watchers and fails on any value read before it is declared.
+
 - A theme's own file for an email (`emails/auth.password_reset.html`) is checked for the blocks the email cannot work without, such as its link. The check never had the site's emails to hand, so a theme could leave the link out of a password reset.
 - The Query block lists entries in the page's language, or the viewed entry's, instead of every language at once.
 - An edit of an email keeps working on a send that lacks one of the email's optional blocks, such as a form notification without an admin link, instead of the whole edit being dropped.

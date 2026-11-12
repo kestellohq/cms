@@ -21,6 +21,8 @@ const api = useApi();
 const router = useRouter();
 const typeName = computed(() => String(page.props.params?.type ?? ''));
 const routeId = computed(() => String(page.props.params?.id ?? 'new'));
+// declared before the computeds that read it: the studio watch below reads them as the page opens
+const entry = ref(null); // as last saved
 // new until the first save creates it (entry-state.js)
 const isNew = computed(() => isNewEntry(routeId.value, entry.value));
 const types = useResource('/content/types');
@@ -144,7 +146,6 @@ const visualErrors = computed(() => {
 });
 
 // ── state ────────────────────────────────────────────────────────────
-const entry = ref(null); // as last saved
 const loadError = ref(null);
 const form = reactive(blank());
 const errors = ref({});
