@@ -191,3 +191,23 @@ test('every admin screen opens without an error', async ({ page }) => {
     ).toBe(true);
     expect(seen.problems).toEqual([]);
 });
+
+test('an error the admin hits reaches Site Health', async ({ page }) => {
+    test.skip(!thisCheckout, 'published releases do not report admin errors');
+    const seen = watch(page);
+    const token = await signIn(page, seen);
+    // what a broken screen does: an error nobody catches. The admin opened after signing in,
+    // without a reload, as it does for everyone.
+    await page.evaluate(() => {
+        setTimeout(() => {
+            throw new Error('thrown by the browser test');
+        });
+    });
+    await expect
+        .poll(async () => {
+            const health = await page.request.get('/api/v1/system/health?refresh=1', { headers: { 'X-CSRF-TOKEN': token } });
+            const check = (await health.json()).data.checks.find((c) => c.id === 'core.errors');
+            return check?.details?.admin ?? '';
+        })
+        .toContain('Error: thrown by the browser test');
+});

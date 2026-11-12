@@ -254,6 +254,9 @@ final class ApiRegistry
         } catch (Throwable $e) {
             $owner = ExecutionContext::blamed($e) ?? $entry['owner'];
             error_log(sprintf('[kestello] API %s %s failed [%s] in %s: %s (%s:%d)', $request->method, $request->path, $requestId, $owner, $e->getMessage(), $e->getFile(), $e->getLine()));
+            if ($this->container->has(\Kestello\Framework\Core\ErrorHandler::class)) {
+                $this->container->make(\Kestello\Framework\Core\ErrorHandler::class)->count($owner, $e::class . ': ' . $e->getMessage());
+            }
             $response = ApiProblem::server($this->debug ? $e->getMessage() : null)->toResponse();
         }
 

@@ -9832,6 +9832,10 @@ msgstr ""
 msgid "The address in {field}"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/System/ReportClientError.php
+msgid "The admin address it happened on."
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "The admin installs unsigned plugins and themes too (app.packages.admin_unsigned in config/app.php). That suits a development site; switch it off on a live one."
 msgstr ""
@@ -11695,6 +11699,10 @@ msgstr ""
 
 #: core/resources/js/ui/KBlockSettings.vue
 msgid "What editors can't change"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/System/ReportClientError.php
+msgid "What failed: a Vue lifecycle step, \"script\" or \"promise\"."
 msgstr ""
 
 #: core/resources/js/components/packages/PackageReviewModal.vue
