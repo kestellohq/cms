@@ -243,6 +243,7 @@ final class ApiModule extends Provider
         Endpoints\Notifications\GetMyNotificationPreferences::class,
         Endpoints\Notifications\UpdateMyNotificationPreferences::class,
         Endpoints\System\GetSiteHealth::class,
+        Endpoints\System\ReportClientError::class,
         Endpoints\System\GetSystemInfo::class,
         Endpoints\System\ListPlatform::class,
         Endpoints\System\TestPlatform::class,

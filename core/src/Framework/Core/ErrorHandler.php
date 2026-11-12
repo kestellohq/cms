@@ -91,6 +91,22 @@ final class ErrorHandler
     // Logging
     // ------------------------------------------------------------------
 
+    /**
+     * Count an error against what caused it (core, plugin:<slug>, theme:<slug>, admin)
+     * for Site Health: also for errors handled elsewhere, such as a failed API call.
+     */
+    public function count(string $source, string $message): void
+    {
+        if ($this->logPath !== '') {
+            ErrorTally::in($this->logPath)->record($source, $message);
+        }
+    }
+
+    public function tally(): ?ErrorTally
+    {
+        return $this->logPath !== '' ? ErrorTally::in($this->logPath) : null;
+    }
+
     private function logException(Throwable $exception): void
     {
         if ($this->logPath === '') {
@@ -109,6 +125,8 @@ final class ErrorHandler
         for ($e = $exception; $e !== null && $owner === null; $e = $e->getPrevious()) {
             $owner = ExecutionContext::blamed($e);
         }
+
+        $this->count($owner ?? 'core', $exception::class . ': ' . $exception->getMessage());
 
         $entry = sprintf(
             "[%s]%s %s: %s in %s:%d\n%s\n\n",

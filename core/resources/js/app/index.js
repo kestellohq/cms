@@ -31,6 +31,7 @@ import { createLeaveGuards, leavesPage } from './leave-guards.js';
 import { endedElsewhere } from './same-site.js';
 import { staleStylesheets, stylesFor } from './stylesheets.js';
 import { documentTitle } from './document-title.js';
+import { createErrorReporter } from './errorReport.js';
 
 const ROUTER = Symbol('kestello.router');
 const PAGE = Symbol('kestello.page');
@@ -771,7 +772,31 @@ export async function boot({ registry }) {
     }
     const { app, router } = await createKestelloApp({ page, registry, ssr: el.hasAttribute('data-ssr') });
 
-    app.config.errorHandler = (error, instance, info) => console.error('[kestello]', info, error);
+    // on admin pages, errors also go to the site: its log and Site Health ("Errors today").
+    // Asked of the page showing when the error happens: people sign in on /login and the
+    // admin opens in this same app, without a reload.
+    const reportToSite = createErrorReporter({
+        send: (payload) =>
+            fetch('/api/v1/system/client-errors', {
+                method: 'POST',
+                credentials: 'same-origin',
+                keepalive: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': router.page.props.csrfToken ?? '',
+                },
+                body: JSON.stringify(payload),
+            }),
+    });
+    const report = (error, where) => (router.page.props?.admin ? reportToSite(error, where) : false);
+    app.config.errorHandler = (error, instance, info) => {
+        console.error('[kestello]', info, error);
+        report(error, String(info ?? ''));
+    };
+    window.addEventListener('error', (event) => report(event.error ?? event.message, 'script'));
+    window.addEventListener('unhandledrejection', (event) => report(event.reason, 'promise'));
     app.mount(el);
     router.listen();
     listenForStylePreview();

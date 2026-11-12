@@ -23,6 +23,26 @@ final class CoreHealthChecks
     /** Recommended extensions => why. */
     private const array RECOMMENDED = ['intl' => 'translations, plurals and number formatting', 'fileinfo' => 'reliable upload type detection', 'curl' => 'faster, more reliable HTTP requests', 'opcache' => 'much faster page loads', 'gd' => 'image resizing (or imagick)'];
 
+    /** What an error tally's source is, in words: "the admin", "core", "the plugin Ledger". */
+    private static function errorSource(Cms $cms, string $source): string
+    {
+        if ($source === 'admin') {
+            return 'the admin in the browser';
+        }
+        if (!str_contains($source, ':')) {
+            return $source;
+        }
+        [$kind, $slug] = explode(':', $source, 2);
+        $name = $slug;
+        try {
+            $type = \Kestello\Cms\Extension\PackageType::tryFrom($kind);
+            $name = $type !== null ? ($cms->extensions()->findActive($type, $slug)?->manifest->name ?? $slug) : $slug;
+        } catch (\Throwable) {
+        }
+
+        return "the {$kind} {$name}";
+    }
+
     public static function register(Cms $cms): void
     {
         $h = $cms->health;
@@ -165,6 +185,27 @@ final class CoreHealthChecks
             }
 
             return HealthResult::good("The database has every table, column and index Kestello expects ({$diff['tables']} tables).", $details);
+        }, 'reliability');
+
+        $h->check('core.errors', 'Errors today', static function () use ($cms): HealthResult {
+            $handler = $cms->container->has(\Kestello\Framework\Core\ErrorHandler::class) ? $cms->container->make(\Kestello\Framework\Core\ErrorHandler::class) : null;
+            $today = $handler?->tally()?->day() ?? [];
+            if ($today === []) {
+                return HealthResult::good('No errors today.');
+            }
+            $details = [];
+            $parts = [];
+            foreach ($today as $source => $t) {
+                $details[$source] = "{$t['count']}× " . $t['message'];
+                $parts[] = self::errorSource($cms, $source) . ': ' . $t['count'];
+            }
+            $total = array_sum(array_column($today, 'count'));
+
+            return HealthResult::recommended(
+                ($total === 1 ? 'The site hit 1 error today' : "The site hit {$total} errors today") . ' (' . implode(', ', $parts) . '). '
+                . 'The details show the last message from each; the full errors are in storage/logs.',
+                $details,
+            );
         }, 'reliability');
 
         $h->check('core.update-stopped', 'Updates', static function () use ($cms): HealthResult {
