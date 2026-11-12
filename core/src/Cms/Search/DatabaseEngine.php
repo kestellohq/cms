@@ -12,6 +12,7 @@ use Kestello\Contracts\Search\SearchQuery;
 use Kestello\Contracts\Search\SearchResults;
 use Kestello\Framework\Database\Connection;
 use Kestello\Framework\Database\DatabaseManager;
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Json;
 use Throwable;
 
@@ -91,7 +92,7 @@ final class DatabaseEngine implements Engine
             } catch (Throwable $e) {
                 // already there (MySQL has no IF NOT EXISTS for indexes), or FTS5 isn't compiled in: LIKE still works
                 if (!str_contains(strtolower($e->getMessage()), 'duplicate')) {
-                    error_log('[search] ' . $e->getMessage());
+                    Log::warning('search: ' . $e->getMessage());
                 }
             }
         }
@@ -218,7 +219,7 @@ final class DatabaseEngine implements Engine
             if ($this->mode() === 'like') {
                 throw new SearchException('Search failed: ' . $e->getMessage(), previous: $e);
             }
-            error_log('[search] full-text query failed, using LIKE: ' . $e->getMessage());
+            Log::error('search: full-text query failed, using LIKE: ' . $e->getMessage());
 
             return $this->run($query, $terms, 'like');
         }

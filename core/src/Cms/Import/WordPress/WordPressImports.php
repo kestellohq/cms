@@ -15,6 +15,7 @@ use Kestello\Contracts\Cache\Store;
 use Kestello\Framework\Database\Model;
 use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Http\Client\HttpClient;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Queue\SyncQueue;
 use Kestello\Support\Date;
 use Throwable;
@@ -181,7 +182,7 @@ final class WordPressImports
             $this->work($id, $seconds);
         } catch (Throwable $e) {
             // not one item's problem (those fail on their own): stop, so nothing waits on it forever
-            error_log('[import] ' . $id . ': ' . $e);
+            Log::error('import: ' . $id . ' stopped: ' . $e->getMessage(), ['exception' => $e]);
             $this->stopWithError($id, $e);
         } finally {
             $lock->release();
@@ -379,7 +380,7 @@ final class WordPressImports
             try {
                 $entries->relink($item, is_array($payload) ? $payload : []);
             } catch (Throwable $e) {
-                error_log('[import] links of item ' . $item['id'] . ': ' . $e->getMessage());    // the entry is there; only some links still point at the old site
+                Log::warning('import: links of item ' . $item['id'] . ': ' . $e->getMessage());    // the entry is there; only some links still point at the old site
             }
             QueryBuilder::table('import_items')->where('id', $item['id'])->update(['needs_links' => false]);
             if (microtime(true) >= $deadline) {
@@ -395,7 +396,7 @@ final class WordPressImports
         try {
             $this->cms->container->make(EntryRelations::class)->rebuild();
         } catch (Throwable $e) {
-            error_log('[import] relations: ' . $e->getMessage());
+            Log::warning('import: relations: ' . $e->getMessage());
         }
         $this->finish($id, 'done', $p);
     }

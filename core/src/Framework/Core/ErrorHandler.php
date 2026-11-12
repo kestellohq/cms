@@ -6,6 +6,8 @@ namespace Kestello\Framework\Core;
 
 use ErrorException;
 use Kestello\Framework\Http\RequestId;
+use Kestello\Framework\Log\Logger;
+use Kestello\Framework\Log\LogLevel;
 use Throwable;
 
 /**
@@ -18,9 +20,11 @@ use Throwable;
  */
 final class ErrorHandler
 {
+    /** @param Logger|null $logger where errors are written; daily files in $logPath when null */
     public function __construct(
         private readonly bool $debug = false,
         private readonly string $logPath = '',
+        private readonly ?Logger $logger = null,
     ) {}
 
     /**
@@ -166,15 +170,10 @@ final class ErrorHandler
 
     private function logException(Throwable $exception): void
     {
-        if ($this->logPath === '') {
+        $logger = $this->logger ?? ($this->logPath !== '' ? new Logger($this->logPath) : null);
+        if ($logger === null) {
             return;
         }
-
-        if (!is_dir($this->logPath)) {
-            @mkdir($this->logPath, 0o755, recursive: true);
-        }
-
-        $file = $this->logPath . '/' . date('Y-m-d') . '.log';
 
         // Name the package the failure came from, so "a plugin broke the site"
         // is answerable from the log alone.
@@ -184,21 +183,12 @@ final class ErrorHandler
         }
 
         $this->count($owner ?? 'core', $exception::class . ': ' . $exception->getMessage());
-
-        $id = RequestId::current();
-        $entry = sprintf(
-            "[%s]%s%s %s: %s in %s:%d\n%s\n\n",
-            date('Y-m-d H:i:s'),
-            $id !== null ? " [request {$id}]" : '',
-            $owner !== null && $owner !== 'core' ? " [{$owner}]" : '',
-            $exception::class,
-            $exception->getMessage(),
-            $exception->getFile(),
-            $exception->getLine(),
-            $exception->getTraceAsString(),
+        $logger->log(
+            $exception instanceof \Error ? LogLevel::CRITICAL : LogLevel::ERROR,
+            $exception::class . ': ' . $exception->getMessage(),
+            ['exception' => $exception],
+            $owner ?? 'core',
         );
-
-        @file_put_contents($file, $entry, FILE_APPEND | LOCK_EX);
     }
 
     // ------------------------------------------------------------------

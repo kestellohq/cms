@@ -9,6 +9,7 @@ use Kestello\Cms\Extension\Provider;
 use Kestello\Framework\Core\Container;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
+use Kestello\Framework\Log\Log;
 
 /** Core module: global styles, theme documents, the Styles screen. */
 final class DesignModule extends Provider
@@ -43,7 +44,7 @@ final class DesignModule extends Provider
                     $html .= '<link rel="preload" href="' . htmlspecialchars($url, ENT_QUOTES) . '" as="font" type="font/woff2" crossorigin>' . "\n";
                 }
             } catch (\Throwable $e) {
-                error_log('[kestello] font preload skipped: ' . $e->getMessage());     // e.g. not migrated yet
+                Log::warning('font preload skipped: ' . $e->getMessage());     // e.g. not migrated yet
             }
 
             return $html;

@@ -68,6 +68,7 @@ use Kestello\Framework\Http\Client\HttpClient;
 use Kestello\Framework\Http\CorsMiddleware;
 use Kestello\Framework\Http\RateLimiter;
 use Kestello\Framework\Http\TrustedProxies;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Security\Csrf;
 use Kestello\Framework\Security\CsrfMiddleware;
 use Kestello\Framework\Session\AbstractSessionStore;
@@ -244,10 +245,10 @@ final class Kernel
             $cms = $this->bootExtensions($app, recovery: true);
             $result = $cms->container->make(UpdateRecovery::class)->recover();
             if (!$result['ok']) {
-                error_log('[kestello] putting back an update that stopped: ' . implode(' ', $result['problems']));
+                Log::warning('putting back an update that stopped: ' . implode(' ', $result['problems']));
             }
         } catch (Throwable $e) {
-            error_log('[kestello] putting back an update that stopped: ' . $e->getMessage());
+            Log::warning('putting back an update that stopped: ' . $e->getMessage());
         }
 
         $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
@@ -630,7 +631,7 @@ final class Kernel
                 $key = $model::class . '::' . $relation;
                 if (!isset($seen[$key])) {
                     $seen[$key] = true;
-                    error_log("[orm] N+1: [{$relation}] lazy loaded on each " . $model::class . " of a list; eager load it with ->with('{$relation}').");
+                    Log::warning("orm: N+1: [{$relation}] lazy loaded on each " . $model::class . " of a list; eager load it with ->with('{$relation}').");
                 }
             });
         }
@@ -683,12 +684,12 @@ final class Kernel
         try {
             \Kestello\Cms\Content\ContentModule::finalize($cms);
         } catch (Throwable $e) {
-            error_log('[kestello] content types: ' . $e->getMessage());
+            Log::warning('content types: ' . $e->getMessage());
         }
         try {
             $cms->auth->roles->applyStored(\Kestello\Cms\Auth\RoleStore::load());
         } catch (Throwable $e) {
-            error_log('[kestello] stored roles: ' . $e->getMessage()); // before migrations ran: code roles only
+            Log::warning('stored roles: ' . $e->getMessage()); // before migrations ran: code roles only
         }
         $this->bootTranslations($cms, $extensions);
 
@@ -706,7 +707,7 @@ final class Kernel
             \Kestello\Support\Translator::setLocale(\Kestello\Cms\I18n\SiteLanguage::resolve($this->languageSetting(), (string) $cms->config->get('app.locale', 'en')));
             \Kestello\Support\Translator::setFallback((string) $cms->config->get('app.fallback_locale', 'en'));
         } catch (\InvalidArgumentException $e) {
-            error_log('[kestello] ' . $e->getMessage());
+            Log::warning($e->getMessage());
         }
         \Kestello\Support\Translator::addPath('core', $this->paths->core('resources/lang'));
         foreach ([...array_values($extensions->activePlugins()), ...array_reverse($extensions->themeChain())] as $package) {
@@ -745,7 +746,7 @@ final class Kernel
                 $secrets = \Kestello\Support\AppKey::secretStore();
                 $container->instance(SecretStore::class, $secrets);
             } catch (Throwable $e) {
-                error_log('[kestello] secrets disabled: ' . $e->getMessage());
+                Log::warning('secrets disabled: ' . $e->getMessage());
             }
         }
 
@@ -805,7 +806,7 @@ final class Kernel
         try {
             $primary = $cms->drivers->resolve('session');
         } catch (Throwable $e) {
-            error_log('[kestello] session store unavailable, using files: ' . $e->getMessage());
+            Log::error('session store unavailable, using files: ' . $e->getMessage());
             $primary = $fallback;
         }
 
@@ -840,9 +841,9 @@ final class Kernel
             if ((new Schema(DatabaseManager::getConnection()))->hasTable('packages')) {
                 return new DatabaseStateStore();
             }
-            error_log('[kestello] packages table missing: run "php bin/cms migrate". Plugins are disabled until then.');
+            Log::warning('packages table missing: run "php bin/cms migrate". Plugins are disabled until then.');
         } catch (Throwable $e) {
-            error_log('[kestello] database unavailable, plugins disabled: ' . $e->getMessage());
+            Log::error('database unavailable, plugins disabled: ' . $e->getMessage());
         }
 
         return new ArrayStateStore();

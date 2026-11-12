@@ -7,6 +7,7 @@ namespace Kestello\Cms\Design;
 use Kestello\Cms\Blocks\BlockDesign;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Extension\Package;
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Translator;
 
 /**
@@ -107,7 +108,7 @@ final class ThemeStyles
             }
             $raw = json_decode((string) file_get_contents($file), true);
             if (!is_array($raw)) {
-                error_log("[kestello] {$package->slug()}/styles.json is not valid JSON; its tokens are ignored.");
+                Log::warning("{$package->slug()}/styles.json is not valid JSON; its tokens are ignored.");
                 continue;
             }
             self::merge($def, $raw, $package->slug());
@@ -142,7 +143,7 @@ final class ThemeStyles
         }
         foreach ((array) ($raw['tokens'] ?? []) as $name => $t) {
             if (!is_string($name) || preg_match('/^[a-z][a-z0-9-]{0,40}$/', $name) !== 1 || !is_array($t) || !in_array($t['type'] ?? null, ['color', 'size', 'number', 'font'], true)) {
-                error_log("[kestello] {$owner}/styles.json: token \"{$name}\" is invalid and ignored.");
+                Log::warning("{$owner}/styles.json: token \"{$name}\" is invalid and ignored.");
                 continue;
             }
             $token = [
@@ -175,18 +176,18 @@ final class ThemeStyles
             if (self::checkCss($raw['custom_css']) === null) {
                 $def['theme_css'] = trim($raw['custom_css']);
             } else {
-                error_log("[kestello] {$owner}/styles.json: custom_css is refused (" . self::checkCss($raw['custom_css']) . ').');
+                Log::warning("{$owner}/styles.json: custom_css is refused (" . self::checkCss($raw['custom_css']) . ').');
             }
         }
         foreach ((array) ($raw['presets'] ?? []) as $kind => $presets) {
             if (!isset(BlockDesign::PRESET_KINDS[$kind]) || !is_array($presets)) {
-                error_log("[kestello] {$owner}/styles.json: presets.{$kind} is not a preset kind (" . implode(', ', array_keys(BlockDesign::PRESET_KINDS)) . ') and is ignored.');
+                Log::warning("{$owner}/styles.json: presets.{$kind} is not a preset kind (" . implode(', ', array_keys(BlockDesign::PRESET_KINDS)) . ') and is ignored.');
                 continue;
             }
             foreach ($presets as $key => $preset) {
                 $value = is_array($preset) ? ($preset['value'] ?? null) : null;
                 if (!is_string($key) || preg_match('/^[a-z][a-z0-9-]{0,30}$/', $key) !== 1 || !is_string($value) || !BlockDesign::safeValue($value)) {
-                    error_log("[kestello] {$owner}/styles.json: presets.{$kind}.{$key} is invalid and ignored (a lowercase name, and a colour, length or var(--token)).");
+                    Log::warning("{$owner}/styles.json: presets.{$kind}.{$key} is invalid and ignored (a lowercase name, and a colour, length or var(--token)).");
                     continue;
                 }
                 $def['presets'][$kind][$key] = ['label' => mb_substr((string) ($preset['label'] ?? $key), 0, 40), 'value' => $value];
@@ -198,7 +199,7 @@ final class ThemeStyles
                     continue;
                 }
                 if (!in_array($role, self::EMAIL_ROLES, true) || !is_string($ref) || preg_match('/^(?:[a-z][a-z0-9-]{0,40}|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})$/', $ref) !== 1) {
-                    error_log("[kestello] {$owner}/styles.json: email.{$role} is ignored (roles: " . implode(', ', self::EMAIL_ROLES) . '; a token name or a #colour).');
+                    Log::warning("{$owner}/styles.json: email.{$role} is ignored (roles: " . implode(', ', self::EMAIL_ROLES) . '; a token name or a #colour).');
                     continue;
                 }
                 $def['email'][$scheme][$role] = $ref;
@@ -212,7 +213,7 @@ final class ThemeStyles
         // a token's own default must be valid too
         foreach ($def['tokens'] as $name => $token) {
             if (self::value($token, $token['value'], $def['fonts']) === null) {
-                error_log("[kestello] {$owner}/styles.json: token \"{$name}\" has an invalid default and is ignored.");
+                Log::warning("{$owner}/styles.json: token \"{$name}\" has an invalid default and is ignored.");
                 unset($def['tokens'][$name]);
             }
         }

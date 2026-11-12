@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Mail;
 
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Mail\MailTemplate;
 use Kestello\Support\Html;
 use Kestello\Support\Translator;
@@ -112,7 +113,7 @@ final class MailLayout
         $names = $theme->id === null ? null : array_keys($named);
         $problems = ThemeEmails::problems($theme->html, $names, $theme->locked);
         if ($problems !== []) {
-            error_log("[kestello] {$theme->file} is not used for this email (" . implode('; ', $problems) . "); Kestello's own layout is.");
+            Log::warning("{$theme->file} is not used for this email (" . implode('; ', $problems) . "); Kestello's own layout is.");
 
             return null;
         }

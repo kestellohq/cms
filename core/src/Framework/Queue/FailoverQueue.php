@@ -6,6 +6,7 @@ namespace Kestello\Framework\Queue;
 
 use Kestello\Contracts\Queue\Queue;
 use Kestello\Contracts\Queue\ReservedJob;
+use Kestello\Framework\Log\Log;
 use Throwable;
 use WeakMap;
 
@@ -30,7 +31,7 @@ final class FailoverQueue implements Queue
         try {
             return $this->primary->push($queue, $payload, $delay, $uniqueKey);
         } catch (Throwable $e) {
-            error_log('[kestello] queue: the primary queue refused a job, it went to the database instead: ' . $e->getMessage());
+            Log::warning('queue: the primary queue refused a job, it went to the database instead: ' . $e->getMessage());
 
             return $this->secondary->push($queue, $payload, $delay, $uniqueKey);
         }
@@ -42,7 +43,7 @@ final class FailoverQueue implements Queue
             try {
                 $job = $backend->reserve($queues, $visibility);
             } catch (Throwable $e) {
-                error_log('[kestello] queue: cannot read a queue: ' . $e->getMessage());
+                Log::error('queue: cannot read a queue: ' . $e->getMessage());
                 continue;
             }
             if ($job !== null) {

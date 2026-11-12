@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Mail;
 
 use Kestello\Framework\Database\QueryBuilder;
+use Kestello\Framework\Log\Log;
 
 /**
  * The saved edits of the site's emails, one per email and language
@@ -40,13 +41,13 @@ final class EmailEdits
         try {
             $row = QueryBuilder::table(self::TABLE)->where('email', $email)->where('locale', $locale)->first();
         } catch (\PDOException $e) {
-            error_log("[kestello] email edits could not be read ({$e->getMessage()}); \"{$email}\" is sent as its code writes it. Run: php bin/cms migrate");
+            Log::error("email edits could not be read ({$e->getMessage()}); \"{$email}\" is sent as its code writes it. Run: php bin/cms migrate");
 
             return $this->found[$key] = null;
         }
         $blocks = $row !== null ? json_decode((string) $row['blocks'], true) : null;
         if ($row !== null && !is_array($blocks)) {
-            error_log("[kestello] the saved edit of \"{$email}\" ({$locale}) is not valid JSON; it is sent as its code writes it.");
+            Log::warning("the saved edit of \"{$email}\" ({$locale}) is not valid JSON; it is sent as its code writes it.");
         }
 
         return $this->found[$key] = is_array($blocks) ? [

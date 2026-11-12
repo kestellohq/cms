@@ -7,6 +7,7 @@ namespace Kestello\Cms\Auth;
 use Closure;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Mail\EmailRegistry;
+use Kestello\Framework\Log\Log;
 
 /**
  * How core's account emails go out: the named email built and rendered
@@ -34,7 +35,7 @@ final class AccountMail
         }
         \Kestello\Cms\System\WebRunner::defer(static function () use ($emails, $email, $mail, $failure): void {
             if (!$emails->deliver($email, $mail)) {
-                error_log('[kestello] ' . $failure);
+                Log::error($failure);
             }
         });
     }

@@ -8,6 +8,7 @@ use Kestello\Cms\Cms;
 use Kestello\Cms\Content\ContentException;
 use Kestello\Cms\Content\ContentType;
 use Kestello\Cms\Content\Entry;
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Translator;
 
 /**
@@ -91,13 +92,13 @@ final class ThemeTemplates
                     continue;
                 }
                 if ($plugin && !self::ownedBy($key, $origin)) {
-                    error_log("[kestello] plugin {$origin}: " . self::KINDS[$kind] . "/{$key}.json is skipped; plugin keys start with \"{$origin}-\" or \"entry-{$origin}\".");
+                    Log::warning("plugin {$origin}: " . self::KINDS[$kind] . "/{$key}.json is skipped; plugin keys start with \"{$origin}-\" or \"entry-{$origin}\".");
                     continue;
                 }
                 $raw = (string) file_get_contents($file);
                 $data = json_decode($raw, true);
                 if (!is_array($data)) {
-                    error_log("[kestello] {$origin}/" . self::KINDS[$kind] . "/{$key}.json is not valid JSON.");
+                    Log::warning("{$origin}/" . self::KINDS[$kind] . "/{$key}.json is not valid JSON.");
                     continue;
                 }
                 [$clean] = $this->normalize($kind, $key, $data, strict: false);
@@ -363,7 +364,7 @@ final class ThemeTemplates
             if ($strict) {
                 $errors['blocks'] = array_slice($blockErrors, 0, 10);
             } else {
-                error_log("[kestello] {$kind} \"{$key}\": invalid blocks dropped: " . implode(' | ', array_slice($blockErrors, 0, 3)));
+                Log::warning("{$kind} \"{$key}\": invalid blocks dropped: " . implode(' | ', array_slice($blockErrors, 0, 3)));
             }
         }
         $out['blocks'] = $blocks;

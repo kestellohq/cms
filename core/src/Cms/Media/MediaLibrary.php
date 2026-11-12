@@ -10,6 +10,7 @@ use Kestello\Contracts\Auth\Principal;
 use Kestello\Contracts\Storage\DirectUploads;
 use Kestello\Contracts\Storage\Disk;
 use Kestello\Framework\Database\QueryBuilder;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Support\Str;
 use Kestello\Support\Translator;
@@ -509,7 +510,7 @@ final class MediaLibrary
 
             return true;
         } catch (\Throwable $e) {
-            error_log('[media] first page of #' . $media->getKey() . ' failed: ' . $e->getMessage());
+            Log::error('media: first page of #' . $media->getKey() . ' failed: ' . $e->getMessage());
 
             return false;
         } finally {
@@ -617,7 +618,7 @@ final class MediaLibrary
                 $this->cms->queue->push(new GenerateVariants((int) $media->getKey()), queue: 'media');
             }
         } catch (\Throwable $e) {
-            error_log('[media] variants for #' . $media->getKey() . ' failed: ' . $e->getMessage()); // made on demand instead
+            Log::error('media: variants for #' . $media->getKey() . ' failed: ' . $e->getMessage()); // made on demand instead
         }
     }
 

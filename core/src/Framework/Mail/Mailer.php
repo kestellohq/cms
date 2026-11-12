@@ -6,6 +6,7 @@ namespace Kestello\Framework\Mail;
 
 use Kestello\Contracts\Mail\Message;
 use Kestello\Contracts\Mail\Transport;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Settings\Settings;
 use RuntimeException;
 
@@ -149,8 +150,7 @@ final class Mailer
         } catch (\InvalidArgumentException $e) {
             throw $e;
         } catch (\Throwable $e) {
-            $logger = new \Kestello\Framework\Log\Logger(self::storageDir('logs'));
-            $logger->error('SMTP send failed: ' . $e->getMessage());
+            Log::error('SMTP send failed: ' . $e->getMessage());
 
             return false;
         }
@@ -411,14 +411,5 @@ final class Mailer
         }
 
         return $container->has(Transport::class) ? $container->make(Transport::class) : null;
-    }
-
-    private static function storageDir(string $sub): string
-    {
-        try {
-            return \Kestello\Framework\Core\Application::getInstance()->paths()->storage($sub);
-        } catch (\RuntimeException) {
-            return sys_get_temp_dir();
-        }
     }
 }

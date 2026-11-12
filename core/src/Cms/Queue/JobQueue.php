@@ -17,6 +17,8 @@ use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Database\DatabaseManager;
 use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Events\EventDispatcher;
+use Kestello\Framework\Log\Log;
+use Kestello\Framework\Log\LogLevel;
 use Kestello\Framework\Queue\SyncQueue;
 use Kestello\Support\Json;
 use ReflectionClass;
@@ -91,7 +93,7 @@ final class JobQueue
             try {
                 $data = self::arguments($event);
             } catch (InvalidArgumentException $e) {
-                error_log("[queue] {$listener} runs inline: " . $event::class . ' cannot be queued (' . $e->getMessage() . ')');
+                Log::warning("queue: {$listener} runs inline: " . $event::class . ' cannot be queued (' . $e->getMessage() . ')');
                 return false;
             }
             $this->pushDescriptor(['job' => CallQueuedListener::class, 'args' => ['listener' => $listener, 'event' => $event::class, 'data' => $data]], $options->delay, $options->queue, null);
@@ -252,7 +254,7 @@ final class JobQueue
                     $this->pushDescriptor(['job' => $next['job'], 'args' => $next['args']], 0, $queue, null, $steps === [] ? [] : ['chain' => $steps]);
                 }
             } elseif (!$succeeded && is_array($data['chain'] ?? null) && $data['chain'] !== []) {
-                error_log('[queue] ' . ($data['job'] ?? '?') . ' failed; dropped ' . count($data['chain']) . ' chained job(s).');
+                Log::error('queue: ' . ($data['job'] ?? '?') . ' failed; dropped ' . count($data['chain']) . ' chained job(s).');
             }
 
             if (is_string($data['batch'] ?? null) && DatabaseManager::hasConnection()) {
@@ -263,7 +265,7 @@ final class JobQueue
                 }
             }
         } catch (Throwable $e) {
-            error_log('[queue] could not continue after ' . ($data['job'] ?? '?') . ': ' . $e->getMessage());
+            Log::error('queue: could not continue after ' . ($data['job'] ?? '?') . ': ' . $e->getMessage());
         }
     }
 
@@ -315,7 +317,7 @@ final class JobQueue
             if ($reserved->attempts < $max) {
                 $backoff = self::option($job, 'backoff', null, $reserved->attempts);
                 $backend->release($reserved, max(0, $backoff === null ? self::defaultBackoff($reserved->attempts) : (int) $backoff));
-                error_log("[queue] {$data['job']} attempt {$reserved->attempts}/{$max} failed, will retry: " . $e->getMessage());
+                Log::warning("queue: {$data['job']} attempt {$reserved->attempts}/{$max} failed, will retry: " . $e->getMessage());
                 return 'retry';
             }
             $this->fail($reserved, $data, $e);
@@ -369,7 +371,7 @@ final class JobQueue
                 pcntl_async_signals(true);
                 pcntl_signal(SIGALRM, static function () use ($job, $timeout): never {
                     // A hung job can't block the worker forever: exit, and the reservation expiry retries it.
-                    error_log('[queue] ' . $job::class . " exceeded its {$timeout}s timeout; worker exiting.");
+                    Log::warning('queue: ' . $job::class . " exceeded its {$timeout}s timeout; worker exiting.");
                     exit(1);
                 });
                 pcntl_alarm(max(1, $timeout));
@@ -439,7 +441,7 @@ final class JobQueue
             $this->run($job);
         } catch (ReleaseJob $release) {
             // The sync driver cannot wait; the job is skipped (use a real queue for rate-limited work).
-            error_log('[queue] ' . $job::class . ' released on the sync driver and skipped: ' . $release->getMessage());
+            Log::warning('queue: ' . $job::class . ' released on the sync driver and skipped: ' . $release->getMessage());
             return;
         } catch (Throwable $e) {
             $this->fail(new ReservedJob('sync', $queue, $payload, 1, ''), $data, $e);
@@ -458,7 +460,7 @@ final class JobQueue
         $class = is_string($data['job'] ?? null) ? $data['job'] : '?';
         $owner = $this->jobs[$class] ?? 'unknown';
         $message = $e::class . ': ' . $e->getMessage() . "\n" . $e->getTraceAsString();
-        error_log("[queue] {$class} failed for good (owner {$owner}): " . $e->getMessage());
+        Log::write(LogLevel::ERROR, "queue: {$class} failed for good: " . $e->getMessage(), ['exception' => $e], $owner);
 
         if (DatabaseManager::hasConnection()) {
             try {
@@ -473,7 +475,7 @@ final class JobQueue
                     'failed_at' => time(),
                 ]);
             } catch (Throwable $inner) {
-                error_log('[queue] could not record the failed job: ' . $inner->getMessage());
+                Log::error('queue: could not record the failed job: ' . $inner->getMessage());
             }
         }
 

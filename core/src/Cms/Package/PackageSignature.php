@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Package;
 
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Zip\Zip;
 use Kestello\Support\Zip\ZipReader;
 use RuntimeException;
@@ -143,7 +144,7 @@ final class PackageSignature
         foreach (is_array($config) ? $config : [] as $entry) {
             $public = is_array($entry) && is_string($entry['public_key'] ?? null) ? base64_decode($entry['public_key'], true) : false;
             if ($public === false || strlen($public) !== 32) {
-                error_log("[kestello] {$setting}: an entry is not a base64 Ed25519 public key and is ignored.");
+                Log::warning("{$setting}: an entry is not a base64 Ed25519 public key and is ignored.");
                 continue;
             }
             $out[self::keyId($public)] = ['name' => mb_substr((string) ($entry['name'] ?? 'Unnamed key'), 0, 80), 'public_key' => (string) $entry['public_key']];

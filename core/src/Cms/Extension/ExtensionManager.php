@@ -10,6 +10,7 @@ use Kestello\Framework\Core\Autoloader;
 use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Database\MigrationRunner;
 use Kestello\Framework\Database\QueryBuilder;
+use Kestello\Framework\Log\Log;
 use RuntimeException;
 use Throwable;
 
@@ -276,7 +277,7 @@ final class ExtensionManager
             return $this->resolver->order($runnable);
         } catch (RuntimeException $e) {
             // A cycle should have been refused at activation; never take the site down for it.
-            error_log('[kestello] ' . $e->getMessage() . ' — plugins skipped.');
+            Log::warning($e->getMessage() . ' — plugins skipped.');
             foreach ($runnable as $slug => $_) {
                 $this->rejected[$slug] = [$e->getMessage()];
             }
@@ -399,7 +400,7 @@ final class ExtensionManager
     private function suspend(string $owner, string $reason): void
     {
         $this->suspensions->suspend($owner, $reason);
-        error_log('[kestello] safe mode suspended ' . $owner . ': ' . $reason);
+        Log::warning('safe mode suspended ' . $owner . ': ' . $reason);
     }
 
     /**
@@ -579,7 +580,7 @@ final class ExtensionManager
             ExecutionContext::run($plugin->owner(), fn() => $this->providerFor($plugin)?->deactivate($this->cms));
         } catch (Throwable $e) {
             // Deactivation must always succeed, even for a broken plugin.
-            error_log("[kestello] {$slug} deactivate() failed: {$e->getMessage()}");
+            Log::error("{$slug} deactivate() failed: {$e->getMessage()}");
         }
 
         $state = $this->state->get(PackageType::Plugin, $slug) ?? new PackageState(PackageType::Plugin, $slug, false, $plugin->version());

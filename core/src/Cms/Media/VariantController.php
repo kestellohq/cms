@@ -8,6 +8,7 @@ use Kestello\Cms\Cms;
 use Kestello\Contracts\Media\ImageException;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
+use Kestello\Framework\Log\Log;
 
 /**
  * GET /system/media/{id}/{name}?s=…: serves a variant, making it first if
@@ -41,7 +42,7 @@ final class VariantController
         try {
             $made = $variants->make($media, $planned);
         } catch (ImageException $e) {
-            error_log('[media] variant failed for ' . $id . '/' . $name . ': ' . $e->getMessage());
+            Log::error('media: variant failed for ' . $id . '/' . $name . ': ' . $e->getMessage());
 
             return self::missing(500, 'The image could not be made.');
         }

@@ -54,6 +54,8 @@ CMD ["php-fpm"]
 
 FROM base AS production
 COPY php/production.ini /usr/local/etc/php/conf.d/custom.ini
+# Kestello's log goes to the container's output (docker logs), one JSON object per line
+ENV KESTELLO_LOG=stderr
 
 # The last stage is what a plain build makes: development, with Xdebug.
 FROM base AS development

@@ -17,6 +17,7 @@ use Kestello\Cms\View\Prerender\PrerenderStore;
 use Kestello\Cms\View\SsrGateway;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Session\Session;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Support\Translator;
@@ -47,7 +48,7 @@ final class FrontendModule extends Provider
                 try {
                     return $cms->container->has(\Kestello\Cms\Design\ThemeStyles::class) ? $cms->container->make(\Kestello\Cms\Design\ThemeStyles::class)->stylesheetUrls() : [];
                 } catch (\Throwable $e) {
-                    error_log('[kestello] global styles skipped: ' . $e->getMessage());     // e.g. not migrated yet
+                    Log::warning('global styles skipped: ' . $e->getMessage());     // e.g. not migrated yet
                     return [];
                 }
             }),

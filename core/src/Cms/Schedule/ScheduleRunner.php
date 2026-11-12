@@ -12,6 +12,7 @@ use Kestello\Framework\Console\Command;
 use Kestello\Framework\Console\Output;
 use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Database\QueryBuilder;
+use Kestello\Framework\Log\Log;
 use Throwable;
 
 /**
@@ -161,7 +162,7 @@ final class ScheduleRunner
         } catch (Throwable $e) {
             $output = $e::class . ': ' . $e->getMessage();
             $status = 'failed';
-            error_log("[schedule] {$task->name} failed: {$e->getMessage()}");
+            Log::error("schedule: {$task->name} failed: {$e->getMessage()}");
         } finally {
             $lock?->release();
         }

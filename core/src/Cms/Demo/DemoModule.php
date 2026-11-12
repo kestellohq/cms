@@ -18,6 +18,7 @@ use Kestello\Framework\Core\Container;
 use Kestello\Framework\Core\Middleware\MiddlewareInterface;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
+use Kestello\Framework\Log\Log;
 
 /**
  * Turns a site into a public demo when config app.demo is on (Demo). What
@@ -53,7 +54,7 @@ final class DemoModule extends Provider
             try {
                 $site()->ensure();
             } catch (\Throwable $e) {
-                error_log('[kestello] preparing the demo: ' . $e->getMessage());
+                Log::warning('preparing the demo: ' . $e->getMessage());
             }
         });
 

@@ -2626,6 +2626,10 @@ msgstr ""
 msgid "Deletes failed jobs and finished batches past retention."
 msgstr ""
 
+#: core/src/Cms/Health/HealthModule.php
+msgid "Deletes log files older than KESTELLO_LOG_DAYS days (14 by default)."
+msgstr ""
+
 #: core/src/Cms/System/CoreTasks.php
 msgid "Deletes preview links that expired."
 msgstr ""

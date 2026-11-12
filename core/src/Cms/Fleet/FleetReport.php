@@ -9,6 +9,7 @@ use Kestello\Cms\Cms;
 use Kestello\Cms\Package\Update\PackageLicenses;
 use Kestello\Cms\Package\Update\PackageUpdates;
 use Kestello\Cms\Package\Update\UpdateChecker;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Settings\Settings;
 use Throwable;
 
@@ -152,7 +153,7 @@ final class FleetReport
         try {
             return $fn();
         } catch (Throwable $e) {
-            error_log('[kestello] fleet report: ' . $e->getMessage());
+            Log::warning('fleet report: ' . $e->getMessage());
 
             return null;
         }

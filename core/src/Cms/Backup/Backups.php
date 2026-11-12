@@ -14,6 +14,7 @@ use Kestello\Contracts\Storage\Disk;
 use Kestello\Framework\Database\Connection;
 use Kestello\Framework\Database\DatabaseManager;
 use Kestello\Framework\Database\MigrationRunner;
+use Kestello\Framework\Log\Log;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Framework\Storage\LocalDisk;
 use Kestello\Framework\Support\Semver;
@@ -664,7 +665,7 @@ final class Backups
             }
             $this->cms->drivers->forget();
         } catch (Throwable $e) {
-            error_log('[kestello] platform settings not recompiled after restore: ' . $e->getMessage());
+            Log::error('platform settings not recompiled after restore: ' . $e->getMessage());
         }
         foreach (['cache', 'compiled'] as $dir) {
             $this->emptyDir($this->cms->paths->storage($dir));
@@ -679,7 +680,7 @@ final class Backups
         try {
             $this->cms->queue->push(new \Kestello\Cms\Search\ReindexSearch());
         } catch (Throwable $e) {
-            error_log('[kestello] search reindex after restore not queued: ' . $e->getMessage());
+            Log::error('search reindex after restore not queued: ' . $e->getMessage());
         }
     }
 

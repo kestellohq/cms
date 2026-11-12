@@ -92,8 +92,8 @@ final class RequestIdTest extends AuthTestCase
         $id = $failed->headers()['X-Request-Id'] ?? '';
         $this->assertSame(500, $failed->statusCode());
         $this->assertSame($id, json_decode($failed->content(), true)['error']['request_id'] ?? null, 'the error says which request it was');
-        $log = (string) file_get_contents($this->logs . '/' . date('Y-m-d') . '.log');
-        $this->assertStringContainsString("[request {$id}] RuntimeException: down", $log, 'and so does its log line');
+        $line = json_decode(trim((string) file_get_contents($this->logs . '/' . date('Y-m-d') . '.log')), true);
+        $this->assertSame([$id, 'RuntimeException: down'], [$line['request_id'] ?? null, $line['message'] ?? null], 'and so does its log line');
     }
 
     public function testApiAnswersCarryIt(): void

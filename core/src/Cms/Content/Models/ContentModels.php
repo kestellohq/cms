@@ -13,6 +13,7 @@ use Kestello\Cms\Content\Field;
 use Kestello\Cms\Content\Permalinks;
 use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Database\QueryBuilder;
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Html;
 use Kestello\Support\Json;
 use Kestello\Support\Translator;
@@ -99,7 +100,7 @@ final class ContentModels
                 ExecutionContext::run('site', fn() => $this->build((string) $row['kind'], (string) $row['name'], $def));
             } catch (\Throwable $e) {
                 $this->skipped[$key] = $e->getMessage();
-                error_log("[kestello] content model {$key} skipped: " . $e->getMessage());
+                Log::warning("content model {$key} skipped: " . $e->getMessage());
             }
         }
     }

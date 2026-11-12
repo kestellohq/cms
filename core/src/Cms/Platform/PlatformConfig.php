@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Platform;
 
 use Kestello\Contracts\Security\SecretStore;
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Translator;
 use Throwable;
 
@@ -216,7 +217,7 @@ final class PlatformConfig
         try {
             $values = $this->store->load();
         } catch (Throwable $e) {
-            error_log('[kestello] platform: cannot read runtime settings: ' . $e->getMessage());
+            Log::error('platform: cannot read runtime settings: ' . $e->getMessage());
             $this->admin = [];
             return false;
         }

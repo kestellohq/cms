@@ -11,6 +11,7 @@ use Kestello\Framework\Core\Middleware\MiddlewareInterface;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
 use Kestello\Framework\Database\QueryBuilder;
+use Kestello\Framework\Log\Log;
 
 /**
  * Old WordPress addresses that are a query on the home page, which a site
@@ -34,7 +35,7 @@ final class OldWordPressLinks implements MiddlewareInterface
         try {
             $target = self::target((string) (parse_url($request->uri, PHP_URL_QUERY) ?? ''));
         } catch (\Throwable $e) {
-            error_log('[import] old address: ' . $e->getMessage());     // never break the home page
+            Log::warning('import: old address: ' . $e->getMessage());     // never break the home page
         }
 
         return $target === null ? $next($request) : Response::redirect($target, 301);

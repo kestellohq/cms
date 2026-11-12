@@ -10,6 +10,7 @@ use Kestello\Cms\View\Page;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
 use Kestello\Framework\Database\Orm\Caster;
+use Kestello\Framework\Log\Log;
 use Kestello\Support\Html;
 
 /**
@@ -193,7 +194,7 @@ final class ContentController
         try {
             $template = $templates?->templateFor($entry, $type, $drafts);
         } catch (\Throwable $e) {
-            error_log('[kestello] template lookup failed: ' . $e->getMessage());     // e.g. not migrated yet
+            Log::error('template lookup failed: ' . $e->getMessage());     // e.g. not migrated yet
         }
         if ($template !== null) {
             $tree = $cms->blocks->prepare($template['data']['blocks'] ?? [], $ctx->forTemplate($drafts));
