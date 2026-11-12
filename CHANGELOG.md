@@ -6,6 +6,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Added
 
+- `GET /up` says whether the site can answer requests, for load balancers, uptime monitors and Docker: 200 when PHP runs and the database answers, 503 when the database does not. It runs before sessions and plugins and gives no reasons away. A site being installed or in maintenance counts as up. The Docker image has a `HEALTHCHECK` that asks PHP-FPM for `/up` over FastCGI. A top-level page can no longer take the address `up`.
 - **Settings → Emails → Logo in dark mode**: a second logo that mail apps in dark mode show instead of the email logo, such as a light version of a dark logo, so it stays readable on a dark background. Apple Mail and Outlook swap them; mail apps that do not tell an email they are dark keep the logo. `MailBrand` takes it as `darkLogo`, and a theme's email layout gets both through `{!! logo !!}` and `{!! dark_css !!}`.
 - `docker/Dockerfile` builds a production image with `--target production`: no Xdebug, errors logged instead of shown, a larger OPcache. A plain build still makes the development image.
 - A seed's settings can name a file from its `media/` folder with `"@media:<file>"`, as pages already could, for settings that hold an image: `"seo": {"seo_publisher_logo": "@media:logo.png"}` sets the site's logo, which emails use too. A name with no file in `media/` stops the seed before it writes anything.

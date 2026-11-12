@@ -44,6 +44,11 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 9000
 
+# Healthy when PHP-FPM answers /up with 200: PHP runs and the database answers (see Up.php).
+COPY php/healthcheck.php /usr/local/bin/kestello-healthcheck.php
+HEALTHCHECK --interval=30s --timeout=15s --start-period=60s --retries=3 \
+    CMD ["php", "/usr/local/bin/kestello-healthcheck.php"]
+
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["php-fpm"]
 

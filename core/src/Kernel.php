@@ -119,6 +119,29 @@ final class Kernel
 
     // ── HTTP ────────────────────────────────────────────────────────
 
+    /** GET /up, before the session and the plugins: see Up. */
+    private function up(Application $app, bool $installed): void
+    {
+        $config = $app->config()->get('database');
+        $database = $installed && is_array($config) && $config !== []
+            ? function () use ($config): void {
+                (new Connection(DatabaseManager::resolveConfig($config, $this->paths->root())))->select('SELECT 1');
+            }
+            : null;
+        $storage = $this->paths->storage();
+        $maintenance = (new \Kestello\Cms\System\Maintenance($storage))->current() !== null
+            || (new UpdateJournal($storage))->pending() !== null;
+
+        [$status, $body] = \Kestello\Cms\System\Up::check($installed, $maintenance, $database);
+        http_response_code($status);
+        header('Content-Type: application/json');
+        header('Cache-Control: no-store');
+        header('X-Robots-Tag: noindex');
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'HEAD') {
+            echo json_encode($body, JSON_THROW_ON_ERROR);
+        }
+    }
+
     private function maintenancePage(\Kestello\Cms\System\Maintenance $maintenance): void
     {
         http_response_code(503);
@@ -133,6 +156,11 @@ final class Kernel
         $app = Application::getInstance($this->paths);
         $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         $installed = InstallerController::isInstalled($this->paths);
+
+        if ($uri === \Kestello\Cms\System\Up::PATH && in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'HEAD'], true)) {
+            $this->up($app, $installed);
+            return;
+        }
 
         if (!$installed || str_starts_with($uri, '/install')) {
             $this->handleInstaller($app, $uri, $installed);
