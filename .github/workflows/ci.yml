@@ -66,6 +66,10 @@ jobs:
       - name: The translation template is current
         run: php bin/cms i18n:extract --check
 
+      # core/database/schema.json: what the migrations make, which sites are checked against
+      - name: The schema snapshot is current
+        run: php bin/cms schema:snapshot --check
+
       - name: The editor helpers are current
         run: php bin/cms ide:helpers --check
 

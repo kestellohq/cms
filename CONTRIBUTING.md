@@ -175,6 +175,7 @@ A pre-release goes the same way, from `release/X.Y.Z-rc.N`. `release:prepare` th
 | `npm run test:php` | PHP tests on SQLite (in the app container when PHP 8.4 isn't installed locally). |
 | `npm run test:php:matrix` | PHP tests on MySQL, PostgreSQL and Redis as well, as CI runs them. |
 | `npm run i18n` | Rewrites the translation template, `core/resources/lang/kestello.pot`. |
+| `php bin/cms schema:snapshot` | Rewrites `core/database/schema.json`, the tables core's migrations make, after you add or change a migration. CI fails when it is out of date (`--check`). Sites are checked against it by `system:db-check` and Site Health. |
 | `npm run ide` | Rewrites `.phpstorm.meta.php`. |
 | `npm run build` | Builds the Vue pages. Built files are not committed: CI builds them for its checks and the release workflow for the zips. |
 | `npm run check` | Everything above that checks, in one go. |

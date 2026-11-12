@@ -148,6 +148,25 @@ final class CoreHealthChecks
                 : HealthResult::good('The database is reachable.', $details);
         }, 'reliability');
 
+        $h->check('core.database-schema', 'Database tables', static function () use ($cms): HealthResult {
+            $file = \Kestello\Cms\Console\Database\SchemaSnapshotCommand::file($cms->paths);
+            if (!is_file($file)) {
+                return HealthResult::good('This version of Kestello has no record of its tables to compare with.');
+            }
+            $diff = \Kestello\Framework\Database\SchemaSnapshot::check(DatabaseManager::getConnection(), $file);
+            $details = ['missing' => implode(', ', $diff['missing']), 'extra' => implode(', ', $diff['extra'])];
+            if ($diff['missing'] !== []) {
+                return HealthResult::critical(
+                    'The database is missing tables, columns or indexes this version of Kestello uses, so some screens and requests will fail: '
+                    . implode(', ', array_slice($diff['missing'], 0, 5)) . (count($diff['missing']) > 5 ? ', and ' . (count($diff['missing']) - 5) . ' more' : '')
+                    . '. Run php bin/cms migrate, then php bin/cms system:db-check.',
+                    $details,
+                );
+            }
+
+            return HealthResult::good("The database has every table, column and index Kestello expects ({$diff['tables']} tables).", $details);
+        }, 'reliability');
+
         $h->check('core.update-stopped', 'Updates', static function () use ($cms): HealthResult {
             $journal = new \Kestello\Cms\Package\Update\UpdateJournal($cms->paths->storage());
             $stopped = $journal->stopped();
