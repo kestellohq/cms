@@ -9,6 +9,7 @@ core/releases/
 # the site and failure traces the browser tests make
 tests/browser/.site/
 tests/browser/.results/
+tests/browser/.update/
 package-lock.json
 *.md
 *.php

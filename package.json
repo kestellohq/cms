@@ -17,6 +17,7 @@
     "analyse": "composer install --quiet && sh tools/php -d memory_limit=2G vendor/bin/phpstan analyse -c phpstan.dist.neon --no-progress",
     "test": "node --test \"tests/js/*.test.mjs\"",
     "test:browser": "playwright test -c tests/browser/playwright.config.mjs",
+    "test:update": "sh tests/browser/update.sh",
     "test:php": "sh tools/php -d apc.enable_cli=1 bin/cms test",
     "test:php:matrix": "sh tools/test-matrix.sh",
     "i18n": "sh tools/php bin/cms i18n:extract",

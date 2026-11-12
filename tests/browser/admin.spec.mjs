@@ -5,9 +5,22 @@
 // It caught nothing on purpose: it exists because rc.4 shipped an entry editor that stopped as
 // it opened, which no unit test saw. New screens are covered as soon as a link leads to them.
 import { test, expect } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const admin = { username: 'admin', email: 'admin@example.com', password: randomBytes(18).toString('base64url') };
+
+// update.sh: the site is a published release (KESTELLO_BROWSER_ZIP), updated to this checkout
+// with this signed core zip before the crawl
+const update = {
+    zip: process.env.KESTELLO_UPDATE_ZIP ?? '',
+    key: process.env.KESTELLO_UPDATE_KEY ?? '',
+    version: process.env.KESTELLO_UPDATE_VERSION ?? '',
+};
+const site = fileURLToPath(new URL('.site/kestello/', import.meta.url));
+const thisCheckout = !process.env.KESTELLO_BROWSER_ZIP;
 
 // Links the crawl does not follow: they leave, sign out, or download.
 const SKIP = [/\/logout\b/, /\/sign-?out\b/, /\/download\b/, /\/export\b/, /\.(zip|csv|json|xml)$/];
@@ -57,9 +70,11 @@ test.describe.configure({ mode: 'serial' });
 
 test('the web installer sets up a site on SQLite', async ({ page }) => {
     // the health check answers before the site is installed, so a container isn't restarted mid-install
-    const before = await page.request.get('/up');
-    expect(before.status()).toBe(200);
-    expect(await before.json()).toEqual({ status: 'ok', installed: false });
+    if (thisCheckout) {
+        const before = await page.request.get('/up');
+        expect(before.status()).toBe(200);
+        expect(await before.json()).toEqual({ status: 'ok', installed: false });
+    }
 
     const seen = watch(page);
     seen.on('/install');
@@ -94,33 +109,65 @@ test('the web installer sets up a site on SQLite', async ({ page }) => {
     await page.getByRole('button', { name: /install/i }).click();
     await expect(page).toHaveURL(/\/install\/complete/);
 
-    const after = await page.request.get('/up');
-    expect(after.status()).toBe(200);
-    expect(await after.json()).toEqual({ status: 'ok', database: true, maintenance: false });
+    if (thisCheckout) {
+        const after = await page.request.get('/up');
+        expect(after.status()).toBe(200);
+        expect(await after.json()).toEqual({ status: 'ok', database: true, maintenance: false });
+    }
     expect(seen.problems).toEqual([]);
 });
 
-test('every admin screen opens without an error', async ({ page }) => {
-    const seen = watch(page);
-
+/** Sign in as the administrator; returns the CSRF token the admin sends with every change. */
+async function signIn(page, seen) {
     seen.on('/login');
     await page.goto('/login');
     await page.locator('input[autocomplete="username"]').fill(admin.username);
     await page.locator('input[autocomplete="current-password"]').fill(admin.password);
     await page.locator('input[autocomplete="current-password"]').press('Enter');
     await page.waitForURL(/\/admin/);
-
-    // something in every list, so the crawl reaches the editors of existing entries too
-    // the page's props carry the token the admin sends with every change (sdk createApi)
+    // the page's props carry the token (sdk createApi)
     const token = (await page.content()).match(/"csrfToken":"([^"]+)"/)?.[1];
     expect(token, 'the admin page carries a CSRF token').toBeTruthy();
+    return token;
+}
+
+/** Something in every list, so the crawl reaches the editors of existing entries too. */
+async function addContent(page, token, label) {
     for (const type of ['page', 'post']) {
         const created = await page.request.post(`/api/v1/content/${type}/entries`, {
             headers: { 'X-CSRF-TOKEN': token },
-            data: { title: `A ${type} from the browser test`, status: 'published' },
+            data: { title: `A ${type} ${label}`, status: 'published' },
         });
         expect(created.status(), `creating a ${type}: ${await created.text()}`).toBeLessThan(300);
     }
+}
+
+test('the site updates to this release and keeps its content', async ({ page }) => {
+    test.skip(!update.zip, 'only from update.sh');
+    const seen = watch(page);
+    const token = await signIn(page, seen);
+    await addContent(page, token, 'from before the update');
+
+    // trust the key the update zip is signed with, in place of the release key
+    writeFileSync(`${site}config/release.php`, `<?php\nreturn ['keys' => [['name' => 'Update test', 'public_key' => ${JSON.stringify(update.key)}]]];\n`);
+    const out = execFileSync('php', ['bin/cms', 'core:update', update.zip], { cwd: site, encoding: 'utf8', stdio: 'pipe' });
+    console.log(out.trim());
+    expect(readFileSync(`${site}core/current.php`, 'utf8')).toContain(update.version);
+
+    const up = await page.request.get('/up');
+    expect(up.status(), 'the updated site answers /up').toBe(200);
+    for (const type of ['page', 'post']) {
+        const list = await page.request.get(`/api/v1/content/${type}/entries`);
+        expect(list.status()).toBe(200);
+        expect(await list.text(), `the ${type} made before the update is still there`).toContain(`A ${type} from before the update`);
+    }
+    expect(seen.problems).toEqual([]);
+});
+
+test('every admin screen opens without an error', async ({ page }) => {
+    const seen = watch(page);
+    const token = await signIn(page, seen);
+    await addContent(page, token, 'from the browser test');
 
     const queue = ['/admin'];
     const visited = new Set();

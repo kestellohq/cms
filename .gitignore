@@ -72,3 +72,4 @@ dist/
 # browser tests: the site they install, and traces of failures
 tests/browser/.site/
 tests/browser/.results/
+tests/browser/.update/

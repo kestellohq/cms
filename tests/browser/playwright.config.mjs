@@ -33,7 +33,7 @@ export default defineConfig({
         command: 'sh site.sh',
         cwd: fileURLToPath(new URL('.', import.meta.url)),
         url: `http://127.0.0.1:${port}/install`,
-        env: { KESTELLO_BROWSER_PORT: String(port) },
+        env: { KESTELLO_BROWSER_PORT: String(port), KESTELLO_BROWSER_ZIP: process.env.KESTELLO_BROWSER_ZIP ?? '' },
         reuseExistingServer: false,
         timeout: 180_000,
         stdout: 'ignore',
