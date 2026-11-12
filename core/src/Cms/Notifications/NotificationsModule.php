@@ -23,6 +23,5 @@ final class NotificationsModule extends Provider
             return $send($to, $subject, $html, $text);
         };
         $cms->notifications->channel('mail', new MailChannel($mailer));
-        $cms->queue->job(SendNotificationJob::class);
     }
 }

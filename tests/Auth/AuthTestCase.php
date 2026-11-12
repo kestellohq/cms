@@ -6,7 +6,6 @@ namespace Kestello\Tests\Auth;
 
 use Kestello\Cms\Auth\Auth;
 use Kestello\Cms\Auth\AuthModule;
-use Kestello\Cms\Auth\Guards\SessionGuard;
 use Kestello\Cms\Cms;
 use Kestello\Contracts\Session\SessionStore;
 use Kestello\Framework\Core\ExecutionContext;
@@ -63,7 +62,6 @@ abstract class AuthTestCase extends TestCase
         $this->cms = TestCms::make($root ?? $this->tempDir(), csrf: fn(): bool => $this->csrfValid, demo: $this->demo);
         Cms::setInstance($this->cms);
         $c = $this->cms->container;
-        $c->instance(Cms::class, $this->cms);
         $c->instance('auth.mail', function (string $to, string $subject, string $html, string $text = ''): bool {
             $this->mail[] = compact('to', 'subject', 'html', 'text');
             return true;
@@ -77,7 +75,6 @@ abstract class AuthTestCase extends TestCase
         $module = new AuthModule();
         $module->register($c);
         $module->boot($this->cms);
-        $this->cms->auth->guard(new SessionGuard($this->cms->auth, static fn(): ?Auth => Auth::getInstance()));
         (new \Kestello\Cms\Api\ApiModule())->boot($this->cms);
     }
 

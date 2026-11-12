@@ -139,7 +139,6 @@ final class SecurityTest extends AuthTestCase
 
         // An administrator's token needs the security scope.
         $tokens = new PersonalAccessTokens();
-        $this->cms->auth->guard(new \Kestello\Cms\Auth\Guards\TokenGuard($this->cms->auth, $tokens));
         $ana = (int) $this->people['ana']['id'];
         foreach ([[['content:read'], 403], [['security'], 200]] as [$scopes, $status]) {
             $this->nextRequest();

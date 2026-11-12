@@ -33,11 +33,9 @@ final class ApiTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->cms = TestCms::make($this->tempDir(), csrf: fn(): bool => $this->csrfValid);
         $this->session = new FakeGuard(bearer: false, id: 'session');
         $this->bearer = new FakeGuard(bearer: true, id: 'token');
-        $this->cms->auth->guard($this->session);
-        $this->cms->auth->guard($this->bearer);
+        $this->cms = TestCms::make($this->tempDir(), csrf: fn(): bool => $this->csrfValid, guards: [$this->session, $this->bearer]);
         Cms::setInstance($this->cms);
     }
 

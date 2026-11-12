@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace Kestello;
 
 use Kestello\Cms\Admin\AdminModule;
-use Kestello\Cms\Api\ApiGateway;
 use Kestello\Cms\Api\ApiModule;
 use Kestello\Cms\Api\ApiRegistry;
 use Kestello\Cms\Auth\Auth;
 use Kestello\Cms\Auth\AuthModule;
-use Kestello\Cms\Auth\AuthRegistry;
-use Kestello\Cms\Auth\Guards\SessionGuard;
-use Kestello\Cms\Auth\Guards\TokenGuard;
-use Kestello\Cms\Auth\PersonalAccessTokens;
 use Kestello\Cms\Cms;
+use Kestello\Cms\CmsFactory;
 use Kestello\Cms\Console\Extensions\PackageActivateCommand;
 use Kestello\Cms\Console\Extensions\PackageCheckCommand;
 use Kestello\Cms\Console\Extensions\PackageInstallCommand;
@@ -28,7 +24,6 @@ use Kestello\Cms\Console\Platform;
 use Kestello\Cms\Console\TokenCreateCommand;
 use Kestello\Cms\Events\KernelBooted;
 use Kestello\Cms\Extension\ArrayStateStore;
-use Kestello\Cms\Extension\CommandRegistry;
 use Kestello\Cms\Extension\DatabaseStateStore;
 use Kestello\Cms\Extension\ExtensionManager;
 use Kestello\Cms\Extension\ExtensionsModule;
@@ -63,10 +58,7 @@ use Kestello\Framework\Database\Connection;
 use Kestello\Framework\Database\DatabaseManager;
 use Kestello\Framework\Database\QueryWatch;
 use Kestello\Framework\Database\Schema;
-use Kestello\Framework\Events\EventDispatcher;
-use Kestello\Framework\Events\Filters;
 use Kestello\Framework\Http\Client\HttpClient;
-use Kestello\Framework\Http\CorsMiddleware;
 use Kestello\Framework\Http\RateLimiter;
 use Kestello\Framework\Http\TrustedProxies;
 use Kestello\Framework\Log\Log;
@@ -558,23 +550,17 @@ final class Kernel
     private function bootExtensions(Application $app, bool $recovery): Cms
     {
         $container = $app->container();
-        $debug = (bool) $app->config()->get('app.debug', false);
-
-        $filters = new Filters(strict: $debug);
-        $auth = new AuthRegistry();
         $drivers = new DriverRegistry($container);
         CoreDrivers::register($drivers, $this->paths, $this->sessionLifetime($app));
         CoreDrivers::registerSearch($drivers);
 
-        $limiter = new RateLimiter($this->limiterStore($drivers));
-        $container->instance(RateLimiter::class, $limiter);
-
-        $api = new ApiRegistry(
-            router: $app->router(),
-            auth: $auth,
+        $cms = CmsFactory::make(
             container: $container,
-            filters: $filters,
-            limiter: $limiter,
+            paths: $this->paths,
+            config: $app->config(),
+            router: $app->router(),
+            drivers: $drivers,
+            limiter: new RateLimiter($this->limiterStore($drivers)),
             csrf: static function (Request $request) use ($container): bool {
                 if (!$container->has(Session::class)) {
                     return false;
@@ -583,37 +569,9 @@ final class Kernel
 
                 return $token !== '' && $container->make(Session::class)->validateToken($token);
             },
-            debug: $debug,
-            demo: (bool) $app->config()->get('app.demo', false),
         );
-
-        $cms = new Cms(
-            container: $container,
-            paths: $this->paths,
-            config: $app->config(),
-            routes: $app->router(),
-            events: new EventDispatcher($container),
-            filters: $filters,
-            pages: new Pages(),
-            console: new CommandRegistry(),
-            auth: $auth,
-            api: $api,
-            drivers: $drivers,
-        );
-
-        $auth->guard(new SessionGuard($auth, static fn(): ?Auth => Auth::getInstance()));
-        $auth->guard(new TokenGuard($auth, new PersonalAccessTokens()));
-        $app->router()->pushGlobalMiddleware(new ApiGateway(new CorsMiddleware(
-            origins: (array) $app->config()->get('api.cors.origins', []),
-            credentials: (bool) $app->config()->get('api.cors.credentials', false),
-        )));
-
         Cms::setInstance($cms);
-        $container->instance(Cms::class, $cms);
-        $container->instance(EventDispatcher::class, $cms->events);
-        $container->instance(Filters::class, $cms->filters);
-        $container->instance(AuthRegistry::class, $auth);
-        $container->instance(ApiRegistry::class, $api);
+        $auth = $cms->auth;
         $cms->audit->setContextProvider(static function () use ($auth): array {
             $actor = $auth->current()?->userId;
             if ($actor === null && session_status() === PHP_SESSION_ACTIVE && is_numeric($_SESSION['_auth_user_id'] ?? null)) {
@@ -629,21 +587,6 @@ final class Kernel
         });
         $this->bootPlatform($app, $cms);
         $cms->queue->setBackend(static fn() => $cms->drivers->resolve('queue'));
-        $cms->queue->setContainer($container, $cms->events);
-        $cms->queue->wireListeners($cms->events);
-        $cms->models->setDispatcher($cms->events);
-        if ($debug) {
-            $seen = [];
-            $cms->models->handleLazyLoadingWith(static function (\Kestello\Framework\Database\Model $model, string $relation) use (&$seen): void {
-                $key = $model::class . '::' . $relation;
-                if (!isset($seen[$key])) {
-                    $seen[$key] = true;
-                    Log::warning("orm: N+1: [{$relation}] lazy loaded on each " . $model::class . " of a list; eager load it with ->with('{$relation}').");
-                }
-            });
-        }
-        $container->instance(\Kestello\Cms\Queue\JobQueue::class, $cms->queue);
-        $cms->notifications->wire(static fn() => $cms->queue, $cms->events);
 
         $extensions = new ExtensionManager(
             cms: $cms,

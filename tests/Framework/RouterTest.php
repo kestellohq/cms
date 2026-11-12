@@ -88,4 +88,57 @@ final class RouterTest extends TestCase
 
         $this->assertSame('/admin/users/7/edit', $router->url('admin.users.edit', ['id' => 7]));
     }
+
+    public function testControllersAndMiddlewareComeFromTheContainer(): void
+    {
+        $container = new \Kestello\Framework\Core\Container();
+        $container->instance(RouterGreeting::class, new RouterGreeting('hello from the container'));
+        $router = new Router($container);
+        $router->get('/hi', [RouterGreetingController::class, 'show'])->middleware(RouterGreetingMiddleware::class);
+
+        $response = $router->dispatch(self::request('GET', '/hi'));
+        $this->assertSame('hello from the container', $response->content(), 'the controller got its dependency');
+        $this->assertSame('hello from the container', $response->headers()['X-Greeting'] ?? null, 'so did the middleware');
+    }
+
+    public function testWithoutAContainerClassesAreMadeWithNew(): void
+    {
+        $router = new Router();
+        $router->get('/plain', [RouterPlainController::class, 'show']);
+
+        $this->assertSame('plain', $router->dispatch(self::request('GET', '/plain'))->content());
+    }
+}
+
+final readonly class RouterGreeting
+{
+    public function __construct(public string $text) {}
+}
+
+final readonly class RouterGreetingController
+{
+    public function __construct(private RouterGreeting $greeting) {}
+
+    public function show(Request $request): Response
+    {
+        return Response::html($this->greeting->text);
+    }
+}
+
+final readonly class RouterGreetingMiddleware implements MiddlewareInterface
+{
+    public function __construct(private RouterGreeting $greeting) {}
+
+    public function handle(Request $request, Closure $next): Response
+    {
+        return $next($request)->withHeader('X-Greeting', $this->greeting->text);
+    }
+}
+
+final class RouterPlainController
+{
+    public function show(Request $request): Response
+    {
+        return Response::html('plain');
+    }
 }
