@@ -59,7 +59,6 @@ final class FleetTest extends AuthTestCase
     public function testASiteReportsItselfToAFleetTokenAndNothingMore(): void
     {
         $tokens = new PersonalAccessTokens();
-        $this->cms->auth->guard(new \Kestello\Cms\Auth\Guards\TokenGuard($this->cms->auth, $tokens));
         $admin = (int) $this->db->table('users')->where('username', 'ana')->value('id');
         $fleet = $tokens->create($admin, 'Agency fleet', ['fleet'])['token'];
 

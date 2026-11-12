@@ -30,7 +30,7 @@ final class Application
         $this->paths = $paths;
         $this->container = new Container();
         $this->config = new Config([$paths->coreConfig(), $paths->config()]);
-        $this->router = new Router();
+        $this->router = new Router($this->container);
     }
 
     /** Prevent cloning of the singleton. */

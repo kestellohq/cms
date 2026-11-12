@@ -107,7 +107,6 @@ final class AuthApiTest extends AuthTestCase
     {
         $user = $this->createUser();
         $token = (new \Kestello\Cms\Auth\PersonalAccessTokens())->create((int) $user['id'], 'ci', ['admin'])['token'];
-        $this->cms->auth->guard(new \Kestello\Cms\Auth\Guards\TokenGuard($this->cms->auth, new \Kestello\Cms\Auth\PersonalAccessTokens()));
 
         $this->nextRequest();
         $request = new \Kestello\Framework\Core\Request('PUT', '/api/v1/me/password', '/api/v1/me/password', ['Authorization' => 'Bearer ' . $token], [], ['current_password' => self::PASSWORD, 'password' => 'a brand new passphrase'], [], [], ['REMOTE_ADDR' => '203.0.113.9']);

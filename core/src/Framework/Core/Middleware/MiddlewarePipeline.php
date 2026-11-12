@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Framework\Core\Middleware;
 
 use Closure;
+use Kestello\Framework\Core\Container;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
 use RuntimeException;
@@ -19,6 +20,9 @@ final class MiddlewarePipeline
 {
     /** @var list<MiddlewareInterface|string> */
     private array $layers = [];
+
+    /** @param Container|null $container builds middleware named by class, with their dependencies */
+    public function __construct(private readonly ?Container $container = null) {}
 
     /**
      * Append a middleware to the pipeline.
@@ -66,7 +70,7 @@ final class MiddlewarePipeline
             throw new RuntimeException("Middleware class [{$middleware}] does not exist.");
         }
 
-        $instance = new $middleware();
+        $instance = $this->container !== null ? $this->container->make($middleware) : new $middleware();
 
         if (!$instance instanceof MiddlewareInterface) {
             throw new RuntimeException("Class [{$middleware}] does not implement MiddlewareInterface.");

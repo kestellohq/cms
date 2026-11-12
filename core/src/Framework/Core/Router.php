@@ -29,6 +29,12 @@ final class Router
     /** @var list<string> Active group middleware stack. */
     private array $groupMiddleware = [];
 
+    /**
+     * @param Container|null $container builds controllers and middleware named by class, with
+     *                                  their dependencies; without one they are made with `new`
+     */
+    public function __construct(private readonly ?Container $container = null) {}
+
     // ------------------------------------------------------------------
     // HTTP verb helpers
     // ------------------------------------------------------------------
@@ -239,7 +245,7 @@ final class Router
             return $match($request);
         }
 
-        $pipeline = new MiddlewarePipeline();
+        $pipeline = new MiddlewarePipeline($this->container);
         foreach ($this->globalMiddleware as $mw) {
             $pipeline->pipe($mw);
         }
@@ -313,7 +319,7 @@ final class Router
             return $destination($request);
         }
 
-        $pipeline = new MiddlewarePipeline();
+        $pipeline = new MiddlewarePipeline($this->container);
 
         foreach ($route->middlewares as $mw) {
             $pipeline->pipe($mw);
@@ -333,7 +339,7 @@ final class Router
             $result = $handler($req, ...$params);
         } elseif (is_array($handler)) {
             [$class, $method] = $handler;
-            $controller = new $class();
+            $controller = $this->container !== null ? $this->container->make($class) : new $class();
             $result = $controller->{$method}($req, ...$params);
         } else {
             throw new RuntimeException('Invalid route handler.');

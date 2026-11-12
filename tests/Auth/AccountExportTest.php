@@ -87,7 +87,6 @@ final class AccountExportTest extends AuthTestCase
         $this->assertSame(200, $this->api('GET', '/me/export')->statusCode());
 
         $token = (new PersonalAccessTokens())->create((int) $user['id'], 'ci', ['profile'])['token'];
-        $this->cms->auth->guard(new \Kestello\Cms\Auth\Guards\TokenGuard($this->cms->auth, new PersonalAccessTokens()));
         $this->nextRequest()->logout();
         $request = new \Kestello\Framework\Core\Request('GET', '/api/v1/me/export', '/api/v1/me/export', ['Authorization' => 'Bearer ' . $token], [], [], [], [], ['REMOTE_ADDR' => '203.0.113.9']);
         $this->assertContains($this->cms->routes->dispatch($request)->statusCode(), [401, 403], 'never with an API token');
