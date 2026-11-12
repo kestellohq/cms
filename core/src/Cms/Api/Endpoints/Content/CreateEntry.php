@@ -30,7 +30,7 @@ final class CreateEntry extends ContentEndpoint
     }
     public function body(): ?Schema
     {
-        return self::entryBody();
+        return self::entryBody(create: true);
     }
 
     public function handle(ApiRequest $request): mixed

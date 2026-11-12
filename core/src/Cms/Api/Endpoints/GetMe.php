@@ -37,6 +37,8 @@ final class GetMe extends Endpoint
 
         return $S::object(UserResource::properties())->extend([
             'pending_email' => $S::string()->nullable()->description('A new address waiting for its confirmation link to be opened; the account keeps email until then'),
+            'languages' => $S::list($S::object(['code' => $S::string(), 'name' => $S::string()]))
+                ->description('What locale may be set to: the site\'s languages, each in its own words. More than one means the person can choose.'),
             'auth' => $S::object([
                 'method' => $S::string()->description('session, token or external'),
                 'scopes' => $S::list($S::string())->nullable()->description('null for a browser session (no narrowing)'),
@@ -68,6 +70,7 @@ final class GetMe extends Endpoint
         return $data + [
             // a new address waiting for its link to be opened (the account keeps "email" until then)
             'pending_email' => $changes?->pending((int) $request->userId()),
+            'languages' => array_map(static fn(string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys($choices = \Kestello\Cms\I18n\SiteLanguage::choices()), $choices),
             'auth' => [
                 'method' => $p->method,
                 'scopes' => $p->scopes,

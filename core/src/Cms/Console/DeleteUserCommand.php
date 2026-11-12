@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kestello\Cms\Console;
+
+use Kestello\Cms\Auth\AccountDeletion;
+use Kestello\Cms\Cms;
+use Kestello\Framework\Console\Command;
+use Kestello\Framework\Database\QueryBuilder;
+
+/**
+ * Delete an account from the server, such as a test account a script made with user:create.
+ * The same rules as People → Delete in the admin: the last active administrator stays, every
+ * session and access token of that person ends, and their pages, files and comments stay on the
+ * site without them as author. AccountDeletion does the deleting for both.
+ *
+ *   php bin/cms user:delete shots          asks first
+ *   php bin/cms user:delete shots --yes    for scripts
+ *
+ * Audit-logged as "users.deleted" with via "cli".
+ */
+final class DeleteUserCommand extends Command
+{
+    private const string USAGE = 'Usage: user:delete <username|email> [--yes]';
+
+    protected string $name = 'user:delete';
+    protected string $description = 'Delete an account: user:delete <username|email> [--yes]';
+
+    public function handle(array $arguments, array $options): int
+    {
+        $identifier = $this->argument($arguments, 0);
+        if ($identifier === null || isset($arguments[1])) {
+            $this->output->error(self::USAGE);
+
+            return 1;
+        }
+        $cms = Cms::instance();
+        if ($cms === null) {
+            $this->output->error('Kestello is not installed.');
+
+            return 1;
+        }
+
+        $user = QueryBuilder::table('users')->whereAny(['username', 'email'], '=', str_contains($identifier, '@') ? mb_strtolower($identifier) : $identifier)->first();
+        if ($user === null) {
+            $this->output->error("User \"{$identifier}\" not found.");
+
+            return 1;
+        }
+        $id = (int) $user['id'];
+
+        $refusal = AccountDeletion::refusal($cms, $user, 'cli', null);
+        if ($refusal !== null) {
+            $this->output->error("{$user['username']} cannot be deleted. {$refusal}");
+
+            return 1;
+        }
+
+        if (!$this->hasFlag($options, 'yes')
+            && !$this->output->confirm("  Delete {$user['username']} ({$user['email']})? Their content stays, without them as author.")) {
+            $this->output->muted('  Nothing was deleted.');
+
+            return 1;
+        }
+
+        AccountDeletion::delete($cms, $id, 'cli');
+        $cms->audit->record('users.deleted', ['user', $id], ['username' => $user['username'], 'email' => $user['email'], 'via' => 'cli'], null);
+
+        $this->output->success("  Deleted {$user['username']}.");
+
+        return 0;
+    }
+}

@@ -28,17 +28,26 @@ const roleLabel = computed(() => ROLE_LABELS[me.data.value?.role] ?? me.data.val
 const fieldErrors = (e) => (e instanceof ApiError && e.status === 422 ? e.fieldErrors() : null);
 
 // ── account ──────────────────────────────────────────────────────────
-const account = reactive({ email: '', bio: '' });
+const account = reactive({ email: '', bio: '', locale: '' });
 const accountErrors = ref({});
 const savingAccount = ref(false);
 watch(
     () => me.data.value,
     (u) => {
-        if (u) Object.assign(account, { email: u.email, bio: u.bio ?? '' });
+        if (u) Object.assign(account, { email: u.email, bio: u.bio ?? '', locale: u.locale ?? '' });
     },
     { immediate: true },
 );
-const accountDirty = computed(() => me.data.value && (account.email !== me.data.value.email || account.bio !== (me.data.value.bio ?? '')));
+const accountDirty = computed(
+    () =>
+        me.data.value &&
+        (account.email !== me.data.value.email || account.bio !== (me.data.value.bio ?? '') || account.locale !== (me.data.value.locale ?? '')),
+);
+// the site's languages; with only one there is nothing to choose
+const languageOptions = computed(() => [
+    { value: '', label: __("The site's language") },
+    ...(me.data.value?.languages ?? []).map((l) => ({ value: l.code, label: l.name })),
+]);
 
 async function saveAccount() {
     savingAccount.value = true;
@@ -46,7 +55,7 @@ async function saveAccount() {
     try {
         const email = account.email.trim();
         const changed = email !== me.data.value?.email;
-        await api.patch('/me', { email, bio: account.bio });
+        await api.patch('/me', { email, bio: account.bio, locale: account.locale });
         // a new address is only used once its link is opened: say where to look
         notify.success(changed ? __('Check {email} for a link to confirm it.', { email }) : __('Your profile was saved.'));
         await me.reload({ silent: true });
@@ -352,6 +361,15 @@ const codesLeft = (n) => __('{n, plural, one {# recovery code left} other {# rec
                     :error="accountErrors.bio ?? ''"
                 >
                     <textarea :id="id" v-model="account.bio" class="k-input k-textarea" rows="3" maxlength="2000"></textarea>
+                </KField>
+                <KField
+                    v-if="(me.data.value?.languages ?? []).length > 1"
+                    v-slot="{ id }"
+                    :label="__('Language')"
+                    :help="__('The emails the site sends you are written in it.')"
+                    :error="accountErrors.locale ?? ''"
+                >
+                    <KSelect :id="id" v-model="account.locale" :options="languageOptions" />
                 </KField>
             </form>
             <template #footer>

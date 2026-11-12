@@ -12,6 +12,7 @@ use Kestello\Cms\Events\EntrySaved;
 use Kestello\Cms\Events\EntrySubmitted;
 use Kestello\Cms\Events\EntryTrashed;
 use Kestello\Cms\Events\FormSubmitted;
+use Kestello\Cms\Events\UserDeleted;
 use Kestello\Cms\Events\UserRegistered;
 use Kestello\Cms\Extension\Provider;
 use Kestello\Framework\Database\Orm\Caster;
@@ -34,10 +35,11 @@ final class WebhooksModule extends Provider
         $w->event('entry.submitted', 'An entry was submitted for review', 'Content', 'data: the entry.');
         $w->event('form.submitted', 'A form was submitted', 'Forms', 'data: the form, the stored submission id and the answers.');
         $w->event('user.registered', 'A person got an account', 'People', 'data: id, username, email, role and how the account was made.');
+        $w->event('user.deleted', 'An account was deleted', 'People', 'data: id, username, email, and who deleted it: self, admin or cli.');
         $w->event('webhook.ping', 'Test message', 'Webhooks', 'Sent by "Send a test" only.');
 
         $cms->queue->job(DeliverWebhook::class);
-        $cms->notifications->type(WebhookDisabledNotification::class, 'Webhook turned off', 'When a webhook kept failing and was turned off');
+        $cms->notifications->type(WebhookDisabledNotification::class, 'Webhook turned off', 'When a webhook kept failing and was turned off', capability: 'system.manage'); // sent to Administrators::ids()
 
         $send = static function (string $event, \Closure $data) use ($cms): void {
             try {
@@ -59,6 +61,7 @@ final class WebhooksModule extends Provider
             'submission_id' => $e->submissionId,
             'answers' => $e->data,
         ]));
+        $cms->events->on(UserDeleted::class, static fn(UserDeleted $e) => $send('user.deleted', static fn(): array => ['id' => $e->userId, 'username' => $e->username, 'email' => $e->email, 'via' => $e->via]));
         $cms->events->on(UserRegistered::class, static fn(UserRegistered $e) => $send('user.registered', static function () use ($e): ?array {
             $u = QueryBuilder::table('users')->where('id', $e->userId)->first();
 

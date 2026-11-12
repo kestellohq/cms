@@ -7,6 +7,7 @@ namespace Kestello\Cms\Demo;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Content\ContentType;
 use Kestello\Cms\Content\Entries;
+use Kestello\Cms\Content\Models\ContentModels;
 use Kestello\Cms\Content\Terms;
 use Kestello\Cms\Forms\Forms;
 use Kestello\Cms\Media\MediaLibrary;
@@ -18,149 +19,164 @@ use Kestello\Support\Clock;
 use RuntimeException;
 
 /**
- * The public demo's sample site: fills a freshly installed, empty site with
- * a small bakery (pages, posts, terms, a contact form, menus and a few
- * generated images). The words and the layout are in content/bakery.php.
+ * The public demo's sample site: an architecture studio in English and
+ * Spanish (content/studio.php), hung in the Exhibit theme. It goes into a
+ * freshly installed, empty site in two steps, because content types built
+ * in the admin are registered when the site boots:
  *
- *   $summary = DemoContent::seed($cms, $cms->auth->principalFor($admin, 'cli'));
+ *   DemoContent::prepare($cms, $author);   // the types and the languages
+ *   // ... the next boot registers the types ...
+ *   $summary = DemoContent::seed($cms, $author);
  *
- * Everything is written through the same services an editor's save uses,
- * so it is validated and cleaned like any other content. Without GD the
- * images are left out and everything else is still created.
+ * DemoSite::ensure() does both, one request apart. Everything is written
+ * through the same services an editor's save uses, so it is validated and
+ * cleaned like any other content.
  */
 final class DemoContent
 {
-    private const string DATA = __DIR__ . '/content/bakery.php';
-    private const int WIDTH = 960;
-    private const int HEIGHT = 640;
-    private const int SUPERSAMPLE = 2;    // shapes are drawn larger and scaled down, for smooth edges
+    private const string DATA = __DIR__ . '/content/studio.php';
+    private const string PHOTOS = __DIR__ . '/content/photos';
+    private const string TIMEZONE = 'Europe/Madrid';    // the studio's: talks start at its local time
+
+    /** @return array<string, mixed> the site, as content/studio.php describes it */
+    public static function data(): array
+    {
+        return require self::DATA;
+    }
+
+    /** Whether the content types the demo fills are registered (from the boot after prepare()). */
+    public static function ready(Cms $cms): bool
+    {
+        foreach (array_keys(self::data()['types']) as $name) {
+            if ($cms->content->get($name) === null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
-     * @param ?bool $images make the images; null: when GD is there
-     * @return array{pages: int, posts: int, terms: int, forms: int, menus: int, images: int, front_page: int}
-     * @throws RuntimeException when the site already has content
+     * Step one: build the content types (as an administrator would in the
+     * admin), and set the languages, the site's name in each and the words
+     * in its addresses. Running it again builds only what is missing. The
+     * theme it is made for is data()['theme']; DemoSite switches to it.
+     *
+     * @return list<string> the content types built now
      */
-    public static function seed(Cms $cms, Principal $author, ?bool $images = null): array
+    public static function prepare(Cms $cms, Principal $author): array
+    {
+        $site = self::data();
+        $models = $cms->container->make(ContentModels::class);
+        $built = [];
+        foreach ($site['types'] as $name => $definition) {
+            if ($cms->content->get($name) === null && !QueryBuilder::table('content_models')->where('kind', 'type')->where('name', $name)->exists()) {
+                $models->create('type', $name, $definition, $author->userId);
+                $built[] = $name;
+            }
+        }
+        foreach ($site['settings'] as $group => $values) {
+            Settings::getInstance()->setMany($values, $group);
+        }
+
+        return $built;
+    }
+
+    /**
+     * Step two: the photos, categories, forms, pages, entries and menus, each
+     * in English with its Spanish translation.
+     *
+     * @param bool $images add the photos to the media library (tests leave them out to run faster)
+     * @return array{pages: int, entries: array<string, int>, terms: int, forms: int, menus: int, images: int}
+     * @throws RuntimeException when the site already has content, or the types are not registered yet
+     */
+    public static function seed(Cms $cms, Principal $author, bool $images = true): array
     {
         if (QueryBuilder::table('entries')->exists()) {
             throw new RuntimeException('The demo content only goes into an empty site, and this one already has pages or posts.');
         }
-        /** @var array<string, mixed> $site */
-        $site = require self::DATA;
+        $site = self::data();
         $entries = $cms->container->make(Entries::class);
+        $types = [];
+        foreach (array_merge(['page'], array_keys($site['entries'])) as $name) {
+            $types[$name] = $cms->content->get($name) ?? throw new RuntimeException(
+                "The demo content needs the \"{$name}\" content type, and this site has none yet. DemoContent::prepare() builds it; it is registered on the next boot.",
+            );
+        }
 
-        $media = ($images ?? extension_loaded('gd')) ? self::images($cms, $author, $site['images']) : [];
+        $photos = $images ? self::photos($cms, $author, $site['photos']) : [];
         $terms = self::terms($cms, $author, $site['terms']);
-        $formId = (int) $cms->container->make(Forms::class)->save($site['form'], null, $author->userId)['id'];
+        $forms = [];
+        foreach ($site['forms'] as $locale => $form) {
+            $forms[$locale] = (int) $cms->container->make(Forms::class)->save($form, null, $author->userId)['id'];
+        }
+        $fill = static fn(array $data, string $locale): array => self::fill($data, $photos, $forms[$locale] ?? $forms['']);
 
-        $pageType = self::type($cms, 'page');
         $pages = [];
         foreach ($site['pages'] as $key => $page) {
-            $blocks = self::resolve($page['blocks'], $media, $formId);
-            $pages[$key] = (int) $entries->create($pageType, [
-                'title' => $page['title'], 'slug' => $page['slug'], 'status' => 'published', 'data' => ['body' => $blocks],
-            ], $author)->getKey();
+            $spec = [
+                'title' => $page['title'], 'slug' => $page['slug'], 'days_ago' => 600,
+                'data' => ['body' => $page['blocks'], 'seo' => ['description' => $page['description']]],
+                'es' => ['title' => $page['es']['title'], 'slug' => $page['es']['slug'], 'data' => ['body' => $page['es']['blocks'], 'seo' => ['description' => $page['es']['description']]]],
+            ];
+            $pages[$key] = self::entry($entries, $types['page'], $spec, $fill, [], $author);
         }
 
-        $postType = self::type($cms, 'post');
-        foreach ($site['posts'] as $post) {
-            $data = ['body' => self::resolve($post['blocks'], $media, $formId)];
-            if (isset($media[$post['image']])) {
-                $data['image'] = $media[$post['image']];
+        $counts = [];
+        foreach ($site['entries'] as $type => $list) {
+            foreach ($list as $spec) {
+                if (isset($spec['starts_in_days'])) {
+                    $spec['data']['starts'] = self::startsAt((int) $spec['starts_in_days'], (string) $spec['starts_at']);
+                }
+                $categories = isset($spec['category']) ? ['category' => [$terms['category'][$spec['category']]]] : [];
+                self::entry($entries, $types[$type], $spec, $fill, $categories, $author);
             }
-            $entries->create($postType, [
-                'title' => $post['title'], 'slug' => $post['slug'], 'status' => 'published', 'excerpt' => $post['excerpt'],
-                'published_at' => self::daysAgo((int) $post['days_ago']), 'data' => $data,
-                'terms' => [
-                    'category' => [$terms['category'][$post['category']]],
-                    'tag' => array_map(static fn(string $t): int => $terms['tag'][$t], $post['tags']),
-                ],
-            ], $author);
+            $counts[$type] = count($list);
         }
-
-        $menus = self::menus($cms, $site['menus'], $pages, $terms);
-        $front = $pages[$site['front_page']];
-        self::settings($site['settings'] + ['reading' => []], $front);
 
         return [
             'pages' => count($pages),
-            'posts' => count($site['posts']),
-            'terms' => array_sum(array_map('count', $terms)),
-            'forms' => 1,
-            'menus' => $menus,
-            'images' => count($media),
-            'front_page' => $front,
+            'entries' => $counts,
+            'terms' => 2 * array_sum(array_map('count', $terms)),
+            'forms' => count($forms),
+            'menus' => self::menus($cms, $site['menus'], $pages),
+            'images' => count($photos),
         ];
     }
 
     /**
-     * Swap "@image:<key>" for the id of that image and "@form" for the
-     * form's id. A node whose image is missing (no GD) loses it: an image
-     * block goes, media and text keeps only its blocks, a cover its colour.
+     * $data with "@photo:<key>" swapped for that photo's id and "@form" for
+     * $formId. A missing photo is left out: from a list, as a field's value,
+     * and as a block's prop (an image block without its image goes).
      *
-     * @param list<array<string, mixed>> $nodes
-     * @param array<string, int> $media image key => media id
-     * @return list<array<string, mixed>>
+     * @param array<array-key, mixed> $data
+     * @param array<string, int> $photos key => media id
+     * @return array<array-key, mixed>
      */
-    public static function resolve(array $nodes, array $media, int $formId): array
+    public static function fill(array $data, array $photos, int $formId): array
     {
         $out = [];
-        foreach ($nodes as $node) {
-            $missing = false;
-            foreach ($node['props'] as $name => $value) {
-                if ($value === '@form') {
-                    $node['props'][$name] = (string) $formId;
-                } elseif (is_string($value) && str_starts_with($value, '@image:')) {
-                    $id = $media[substr($value, 7)] ?? null;
-                    if ($id === null) {
-                        unset($node['props'][$name]);
-                        $missing = true;
-                    } else {
-                        $node['props'][$name] = $id;
-                    }
+        foreach ($data as $key => $value) {
+            if (is_array($value) && isset($value['type'], $value['props']) && is_array($value['props'])) {
+                $props = self::fill($value['props'], $photos, $formId);
+                if ($value['type'] === 'core/image' && !isset($props['image'])) {
+                    continue;
                 }
+                $out[$key] = array_replace($value, ['props' => $props, 'children' => self::fill((array) ($value['children'] ?? []), $photos, $formId)]);
+            } elseif (is_array($value)) {
+                $out[$key] = self::fill($value, $photos, $formId);
+            } elseif ($value === '@form') {
+                $out[$key] = (string) $formId;
+            } elseif (is_string($value) && str_starts_with($value, '@photo:')) {
+                if (isset($photos[substr($value, 7)])) {
+                    $out[$key] = $photos[substr($value, 7)];
+                }
+            } else {
+                $out[$key] = $value;
             }
-            $node['children'] = self::resolve($node['children'], $media, $formId);
-            if ($missing && $node['type'] === 'core/image') {
-                continue;
-            }
-            if ($missing && $node['type'] === 'core/media-text') {
-                array_push($out, ...$node['children']);
-                continue;
-            }
-            $out[] = $node;
         }
 
-        return $out;
-    }
-
-    /**
-     * Paint an image spec (see content/bakery.php) as a JPEG.
-     *
-     * @param array{background: string, shapes: list<array{0: string, 1: list<int>, 2: string}>} $spec
-     */
-    public static function paint(array $spec): string
-    {
-        $s = self::SUPERSAMPLE;
-        $big = imagecreatetruecolor(self::WIDTH * $s, self::HEIGHT * $s);
-        imagefill($big, 0, 0, self::colour($big, $spec['background']));
-        foreach ($spec['shapes'] as [$shape, $at, $hex]) {
-            $c = self::colour($big, $hex);
-            $p = array_map(static fn(int $v): int => $v * $s, $at);
-            match ($shape) {
-                'rect' => imagefilledrectangle($big, $p[0], $p[1], $p[2], $p[3], $c),
-                'ellipse' => imagefilledellipse($big, $p[0], $p[1], $p[2], $p[3], $c),
-                'poly' => imagefilledpolygon($big, $p, $c),
-                'line' => imagesetthickness($big, $p[4]) && imageline($big, $p[0], $p[1], $p[2], $p[3], $c) && imagesetthickness($big, 1),
-                default => throw new RuntimeException("Unknown shape \"{$shape}\" in the demo images: use rect, ellipse, poly or line."),
-            };
-        }
-        $img = imagecreatetruecolor(self::WIDTH, self::HEIGHT);
-        imagecopyresampled($img, $big, 0, 0, 0, 0, self::WIDTH, self::HEIGHT, self::WIDTH * $s, self::HEIGHT * $s);
-        ob_start();
-        imagejpeg($img, null, 84);
-
-        return (string) ob_get_clean();
+        return array_is_list($data) ? array_values($out) : $out;
     }
 
     /** UTC "Y-m-d H:i:s", $days before now at 8:30 in the morning. */
@@ -169,40 +185,88 @@ final class DemoContent
         return Clock::now(new \DateTimeZone('UTC'))->modify("-{$days} days")->setTime(8, 30)->format('Y-m-d H:i:s');
     }
 
+    /** A talk's start: $days from now (negative: past) at $time ("19:00") in the studio's timezone, as UTC ISO 8601. */
+    public static function startsAt(int $days, string $time): string
+    {
+        [$hour, $minute] = array_map('intval', explode(':', $time . ':0'));
+
+        return Clock::now(new \DateTimeZone(self::TIMEZONE))->modify(sprintf('%+d days', $days))->setTime($hour, $minute)
+            ->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+    }
+
     /**
-     * @param array<string, array<string, mixed>> $specs
+     * An entry in the main language, published, and its Spanish translation:
+     * Entries::translate() copies the shared fields and the categories'
+     * translations, and the translation's own words replace the rest.
+     *
+     * @param array<string, mixed> $spec title, slug, days_ago, data, excerpt, and "es" with the translation's
+     * @param callable(array<array-key, mixed>, string): array<array-key, mixed> $fill
+     * @param array<string, list<int>> $terms taxonomy => term ids
+     * @return int the main language's entry id
+     */
+    private static function entry(Entries $entries, ContentType $type, array $spec, callable $fill, array $terms, Principal $author): int
+    {
+        $published = self::daysAgo((int) $spec['days_ago']);
+        $input = ['title' => $spec['title'], 'slug' => $spec['slug'], 'status' => 'published', 'published_at' => $published, 'data' => $fill($spec['data'], '')];
+        if (isset($spec['excerpt'])) {
+            $input['excerpt'] = $spec['excerpt'];
+        }
+        if ($terms !== []) {
+            $input['terms'] = $terms;
+        }
+        $main = $entries->create($type, $input, $author);
+
+        $es = $spec['es'];
+        $draft = $entries->translate($main, 'es', $author);
+        $translation = [
+            'title' => $es['title'], 'slug' => $es['slug'], 'status' => 'published', 'published_at' => $published,
+            'data' => array_replace((array) $draft->data, $fill($es['data'] ?? [], 'es')),
+        ];
+        if (isset($es['excerpt'])) {
+            $translation['excerpt'] = $es['excerpt'];
+        }
+        $entries->update($draft, $translation, $author);
+
+        return (int) $main->getKey();
+    }
+
+    /**
+     * @param array<string, array{file: string, alt: string, caption: string}> $specs
      * @return array<string, int> key => media id
      */
-    private static function images(Cms $cms, Principal $author, array $specs): array
+    private static function photos(Cms $cms, Principal $author, array $specs): array
     {
         $library = $cms->container->make(MediaLibrary::class);
         $ids = [];
         foreach ($specs as $key => $spec) {
-            $file = tempnam(sys_get_temp_dir(), 'kestello-demo-');
-            if ($file === false || file_put_contents($file, self::paint($spec)) === false) {
-                throw new RuntimeException('Could not write a demo image to the temporary folder ' . sys_get_temp_dir() . '.');
+            // the library takes the file over: give it a copy, so the one shipped with core stays
+            $copy = tempnam(sys_get_temp_dir(), 'kestello-demo-');
+            if ($copy === false || !copy(self::PHOTOS . '/' . $spec['file'], $copy)) {
+                throw new RuntimeException('Could not copy the demo photo ' . $spec['file'] . ' to the temporary folder ' . sys_get_temp_dir() . '.');
             }
-            $ids[$key] = (int) $library->addFile($author, $file, (string) $spec['filename'], ['alt' => (string) $spec['alt']])->getKey();
+            $ids[$key] = (int) $library->addFile($author, $copy, $spec['file'], ['alt' => $spec['alt'], 'caption' => $spec['caption']])->getKey();
         }
 
         return $ids;
     }
 
     /**
-     * @param array<string, list<string>> $names taxonomy => term names
-     * @return array<string, array<string, int>> taxonomy => name => term id
+     * Each term in the main language, and its Spanish translation.
+     *
+     * @param array<string, array<string, string>> $names taxonomy => English name => Spanish name
+     * @return array<string, array<string, int>> taxonomy => English name => term id
      */
     private static function terms(Cms $cms, Principal $author, array $names): array
     {
         $terms = new Terms();
         $ids = [];
         foreach ($names as $taxonomy => $list) {
-            $tax = $cms->content->getTaxonomy($taxonomy);
-            if ($tax === null) {
-                throw new RuntimeException("The demo content needs the \"{$taxonomy}\" taxonomy, and this site has none.");
-            }
-            foreach ($list as $name) {
-                $ids[$taxonomy][$name] = (int) $terms->create($tax, ['name' => $name], $author)->getKey();
+            $tax = $cms->content->getTaxonomy($taxonomy) ?? throw new RuntimeException("The demo content needs the \"{$taxonomy}\" taxonomy, and this site has none.");
+            foreach ($list as $name => $spanish) {
+                $term = $terms->create($tax, ['name' => $name], $author);
+                $translation = $terms->translate($tax, $term, 'es', $author);
+                $terms->update($tax, $translation, ['name' => $spanish, 'slug' => self::slug($spanish)], $author);
+                $ids[$taxonomy][$name] = (int) $term->getKey();
             }
         }
 
@@ -210,50 +274,37 @@ final class DemoContent
     }
 
     /**
-     * Create the menus and put each in its location, when the theme has it.
+     * Create the menus and put each in its location and language, when the
+     * theme has the location. Pages link to their translation in the
+     * visitor's language by themselves.
      *
-     * @param list<array{name: string, location: string, items: list<list<string>>}> $specs
-     * @param array<string, int> $pages
-     * @param array<string, array<string, int>> $terms
+     * @param list<array{name: string, location: string, locale: string, items: list<list<string>>}> $specs
+     * @param array<string, int> $pages page key => id
      * @return int menus created
      */
-    private static function menus(Cms $cms, array $specs, array $pages, array $terms): int
+    private static function menus(Cms $cms, array $specs, array $pages): int
     {
         $menus = $cms->container->make(Menus::class);
         foreach ($specs as $spec) {
             $items = array_map(static fn(array $i): array => match ($i[0]) {
                 'page' => ['kind' => 'entry', 'ref' => $pages[$i[1]]],
-                'term' => ['kind' => 'term', 'ref' => $terms[$i[1]][$i[2]]],
                 'archive' => ['kind' => 'archive', 'ref' => $i[1], 'label' => $i[2]],
-                default => throw new RuntimeException("Unknown menu item \"{$i[0]}\" in the demo content: use page, term or archive."),
+                default => throw new RuntimeException("Unknown menu item \"{$i[0]}\" in the demo content: use page or archive."),
             }, $spec['items']);
             $id = $menus->save(null, $spec['name'], $items);
             if ($cms->menus->has($spec['location'])) {
-                $menus->assign($spec['location'], $id);
+                $menus->assign($spec['location'], $id, $spec['locale']);
             }
         }
 
         return count($specs);
     }
 
-    /** @param array<string, array<string, string>> $groups group => key => value */
-    private static function settings(array $groups, int $frontPage): void
+    /** "Visitas" → "visitas"; accents dropped ("Diseño" → "diseno"). */
+    private static function slug(string $name): string
     {
-        $groups['reading']['front_page'] = (string) $frontPage;
-        foreach ($groups as $group => $values) {
-            Settings::getInstance()->setMany($values, $group);
-        }
-    }
+        $ascii = (string) iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $name);
 
-    private static function type(Cms $cms, string $name): ContentType
-    {
-        return $cms->content->get($name) ?? throw new RuntimeException("The demo content needs the \"{$name}\" content type, and this site has none.");
-    }
-
-    private static function colour(\GdImage $img, string $hex): int
-    {
-        [$r, $g, $b] = sscanf($hex, '#%02x%02x%02x') ?? [0, 0, 0];
-
-        return (int) imagecolorallocate($img, (int) $r, (int) $g, (int) $b);
+        return trim((string) preg_replace('/[^a-z0-9]+/', '-', strtolower($ascii)), '-');
     }
 }

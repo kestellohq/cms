@@ -34,7 +34,7 @@ abstract class AuthTestCase extends TestCase
     protected Cms $cms;
     protected Connection $db;
     protected DatabaseSessionStore $sessions;
-    /** @var list<array{to: string, subject: string, html: string}> */
+    /** @var list<array{to: string, subject: string, html: string, text: string}> */
     protected array $mail = [];
     protected bool $csrfValid = true;
     protected ?int $sessionUser = null;
@@ -64,8 +64,8 @@ abstract class AuthTestCase extends TestCase
         Cms::setInstance($this->cms);
         $c = $this->cms->container;
         $c->instance(Cms::class, $this->cms);
-        $c->instance('auth.mail', function (string $to, string $subject, string $html): bool {
-            $this->mail[] = compact('to', 'subject', 'html');
+        $c->instance('auth.mail', function (string $to, string $subject, string $html, string $text = ''): bool {
+            $this->mail[] = compact('to', 'subject', 'html', 'text');
             return true;
         });
 
@@ -163,6 +163,28 @@ abstract class AuthTestCase extends TestCase
         } catch (\JsonException) {
             throw new \RuntimeException("Not JSON (HTTP {$response->statusCode()}): " . mb_substr(strip_tags($response->content()), 0, 400));
         }
+    }
+
+    /**
+     * One row in each per-person table without a foreign key to users: a waiting email change,
+     * an inbox entry and a switched-off channel. Deleting the person must take them along.
+     */
+    protected function addUnlinkedRows(int $userId): void
+    {
+        $this->db->table('email_changes')->insert(['user_id' => $userId, 'email' => "new{$userId}@example.test", 'token_hash' => hash('sha256', "token{$userId}"), 'created_at' => time(), 'expires_at' => time() + 86400]);
+        $this->db->table('notifications')->insert(['id' => sprintf('00000000-0000-7000-8000-%012d', $userId), 'user_id' => $userId, 'type' => 'order-shipped', 'data' => '{}', 'created_at' => time()]);
+        $this->db->table('notification_preferences')->insert(['user_id' => $userId, 'type' => 'order-shipped', 'channel' => 'mail', 'enabled' => false]);
+    }
+
+    /** @return array<string, int> table => rows left for the person */
+    protected function unlinkedRows(int $userId): array
+    {
+        $out = [];
+        foreach (['email_changes', 'notifications', 'notification_preferences'] as $table) {
+            $out[$table] = $this->db->table($table)->where('user_id', $userId)->count();
+        }
+
+        return $out;
     }
 
     /** @return list<string> */

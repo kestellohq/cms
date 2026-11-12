@@ -43,8 +43,10 @@ final class UserAdminApiTest extends AuthTestCase
         $this->assertSame(200, $edit->statusCode());
         $this->assertSame(['Bakes.', false], [$this->json($edit)['data']['bio'], $this->json($edit)['data']['is_active']]);
 
+        $this->addUnlinkedRows($bob['id']);
         $this->assertSame(204, $this->api('DELETE', "/users/{$bob['id']}")->statusCode());
         $this->assertSame(404, $this->api('GET', "/users/{$bob['id']}")->statusCode());
+        $this->assertSame(['email_changes' => 0, 'notifications' => 0, 'notification_preferences' => 0], $this->unlinkedRows($bob['id']), 'their waiting email change, inbox and preferences go with the account');
         $this->assertSame(['users.created', 'users.updated', 'users.deleted'], array_values(array_filter($this->auditEvents(), static fn(string $e) => str_starts_with($e, 'users.'))));
     }
 
@@ -103,6 +105,25 @@ final class UserAdminApiTest extends AuthTestCase
         $roles = array_column($this->json($this->api('GET', '/roles'))['data'], 'assignable', 'name');
         $this->assertFalse($roles['operator']);
         $this->assertTrue($roles['user']);
+        $editable = array_column($this->json($this->api('GET', '/roles'))['data'], 'editable', 'name');
+        $this->assertFalse($editable['operator'], 'the admin shows it as not editable');
+        $this->assertTrue($editable['user']);
+
+        // narrowing the stronger role, giving someone it, then resetting it would hand out its capabilities
+        $this->assertSame(403, $this->api('PATCH', '/roles/operator', ['capabilities' => ['read', 'admin.access']])->statusCode(), 'no narrowing a stronger role');
+        $this->assertSame(403, $this->api('DELETE', '/roles/operator')->statusCode(), 'nor resetting it');
+        $this->assertSame(['admin.access', 'read', 'settings.manage', 'system.manage'], $this->sorted($this->cms->auth->roles->capabilitiesFor('operator')));
+    }
+
+    /**
+     * @param list<string> $caps
+     * @return list<string>
+     */
+    private function sorted(array $caps): array
+    {
+        sort($caps);
+
+        return $caps;
     }
 
     public function testAdminPagesAreForBrowserSessionsOnly(): void
@@ -144,7 +165,7 @@ final class UserAdminApiTest extends AuthTestCase
         $this->assertSame('Harbour', $read['data']['general']['site_name']);
         $this->assertSame([465, true], [$read['data']['mail']['smtp_port'], $read['data']['mail']['smtp_password_set']]);
         $this->assertFalse(str_contains(json_encode($read), 'pw-1'), 'the password never leaves the server');
-        $this->assertSame(['general', 'reading', 'seo', 'mail', 'accounts', 'media', 'performance', 'snippets'], array_column($read['meta']['groups'], 'id'));
+        $this->assertSame(['general', 'reading', 'seo', 'mail', 'emails', 'accounts', 'media', 'performance', 'snippets'], array_column($read['meta']['groups'], 'id'));
         $this->assertTrue(in_array('Europe/Belgrade', $read['meta']['groups'][0]['schema']['properties']['timezone']['enum'], true));
 
         $this->api('PATCH', '/settings', ['mail' => ['smtp_password' => '']]);
@@ -203,7 +224,7 @@ final class UserAdminApiTest extends AuthTestCase
         $this->signIn();
 
         $read = $this->json($this->api('GET', '/settings'));
-        $this->assertSame(['general', 'reading', 'seo', 'mail', 'accounts', 'media', 'performance', 'snippets', 'acme.api', 'acme.vault'], array_column($read['meta']['groups'], 'id'));
+        $this->assertSame(['general', 'reading', 'seo', 'mail', 'emails', 'accounts', 'media', 'performance', 'snippets', 'acme.api', 'acme.vault'], array_column($read['meta']['groups'], 'id'));
         $this->assertSame(['endpoint' => 'https://api.acme.test', 'retries' => 2, 'enabled' => false, 'key_set' => false], $read['data']['acme.api'], 'defaults until saved');
 
         // A partial save: absent fields keep their values (schema defaults are not applied on PATCH).
@@ -225,6 +246,7 @@ final class UserAdminApiTest extends AuthTestCase
         $this->signIn('ed');
         $this->assertSame(['general', 'reading', 'seo', 'media', 'performance', 'acme.api'], array_column($this->json($this->api('GET', '/settings'))['meta']['groups'], 'id'));
         $this->assertSame(403, $this->api('PATCH', '/settings', ['acme.vault' => ['pin' => '1234']])->statusCode());
+        $this->assertSame(403, $this->api('PATCH', '/settings', ['emails' => ['email_footer' => 'Hi']])->statusCode(), 'emails need emails.manage');
 
         // Reset links travel through the mail server and are built on the site address: neither is a settings manager's to move.
         $this->assertSame(403, $this->api('PATCH', '/settings', ['mail' => ['smtp_host' => 'mail.attacker.test']])->statusCode());

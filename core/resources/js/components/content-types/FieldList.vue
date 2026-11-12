@@ -62,6 +62,8 @@ const summary = (f) =>
         f.indexed && __('Sortable'),
         f.options?.display === 'radios' && __('Radio buttons'),
         f.internal && __('Editors only'),
+        f.translatable === false && __('Same in every language'),
+        f.translatable === true && __('Per language'),
         f.width === 'sidebar' && __('Sidebar'),
         f.conditions && __('Conditional'),
         f.options?.multiple && __('Several'),

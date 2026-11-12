@@ -21,7 +21,8 @@ Kestello is a self-hosted PHP CMS with zero PHP dependencies. Core is built on t
 | `core/resources/assets/build/` | Built Vue pages. Not committed: CI and the release workflow build them, and the release zips carry them, so production runs no Node. |
 | `core/resources/lang/kestello.pot` | Core's translation template. |
 | `core/build/` | Vite build (`build.mjs`, `preset.mjs`). Dev only. |
-| `content/themes/base/` | The theme every site ships with. Other folders under `content/` are site data and ignored by Git. |
+| `content/themes/base/` | The theme every site ships with. |
+| `content/themes/exhibit/` | Exhibit, the second theme that ships with core (the demo studio's). Other folders under `content/` are site data and ignored by Git. |
 | `tests/fixtures/plugins/notebook/` | The smallest plugin with a migration, content type, endpoint and settings; `tests/Package/PluginLifecycleTest.php` takes it through install to uninstall. |
 | `tests/` | PHP tests (`*Test.php`) and `tests/js/*.test.mjs`. |
 | `bin/cms` | The CLI. `php bin/cms list` shows every command. |

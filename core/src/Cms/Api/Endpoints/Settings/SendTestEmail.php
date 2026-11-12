@@ -9,10 +9,13 @@ use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
 use Kestello\Cms\Api\Endpoint;
 use Kestello\Cms\Api\Schema;
+use Kestello\Cms\Cms;
+use Kestello\Cms\Mail\EmailRegistry;
+use Kestello\Cms\Mail\MailBrand;
 use Kestello\Framework\Mail\Mailer;
 use Kestello\Framework\Settings\Settings;
 
-/** Send a test email with the saved mail settings. */
+/** Send a test email with the saved mail settings, in the site's language and email layout. */
 final class SendTestEmail extends Endpoint
 {
     public function route(): ApiRoute
@@ -49,7 +52,10 @@ final class SendTestEmail extends Endpoint
     {
         Settings::getInstance()->reload();
         $mailer = new Mailer();
-        if (!$mailer->sendTest((string) $request->input('to'))) {
+        $brand = MailBrand::site();
+        $transport = static fn(string $to, string $subject, string $html, string $text): bool => $mailer->send($to, $subject, $html, [], $text);
+        $sent = (Cms::instance()->emails ?? new EmailRegistry())->send('settings.test_email', (string) $request->input('to'), ['site' => $brand->name], $transport, $brand);
+        if (!$sent) {
             throw ApiProblem::validation(['to' => ['The email could not be sent. Check the mail settings and the server log.']], 'Sending failed.');
         }
 

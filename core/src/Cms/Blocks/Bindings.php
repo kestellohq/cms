@@ -32,8 +32,8 @@ final class Bindings
             $config = \Kestello\Cms\Cms::instance()?->config;
 
             return match ($path) {
-                'site.name' => (string) ($s->get('site_name') ?? $config?->get('app.name', 'Kestello')),
-                'site.tagline' => (string) ($s->get('site_description') ?? $config?->get('app.description', '')),
+                'site.name' => (string) (\Kestello\Cms\I18n\SiteText::translated('site_name') ?? $s->get('site_name') ?? $config?->get('app.name', 'Kestello')),
+                'site.tagline' => (string) (\Kestello\Cms\I18n\SiteText::translated('site_description') ?? $s->get('site_description') ?? $config?->get('app.description', '')),
                 'site.url' => (string) ($s->get('site_url') ?? $config?->get('app.url', '/')),
                 default => null,
             };
@@ -55,7 +55,7 @@ final class Bindings
             return match ($path) {
                 'entry.title' => $entry->title,
                 'entry.excerpt' => $entry->excerpt,
-                'entry.url' => $ctx->type !== null ? $entry->path($ctx->type) : null,
+                'entry.url' => $ctx->type !== null ? $entry->url($ctx->type) : null,
                 'entry.published_at' => \Kestello\Framework\Database\Orm\Caster::present($entry->published_at),
                 'entry.author' => $entry->author?->username,
                 default => null,

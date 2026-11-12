@@ -94,7 +94,7 @@ final class Kernel
 
     private function __construct(string $root, string $core)
     {
-        $this->paths = new Paths($root, $core);
+        $this->paths = Paths::fromEnv($root, $core);
     }
 
     public static function create(string $root): self
@@ -414,7 +414,7 @@ final class Kernel
         $console->register(new Commands\MigrateResetCommand($migrations));
         $console->register(new Commands\MigrateStatusCommand($migrations));
         $console->register(new Commands\MigrateFreshCommand($migrations));
-        $console->register(new Commands\CacheClearCommand($root));
+        $console->register(new Commands\CacheClearCommand(static fn(): CacheStore => $app->container()->make(CacheStore::class), $this->paths->compiled()));
         $console->register(new Commands\ServeCommand($root));
         $console->register(new Commands\KeyGenerateCommand($root));
         $console->register(new Commands\RoutesCommand(fn(): Router => $app->router()));
@@ -423,6 +423,8 @@ final class Kernel
         $console->register(new RecoveryLinkCommand($app->config()));
         $console->register(new \Kestello\Cms\Console\ResetTwoFactorCommand());
         $console->register(new \Kestello\Cms\Console\SetPasswordCommand());
+        $console->register(new \Kestello\Cms\Console\CreateUserCommand());
+        $console->register(new \Kestello\Cms\Console\DeleteUserCommand());
         $console->register(new \Kestello\Cms\Console\ConfigPublishCommand($this->paths->config()));
         $console->register(new \Kestello\Cms\Console\AuditPruneCommand());
         $console->register(new \Kestello\Cms\Console\Queue\QueueWorkCommand());
@@ -484,11 +486,12 @@ final class Kernel
             $console->register(new \Kestello\Cms\Console\Extensions\ThemeExportCommand());
             $console->register(new \Kestello\Cms\Console\Extensions\ThemeImportCommand());
             $console->register(new \Kestello\Cms\Console\ImportWordPressCommand());
+            $console->register(new \Kestello\Cms\Console\SeedCommand());
             foreach ([\Kestello\Cms\Console\Backup\BackupCreateCommand::class, \Kestello\Cms\Console\Backup\BackupListCommand::class,
                 \Kestello\Cms\Console\Backup\BackupRestoreCommand::class, \Kestello\Cms\Console\Backup\BackupDeleteCommand::class,
                 \Kestello\Cms\Console\Package\PackageVerifyCommand::class,
                 \Kestello\Cms\Console\Package\PackageUpdateCommand::class, \Kestello\Cms\Console\Package\PackageCheckUpdatesCommand::class, \Kestello\Cms\Console\Package\PackageLicenseCommand::class, \Kestello\Cms\Console\Package\UpdateProbeCommand::class,
-                \Kestello\Cms\Console\Package\CoreUpdateCommand::class, \Kestello\Cms\Console\Package\CoreCheckCommand::class,
+                \Kestello\Cms\Console\Package\CoreUpdateCommand::class, \Kestello\Cms\Console\Package\CoreCheckCommand::class, \Kestello\Cms\Console\Package\RegistryStatusCommand::class, \Kestello\Cms\Console\Package\RegistryInstallCommand::class,
                 \Kestello\Cms\Console\Package\UpdateRecoverCommand::class] as $command) {
                 $console->register(new $command());
             }
@@ -636,7 +639,7 @@ final class Kernel
         );
         $container->instance(\Kestello\Framework\Storage\StorageManager::class, $cms->storage);
 
-        foreach ([new AuthModule(), new AdminModule(), new ApiModule(), new ExtensionsModule(), new \Kestello\Cms\System\SystemModule(), new \Kestello\Cms\Storage\StorageModule(), new \Kestello\Cms\Notifications\NotificationsModule(), new \Kestello\Cms\Health\HealthModule(), new \Kestello\Cms\Cache\PageCacheModule(), new \Kestello\Cms\Content\ContentModule(), new \Kestello\Cms\Media\MediaModule(), new \Kestello\Cms\Blocks\BlocksModule(), new \Kestello\Cms\Search\SearchModule(), new \Kestello\Cms\Redirects\RedirectsModule(), new \Kestello\Cms\Forms\FormsModule(), new \Kestello\Cms\Webhooks\WebhooksModule(), new \Kestello\Cms\Design\DesignModule(), new \Kestello\Cms\Backup\BackupModule(), new \Kestello\Cms\Import\ImportModule(), new \Kestello\Cms\Package\PackagesModule(), new \Kestello\Cms\Site\SiteModule(), new \Kestello\Cms\Fleet\FleetModule(), new FrontendModule(), new \Kestello\Cms\Demo\DemoModule()] as $module) {
+        foreach ([new AuthModule(), new AdminModule(), new ApiModule(), new ExtensionsModule(), new \Kestello\Cms\System\SystemModule(), new \Kestello\Cms\Storage\StorageModule(), new \Kestello\Cms\Notifications\NotificationsModule(), new \Kestello\Cms\Health\HealthModule(), new \Kestello\Cms\I18n\LanguagesModule(), new \Kestello\Cms\Cache\PageCacheModule(), new \Kestello\Cms\Content\ContentModule(), new \Kestello\Cms\Media\MediaModule(), new \Kestello\Cms\Blocks\BlocksModule(), new \Kestello\Cms\Search\SearchModule(), new \Kestello\Cms\Redirects\RedirectsModule(), new \Kestello\Cms\Forms\FormsModule(), new \Kestello\Cms\Webhooks\WebhooksModule(), new \Kestello\Cms\Design\DesignModule(), new \Kestello\Cms\Backup\BackupModule(), new \Kestello\Cms\Import\ImportModule(), new \Kestello\Cms\Package\PackagesModule(), new \Kestello\Cms\Site\SiteModule(), new \Kestello\Cms\Fleet\FleetModule(), new FrontendModule(), new \Kestello\Cms\Demo\DemoModule()] as $module) {
             $extensions->addModule($module);
         }
 

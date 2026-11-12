@@ -26,6 +26,8 @@ use Kestello\Support\Translator;
  *     "fonts":    {"archivo": {"label": "Archivo", "stack": "'Archivo', Arial, sans-serif"}},
  *     "contrast": [{"fg": "wall-ink", "bg": "wall", "label": "Text on the page"}],
  *     "variations": {"night": {"label": "Night", "values": {"plate": "#0f766e"}}},
+ *     "email":    {"page": "wall", "card": "enamel-white", "ink": "wall-ink", "accent": "plate", "accent-ink": "#ffffff",
+ *                  "font": "font", "dark": {"page": "#141414", "card": "#1f1f1f", "ink": "#f4f1ea"}},
  *     "presets":  {"color": {"plate": {"label": "Enamel", "value": "var(--plate)"}},
  *                  "space": {"sm": {"label": "S", "value": "1rem"}}, "font": {...}, "radius": {...}}
  *   }
@@ -35,6 +37,11 @@ use Kestello\Support\Translator;
  * out gets BlockDesign::DEFAULTS; with no colours, the theme's colour tokens
  * are the palette. They are written into the stylesheet as --k-color-*,
  * --k-space-*, --k-font-* and --k-radius-*.
+ *
+ * "email" says which colours emails use (MailBrand): each role (page, card,
+ * ink, muted, line, accent, accent-ink, font) names a token or is a colour,
+ * and "dark" does the same for mail apps in dark mode. Roles left out keep
+ * Kestello's defaults.
  *
  * Every token becomes a custom property of the same name (--plate,
  * --radius, --font) in one stylesheet loaded after the theme's own, so a
@@ -60,6 +67,9 @@ final class ThemeStyles
 
     private const array UNITS = ['px', 'rem', 'em', '%', 'ch', 'vw'];
 
+    /** The parts of an email a theme can colour, and its font. */
+    public const array EMAIL_ROLES = ['page', 'card', 'ink', 'muted', 'line', 'accent', 'accent-ink', 'font'];
+
     /** @var array<string, array<string, mixed>> per theme slug */
     private array $definitions = [];
     private ?string $cssMemo = null;
@@ -76,7 +86,7 @@ final class ThemeStyles
     /**
      * The theme chain's tokens, groups, fonts, contrast pairs and variations.
      *
-     * @return array{groups: array<string, string>, tokens: array<string, array<string, mixed>>, fonts: array<string, array{label: string, stack: string}>, contrast: list<array{fg: string, bg: string, label: string}>, variations: array<string, array{label: string, values: array<string, mixed>}>}
+     * @return array{groups: array<string, string>, tokens: array<string, array<string, mixed>>, fonts: array<string, array{label: string, stack: string}>, contrast: list<array{fg: string, bg: string, label: string}>, variations: array<string, array{label: string, values: array<string, mixed>}>, theme_css: string, presets: array<string, array<string, array{label: string, value: string}>>, email: array{light: array<string, string>, dark: array<string, string>}}
      */
     public function definition(): array
     {
@@ -85,7 +95,7 @@ final class ThemeStyles
         if (isset($this->definitions[$slug])) {
             return $this->definitions[$slug];
         }
-        $def = ['groups' => [], 'tokens' => [], 'fonts' => self::SYSTEM_FONTS, 'contrast' => [], 'variations' => [], 'theme_css' => '', 'presets' => []];
+        $def = ['groups' => [], 'tokens' => [], 'fonts' => self::SYSTEM_FONTS, 'contrast' => [], 'variations' => [], 'theme_css' => '', 'presets' => [], 'email' => ['light' => [], 'dark' => []]];
         // fonts downloaded to this site can be chosen for any font token
         foreach ($this->fonts?->all() ?? [] as $slug => $font) {
             $def['fonts'][$slug] = ['label' => $font['label'], 'stack' => $font['stack'], 'hosted' => true];
@@ -180,6 +190,18 @@ final class ThemeStyles
                     continue;
                 }
                 $def['presets'][$kind][$key] = ['label' => mb_substr((string) ($preset['label'] ?? $key), 0, 40), 'value' => $value];
+            }
+        }
+        foreach (['light' => is_array($raw['email'] ?? null) ? $raw['email'] : [], 'dark' => is_array($raw['email']['dark'] ?? null) ? $raw['email']['dark'] : []] as $scheme => $roles) {
+            foreach ($roles as $role => $ref) {
+                if ($role === 'dark' && $scheme === 'light') {
+                    continue;
+                }
+                if (!in_array($role, self::EMAIL_ROLES, true) || !is_string($ref) || preg_match('/^(?:[a-z][a-z0-9-]{0,40}|#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})$/', $ref) !== 1) {
+                    error_log("[kestello] {$owner}/styles.json: email.{$role} is ignored (roles: " . implode(', ', self::EMAIL_ROLES) . '; a token name or a #colour).');
+                    continue;
+                }
+                $def['email'][$scheme][$role] = $ref;
             }
         }
         foreach ((array) ($raw['variations'] ?? []) as $name => $v) {
@@ -300,6 +322,48 @@ final class ThemeStyles
         }
         // values for tokens the theme no longer has are dropped quietly
         return array_replace($values, array_intersect_key($choice['values'], $def['tokens']));
+    }
+
+    /**
+     * The colours and font emails use, from the theme's "email" roles and
+     * the site's published choices: #rrggbb colours by MailBrand role
+     * (accent-ink becomes accentInk), and a font stack. Roles the theme
+     * doesn't map, or that name a missing token, are left out.
+     *
+     * @return array{light: array<string, string>, dark: array<string, string>, font: ?string}
+     */
+    public function email(): array
+    {
+        $def = $this->definition();
+        $values = $this->resolve($this->published());
+        $out = ['light' => [], 'dark' => [], 'font' => null];
+        foreach (['light', 'dark'] as $scheme) {
+            foreach ($def['email'][$scheme] as $role => $ref) {
+                $token = $def['tokens'][$ref] ?? null;
+                if ($role === 'font') {
+                    $key = ($token['type'] ?? null) === 'font' ? $values[$ref] : $ref;
+                    $out['font'] = $scheme === 'light' && is_string($key) && isset($def['fonts'][$key]) ? $def['fonts'][$key]['stack'] : $out['font'];
+                    continue;
+                }
+                $color = str_starts_with($ref, '#') ? $ref : (($token['type'] ?? null) === 'color' ? (string) $values[$ref] : null);
+                if ($color !== null) {
+                    $out[$scheme][$role === 'accent-ink' ? 'accentInk' : $role] = self::opaqueHex($color);
+                }
+            }
+        }
+
+        return $out;
+    }
+
+    /** #abc, #aabbcc or #aabbccdd as #aabbcc: mail clients don't all read alpha. */
+    private static function opaqueHex(string $hex): string
+    {
+        $hex = strtolower(ltrim($hex, '#'));
+        if (strlen($hex) === 3) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+
+        return '#' . substr($hex, 0, 6);
     }
 
     // ── the stylesheet ──────────────────────────────────────────────────

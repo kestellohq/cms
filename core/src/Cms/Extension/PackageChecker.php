@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Extension;
 
+use Kestello\Cms\Mail\ThemeEmails;
+
 /**
  * Static checks for a plugin or theme (spec/modularity.md §8.3).
  *
@@ -60,6 +62,16 @@ final class PackageChecker
         foreach ($manifest->stylesheets as $sheet) {
             if (!str_starts_with($sheet, '/') && AssetController::resolve(rtrim($directory, '/') . '/assets', $sheet) === null) {
                 $findings[] = ['level' => 'error', 'file' => $type->manifestFile(), 'line' => 0, 'message' => "stylesheet assets/{$sheet} not found"];
+            }
+        }
+
+        // a theme's email layout and templates (ThemeEmails): which emails exist is only known on a site
+        if ($type === PackageType::Theme) {
+            foreach (glob(rtrim($directory, '/') . '/' . ThemeEmails::FOLDER . '/*.html') ?: [] as $file) {
+                $name = basename($file, '.html');
+                foreach (ThemeEmails::problems((string) file_get_contents($file), $name === ThemeEmails::LAYOUT ? null : []) as $problem) {
+                    $findings[] = ['level' => 'error', 'file' => ThemeEmails::FOLDER . "/{$name}.html", 'line' => 0, 'message' => $problem];
+                }
             }
         }
 
@@ -156,7 +168,7 @@ final class PackageChecker
 
         foreach (file($path) ?: [] as $n => $lineText) {
             if (preg_match('/\bv-html\s*=/', $lineText) === 1) {
-                $findings[] = $this->finding('warning', $relative, $n + 1, 'v-html renders raw HTML; use <SafeHtml> with server-sanitized content');
+                $findings[] = $this->finding('warning', $relative, $n + 1, 'v-html renders raw HTML: bind only HTML the server sanitized, such as an entry\'s rich text field, never text a visitor typed');
             }
             if (preg_match('/\b(eval|new\s+Function)\s*\(/', $lineText) === 1) {
                 $findings[] = $this->finding('error', $relative, $n + 1, 'dynamic code execution in JavaScript');

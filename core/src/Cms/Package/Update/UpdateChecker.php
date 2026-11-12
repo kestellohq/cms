@@ -192,7 +192,7 @@ final class UpdateChecker
      */
     public static function releaseKeys(mixed $keys): array
     {
-        return PackageSignature::trustedKeys($keys);
+        return PackageSignature::trustedKeys($keys, 'release.keys');
     }
 
     /**

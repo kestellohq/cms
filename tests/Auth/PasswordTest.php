@@ -225,4 +225,81 @@ final class PasswordTest extends AuthTestCase
         $this->assertTrue((bool) preg_match('/^  ([A-Za-z0-9]{20})$/m', $out, $m), 'prints the new password once');
         $this->assertTrue($login->attempt('ana', $m[1], '192.0.2.1')->ok());
     }
+
+    public function testTheServerCanCreateAnAccount(): void
+    {
+        $this->createUser();
+        $run = function (array $args, array $options = [], string $stdin = ''): array {
+            $in = fopen('php://memory', 'w+');
+            fwrite($in, $stdin);
+            rewind($in);
+            $out = fopen('php://memory', 'w+');
+            $command = new \Kestello\Cms\Console\CreateUserCommand($in);
+            $command->setOutput(new \Kestello\Framework\Console\Output($out, false));
+            $code = $command->handle($args, $options);
+            rewind($out);
+
+            return [$code, (string) stream_get_contents($out)];
+        };
+        $login = $this->cms->container->make(LoginService::class);
+        $pw = "a long enough passphrase\n";
+
+        $this->assertSame(1, $run([])[0], 'needs a username and an email');
+        $this->assertSame(1, $run(['bob', 'bob@example.test', 'a password on the command line'])[0], 'never takes the password as an argument');
+        $this->assertSame(1, $run(['ana', 'new@example.test'], [], $pw)[0], 'the username is taken');
+        $this->assertSame(1, $run(['bob', 'ana@example.test'], [], $pw)[0], 'the email is taken');
+        $this->assertSame(1, $run(['bo', 'bob@example.test'], [], $pw)[0], 'too short a username');
+        $this->assertSame(1, $run(['bob', 'not-an-email'], [], $pw)[0]);
+        $this->assertSame(1, $run(['bob', 'bob@example.test'], ['role' => 'emperor'], $pw)[0], 'a role that exists');
+        $this->assertSame(1, $run(['bob', 'bob@example.test'], [], "short\n")[0], 'the password rules apply');
+        $this->assertSame(1, $run(['bob', 'bob@example.test'], [], '')[0], 'no password, no account');
+        $this->assertFalse(\Kestello\Framework\Database\QueryBuilder::table('users')->where('username', 'bob')->exists(), 'nothing was created by a refusal');
+
+        [$code, $out] = $run(['bob', 'Bob@Example.TEST'], ['role' => 'admin'], $pw);
+        $this->assertSame(0, $code, $out);
+        $bo = \Kestello\Framework\Database\QueryBuilder::table('users')->where('username', 'bob')->first();
+        $this->assertSame(['bob@example.test', 'admin', 1], [$bo['email'], $bo['role'], (int) $bo['is_active']]);
+        $this->assertTrue($login->attempt('bob', 'a long enough passphrase', '192.0.2.1')->ok());
+        $this->assertContains('users.created', $this->auditEvents());
+
+        [$code, $out] = $run(['cyd', 'cyd@example.test'], ['generate' => true]);
+        $this->assertSame(0, $code);
+        $this->assertTrue((bool) preg_match('/^  ([A-Za-z0-9]{20})$/m', $out, $m), 'prints the new password once');
+        $this->assertTrue($login->attempt('cyd', $m[1], '192.0.2.1')->ok());
+        $this->assertSame('user', \Kestello\Framework\Database\QueryBuilder::table('users')->where('username', 'cyd')->value('role'), 'the default role is the least one');
+    }
+
+    public function testTheServerCanDeleteAnAccount(): void
+    {
+        $ana = (int) $this->createUser()['id'];
+        $run = function (array $args, array $options = []): array {
+            $out = fopen('php://memory', 'w+');
+            $command = new \Kestello\Cms\Console\DeleteUserCommand();
+            $command->setOutput(new \Kestello\Framework\Console\Output($out, false));
+            $code = $command->handle($args, $options);
+            rewind($out);
+
+            return [$code, (string) stream_get_contents($out)];
+        };
+        $users = static fn(): \Kestello\Framework\Database\QueryBuilder => \Kestello\Framework\Database\QueryBuilder::table('users');
+
+        $this->assertSame(1, $run([])[0], 'needs a person');
+        $this->assertSame(1, $run(['nobody'], ['yes' => true])[0]);
+        [$code, $out] = $run(['ana'], ['yes' => true]);
+        $this->assertSame(1, $code, 'the last administrator stays');
+        $this->assertStringContainsString('last administrator', $out);
+        $this->assertTrue($users()->where('id', $ana)->exists());
+
+        $shots = (int) $this->createUser(['username' => 'shots', 'email' => 'shots@example.test'])['id'];
+        (new PersonalAccessTokens())->create($shots, 'laptop', ['content:read']);
+        $this->addUnlinkedRows($shots);
+        $this->addUnlinkedRows($ana);
+        $this->assertSame(0, $run(['Shots@Example.TEST'], ['yes' => true])[0], 'found by email, any case');
+        $this->assertFalse($users()->where('id', $shots)->exists());
+        $this->assertSame([], (new PersonalAccessTokens())->forUser($shots), 'their access tokens end');
+        $this->assertSame(['email_changes' => 0, 'notifications' => 0, 'notification_preferences' => 0], $this->unlinkedRows($shots), 'their waiting email change, inbox and preferences go too');
+        $this->assertSame(['email_changes' => 1, 'notifications' => 1, 'notification_preferences' => 1], $this->unlinkedRows($ana), "someone else's stay");
+        $this->assertContains('users.deleted', $this->auditEvents());
+        $this->assertTrue($users()->where('id', $ana)->exists(), 'nobody else is touched');
+    }
 }

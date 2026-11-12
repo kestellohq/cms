@@ -173,6 +173,28 @@ final class ExtensionManagerTest extends TestCase
         $this->assertFalse($this->state->get(PackageType::Plugin, 'fails-boot')->active);
     }
 
+    /** Plugins → Activate on a suspended plugin: it comes back once it boots, and stays suspended while it fails. */
+    public function testActivatingASuspendedPluginTriesItAgain(): void
+    {
+        $this->suspensions->suspend('plugin:good', 'crashed once');
+        $m = $this->manager();
+        $m->boot();
+        $this->assertSame(['suspended: crashed once'], $m->rejectedPlugins()['good']);
+        $this->assertTrue($this->suspensions->isSuspended('plugin:fails-boot'), 'suspended by this boot');
+
+        $m->activatePlugin('good');
+        $this->assertFalse($this->suspensions->isSuspended('plugin:good'));
+        $this->assertTrue($this->state->get(PackageType::Plugin, 'good')->active);
+
+        $e = $this->assertThrows(\RuntimeException::class, fn() => $m->activatePlugin('fails-boot'));
+        $this->assertContains('failed to boot: bad boot', $e->getMessage());
+        $this->assertTrue($this->suspensions->isSuspended('plugin:fails-boot'), 'still suspended');
+
+        $next = $this->manager();
+        $next->boot();
+        $this->assertContains('good', array_keys($next->activePlugins()));
+    }
+
     /**
      * Activation boots the plugin into a request whose content types are
      * already final: its types are checked there (a clash is refused) and

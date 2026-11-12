@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Extension;
 
 use Kestello\Cms\Cms;
+use Kestello\Cms\Mail\ThemeEmails;
 use Kestello\Framework\Core\Autoloader;
 use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Database\MigrationRunner;
@@ -623,9 +624,14 @@ final class ExtensionManager
         if ($theme->manifest->parent !== null && !isset($this->themes[$theme->manifest->parent])) {
             $problems[] = "parent theme \"{$theme->manifest->parent}\" is not installed";
         }
+        // its email layout and templates: a broken one would change every email the site sends
+        $registry = $this->cms->emails;
+        $parent = $theme->manifest->parent !== null ? ($this->themes[$theme->manifest->parent] ?? null) : null;
+        array_push($problems, ...ThemeEmails::check($theme, $parent, $registry));
         if ($problems !== []) {
             throw new RuntimeException("Cannot activate theme \"{$slug}\":\n  - " . implode("\n  - ", $problems));
         }
+        ThemeEmails::forget();
 
         foreach ($this->state->all(PackageType::Theme) as $state) {
             if ($state->active && $state->slug !== $slug) {

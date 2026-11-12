@@ -100,6 +100,7 @@ final class DemoModeTest extends AuthTestCase
         'POST /content/{type}/entries/{id}/request-changes',
         'POST /content/{type}/entries/{id}/restore',
         'POST /content/{type}/entries/{id}/revisions/{revision}/restore',
+        'POST /content/{type}/entries/{id}/translations',      // translating is part of what the demo shows
         'POST /content/{type}/preview-blocks',
         'POST /design/preview',
         'POST /design/styles/revisions/{id}/restore',
@@ -115,6 +116,7 @@ final class DemoModeTest extends AuthTestCase
         'POST /media/{id}/restore',
         'POST /menus',
         'POST /taxonomies/{taxonomy}/terms',
+        'POST /taxonomies/{taxonomy}/terms/{id}/translations',
         'PUT /content/{type}/entries/{id}/assignee',
         'PUT /content/{type}/entries/{id}/autosave',
         'PUT /design/styles',

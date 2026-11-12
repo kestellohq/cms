@@ -1,7 +1,10 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { ApiError, confirm, formatDateTime, notify, useApi, useCan, __ } from '@kestello/sdk';
-import { KAlert, KBadge, KButton, KEmpty, KField, KFileInput, KIcon, KModal, KPageHeader, KSwitch } from '@kestello/ui';
+import { KAlert, KBadge, KButton, KEmpty, KField, KFileInput, KIcon, KModal, KPageHeader } from '@kestello/ui';
+import PackageReviewModal from '../../../components/packages/PackageReviewModal.vue';
+import { permissionRows } from '../../../components/packages/permissions.js';
+import { pluginActions } from '../../../components/packages/plugin-actions.js';
 import StoppedUpdate from '../../../components/updates/StoppedUpdate.vue';
 import { rememberSwitchBack, switchBackOutcome, takeSwitchBack } from '../../../components/updates/switch-back.js';
 
@@ -10,7 +13,8 @@ defineOptions({ layout: 'Admin' });
 /**
  * Plugins: activate, deactivate, delete, and install from a zip. An upload
  * is reviewed first (who signed it, what it declares it will do); only
- * packages signed by a publisher the server trusts install from here.
+ * packages signed by a publisher the server trusts, or vouched for by the
+ * registry, install from here. Add new (AddPlugins) browses the registry.
  * After an update, Switch back goes to the version before it, with the
  * database from before it.
  */
@@ -69,29 +73,6 @@ const statusTone = { active: 'success', inactive: 'neutral', suspended: 'danger'
 const statusLabel = { active: __('Active'), inactive: __('Inactive'), suspended: __('Suspended'), failed: __('Failed to start') };
 const names = computed(() => Object.fromEntries((data.value?.plugins ?? []).map((p) => [p.slug, p.name])));
 
-const permissionLabels = {
-    http: __('Connects to'),
-    database: __('Database'),
-    filesystem: __('Files'),
-    mail: __('Sends email'),
-    events: __('Listens to'),
-    capabilities: __('Adds permissions'),
-};
-function permissionRows(permissions, replaces = []) {
-    const rows = Object.entries(permissions ?? {}).map(([area, value]) => ({
-        label: permissionLabels[area] ?? area,
-        value: Array.isArray(value)
-            ? value.join(', ')
-            : typeof value === 'object' && value !== null
-              ? Object.entries(value)
-                    .map(([k, v]) => `${k}: ${v}`)
-                    .join(', ')
-              : String(value),
-    }));
-    if (replaces.length) rows.push({ label: __('Replaces core services'), value: replaces.join(', ') });
-    return rows;
-}
-
 async function act(plugin, action) {
     busy.value = `${action}:${plugin.slug}`;
     try {
@@ -129,23 +110,17 @@ async function remove(plugin) {
     }
 }
 
-// ── upload, review, install ──────────────────────────────────────────
+// ── upload, then the review shared with Add new ─────────────────────
 const adding = ref(false);
 const file = ref(null);
-const review = ref(null);
 const uploadErrors = ref({});
-const replace = ref(false);
-const activate = ref(true);
-const failed = ref(null);
+const review = ref(null);
+const reviewing = ref(false);
 
 function openAdd() {
     adding.value = true;
     file.value = null;
-    review.value = null;
     uploadErrors.value = {};
-    replace.value = false;
-    activate.value = true;
-    failed.value = null;
 }
 
 async function upload() {
@@ -156,78 +131,11 @@ async function upload() {
     form.append('file', file.value);
     try {
         review.value = (await api.upload('/plugins/upload', form)).data;
-        replace.value = !!review.value.package.installed && !review.value.package.installed.active;
+        adding.value = false;
+        reviewing.value = true;
     } catch (e) {
         if (e instanceof ApiError && e.status === 422) uploadErrors.value = e.fieldErrors();
         else notify.error(e);
-    } finally {
-        busy.value = '';
-    }
-}
-
-const pkg = computed(() => review.value?.package ?? null);
-const warnings = computed(() => (pkg.value?.findings ?? []).filter((f) => f.level !== 'error'));
-const errors = computed(() => (pkg.value?.findings ?? []).filter((f) => f.level === 'error'));
-const signature = computed(() => {
-    const s = pkg.value?.signature;
-    if (!s) return null;
-    return {
-        signed: { icon: 'seal-check', tone: 'success', text: __('Signed by {name}, a publisher this site trusts.', { name: s.name }) },
-        untrusted: { icon: 'seal-question', tone: 'warning', text: __('Signed with a key this site does not trust ({key}).', { key: s.key }) },
-        unsigned: { icon: 'seal-question', tone: 'warning', text: __('Not signed: nobody vouches for where it came from.') },
-        tampered: { icon: 'seal-warning', tone: 'danger', text: __('Changed after it was signed. Do not install it.') },
-    }[s.status];
-});
-const blockedReason = computed(() => {
-    if (!review.value || review.value.allowed) return '';
-    if (pkg.value.signature.status === 'tampered') return __('This package was changed after it was signed, so it is refused.');
-    return data.value?.policy.trusted.length
-        ? __('Only packages signed by {publishers} install from here. A developer can install this one on the server: bin/cms plugin:install <zip>.', {
-              publishers: data.value.policy.trusted.join(', '),
-          })
-        : __(
-              'No publisher is trusted on this site yet, so plugins install on the server: bin/cms plugin:install <zip>. Trusted publishers are set in config/app.php (packages.trusted_keys).',
-          );
-});
-const replaceBlocked = computed(() => pkg.value?.installed?.active);
-const update = computed(() => review.value?.update ?? null);
-
-async function runUpdate() {
-    busy.value = 'update';
-    failed.value = null;
-    try {
-        const response = (await api.post('/plugins/update', { token: review.value.token })).data;
-        data.value = response;
-        const r = response.result;
-        if (r.ok) {
-            adding.value = false;
-            notify.success(__('{plugin} was updated to {v}.', { plugin: pkg.value.name, v: r.to }));
-        } else {
-            failed.value = r;
-        }
-    } catch (e) {
-        notify.error(e);
-    } finally {
-        busy.value = '';
-    }
-}
-
-async function install() {
-    busy.value = 'install';
-    try {
-        const result = (await api.post('/plugins/install', { token: review.value.token, replace: replace.value, activate: activate.value })).data;
-        data.value = result;
-        adding.value = false;
-        if (result.activation_problem)
-            notify.error(__('{plugin} was installed but could not be activated: {problem}', { plugin: pkg.value.name, problem: result.activation_problem }));
-        else
-            notify.success(
-                result.activated
-                    ? __('{plugin} was installed and is active.', { plugin: pkg.value.name })
-                    : __('{plugin} was installed.', { plugin: pkg.value.name }),
-            );
-    } catch (e) {
-        notify.error(e);
     } finally {
         busy.value = '';
     }
@@ -244,7 +152,8 @@ async function install() {
         "
     >
         <template v-if="data" #actions>
-            <KButton variant="primary" icon="upload" @click="openAdd">{{ __('Upload a plugin') }}</KButton>
+            <KButton icon="upload" @click="openAdd">{{ __('Upload a plugin') }}</KButton>
+            <KButton variant="primary" icon="plus" href="/admin/system/plugins/add">{{ __('Add new') }}</KButton>
         </template>
     </KPageHeader>
     <KAlert v-if="loadError" tone="danger">{{ loadError.message }}</KAlert>
@@ -255,7 +164,7 @@ async function install() {
     <StoppedUpdate v-if="data?.stopped_update" :stopped="data.stopped_update" :can-retry="can('core.update')" />
 
     <template v-if="data">
-        <KEmpty v-if="!data.plugins.length" icon="plug" :title="__('No plugins installed')">{{ __('Upload a plugin zip to add one.') }}</KEmpty>
+        <KEmpty v-if="!data.plugins.length" icon="plug" :title="__('No plugins installed')">{{ __('Find one under Add new, or upload a plugin zip.') }}</KEmpty>
         <ul v-else class="k-plugins">
             <li v-for="p in data.plugins" :key="p.slug" class="k-plugin" :class="`is-${p.status}`">
                 <div class="k-plugin__main">
@@ -311,14 +220,24 @@ async function install() {
                         @click="switchBack(p)"
                         >{{ __('Switch back to {v}', { v: p.switch_back.to }) }}</KButton
                     >
-                    <KButton v-if="p.status === 'inactive'" size="sm" variant="primary" :loading="busy === `activate:${p.slug}`" @click="act(p, 'activate')">{{
-                        __('Activate')
-                    }}</KButton>
-                    <KButton v-else size="sm" :loading="busy === `deactivate:${p.slug}`" :disabled="p.required_by.length > 0" @click="act(p, 'deactivate')">{{
-                        __('Deactivate')
-                    }}</KButton>
                     <KButton
-                        v-if="p.status === 'inactive'"
+                        v-if="pluginActions(p).activate"
+                        size="sm"
+                        variant="primary"
+                        :loading="busy === `activate:${p.slug}`"
+                        @click="act(p, 'activate')"
+                        >{{ p.status === 'suspended' ? __('Activate again') : __('Activate') }}</KButton
+                    >
+                    <KButton
+                        v-if="pluginActions(p).deactivate"
+                        size="sm"
+                        :loading="busy === `deactivate:${p.slug}`"
+                        :disabled="p.required_by.length > 0"
+                        @click="act(p, 'deactivate')"
+                        >{{ __('Deactivate') }}</KButton
+                    >
+                    <KButton
+                        v-if="pluginActions(p).remove"
                         size="sm"
                         variant="ghost"
                         icon="trash"
@@ -331,13 +250,8 @@ async function install() {
         </ul>
     </template>
 
-    <KModal
-        v-model:open="adding"
-        :title="review ? (update ? __('Update {plugin}?', { plugin: pkg.name }) : __('Install {plugin}?', { plugin: pkg.name })) : __('Upload a plugin')"
-        size="lg"
-        :dismissible="busy !== 'update'"
-    >
-        <form v-if="!review" id="k-plugin-upload" class="k-form" @submit.prevent="upload">
+    <KModal v-model:open="adding" :title="__('Upload a plugin')" size="lg">
+        <form id="k-plugin-upload" class="k-form" @submit.prevent="upload">
             <p class="k-muted k-small k-plugins__note">
                 {{ __('Choose a plugin zip. Nothing is installed yet: you see who signed it and what it declares first.') }}
             </p>
@@ -345,82 +259,14 @@ async function install() {
                 <KFileInput :id="id" v-model="file" accept=".zip,application/zip" :described-by="describedBy" required />
             </KField>
         </form>
-        <div v-else class="k-review">
-            <p class="k-review__head">
-                <strong>{{ pkg.name }}</strong> <span class="k-num k-muted">{{ pkg.version }}</span>
-                <template v-if="pkg.author"
-                    ><span class="k-muted"> · {{ __('By {author}', { author: pkg.author }) }}</span></template
-                >
-            </p>
-            <p v-if="pkg.description" class="k-review__desc">{{ pkg.description }}</p>
-            <p class="k-review__sig" :class="`is-${signature.tone}`"><KIcon :name="signature.icon" /> {{ signature.text }}</p>
-            <p v-if="update" class="k-muted k-small">
-                {{
-                    __(
-                        'Updates version {from}. The database is backed up and the site is checked after the new files are in place; if anything is wrong, version {from} and the database are put back.',
-                        { from: update.from },
-                    )
-                }}
-            </p>
-            <p v-else-if="pkg.installed" class="k-muted k-small">{{ __('Version {v} is installed (inactive).', { v: pkg.installed.version }) }}</p>
-
-            <h3 class="k-review__h">{{ __('What it may do') }}</h3>
-            <dl v-if="permissionRows(pkg.permissions, pkg.replaces).length" class="k-plugin__perms">
-                <template v-for="row in permissionRows(pkg.permissions, pkg.replaces)" :key="row.label"
-                    ><dt>{{ row.label }}</dt>
-                    <dd>{{ row.value }}</dd></template
-                >
-            </dl>
-            <p v-else class="k-muted k-small">{{ __('It declares nothing beyond its own pages, tables and settings.') }}</p>
-
-            <template v-if="errors.length || warnings.length">
-                <h3 class="k-review__h">{{ __('Code check') }}</h3>
-                <ul class="k-review__findings">
-                    <li v-for="f in [...errors, ...warnings]" :key="f.file + f.line + f.message" :class="`is-${f.level}`">
-                        <KIcon :name="f.level === 'error' ? 'x-circle' : 'warning'" /> <code>{{ f.file }}{{ f.line ? `:${f.line}` : '' }}</code> {{ f.message }}
-                    </li>
-                </ul>
-            </template>
-
-            <KAlert v-if="failed" tone="danger" :title="__('The update was not applied')">
-                <p v-for="problem in failed.problems" :key="problem" class="k-review__problem">{{ problem }}</p>
-                <p v-if="failed.rolled_back">{{ __('Version {v} and the database were put back. The site runs as before.', { v: failed.from }) }}</p>
-                <p v-for="problem in failed.rollback_problems" v-else :key="problem">{{ problem }}</p>
-            </KAlert>
-            <KAlert v-if="blockedReason" tone="warning">{{ blockedReason }}</KAlert>
-            <KAlert v-else-if="update?.problems.length" tone="warning" :title="__('This update cannot be applied')">
-                <p v-for="problem in update.problems" :key="problem" class="k-review__problem">{{ problem }}</p>
-            </KAlert>
-            <template v-else-if="!update">
-                <KSwitch v-if="pkg.installed" v-model="replace" :label="__('Replace the installed version')" :disabled="replaceBlocked" />
-                <KSwitch v-model="activate" :label="__('Activate it after installing')" />
-            </template>
-        </div>
         <template #footer>
-            <KButton :disabled="busy === 'update'" @click="adding = false">{{ failed ? __('Close') : __('Cancel') }}</KButton>
-            <KButton v-if="!review" type="submit" form="k-plugin-upload" variant="primary" icon="upload" :loading="busy === 'upload'" :disabled="!file">{{
+            <KButton @click="adding = false">{{ __('Cancel') }}</KButton>
+            <KButton type="submit" form="k-plugin-upload" variant="primary" icon="upload" :loading="busy === 'upload'" :disabled="!file">{{
                 __('Upload and review')
             }}</KButton>
-            <KButton
-                v-else-if="update"
-                variant="primary"
-                icon="arrows-clockwise"
-                :loading="busy === 'update'"
-                :disabled="!review.allowed || errors.length > 0 || update.problems.length > 0 || !!failed"
-                @click="runUpdate"
-                >{{ __('Update to {v}', { v: pkg.version }) }}</KButton
-            >
-            <KButton
-                v-else
-                variant="primary"
-                icon="check"
-                :loading="busy === 'install'"
-                :disabled="!review.allowed || errors.length > 0 || (pkg.installed && (!replace || replaceBlocked))"
-                @click="install"
-                >{{ __('Install') }}</KButton
-            >
         </template>
     </KModal>
+    <PackageReviewModal v-model:open="reviewing" :review="review" :policy="data?.policy" @done="data = $event" />
 </template>
 
 <style scoped>
@@ -500,56 +346,6 @@ async function install() {
 }
 .k-plugins__note {
     margin: -4px 0 0;
-}
-.k-review {
-    display: grid;
-    gap: 10px;
-}
-.k-review p {
-    margin: 0;
-}
-.k-review__head {
-    font-size: 15px;
-}
-.k-review__desc {
-    color: var(--k-ink-2);
-    font-size: 13px;
-}
-.k-review__sig {
-    display: flex;
-    gap: 8px;
-    align-items: baseline;
-    font-size: 13px;
-    padding: 8px 10px;
-    border: 1px solid var(--k-rule);
-}
-.k-review__sig.is-success {
-    color: var(--k-success);
-}
-.k-review__sig.is-warning {
-    color: var(--k-warning);
-}
-.k-review__sig.is-danger {
-    color: var(--k-danger);
-}
-.k-review__h {
-    margin: 6px 0 0;
-    font-size: 13px;
-    font-weight: 650;
-}
-.k-review__findings {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 4px;
-    font-size: 13px;
-}
-.k-review__findings .is-error {
-    color: var(--k-danger);
-}
-.k-review__problem {
-    overflow-wrap: anywhere;
 }
 @media (max-width: 640px) {
     .k-plugin {

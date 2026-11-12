@@ -28,6 +28,9 @@ abstract class SchemaGrammar
     /** @return array{0: string, 1: list<mixed>} SQL returning a "name" row per table in the current database or schema */
     abstract public function compileTables(): array;
 
+    /** @return array{0: string, 1: list<mixed>} SQL returning a "name" row per index of a table, its primary key included */
+    abstract public function compileIndexes(string $table): array;
+
     // ── Create ──────────────────────────────────────────────────────
 
     /** @return list<string> */

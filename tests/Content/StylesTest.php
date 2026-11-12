@@ -33,6 +33,11 @@ final class StylesTest extends AuthTestCase
         ],
         'contrast' => [['fg' => 'ink', 'bg' => 'paper', 'label' => 'Text'], ['fg' => 'nope', 'bg' => 'paper']],
         'variations' => ['dark' => ['label' => 'Dark', 'values' => ['ink' => '#eeeeee', 'paper' => '#111111', 'unknown' => '#000000']]],
+        'email' => [
+            'page' => 'paper', 'ink' => 'ink', 'accent' => 'accent', 'accent-ink' => '#fff', 'font' => 'font',
+            'nope' => 'ink', 'muted' => 'red; x', 'line' => 'missing',
+            'dark' => ['card' => '#101010', 'ink' => '#f0f0f0'],
+        ],
     ];
 
     protected function setUp(): void
@@ -45,7 +50,7 @@ final class StylesTest extends AuthTestCase
         }
         file_put_contents("{$root}/content/themes/parent/styles.json", json_encode(self::STYLES));
         // the child changes one default and adds a token
-        file_put_contents("{$root}/content/themes/kid/styles.json", json_encode(['tokens' => ['accent' => ['type' => 'color', 'label' => 'Accent', 'group' => 'colors', 'value' => '#0f766e'], 'gap' => ['type' => 'size', 'label' => 'Gap', 'value' => 1, 'unit' => 'rem', 'min' => 0, 'max' => 4, 'step' => 0.25]]]));
+        file_put_contents("{$root}/content/themes/kid/styles.json", json_encode(['tokens' => ['accent' => ['type' => 'color', 'label' => 'Accent', 'group' => 'colors', 'value' => '#0f766e'], 'gap' => ['type' => 'size', 'label' => 'Gap', 'value' => 1, 'unit' => 'rem', 'min' => 0, 'max' => 4, 'step' => 0.25]], 'email' => ['card' => 'paper']]));
 
         $state = new ArrayStateStore();
         $state->save(new \Kestello\Cms\Extension\PackageState(\Kestello\Cms\Extension\PackageType::Theme, 'kid', true, '1.0.0'));
@@ -110,6 +115,25 @@ final class StylesTest extends AuthTestCase
             $this->assertSame(422, $r->statusCode(), json_encode($case));
             $this->assertTrue(isset($this->json($r)['errors'][$field]), $field);
         }
+    }
+
+    public function testEmailsTakeTheThemesColoursAndTheSitesChoices(): void
+    {
+        $email = $this->styles()->email();
+        $this->assertSame(['page' => '#ffffff', 'ink' => '#222222', 'accent' => '#0f766e', 'accentInk' => '#ffffff', 'card' => '#ffffff'], $email['light'], 'token names resolve; bad roles, refs and missing tokens are left out; the child adds a role');
+        $this->assertSame(['card' => '#101010', 'ink' => '#f0f0f0'], $email['dark']);
+        $this->assertSame(\Kestello\Cms\Design\ThemeStyles::SYSTEM_FONTS['system-sans']['stack'], $email['font']);
+
+        $this->assertSame(200, $this->api('PUT', '/design/styles', ['values' => ['accent' => '#7C2D12', 'font' => 'house']])->statusCode());
+        $email = $this->styles()->email();
+        $this->assertSame('#7c2d12', $email['light']['accent'], 'what the site published wins over the theme default');
+        $this->assertSame("'House Sans', sans-serif", $email['font']);
+
+        $html = \Kestello\Cms\Notifications\MailMessage::make('Hi')->paragraph('Hello')->button('Go', 'https://a.test')->render(\Kestello\Cms\Mail\MailBrand::site('Shop'));
+        $this->assertStringContainsString('background:#7c2d12;color:#ffffff', $html);
+        $this->assertStringContainsString('font-family:&#039;House Sans&#039;, sans-serif', $html, 'escaped inside the attribute, which mail apps read back as quotes');
+        $this->assertStringContainsString('.k-card{background:#101010!important;color:#f0f0f0!important}', $html, 'the theme\'s dark colours');
+        $this->assertStringContainsString('>Shop</td>', $html);
     }
 
     public function testPublishingCompilesTheStylesheet(): void

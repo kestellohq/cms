@@ -11,6 +11,7 @@ use Kestello\Cms\Extension\Manifest;
 use Kestello\Cms\Extension\Package;
 use Kestello\Cms\Extension\PackageType;
 use Kestello\Cms\Package\PackageInstaller;
+use Kestello\Cms\Package\Registry\RegistryTrust;
 use Kestello\Cms\System\Maintenance;
 use Kestello\Framework\Support\Semver;
 use Throwable;
@@ -98,6 +99,9 @@ final class Updater
             return [UpdateRecovery::BLOCKED];
         }
         $check = $staged['check'];
+        if ($check['registry']['status'] === RegistryTrust::REFUSED) {
+            return [(string) $check['registry']['reason']];
+        }
         if ($check['installed'] === null) {
             return ["{$check['name']} is not installed: install it instead of updating."];
         }
@@ -109,7 +113,7 @@ final class Updater
         if ($cmp < 0 && !($options['allow_downgrade'] ?? false)) {
             return ["This is {$check['name']} {$check['version']}, older than the installed {$from}."];
         }
-        $pin = ($options['allow_unsigned'] ?? false) ? null : $this->installer->pins()->problem($this->installer->owner($check), $check['signature']);
+        $pin = ($options['allow_unsigned'] ?? false) ? null : $this->installer->pins()->problem($this->installer->owner($check), $check['signature'], PackageInstaller::vouched($check));
         if ($pin !== null) {
             return ["{$check['name']} {$check['version']} {$pin}."];
         }
@@ -168,7 +172,7 @@ final class Updater
             $maintenance->off();
             $ext->discover(true);
             $this->pruneOld($slug, $aside);
-            $this->installer->pins()->remember($owner, $check['signature'], $check['signing_keys']);
+            $this->installer->pins()->remember($owner, $check['signature'], $check['signing_keys'], PackageInstaller::vouched($check)['organisation'] ?? null);
             (new UpdateHistory($storage))->add(['owner' => $owner, 'from' => $from, 'to' => $to, 'backup' => $backup, 'aside' => $aside, 'actor' => $options['actor'] ?? null]);
             $journal->clear();
             $this->cms->audit->record('package.updated', [$type->value, $slug], ['from' => $from, 'to' => $to, 'signature' => $check['signature']['status'], 'backup' => $backup], $options['actor'] ?? null);

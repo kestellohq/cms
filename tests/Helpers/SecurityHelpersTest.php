@@ -176,7 +176,17 @@ final class SecurityHelpersTest extends TestCase
                 '<embed', '<style', 'style=', '<form', '<input', '<svg', '<math', '<meta', '<base', ' id=', ' name=', 'formaction'] as $needle) {
                 $this->assertFalse(str_contains($out, $needle), "{$needle} survived in: {$vector} → {$out}");
             }
+
         }
+    }
+
+    public function testARelativeLinkWithABackslashIsRefused(): void
+    {
+        // browsers read /\evil.test as //evil.test, another site
+        $this->assertStringNotContainsString('evil.test', Html::sanitize('<a href="/\\evil.test">x</a>', 'rich-text'));
+        $this->assertStringContainsString('href="/about"', Html::sanitize('<a href="/about">x</a>', 'rich-text'));
+        $this->assertFalse(\Kestello\Cms\Menus\Menus::safeUrl('/\\evil.test'));
+        $this->assertTrue(\Kestello\Cms\Menus\Menus::safeUrl('/about'));
     }
 
     public function testBasicProfileAndCustomProfiles(): void

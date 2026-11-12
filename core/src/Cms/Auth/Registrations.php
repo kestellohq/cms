@@ -10,7 +10,6 @@ use Kestello\Framework\Database\QueryBuilder;
 use Kestello\Framework\Events\EventDispatcher;
 use Kestello\Framework\Http\RateLimiter;
 use Kestello\Support\Hash;
-use Kestello\Support\Html;
 use Kestello\Support\Url;
 
 /**
@@ -36,7 +35,7 @@ final class Registrations
     public const string SENT = 'Check your inbox: we sent a link to finish creating your account. It can take a minute to arrive.';
 
     /**
-     * @param Closure(string $to, string $subject, string $html): bool $mail
+     * @param Closure(string $to, string $subject, string $html, string $text): bool $mail
      */
     public function __construct(
         private readonly RateLimiter $limiter,
@@ -101,7 +100,7 @@ final class Registrations
         $user = QueryBuilder::table('users')->where('email', $email)->first();
         if ($user !== null) {
             if ((bool) ($user['is_active'] ?? true)) {
-                $this->send($email, "You already have a {$this->siteName} account", $this->existingMessage($user), 'existing account');
+                $this->send($email, 'auth.sign_up_existing', ['site' => $this->siteName, 'name' => (string) ($user['username'] ?? ''), 'login_url' => $this->url('/login'), 'reset_url' => $this->url('/forgot-password')], 'existing account');
             }
 
             return [];
@@ -118,7 +117,7 @@ final class Registrations
         ]);
 
         $link = Url::withQuery($this->url('/register/complete'), ['token' => $token]);
-        $this->send($email, "Finish creating your {$this->siteName} account", $this->linkMessage($link), 'sign-up link');
+        $this->send($email, 'auth.sign_up_link', ['site' => $this->siteName, 'link' => $link, 'hours' => intdiv(self::TTL, 3600)], 'sign-up link');
 
         return [];
     }
@@ -194,44 +193,9 @@ final class Registrations
         return rtrim($this->baseUrl, '/') . $path;
     }
 
-    private function send(string $to, string $subject, string $html, string $what): void
+    /** @param array<string, mixed> $data */
+    private function send(string $to, string $id, array $data, string $what): void
     {
-        $mail = $this->mail;
-        // After the response: a slow SMTP handshake must not tell anyone which addresses have accounts.
-        \Kestello\Cms\System\WebRunner::defer(static function () use ($mail, $to, $subject, $html, $what): void {
-            if (!$mail($to, $subject, $html)) {
-                error_log("[kestello] the {$what} email to " . Emails::mask($to) . ' could not be sent');
-            }
-        });
-    }
-
-    private function linkMessage(string $link): string
-    {
-        $site = Html::escape($this->siteName);
-        $href = Html::escape($link);
-        $hours = intdiv(self::TTL, 3600);
-
-        return <<<HTML
-            <p>Hello,</p>
-            <p>Someone asked to create a {$site} account with this email address. If it was you, choose your password here:</p>
-            <p><a href="{$href}">Finish creating my account</a></p>
-            <p>The link works once and expires in {$hours} hours. If you didn't ask for this, ignore this email: no account is created.</p>
-            HTML;
-    }
-
-    /** @param array<string, mixed> $user */
-    private function existingMessage(array $user): string
-    {
-        $name = Html::escape((string) ($user['username'] ?? ''));
-        $site = Html::escape($this->siteName);
-        $login = Html::escape($this->url('/login'));
-        $forgot = Html::escape($this->url('/forgot-password'));
-
-        return <<<HTML
-            <p>Hi {$name},</p>
-            <p>Someone tried to create a {$site} account with this email address, but you already have one.</p>
-            <p><a href="{$login}">Sign in</a>, or <a href="{$forgot}">reset your password</a> if you forgot it.</p>
-            <p>If it wasn't you, ignore this email: nothing about your account changed.</p>
-            HTML;
+        AccountMail::send($this->mail, $id, $to, $data, $this->siteName, "the {$what} email to " . Emails::mask($to) . ' could not be sent');
     }
 }

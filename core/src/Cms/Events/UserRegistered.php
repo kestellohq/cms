@@ -16,7 +16,7 @@ final readonly class UserRegistered
 {
     /**
      * @param int $userId The new user.
-     * @param string $via `admin`, `email` for email sign-up, or `external:<provider>` for an account created at sign-in.
+     * @param string $via `admin`, `cli` (user:create), `email` for email sign-up, or `external:<provider>` for an account created at sign-in.
      */
     public function __construct(
         public int $userId,

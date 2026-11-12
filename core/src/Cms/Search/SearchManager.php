@@ -88,7 +88,7 @@ final class SearchManager
         foreach ($type->getFields() as $field) {
             $text = [...$text, ...$this->fieldText($field, $data[$field->name] ?? null)];
         }
-        $tags = ['type:' . $type->name];
+        $tags = ['type:' . $type->name, self::languageTag($entry->language())];
         if ($entry->author_id !== null) {
             $tags[] = 'author:' . (int) $entry->author_id;
         }
@@ -108,12 +108,19 @@ final class SearchManager
             'entry:' . $entry->getKey(),
             (string) $entry->title,
             $body,
-            $entry->path($type),
+            $entry->url($type),
             $type->name,
             $publishedAt,
             $tags,
             ['excerpt' => mb_substr($excerpt, 0, 300), 'image' => $this->imageOf($type, $data)],
+            $entry->language(),
         );
+    }
+
+    /** The tag a document in $code ('' = the main language) carries, and a search in it asks for: "language:main", "language:es". */
+    public static function languageTag(string $code): string
+    {
+        return 'language:' . ($code === '' ? 'main' : $code);
     }
 
     /**
@@ -340,7 +347,7 @@ final class SearchManager
     /**
      * Search what the site shows publicly.
      *
-     * @param array{types?: list<string>, page?: int, per_page?: int} $options
+     * @param array{types?: list<string>, page?: int, per_page?: int, language?: ?string} $options language: '' (the main one) or a code; null searches every language; left out: the page's language on a site in several
      * @return array{query: string, hits: list<array<string, mixed>>, total: int, page: int, last_page: int, facets: list<array{value: string, label: string, count: int}>, engine: string}
      */
     public function search(string $text, array $options = []): array
@@ -352,7 +359,10 @@ final class SearchManager
             }
         }
         $types = array_values(array_intersect($options['types'] ?? [], array_keys($searchable)));
-        $query = new SearchQuery(self::CONTENT, $text, array_map(static fn($t) => 'type:' . $t, $types), (int) ($options['page'] ?? 1), (int) ($options['per_page'] ?? 10), ['type']);
+        // on a site in several languages, the page's language only (/es/search finds Spanish entries)
+        $language = array_key_exists('language', $options) ? $options['language'] : (\Kestello\Cms\I18n\ContentLanguages::others() === [] ? null : \Kestello\Cms\I18n\ContentLanguages::current());
+        $tags = [...array_map(static fn($t) => 'type:' . $t, $types), ...(is_string($language) ? [self::languageTag($language)] : [])];
+        $query = new SearchQuery(self::CONTENT, $text, $tags, (int) ($options['page'] ?? 1), (int) ($options['per_page'] ?? 10), ['type']);
         $results = $this->query($query);
         $terms = $query->terms();
 

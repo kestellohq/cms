@@ -298,6 +298,42 @@ final class DiscoveryTest extends AuthTestCase
         $this->assertSame(422, $this->api('PATCH', '/settings', ['seo' => ['seo_publisher_type' => 'robot']])->statusCode());
     }
 
+    public function testEmailsShowTheSitesLogo(): void
+    {
+        $upload = function (string $name, int $w, int $h): array {
+            ob_start();
+            imagepng(imagecreatetruecolor($w, $h));
+            $png = (string) ob_get_clean();
+            $up = $this->json($this->api('POST', '/media/uploads', ['filename' => $name, 'size' => strlen($png)]))['data'];
+            $this->api('PUT', "/media/uploads/{$up['id']}/chunks/0", raw: $png);
+
+            return $this->json($this->api('POST', "/media/uploads/{$up['id']}/complete"))['data'];
+        };
+        $this->assertNull(\Kestello\Cms\Mail\MailBrand::site()->logo, 'no logo anywhere: the name alone');
+
+        $publisher = $upload('publisher.png', 300, 100);
+        $this->settings(['seo' => ['seo_publisher_logo' => $publisher['id']]]);
+        $logo = \Kestello\Cms\Mail\MailBrand::site()->logo;
+        $this->assertSame([300, 100], [$logo['width'] ?? null, $logo['height'] ?? null], 'the publisher logo by default');
+        $this->assertStringStartsWith('https://bakery.test/', $logo['url'], 'as a whole address a mail app can fetch');
+
+        $own = $upload('email.png', 64, 64);
+        $this->settings(['emails' => ['email_logo' => $own['id']]]);
+        $this->assertSame(64, \Kestello\Cms\Mail\MailBrand::site()->logo['width'] ?? null, 'an email logo chosen in Settings → Emails wins');
+        $this->assertNull(\Kestello\Cms\Mail\MailBrand::site()->darkLogo, 'no logo for dark mode: the logo stays');
+
+        $light = $upload('email-light.png', 128, 64);
+        $this->settings(['emails' => ['email_logo_dark' => $light['id']]]);
+        $brand = \Kestello\Cms\Mail\MailBrand::site();
+        $this->assertSame([64, 128], [$brand->logo['width'] ?? null, $brand->darkLogo['width'] ?? null], 'a logo for dark mode beside it');
+        $html = \Kestello\Cms\Notifications\MailMessage::make('Hi')->heading('Hi')->render($brand);
+        $this->assertStringContainsString('<img class="k-logo-dark" src="' . $brand->darkLogo['url'] . '" alt="Bakery" width="80" height="40" style="display:none;', $html);
+        $this->assertStringContainsString('.k-logo{display:none!important}.k-logo-dark{display:block!important}}', $html, 'swapped in the dark-mode CSS');
+
+        $this->settings(['emails' => ['email_show_logo' => false]]);
+        $this->assertNull(\Kestello\Cms\Mail\MailBrand::site()->logo, 'or none at all');
+    }
+
     public function testAnEntryFirstPublishedElsewhere(): void
     {
         $this->assertSame(422, $this->api('POST', '/content/post/entries', ['title' => 'X', 'status' => 'published', 'data' => ['seo' => ['canonical' => 'javascript:alert(1)']]])->statusCode(), 'only web addresses are saved');
@@ -375,9 +411,10 @@ final class DiscoveryTest extends AuthTestCase
     public function testFiltersCannotSlipInScriptAddresses(): void
     {
         $this->post(['title' => 'Rye', 'slug' => 'rye']);
-        $this->cms->filters->add('seo.head', static fn(array $tags) => [...$tags, ['link', ['rel' => 'me', 'href' => 'javascript:alert(1)']], ['link', ['rel' => 'me', 'href' => 'https://mastodon.social/@ana']], ['meta', ['name' => ['x']]]]);
+        $this->cms->filters->add('seo.head', static fn(array $tags) => [...$tags, ['link', ['rel' => 'me', 'href' => 'javascript:alert(1)']], ['link', ['rel' => 'me', 'href' => 'https://mastodon.social/@ana']], ['meta', ['name' => ['x']]], ['link', ['rel' => 'icon', 'href' => '/i.png', 'onload' => 'alert(1)']]]);
         $head = $this->head('/blog/rye');
         $this->assertStringNotContainsString('javascript', $head);
+        $this->assertStringNotContainsString('onload', $head, 'no event handler, even from a filter');
         $this->assertStringContainsString('<link rel="me" href="https://mastodon.social/@ana">', $head);
     }
 

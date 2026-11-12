@@ -12,9 +12,27 @@ use Kestello\Cms\Auth\TwoFactor;
 use Kestello\Cms\Events\LoginFailed;
 use Kestello\Cms\Events\UserLoggedIn;
 use Kestello\Framework\Core\Request;
+use Kestello\Support\Clock;
 
 final class LoginTest extends AuthTestCase
 {
+    /**
+     * The throttles count in fixed windows that start on the clock (a minute,
+     * an hour). A test run across 15:00 split its attempts over two windows and
+     * never reached the limit, so the clock stands still, well inside one.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Clock::freeze('2027-01-01 12:00:10');
+    }
+
+    protected function tearDown(): void
+    {
+        Clock::unfreeze();
+        parent::tearDown();
+    }
+
     private function login(): LoginService
     {
         return $this->cms->container->make(LoginService::class);
@@ -221,6 +239,23 @@ final class LoginTest extends AuthTestCase
         $this->assertNull(Totp::verify($secret, '005924', lastUsedStep: Totp::step(1234567890), time: 1234567890), 'replay');
         $this->assertNull(Totp::verify($secret, '12345', time: 1234567890));
         $this->assertSame('12345678901234567890', Totp::base32Decode(strtolower($secret)));
+    }
+
+    public function testSigningInWithAPasswordGoesWhereTheSiteSays(): void
+    {
+        $this->createUser();
+        $this->createUser(['username' => 'bo', 'email' => 'bo@example.test', 'role' => 'user']);
+        $signIn = function (string $login): ?string {
+            $this->nextRequest();
+            $response = $this->cms->routes->dispatch(new Request('POST', '/login', '/login', [], [], ['email' => $login, 'password' => self::PASSWORD], [], [], ['REMOTE_ADDR' => '203.0.113.7'], ''));
+
+            return $response->headers()['Location'] ?? null;
+        };
+
+        $this->assertSame(['/admin', '/'], [$signIn('ana'), $signIn('bo')]);
+
+        $this->cms->filters->add('auth.redirect_after_login', static fn(string $to, array $user): string => $user['role'] === 'user' ? '/account' : $to);
+        $this->assertSame(['/admin', '/account'], [$signIn('ana'), $signIn('bo')], 'the same filter as provider sign-in and email sign-up');
     }
 
     public function testTheSignInFormAsksForWhatIsMissingWithoutTryingToSignIn(): void

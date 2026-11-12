@@ -182,8 +182,9 @@ final class InstallerController
             'storage/compiled' => $paths->compiled(),
             'storage/logs' => $paths->logs(),
             'storage/sessions' => $paths->sessions(),
+            // uploaded files: the local disks (media, public, private, backups) live here
+            'storage/app' => $paths->storage('app'),
             'content/plugins' => $paths->plugins(),
-            'content/uploads' => $paths->uploads(),
         ];
     }
 

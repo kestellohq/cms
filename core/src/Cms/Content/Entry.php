@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Content;
 
 use Kestello\Cms\Cms;
+use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Cms\Models\User;
 use Kestello\Framework\Database\Model;
 use Kestello\Framework\Database\Orm\ModelQuery;
@@ -25,6 +26,14 @@ use Kestello\Support\Clock;
  * @property string $title
  * @property string $slug
  * @property array|null $data
+ * @property int|null $parent_id
+ * @property int|null $author_id
+ * @property string $locale '' for the site's main language, else its code (ContentLanguages)
+ * @property string|null $translation_group shared by an entry and its translations
+ * @property string|null $template
+ * @property string|null $excerpt
+ * @property int $menu_order
+ * @property int $version
  * @api
  */
 final class Entry extends Model
@@ -77,6 +86,38 @@ final class Entry extends Model
         $q->where('entries.status', 'published')->where('entries.published_at', '<=', Model::freshTimestamp());
     }
 
+    /**
+     * Entries written in $code ('' = the site's main language; default: the language of the page being answered).
+     *
+     * @param ModelQuery<self> $q
+     */
+    protected function scopeInLanguage(ModelQuery $q, ?string $code = null): void
+    {
+        $q->where('entries.locale', $code ?? ContentLanguages::current());
+    }
+
+    /** The language this entry is written in: '' for the site's main language, else its code ("es"). */
+    public function language(): string
+    {
+        return (string) ($this->locale ?? '');
+    }
+
+    /** This entry in $code ('' = the main language): itself, a translation, or null when there is none. */
+    public function translation(string $code, bool $published = true): ?self
+    {
+        if ($this->language() === $code) {
+            return $this;
+        }
+        if ($this->translation_group === null || $this->translation_group === '') {
+            return null;
+        }
+        $q = self::query();
+        $q->where('translation_group', $this->translation_group)->where('locale', $code);
+        $found = $q->first();      // one per language
+
+        return $found instanceof self && (!$published || $found->isPublished()) ? $found : null;
+    }
+
     /** A value from the entry's data. */
     public function field(string $name, mixed $default = null): mixed
     {
@@ -94,8 +135,39 @@ final class Entry extends Model
     }
 
     /**
-     * The public path (/about/team, /blog/hello), or null when the type
-     * isn't public. Parents are read once per call.
+     * Where the site links to this entry: its path, except for the page
+     * chosen as the home page (Settings, Reading), which lives at /. Its
+     * path still answers, with a redirect to /.
+     */
+    public function url(?ContentType $type = null): ?string
+    {
+        $path = $this->path($type);
+
+        return $path !== null && $this->isFrontPage() ? ContentLanguages::localize('/', $this->language()) : $path;
+    }
+
+    /** Whether this is the home page (Settings, Reading) or its translation into another language. */
+    public function isFrontPage(): bool
+    {
+        $front = ContentController::frontPageId();
+        if (!$this->exists() || $front < 1) {
+            return false;
+        }
+        if ((int) $this->getKey() === $front) {
+            return true;
+        }
+        if ($this->language() === '' || $this->translation_group === null || $this->translation_group === '') {
+            return false;     // only the chosen page itself in the main language
+        }
+
+        return self::query()->where('id', $front)->where('translation_group', $this->translation_group)->exists();
+    }
+
+    /**
+     * The public path (/about/team, /blog/hello; /es/about/equipo for an
+     * entry in Spanish), or null when the type isn't public. Parents are read once per call. Links use url(), which
+     * knows the home page; path() is the address the slugs make, for
+     * routing and redirects.
      */
     public function path(?ContentType $type = null): ?string
     {
@@ -104,7 +176,7 @@ final class Entry extends Model
             return null;
         }
         if (!$type->isHierarchical()) {
-            return $type->getPath() . '/' . Permalinks::segments($type, (string) $this->slug, $this->published_at);
+            return ContentLanguages::localize($type->getPath() . '/' . Permalinks::segments($type, (string) $this->slug, $this->published_at), $this->language());
         }
         $segments = [$this->slug];
         if ($type->isHierarchical()) {
@@ -121,7 +193,7 @@ final class Entry extends Model
             }
         }
 
-        return $type->getPath() . '/' . implode('/', $segments);
+        return ContentLanguages::localize($type->getPath() . '/' . implode('/', $segments), $this->language());     // with the language's prefix, and its own for the type
     }
 
     /** @var array<int, array<string, mixed>|null>|null parent rows, kept only inside remembering() */

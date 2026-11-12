@@ -116,7 +116,7 @@ final class Seo
         }
         $parents = [];
         foreach (Entry::query()->findMany($ids) as $parent) {
-            $path = $parent->path($type);
+            $path = $parent->url($type);
             if ($path !== null) {
                 $parents[(int) $parent->getKey()] = ['name' => (string) $parent->title, 'path' => $path];
             }
@@ -215,7 +215,7 @@ final class Seo
             'page' => (string) ($s->get('seo_title_pattern') ?: SeoTitle::PAGE),
             'home' => (string) ($s->get('seo_home_pattern') ?: SeoTitle::HOME),
             'sep' => isset(SeoTitle::SEPARATORS[$sep]) ? $sep : SeoTitle::SEPARATOR,
-            'tagline' => (string) $s->get('site_description', ''),
+            'tagline' => (string) (\Kestello\Cms\I18n\SiteText::translated('site_description') ?? $s->get('site_description', '')),
         ];
     }
 
@@ -315,7 +315,7 @@ final class Seo
         $tags = [];
         $description = (string) ($seo['description'] ?? '');
         if ($description === '') {
-            $description = (string) Settings::getInstance()->get('site_description', $cms->config->get('app.description', ''));
+            $description = (string) (\Kestello\Cms\I18n\SiteText::translated('site_description') ?? Settings::getInstance()->get('site_description', $cms->config->get('app.description', '')));
         }
         if ($description !== '') {
             $tags[] = ['meta', ['name' => 'description', 'content' => $description]];
@@ -381,7 +381,8 @@ final class Seo
             }
             $html .= '<' . $tag[0];
             foreach ($tag[1] as $name => $value) {
-                if (preg_match('/^[a-z][a-z:_-]*$/', (string) $name) !== 1 || $value === null || is_array($value) || is_object($value)) {
+                // never an event handler (onload=, onerror=), even from a filter
+                if (preg_match('/^[a-z][a-z:_-]*$/', (string) $name) !== 1 || str_starts_with((string) $name, 'on') || $value === null || is_array($value) || is_object($value)) {
                     continue;
                 }
                 if ($name === 'href' && !Html::safeUrl((string) $value, ['http', 'https'])) {

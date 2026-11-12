@@ -8,12 +8,13 @@ use Kestello\Framework\Console\Command;
 use Kestello\Framework\Database\MigrationRunner;
 
 /**
- * Drop all tables and re-run all migrations.
+ * Roll back every core migration (dropping core's tables) and run them again.
+ * Plugins' migrations, and their tables, are left as they are.
  */
 final class MigrateFreshCommand extends Command
 {
     protected string $name = 'migrate:fresh';
-    protected string $description = 'Drop all tables and re-run all migrations';
+    protected string $description = 'Roll back and re-run core\'s migrations (plugin tables stay)';
 
     public function __construct(
         private readonly string|array $migrationsPath,
@@ -22,14 +23,14 @@ final class MigrateFreshCommand extends Command
     public function handle(array $arguments, array $options): int
     {
         if (!$this->hasFlag($options, 'force')) {
-            $confirmed = $this->output->confirm('This will DROP all tables and re-migrate. Continue?');
+            $confirmed = $this->output->confirm('This rolls back every core migration, dropping core\'s tables, and runs them again. Continue?');
             if (!$confirmed) {
                 $this->output->muted('  Cancelled.');
                 return 0;
             }
         }
 
-        $this->output->info('Dropping all tables...');
+        $this->output->info('Rolling back core\'s migrations...');
 
         $runner = new MigrationRunner($this->migrationsPath);
         $runner->reset();

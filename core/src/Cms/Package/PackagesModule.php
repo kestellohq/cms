@@ -6,7 +6,17 @@ namespace Kestello\Cms\Package;
 
 use Kestello\Cms\Backup\Backups;
 use Kestello\Cms\Cms;
+use Kestello\Cms\Events\RegistryRefreshed;
 use Kestello\Cms\Extension\Provider;
+use Kestello\Cms\Health\HealthResult;
+use Kestello\Cms\Package\Registry\InstalledAdvisories;
+use Kestello\Cms\Package\Registry\Registry;
+use Kestello\Cms\Package\Registry\RegistryClient;
+use Kestello\Cms\Package\Registry\RegistryException;
+use Kestello\Cms\Package\Registry\RegistryIndex;
+use Kestello\Cms\Package\Registry\RegistryPackages;
+use Kestello\Cms\Package\Registry\RegistryTrust;
+use Kestello\Cms\Package\Registry\RootKeys;
 use Kestello\Cms\Package\Update\CoreUpdater;
 use Kestello\Cms\Package\Update\HealthProbe;
 use Kestello\Cms\Package\Update\HttpProbe;
@@ -25,6 +35,7 @@ use Kestello\Framework\Core\Response;
 use Kestello\Framework\Http\Client\HttpClient;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Support\AppKey;
+use Kestello\Support\Clock;
 
 /**
  * Plugins screen, package installs, plugin/theme/core updates.
@@ -47,9 +58,12 @@ final class PackagesModule extends Provider
     /** Settings key holding the last answers about plugin and theme updates (PackageUpdates). */
     public const string PACKAGE_CHECKS = 'updates.package_checks';
 
+    /** Settings key holding where the site's copy of the registry stands (RegistryClient). */
+    public const string REGISTRY_STATE = 'updates.registry';
+
     public function register(Container $container): void
     {
-        $container->singleton(PackageInstaller::class, static fn(): PackageInstaller => new PackageInstaller(self::cms()));
+        $container->singleton(PackageInstaller::class, static fn(Container $c): PackageInstaller => new PackageInstaller(self::cms(), $c->make(RegistryTrust::class)));
         $container->singleton(HealthProbe::class, static function (Container $c): HealthProbe {
             $cms = self::cms();
             $mode = (string) $cms->config->get('app.updates.health', 'auto');
@@ -78,6 +92,29 @@ final class PackagesModule extends Provider
             static fn(array $result) => Settings::getInstance()->set(self::LAST_CHECK, (string) json_encode($result, JSON_UNESCAPED_SLASHES), 'updates'),
         ));
         $container->singleton(KeyPins::class, static fn(): KeyPins => KeyPins::inSettings());
+        $container->singleton(RegistryClient::class, static function (Container $c): RegistryClient {
+            $cms = self::cms();
+
+            return new RegistryClient(
+                $c->make(HttpClient::class),
+                (string) $cms->config->get('registry.url', ''),
+                RootKeys::fromConfig($cms->config->get('registry.root_keys', [])),
+                $cms->paths->storage('registry'),
+                static function (): array {
+                    $value = json_decode((string) Settings::getInstance()->get(self::REGISTRY_STATE, ''), true);
+
+                    return is_array($value) ? $value : [];
+                },
+                static fn(array $state) => Settings::getInstance()->set(self::REGISTRY_STATE, (string) json_encode($state, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 'updates'),
+                static fn(): int => Clock::timestamp(),
+                static function (RegistryIndex $index, array $changes) use ($cms): void {
+                    $cms->events->dispatch(new RegistryRefreshed($changes['packages'], $changes['organisations'], $changes['advisories'], $index->serial));
+                },
+            );
+        });
+        $container->singleton(Registry::class, static fn(Container $c): Registry => new Registry(
+            (bool) self::cms()->config->get('registry.enabled', true) ? $c->make(RegistryClient::class) : null,
+        ));
         $container->singleton(PackageLicenses::class, static fn(): PackageLicenses => new PackageLicenses(
             AppKey::secretStore(),
             static fn(string $owner): ?string => Settings::getInstance()->get(self::settingsKey('license', $owner)),
@@ -103,8 +140,12 @@ final class PackagesModule extends Provider
                     return is_array($value) ? $value : [];
                 },
                 static fn(array $results) => Settings::getInstance()->set(self::PACKAGE_CHECKS, (string) json_encode($results, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 'updates'),
+                registry: self::registryPackages($c),
             );
         });
+        $container->singleton(RegistryTrust::class, static fn(Container $c): RegistryTrust => new RegistryTrust(
+            static fn(): ?RegistryClient => (bool) self::cms()->config->get('registry.enabled', true) ? $c->make(RegistryClient::class) : null,
+        ));
         $container->singleton(Updater::class, static fn(Container $c): Updater => new Updater(self::cms(), $c->make(PackageInstaller::class), $c->make(Backups::class), $c->make(HealthProbe::class)));
         $container->singleton(UpdateRecovery::class, static fn(Container $c): UpdateRecovery => new UpdateRecovery(self::cms(), $c->make(Backups::class)));
     }
@@ -115,6 +156,7 @@ final class PackagesModule extends Provider
         $cms->auth->roles->capability('core.update', 'Update Kestello, and plugins and themes from their publishers', sensitive: true);
         $cms->admin->page('system/updates', '@core/admin/system/Updates', 'Updates', 'core.update', ['label' => 'Updates', 'icon' => 'arrows-clockwise', 'group' => 'site', 'order' => 20]);
         $cms->admin->page('system/plugins', '@core/admin/system/Plugins', 'Plugins', 'plugins.manage', ['label' => 'Manage plugins', 'icon' => 'plug', 'group' => 'plugins', 'order' => 0]);
+        $cms->admin->page('system/plugins/add', '@core/admin/system/AddPlugins', 'Add plugins', 'plugins.manage', ['label' => 'Add new', 'icon' => 'plus', 'group' => 'plugins', 'order' => 1]);
 
         // new Kestello versions: asked of GitHub at most every release.check_every hours; nothing is installed
         $cms->schedule->call(static function () use ($cms): string {
@@ -138,6 +180,26 @@ final class PackagesModule extends Provider
         }, 'updates.packages')->hourlyAt(27)->withoutOverlapping(30)
             ->description('Asks the sources plugins and themes name ("updates" in their manifest) for new versions. It only tells you; Updates installs.');
 
+        // the plugin and theme registry's list: fetched as often as update sources are checked; installs nothing
+        $cms->schedule->call(static function () use ($cms): string {
+            if (!(bool) $cms->config->get('registry.enabled', true)) {
+                return 'The registry is turned off (registry.enabled).';
+            }
+            $client = $cms->container->make(RegistryClient::class);
+            $hours = max(1, (int) $cms->config->get('app.updates.check_every', 12));
+            $last = $client->status()['checked_at'];
+            if ($last !== null && Clock::timestamp() - $last < $hours * 3600 - 300) {
+                return 'Not due yet.';
+            }
+            $status = $client->refresh();
+
+            return $status['error'] ?? "The registry lists {$status['packages']} package(s).";
+        }, 'updates.registry')->hourlyAt(37)->withoutOverlapping(30)
+            ->description('Fetches the plugin and theme registry\'s signed list (config/registry.php) and checks it. It only reads; nothing is installed.');
+
+        // what this site runs that a security advisory names; critical ones reach administrators through Site Health alerts
+        $cms->health->check('core.advisories', 'Security advisories', static fn(): HealthResult => self::advisories($cms), 'security');
+
         // the HTTP health check's view of a package; only during an update, only with its bypass token
         $cms->routes->get('/system/update/probe', static function (Request $request) use ($cms): Response {
             $state = (new Maintenance($cms->paths->storage()))->current();
@@ -156,16 +218,54 @@ final class PackagesModule extends Provider
     /**
      * The installed plugins and themes, as PackageUpdates reads them.
      *
-     * @return list<array{owner: string, type: string, slug: string, name: string, version: string, updates: array<string, mixed>|null}>
+     * from_registry: installed from the registry (its organisation's key is pinned).
+     *
+     * @return list<array{owner: string, type: string, slug: string, name: string, version: string, updates: array<string, mixed>|null, from_registry: bool}>
      */
     public static function installedPackages(Cms $cms): array
     {
+        $pins = $cms->container->has(KeyPins::class) ? $cms->container->make(KeyPins::class) : KeyPins::inSettings();
         $out = [];
         foreach ([...array_values($cms->extensions()->plugins()), ...array_values($cms->extensions()->themes())] as $p) {
-            $out[] = ['owner' => $p->owner(), 'type' => $p->manifest->type->value, 'slug' => $p->slug(), 'name' => $p->manifest->name, 'version' => $p->version(), 'updates' => $p->manifest->updates];
+            // a package installed from the registry takes its updates from the registry (registry-format.md §5.2)
+            $fromRegistry = $pins->organisation($p->owner()) !== null;
+            $updates = $fromRegistry ? ['registry' => true] : $p->manifest->updates;
+            $out[] = ['owner' => $p->owner(), 'type' => $p->manifest->type->value, 'slug' => $p->slug(), 'name' => $p->manifest->name, 'version' => $p->version(), 'updates' => $updates, 'from_registry' => $fromRegistry];
         }
 
         return $out;
+    }
+
+    /** The Site Health check "Security advisories" (InstalledAdvisories). */
+    public static function advisories(Cms $cms): HealthResult
+    {
+        if (!(bool) $cms->config->get('registry.enabled', true)) {
+            return HealthResult::good('The plugin and theme registry is turned off (registry.enabled), so security advisories are not checked.');
+        }
+        $client = $cms->container->make(RegistryClient::class);
+        if ($client->index() === null) {
+            return InstalledAdvisories::unknown($client->status()['error']);
+        }
+        try {
+            $advisories = $client->advisories();
+        } catch (RegistryException $e) {
+            return InstalledAdvisories::unknown($e->getMessage());
+        }
+
+        return InstalledAdvisories::result(InstalledAdvisories::find($advisories, self::installedPackages($cms), $cms->version()));
+    }
+
+    /** Registry versions and downloads, or null when the registry is turned off. */
+    public static function registryPackages(Container $c): ?RegistryPackages
+    {
+        $cms = self::cms();
+
+        return (bool) $cms->config->get('registry.enabled', true) ? new RegistryPackages(
+            $c->make(RegistryClient::class),
+            $cms->version(),
+            PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION,
+            $cms->paths->storage('tmp/updates'),
+        ) : null;
     }
 
     /** "updates.key.plugin.events" for the owner "plugin:events". */

@@ -259,43 +259,13 @@ parameters:
 			path: core/src/Cms/Api/Resources/EntryResource.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Api/Resources/EntryResource.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$menu_order\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Api/Resources/EntryResource.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Api/Resources/EntryResource.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
 			identifier: property.notFound
 			count: 1
 			path: core/src/Cms/Api/Resources/EntryResource.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$template\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Api/Resources/EntryResource.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$updated_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Api/Resources/EntryResource.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$version\.$#'
 			identifier: property.notFound
 			count: 1
 			path: core/src/Cms/Api/Resources/EntryResource.php
@@ -511,12 +481,6 @@ parameters:
 			path: core/src/Cms/Blocks/Bindings.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Blocks/Bindings.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -602,12 +566,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Blocks/CoreBlocks.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
 			identifier: property.notFound
 			count: 1
 			path: core/src/Cms/Blocks/CoreBlocks.php
@@ -727,12 +685,6 @@ parameters:
 			path: core/src/Cms/Content/ContentController.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Content/ContentController.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -742,12 +694,6 @@ parameters:
 			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Entry\>\:\:ofType\(\)\.$#'
 			identifier: method.notFound
 			count: 2
-			path: core/src/Cms/Content/ContentController.php
-
-		-
-			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Term\>\:\:of\(\)\.$#'
-			identifier: method.notFound
-			count: 1
 			path: core/src/Cms/Content/ContentController.php
 
 		-
@@ -781,45 +727,9 @@ parameters:
 			path: core/src/Cms/Content/ContentController.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author_id\.$#'
-			identifier: property.notFound
-			count: 4
-			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$menu_order\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: core/src/Cms/Content/Entries.php
-
-		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
 			identifier: property.notFound
 			count: 4
-			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$template\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$version\.$#'
-			identifier: property.notFound
-			count: 2
 			path: core/src/Cms/Content/Entries.php
 
 		-
@@ -923,12 +833,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: core/src/Cms/Content/Entries.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/src/Cms/Content/Entry.php
 
 		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
@@ -1309,12 +1213,6 @@ parameters:
 			path: core/src/Cms/Content/ReviewNotification.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: core/src/Cms/Content/Reviews.php
-
-		-
 			message: '#^Parameter \#1 \$entry of method Kestello\\Cms\\Content\\Reviews\:\:editUrl\(\) expects Kestello\\Cms\\Content\\Entry, Kestello\\Framework\\Database\\Model given\.$#'
 			identifier: argument.type
 			count: 1
@@ -1543,30 +1441,6 @@ parameters:
 			path: core/src/Cms/Design/ThemeStyles.php
 
 		-
-			message: '#^Offset ''presets'' does not exist on array\{groups\: array\<string, string\>, tokens\: array\<string, array\<string, mixed\>\>, fonts\: array\<string, array\{label\: string, stack\: string\}\>, contrast\: list\<array\{fg\: string, bg\: string, label\: string\}\>, variations\: array\<string, array\{label\: string, values\: array\<string, mixed\>\}\>\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: core/src/Cms/Design/ThemeStyles.php
-
-		-
-			message: '#^Offset ''theme_css'' does not exist on array\{groups\: array\<string, string\>, tokens\: array\<string, array\<string, mixed\>\>, fonts\: array\<string, array\{label\: string, stack\: string\}\>, contrast\: list\<array\{fg\: string, bg\: string, label\: string\}\>, variations\: array\<string, array\{label\: string, values\: array\<string, mixed\>\}\>\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 2
-			path: core/src/Cms/Design/ThemeStyles.php
-
-		-
-			message: '#^Offset ''theme_css'' does not exist on array\{groups\: array\<string, string\>, tokens\: array\{\}, fonts\: array\<string, array\{label\: string, stack\: string\}\>, contrast\: list\<array\{fg\: string, bg\: string, label\: string\}\>, variations\: array\<string, array\{label\: string, values\: array\<string, mixed\>\}\>\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: core/src/Cms/Design/ThemeStyles.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$template\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Design/ThemeTemplates.php
-
-		-
 			message: '#^Method Kestello\\Cms\\Design\\ThemeTemplates\:\:references\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -1733,18 +1607,6 @@ parameters:
 			identifier: nullCoalesce.offset
 			count: 1
 			path: core/src/Cms/Forms/Forms.php
-
-		-
-			message: '#^Method Kestello\\Cms\\Forms\\SendFormNotification\:\:body\(\) has parameter \$data with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Cms/Forms/SendFormNotification.php
-
-		-
-			message: '#^Method Kestello\\Cms\\Forms\\SendFormNotification\:\:body\(\) has parameter \$form with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Cms/Forms/SendFormNotification.php
 
 		-
 			message: '#^Parameter \#2 \$details of static method Kestello\\Cms\\Health\\HealthResult\:\:recommended\(\) expects array\<string, bool\|float\|int\|string\|null\>, array\<string, list\<string\>\> given\.$#'
@@ -1915,49 +1777,7 @@ parameters:
 			path: core/src/Cms/Media/Optimizer.php
 
 		-
-			message: '#^Cannot access property \$status on array\<string, mixed\>\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Cannot access property \$title on array\<string, mixed\>\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Cannot access property \$type on array\<string, mixed\>\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Cannot call method getKey\(\) on array\<string, mixed\>\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Cannot call method path\(\) on array\<string, mixed\>\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Cannot call method publicAncestors\(\) on array\<string, mixed\>\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
 			message: '#^Method Kestello\\Cms\\Menus\\Menus\:\:linkFor\(\) has parameter \$item with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Cms/Menus/Menus.php
-
-		-
-			message: '#^Method Kestello\\Cms\\Menus\\Menus\:\:linkFor\(\) has parameter \$links with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: core/src/Cms/Menus/Menus.php
@@ -2003,12 +1823,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: core/src/Cms/Models/User.php
-
-		-
-			message: '#^Property Kestello\\Cms\\Notifications\\MailMessage\:\:\$action type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Cms/Notifications/MailMessage.php
 
 		-
 			message: '#^Method Kestello\\Cms\\Notifications\\Notification\:\:toDatabase\(\) return type has no value type specified in iterable type array\.$#'
@@ -2095,28 +1909,10 @@ parameters:
 			path: core/src/Cms/Redirects/Redirects.php
 
 		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$parent_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Redirects/RedirectsModule.php
-
-		-
 			message: '#^Method Kestello\\Cms\\Search\\DatabaseEngine\:\:tagFilter\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: core/src/Cms/Search/DatabaseEngine.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$author_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: core/src/Cms/Search/SearchManager.php
-
-		-
-			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$excerpt\.$#'
-			identifier: property.notFound
-			count: 4
-			path: core/src/Cms/Search/SearchManager.php
 
 		-
 			message: '#^Access to an undefined property Kestello\\Cms\\Content\\Entry\:\:\$published_at\.$#'
@@ -2157,7 +1953,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method Kestello\\Framework\\Database\\Orm\\ModelQuery\<Kestello\\Cms\\Content\\Term\>\:\:of\(\)\.$#'
 			identifier: method.notFound
-			count: 3
+			count: 2
 			path: core/src/Cms/Site/Discovery.php
 
 		-
@@ -2169,18 +1965,6 @@ parameters:
 		-
 			message: '#^Cannot call method all\(\) on list\<array\<string, mixed\>\>\.$#'
 			identifier: method.nonObject
-			count: 1
-			path: core/src/Cms/Site/Discovery.php
-
-		-
-			message: '#^Method Kestello\\Cms\\Site\\Discovery\:\:atom\(\) has parameter \$feed with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Cms/Site/Discovery.php
-
-		-
-			message: '#^Method Kestello\\Cms\\Site\\Discovery\:\:rss\(\) has parameter \$feed with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: core/src/Cms/Site/Discovery.php
 
@@ -3331,12 +3115,6 @@ parameters:
 			path: core/src/Framework/Mail/Mailer.php
 
 		-
-			message: '#^Method class@anonymous/core/src/Framework/Mail/Mailer\.php\:310\:\:__construct\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Mail/Mailer.php
-
-		-
 			message: '#^Method Kestello\\Framework\\Redis\\RedisClient\:\:eval\(\) has parameter \$args with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -3405,12 +3183,6 @@ parameters:
 		-
 			message: '#^Method Kestello\\Framework\\Testing\\TestCase\:\:assertNotContains\(\) has parameter \$haystack with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: core/src/Framework/Testing/TestCase.php
-
-		-
-			message: '#^Parameter \$value of method Kestello\\Framework\\Testing\\TestCase\:\:assertCount\(\) has invalid type Kestello\\Framework\\Testing\\countable\.$#'
-			identifier: class.notFound
 			count: 1
 			path: core/src/Framework/Testing/TestCase.php
 

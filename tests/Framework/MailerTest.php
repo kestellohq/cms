@@ -50,9 +50,43 @@ final class MailerTest extends TestCase
 
     private static function body(string $data): string
     {
-        [, $body] = explode("\r\n\r\n", $data, 2);
+        return self::parts($data)['text/html'] ?? '';
+    }
 
-        return base64_decode(str_replace("\r\n", '', $body));
+    /**
+     * The decoded parts of a message, by type, checked the way a mail reader
+     * reads them: a multipart/alternative with a quoted boundary, every part
+     * declared UTF-8 and base64, and nothing after the closing boundary.
+     *
+     * @return array<string, string>
+     */
+    private static function parts(string $data): array
+    {
+        [$head, $body] = explode("\r\n\r\n", $data, 2);
+        $body = rtrim($body, "\r\n");    // the CRLF before the "." that ends DATA
+        if (preg_match('/\r\nContent-Type: multipart\/alternative; boundary="([^"]+)"\r\n/', "\r\n" . $head . "\r\n", $m) !== 1) {
+            preg_match('/\r\nContent-Type: ([^;\r]+)/', "\r\n" . $head, $type);
+
+            return [$type[1] ?? '' => base64_decode(str_replace("\r\n", '', $body), true)];
+        }
+        $boundary = $m[1];
+        if (!str_ends_with($body, "\r\n--{$boundary}--")) {
+            throw new \RuntimeException('The multipart body does not end with its closing boundary.');
+        }
+        $out = [];
+        foreach (array_slice(explode("--{$boundary}\r\n", substr($body, 0, -strlen("\r\n--{$boundary}--"))), 1) as $part) {
+            [$partHead, $content] = explode("\r\n\r\n", $part, 2);
+            if (preg_match('/^Content-Type: (text\/(?:plain|html)); charset=UTF-8\r\nContent-Transfer-Encoding: base64$/', $partHead, $t) !== 1) {
+                throw new \RuntimeException("Unexpected part headers: {$partHead}");
+            }
+            $decoded = base64_decode(str_replace("\r\n", '', rtrim($content, "\r\n")), true);
+            if ($decoded === false) {
+                throw new \RuntimeException('A part is not valid base64.');
+            }
+            $out[$t[1]] = $decoded;
+        }
+
+        return $out;
     }
 
     public function testALineWithASingleDotCannotEndTheMessage(): void
@@ -78,12 +112,55 @@ final class MailerTest extends TestCase
         $this->assertTrue(str_contains($head, '<site@example.test>'));
         $this->assertTrue(str_contains($head, "\r\nDate: "));
         $this->assertTrue(str_contains($head, "\r\nMessage-ID: <"));
-        $this->assertTrue(str_contains($head, "\r\nContent-Transfer-Encoding: base64"));
         $this->assertTrue(str_contains($head, "\r\nReply-To: visitor@example.test"));
         foreach (explode("\r\n", $data) as $line) {
             $this->assertTrue(strlen($line) <= 998, 'no line over the RFC 5322 limit');
         }
         $this->assertSame('<p>Hi</p>', self::body($data));
+    }
+
+    public function testTheMessageHasAPlainTextAndAnHtmlPart(): void
+    {
+        $html = '<p>Zdravo Đorđe,</p><p><a href="https://site.test/x">Otvori</a></p>';
+        $text = "Zdravo Đorđe,\nOtvori: https://site.test/x\n" . str_repeat('ž', 120);
+        $log = $this->sendVia(fn(Mailer $m) => $this->assertTrue($m->send('owner@example.test', 'Pozdrav', $html, [], $text)));
+        $data = self::data($log);
+        [$head, $body] = explode("\r\n\r\n", $data, 2);
+
+        $this->assertTrue((bool) preg_match('/\r\nContent-Type: multipart\/alternative; boundary="(=_[0-9a-f]{32})"(\r\n|$)/', "\r\n" . $head, $m), 'multipart/alternative with a quoted boundary');
+        $this->assertTrue(str_contains($head, "\r\nMIME-Version: 1.0"));
+        $this->assertFalse(str_contains($head, 'Content-Transfer-Encoding'), 'only the parts have an encoding');
+        $this->assertFalse(str_contains(base64_decode(str_replace("\r\n", '', $body)) ?: '', $m[1]), 'the boundary appears nowhere in the content');
+        $this->assertSame(1, preg_match_all('/^--' . preg_quote($m[1], '/') . '--\r?$/m', $body), 'one closing boundary');
+        $this->assertSame(0, preg_match('/(?<!\r)\n|\r(?!\n)/', $data), 'every line ends in CRLF');
+        foreach (explode("\r\n", $body) as $line) {
+            $this->assertTrue(strlen($line) <= 76, 'base64 lines of at most 76 characters');
+        }
+        $parts = self::parts($data);
+        $this->assertSame(['text/plain', 'text/html'], array_keys($parts), 'text first, HTML last: readers show the last part they understand');
+        $this->assertSame(str_replace("\n", "\r\n", $text), $parts['text/plain'], 'the text part, UTF-8, with CRLF line breaks');
+        $this->assertSame($html, $parts['text/html']);
+    }
+
+    public function testHtmlOnlyCallersGetATextPartMadeFromTheHtml(): void
+    {
+        $html = '<!DOCTYPE html><html><head><title>Hi</title><style>p{color:red}</style></head><body>'
+            . '<h1>Hi Ana</h1><p>Fish &amp; chips<br>at 5</p><p><a href="https://site.test/a?b=1&amp;c=2">Open it</a></p>'
+            . '<table><tr><th>Name</th><td>Ana &lt;b&gt;</td></tr><tr><th>Topic</th><td>Order</td></tr></table></body></html>';
+        $log = $this->sendVia(fn(Mailer $m) => $this->assertTrue($m->send('owner@example.test', 'Hi', $html)));
+        $parts = self::parts(self::data($log));
+
+        $this->assertSame($html, $parts['text/html'], 'the HTML goes as it was');
+        $this->assertSame("Hi Ana\r\n\r\nFish & chips\r\nat 5\r\n\r\nOpen it (https://site.test/a?b=1&c=2)\r\n\r\nName: Ana <b>\r\nTopic: Order", $parts['text/plain'], 'words, breaks and link addresses, without markup or the head');
+    }
+
+    public function testACallersOwnContentTypeIsSentAsTheOnlyPart(): void
+    {
+        $log = $this->sendVia(fn(Mailer $m) => $this->assertTrue($m->send('owner@example.test', 'Plain', 'Hello', ['Content-Type' => 'text/plain; charset=UTF-8'])));
+        $data = self::data($log);
+
+        $this->assertFalse(str_contains($data, 'multipart'), 'no alternative is made for a body of another type');
+        $this->assertSame(['text/plain' => 'Hello'], self::parts($data));
     }
 
     public function testUnsafeAddressesAndHeadersAreRefused(): void

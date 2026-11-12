@@ -7,13 +7,13 @@ namespace Kestello\Cms\Health;
 use Kestello\Cms\Cms;
 use Kestello\Framework\Database\DatabaseManager;
 
-/** Active users whose role grants system.manage (who hears about infrastructure problems). @internal */
+/** Active users whose role grants system.manage (who hears about infrastructure problems), or another capability. @internal */
 final class Administrators
 {
-    /** @return list<int> */
-    public static function ids(Cms $cms): array
+    /** @return list<int> at most 50 */
+    public static function ids(Cms $cms, string $capability = 'system.manage'): array
     {
-        $roles = $cms->auth->roles->rolesWith('system.manage');
+        $roles = $cms->auth->roles->rolesWith($capability);
         if ($roles === []) {
             return [];
         }

@@ -10,6 +10,7 @@ use Kestello\Cms\Events\NotificationFailed;
 use Kestello\Cms\Events\NotificationSent;
 use Kestello\Cms\Notifications\Channels\DatabaseChannel;
 use Kestello\Cms\Queue\JobQueue;
+use Kestello\Contracts\Auth\Principal;
 use Kestello\Contracts\Notifications\Channel;
 use Kestello\Framework\Core\ExecutionContext;
 use Kestello\Framework\Database\DatabaseManager;
@@ -25,6 +26,7 @@ use Kestello\Support\Translator;
  *   $cms->notifications->send(Recipient::email('guest@example.com'), new FormReceived($id));
  *   $cms->notifications->channel('acme-sms', new SmsChannel());          // plugin channel
  *   $cms->notifications->type(OrderShipped::class, 'Order shipped');     // shows in profile preferences
+ *   $cms->notifications->type(StockLow::class, 'Stock running low', capability: 'acme-shop.manage'); // only for people who get it
  *
  * @api
  */
@@ -33,7 +35,7 @@ final class Notifier
     /** @var array<string, array{channel: Channel, owner: string}> */
     private array $channels = [];
 
-    /** @var array<string, array{class: class-string<Notification>, label: string, description: string, owner: string}> */
+    /** @var array<string, array{class: class-string<Notification>, label: string, description: string, owner: string, capabilities: list<string>}> */
     private array $types = [];
 
     private ?Closure $queue = null;
@@ -75,10 +77,22 @@ final class Notifier
     /**
      * Declare a notification type users can switch channels for.
      *
+     * Name the capability the people you send it to hold, so only they see it in their
+     * preferences: send to the roles from $cms->auth->roles->rolesWith('acme-shop.manage') and
+     * pass capability: 'acme-shop.manage'. With a list, any one of them is enough. Without one,
+     * everyone who signs in sees the type.
+     *
      * @param class-string<Notification> $class
+     * @param string|list<string>|null $capability who can receive it (any of these), null for everyone
      */
-    public function type(string $class, string $label, string $description = ''): void
+    public function type(string $class, string $label, string $description = '', string|array|null $capability = null): void
     {
+        $capabilities = $capability === null ? [] : array_values(array_unique((array) $capability));
+        foreach ($capabilities as $name) {
+            if (trim($name) === '') {
+                throw new InvalidArgumentException("The capability for notification type {$class} must be a capability name, such as \"system.manage\".");
+            }
+        }
         if (!is_subclass_of($class, Notification::class)) {
             throw new InvalidArgumentException("{$class} must extend " . Notification::class . '.');
         }
@@ -90,13 +104,39 @@ final class Notifier
                 throw new InvalidArgumentException("{$owner} notification types must start with \"{$slug}.\", got \"{$type}\".");
             }
         }
-        $this->types[$type] = ['class' => $class, 'label' => $label, 'description' => $description, 'owner' => $owner];
+        $this->types[$type] = ['class' => $class, 'label' => $label, 'description' => $description, 'owner' => $owner, 'capabilities' => $capabilities];
     }
 
-    /** @return array<string, array{class: class-string<Notification>, label: string, description: string, owner: string}> */
+    /** @return array<string, array{class: class-string<Notification>, label: string, description: string, owner: string, capabilities: list<string>}> */
     public function types(): array
     {
         return $this->types;
+    }
+
+    /**
+     * The types someone can receive, for their preferences: those for everyone, and those
+     * whose capability (any one of them) their role holds.
+     *
+     * @return array<string, array{class: class-string<Notification>, label: string, description: string, owner: string, capabilities: list<string>}>
+     */
+    public function typesFor(Principal $principal): array
+    {
+        return array_filter($this->types, static fn(array $t): bool => self::receives($t['capabilities'], $principal));
+    }
+
+    /** @param list<string> $capabilities */
+    private static function receives(array $capabilities, Principal $principal): bool
+    {
+        if ($capabilities === []) {
+            return true;
+        }
+        foreach ($capabilities as $capability) {
+            if ($principal->can($capability)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

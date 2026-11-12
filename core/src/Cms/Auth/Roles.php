@@ -39,6 +39,7 @@ final class Roles
         'media.upload' => 'Upload files, and edit or delete their own',
         'media.manage' => 'Edit and delete everyone\'s files',
         'settings.manage' => 'Change site settings',
+        'emails.manage' => 'Change how the site\'s emails look and what they say',
         'audit.read' => 'Read the audit log',
         'security.manage' => 'See everyone\'s sign-ins, sessions and access tokens, and end them',
         'webhooks.manage' => 'Set up webhooks that send site events to other services',

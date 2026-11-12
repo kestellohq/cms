@@ -4,6 +4,9 @@ import { Head } from '@kestello/app';
 import { ApiError, notify, useApi, useResource, useUser, __ } from '@kestello/sdk';
 import { KAlert, KButton, KCard, KExtension, KField, KInput, KPageHeader, KSchemaForm, KTabs } from '@kestello/ui';
 import MediaPicker from '../fields/MediaPicker.vue';
+import LanguagesPicker from '../../components/languages/LanguagesPicker.vue';
+import SiteTexts from '../../components/languages/SiteTexts.vue';
+import PathTexts from '../../components/languages/PathTexts.vue';
 
 defineOptions({ layout: 'Admin' });
 
@@ -116,11 +119,14 @@ const unsavedText = (n) => __('{n, plural, one {# unsaved change} other {# unsav
 // The side card of each core tab: what the settings change, in plain words.
 const whereItShows = computed(() => ({
     general: __(
-        'The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks.',
+        'The site name and tagline appear in the browser tab, in emails and wherever your theme prints them. The timezone sets the clock for dates and scheduled tasks. Each other language gets its own addresses, and every page can be translated into it from its editor.',
     ),
     reading: __('Addresses, the home page and feeds change what visitors and feed readers get. Old addresses keep working.'),
     seo: __(
         'Page titles show in the browser tab and as the headline in search results. The sharing image shows when someone posts a link to the site. Each entry can set its own under Search and sharing.',
+    ),
+    emails: __(
+        'Every email the site sends: sign-up and password links, form submissions and notifications. Colours and the font follow your theme under Design, with dark colours for mail apps in dark mode.',
     ),
     accounts: __('Applies to the sign-up page and to every sign-in provider. People you add under People are not affected.'),
     media: __('Applies to new uploads. Files already in the library stay as they are.'),
@@ -164,6 +170,41 @@ const whereItShows = computed(() => ({
                                     :invalid="invalid"
                                     :disabled="disabled"
                                     @update:model-value="set($event ?? 0)"
+                                />
+                            </template>
+                            <!-- the languages content is also written in: "es,pt-br" -->
+                            <template #format-languages="{ id, value, set, invalid, disabled }">
+                                <LanguagesPicker
+                                    :id="id"
+                                    :model-value="value ?? ''"
+                                    :saved="stored.languages ?? ''"
+                                    :main="drafts.general?.language ?? ''"
+                                    :invalid="invalid"
+                                    :disabled="disabled"
+                                    @update:model-value="set"
+                                />
+                            </template>
+                            <!-- the site name and tagline in the other languages: {"es": {...}} -->
+                            <template #format-translations="{ id, value, set, disabled }">
+                                <SiteTexts
+                                    :id="id"
+                                    :model-value="value ?? ''"
+                                    :languages="drafts.general?.languages ?? stored.languages ?? ''"
+                                    :name="drafts.general?.site_name ?? ''"
+                                    :tagline="drafts.general?.site_description ?? ''"
+                                    :disabled="disabled"
+                                    @update:model-value="set"
+                                />
+                            </template>
+                            <!-- type and taxonomy addresses in the other languages: {"es": {"/projects": "/proyectos"}} -->
+                            <template #format-paths="{ id, value, set, invalid, disabled }">
+                                <PathTexts
+                                    :id="id"
+                                    :model-value="value ?? ''"
+                                    :languages="drafts.general?.languages ?? stored.languages ?? ''"
+                                    :invalid="invalid"
+                                    :disabled="disabled"
+                                    @update:model-value="set"
                                 />
                             </template>
                         </KSchemaForm>
@@ -215,6 +256,7 @@ const whereItShows = computed(() => ({
                 </KCard>
                 <KCard v-else-if="whereItShows[group.id]" coord="C1" :title="__('Where this shows')">
                     <p class="k-muted">{{ whereItShows[group.id] }}</p>
+                    <KButton v-if="group.id === 'emails'" size="sm" icon="envelope-simple" href="/admin/emails">{{ __('Change the emails') }}</KButton>
                 </KCard>
             </template>
         </div>

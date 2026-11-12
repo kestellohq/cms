@@ -132,6 +132,9 @@ final class ContentModels
         if ($f['default'] !== null) {
             $field->default($f['default']);
         }
+        if (($f['translatable'] ?? null) !== null) {
+            $field->translatable((bool) $f['translatable']);
+        }
         if ($f['searchable'] !== null) {
             $field->searchable($f['searchable']);
         }
@@ -446,6 +449,7 @@ final class ContentModels
                 'indexed' => (bool) ($in['indexed'] ?? false),
                 'internal' => (bool) ($in['internal'] ?? false),
                 'searchable' => isset($in['searchable']) && $in['searchable'] !== null ? (bool) $in['searchable'] : null,
+                'translatable' => isset($in['translatable']) && $depth === 1 ? (bool) $in['translatable'] : null,     // null: the type decides; nested fields follow their parent
                 'width' => in_array($width, $allowedWidths, true) ? $width : 'full',
                 'default' => in_array($type, ['group', 'repeater', 'blocks', 'media', 'entry', 'term', 'user', 'multi_select'], true) ? null : $default,
                 'options' => $this->options($type, is_array($in['options'] ?? null) ? $in['options'] : [], "{$p}.options", $errors),
@@ -942,6 +946,9 @@ final class ContentModels
         }
         if ($f['searchable'] !== null) {
             $code .= '->searchable(' . ($f['searchable'] ? 'true' : 'false') . ')';
+        }
+        if (($f['translatable'] ?? null) !== null) {
+            $code .= '->translatable(' . ($f['translatable'] ? 'true' : 'false') . ')';
         }
         foreach ($f['options'] + (($f['conditions'] ?? null) !== null ? ['conditions' => $f['conditions']] : []) as $k => $v) {
             $code .= "->option({$q($k)}, {$q($v)})";

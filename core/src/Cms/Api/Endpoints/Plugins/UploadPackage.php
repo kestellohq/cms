@@ -7,7 +7,6 @@ namespace Kestello\Cms\Api\Endpoints\Plugins;
 use Kestello\Cms\Api\ApiProblem;
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
-use Kestello\Cms\Package\Update\Updater;
 
 /**
  * Upload a plugin zip (multipart "file"). Nothing is installed: the answer
@@ -40,24 +39,7 @@ final class UploadPackage extends PluginEndpoint
         if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_string($file['tmp_name'] ?? null) || !is_file($file['tmp_name'])) {
             throw ApiProblem::validation(['file' => ['Choose a plugin zip to upload.']]);
         }
-        $package = $this->attempt(fn() => $this->installer()->inspect((string) $file['tmp_name']));
-        if ($package['type'] !== 'plugin') {
-            throw ApiProblem::validation(['file' => ['That zip holds a theme. Themes are added under Appearance → Themes.']]);
-        }
-        $token = $this->attempt(fn() => $this->installer()->hold((string) $file['tmp_name']));
-        $sig = $package['signature']['status'];
 
-        $update = null;
-        if ($package['installed'] !== null && $package['installed']['active']) {
-            $zip = $this->installer()->held($token);
-            $update = ['from' => $package['installed']['version'], 'problems' => $this->attempt(fn() => $this->cms()->container->make(Updater::class)->check($zip)['problems'])];
-        }
-
-        return [
-            'token' => $token,
-            'package' => $package,
-            'update' => $update,
-            'allowed' => $sig === 'signed' || ($sig !== 'tampered' && $this->installer()->adminMayInstallUnsigned()),
-        ];
+        return $this->review((string) $file['tmp_name'], 'That zip holds a theme. Themes are added under Appearance → Themes.');
     }
 }

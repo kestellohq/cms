@@ -55,6 +55,48 @@ final class ReleaseFeedTest extends TestCase
         $this->assertSame('https://github.com/kestellohq/cms/releases/download/v1.10.0/kestello-core-1.10.0.zip', $releases[1]['zip']);
     }
 
+    /** @return array<string, mixed> a release of one plugin in a repository holding several, tagged <slug>-v<version> */
+    private static function pluginRelease(string $slug, string $version, string $repo = 'kestellohq/plugins'): array
+    {
+        $tag = "{$slug}-v{$version}";
+        $base = "https://github.com/{$repo}/releases/download/{$tag}/";
+
+        return [
+            'tag_name' => $tag, 'name' => "{$slug} {$version}", 'body' => '', 'draft' => false, 'prerelease' => false,
+            'published_at' => '2026-11-10T10:00:00Z', 'html_url' => "https://github.com/{$repo}/releases/tag/{$tag}",
+            'assets' => [
+                ['name' => "{$slug}-{$version}.zip", 'browser_download_url' => $base . "{$slug}-{$version}.zip"],
+                ['name' => "{$slug}-{$version}.zip.sha256", 'browser_download_url' => $base . "{$slug}-{$version}.zip.sha256"],
+            ],
+        ];
+    }
+
+    public function testARepositoryOfSeveralPackagesTagsEachOneByName(): void
+    {
+        $json = [
+            self::pluginRelease('meilisearch', '1.0.0'),
+            self::pluginRelease('meilisearch', '1.1.0'),
+            self::pluginRelease('typesense', '2.0.0'),
+            self::pluginRelease('meilisearch-extra', '3.0.0'),
+        ];
+        $releases = ReleaseFeed::parse($json, 'kestellohq/plugins', 'meilisearch');
+        $this->assertSame(['1.1.0', '1.0.0'], array_column($releases, 'version'), 'only its own tags, never typesense or meilisearch-extra');
+        $this->assertSame('https://github.com/kestellohq/plugins/releases/download/meilisearch-v1.1.0/meilisearch-1.1.0.zip', $releases[0]['zip']);
+        $this->assertSame(['2.0.0'], array_column(ReleaseFeed::parse($json, 'kestellohq/plugins', 'typesense'), 'version'));
+
+        // the tag and the zip must name the same package
+        $mixed = self::pluginRelease('typesense', '9.0.0');
+        $mixed['assets'] = self::pluginRelease('meilisearch', '9.0.0')['assets'];
+        $this->assertSame([], ReleaseFeed::parse([$mixed], 'kestellohq/plugins', 'meilisearch'));
+    }
+
+    public function testTheVersionATagNames(): void
+    {
+        foreach ([['v1.2.0', '1.2.0'], ['meilisearch-v1.2.0', '1.2.0'], ['meilisearch-v1.2.0-rc.1', '1.2.0-rc.1'], ['typesense-v1.2.0', null], ['meilisearch-1.2.0', null], ['meilisearch-v1.2', null], ['vmeilisearch-v1.2.0', null], ['meilisearch-v2-v1.0.0', null]] as [$tag, $version]) {
+            $this->assertSame($version, ReleaseFeed::tagVersion($tag, 'meilisearch'), $tag);
+        }
+    }
+
     public function testUpdatesUseTheCoreZipNeverTheInstallZip(): void
     {
         $release = ReleaseFeed::parse([self::release('1.2.0')], 'kestellohq/cms')[0];

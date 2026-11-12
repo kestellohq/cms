@@ -134,15 +134,16 @@ final class PackageSignature
      * Keys from config: a list of {name, public_key} (base64). Bad entries are skipped and logged.
      *
      * @param mixed $config
+     * @param string $setting the config key, named in the log when an entry is skipped
      * @return array<string, array{name: string, public_key: string}>
      */
-    public static function trustedKeys(mixed $config): array
+    public static function trustedKeys(mixed $config, string $setting = 'app.packages.trusted_keys'): array
     {
         $out = [];
         foreach (is_array($config) ? $config : [] as $entry) {
             $public = is_array($entry) && is_string($entry['public_key'] ?? null) ? base64_decode($entry['public_key'], true) : false;
             if ($public === false || strlen($public) !== 32) {
-                error_log('[kestello] app.packages.trusted_keys: an entry is not a base64 Ed25519 public key and is ignored.');
+                error_log("[kestello] {$setting}: an entry is not a base64 Ed25519 public key and is ignored.");
                 continue;
             }
             $out[self::keyId($public)] = ['name' => mb_substr((string) ($entry['name'] ?? 'Unnamed key'), 0, 80), 'public_key' => (string) $entry['public_key']];

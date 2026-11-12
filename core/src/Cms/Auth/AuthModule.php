@@ -13,7 +13,9 @@ use Kestello\Cms\Auth\External\Identities;
 use Kestello\Cms\Auth\External\IdentityResolver;
 use Kestello\Cms\Cms;
 use Kestello\Cms\Events\IdentityLinked;
+use Kestello\Cms\Events\UserRegistered;
 use Kestello\Cms\Extension\Provider;
+use Kestello\Cms\Health\Administrators;
 use Kestello\Contracts\Security\SecretStore;
 use Kestello\Contracts\Session\SessionStore;
 use Kestello\Framework\Cache\ArrayStore;
@@ -26,7 +28,6 @@ use Kestello\Framework\Mail\Mailer;
 use Kestello\Framework\Session\Session;
 use Kestello\Framework\Settings\Settings;
 use Kestello\Support\AppKey;
-use Kestello\Support\Html;
 
 /**
  * Core module: login, second factor, password reset, email sign-up, and the
@@ -70,7 +71,7 @@ final class AuthModule extends Provider
             (bool) $config('revoke_on_password_change', true),
         ));
         if (!$c->has('auth.mail')) {
-            $c->singleton('auth.mail', static fn(): Closure => static fn(string $to, string $subject, string $html): bool => (new Mailer())->send($to, $subject, $html));
+            $c->singleton('auth.mail', static fn(): Closure => static fn(string $to, string $subject, string $html, string $text = ''): bool => (new Mailer())->send($to, $subject, $html, [], $text));
         }
         $c->singleton(Identities::class, static fn(): Identities => new Identities());
         $c->singleton(NewAccounts::class, static fn(): NewAccounts => new NewAccounts(
@@ -133,6 +134,8 @@ final class AuthModule extends Provider
         (new AuditSubscriber($cms->audit))->subscribe($cms->events);
         $cms->events->on(IdentityLinked::class, static fn(IdentityLinked $e) => self::notifyLinked($cms, $e));
         $cms->events->on(\Kestello\Cms\Events\LoginFailed::class, static fn(\Kestello\Cms\Events\LoginFailed $e) => self::notifySecondFactorFailures($cms, $e));
+        $cms->notifications->type(NewSignUpNotification::class, 'New sign-ups', 'When someone makes their own account', capability: 'users.manage');
+        $cms->events->on(UserRegistered::class, static fn(UserRegistered $e) => self::notifySignUp($cms, $e));
 
         $r = $cms->routes;
         $r->get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -187,13 +190,43 @@ final class AuthModule extends Provider
             }
             [$site] = self::site($cms);
             $label = $cms->auth->findAuthenticator($e->provider)?->label() ?? $e->provider;
-            $html = '<p>Hello ' . Html::escape((string) $user['username']) . ',</p>'
-                . '<p>A ' . Html::escape($e->provider) . ' account was connected to your ' . Html::escape($site) . ' account ("' . Html::escape($label) . '"). It can now be used to sign in.</p>'
-                . '<p>If this wasn\'t you, change your password and disconnect it from your profile right away.</p>';
-            ($cms->container->make('auth.mail'))((string) $user['email'], "New sign-in method on {$site}", $html);
+            self::mail($cms, 'auth.sign_in_method_added', (string) $user['email'], ['site' => $site, 'name' => (string) $user['username'], 'provider' => $e->provider, 'label' => $label], $site);
         } catch (\Throwable $ex) {
             error_log('[auth] could not send the account-linked email: ' . $ex->getMessage());
         }
+    }
+
+    /** Tell the people who manage people that someone made their own account (not one made in the admin or with user:create). */
+    private static function notifySignUp(Cms $cms, UserRegistered $e): void
+    {
+        $method = match (true) {
+            $e->via === 'email' => 'email',
+            str_starts_with($e->via, 'external:') => $cms->auth->findAuthenticator(substr($e->via, 9))?->label() ?? substr($e->via, 9),
+            default => null,
+        };
+        if ($method === null) {
+            return;
+        }
+        try {
+            $user = QueryBuilder::table('users')->where('id', $e->userId)->first();
+            $to = array_values(array_diff(Administrators::ids($cms, 'users.manage'), [$e->userId]));
+            if ($user === null || $to === []) {
+                return;
+            }
+            $cms->notifications->send($to, new NewSignUpNotification($e->userId, (string) $user['username'], (string) $user['email'], $method, (string) $cms->config->get('app.url', '')));
+        } catch (\Throwable $ex) {
+            error_log('[auth] could not tell administrators about a new sign-up: ' . $ex->getMessage());
+        }
+    }
+
+    /**
+     * Send one of the named account emails above through auth.mail, as HTML with its plain-text part.
+     *
+     * @param array<string, mixed> $data
+     */
+    private static function mail(Cms $cms, string $id, string $to, array $data, string $site): void
+    {
+        $cms->emails->send($id, $to, $data, $cms->container->make('auth.mail'), $site);
     }
 
     /** Wrong second-factor codes that tell an account's owner their password is known. */
@@ -216,10 +249,7 @@ final class AuthModule extends Provider
                 return;
             }
             [$site] = self::site($cms);
-            $html = '<p>Hello ' . Html::escape((string) $user['username']) . ',</p>'
-                . '<p>Someone entered your ' . Html::escape($site) . ' password correctly, then a wrong two-factor code ' . self::SECOND_FACTOR_WARNING . ' times in the last hour. Two-factor authentication stopped them, but they know your password.</p>'
-                . '<p>Sign in and change your password now. If you made these attempts yourself, you can ignore this email.</p>';
-            ($cms->container->make('auth.mail'))((string) $user['email'], "Someone has your {$site} password", $html);
+            self::mail($cms, 'auth.password_known', (string) $user['email'], ['site' => $site, 'name' => (string) $user['username'], 'count' => self::SECOND_FACTOR_WARNING], $site);
         } catch (\Throwable $ex) {
             error_log('[auth] could not send the two-factor warning email: ' . $ex->getMessage());
         }

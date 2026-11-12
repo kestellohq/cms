@@ -7,6 +7,7 @@ namespace Kestello\Cms\Api\Endpoints\Settings;
 use DateTimeZone;
 use Kestello\Cms\Api\Schema;
 use Kestello\Cms\Cms;
+use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Cms\I18n\Labels;
 use Kestello\Cms\I18n\SiteLanguage;
 use Kestello\Contracts\Auth\Principal;
@@ -89,8 +90,14 @@ final class SiteSettings
                     'timezone' => Schema::enum(DateTimeZone::listIdentifiers())->optional()->description('Dates and scheduled tasks use this clock.'),
                     SiteLanguage::SETTING => Schema::enum(SiteLanguage::choices())->optional()
                         ->description('The admin, emails and the text your theme shows on its own use this language. Language packs add more.'),
+                    ContentLanguages::SETTING => Schema::string()->max(300)->format('languages')->optional()
+                        ->description('Languages your content is also written in. Each lives under its code, such as /es for Spanish, and every page can have a translation in it.'),
+                    \Kestello\Cms\I18n\SiteText::SETTING => Schema::string()->max(20000)->format('translations')->optional()
+                        ->description('The site name and tagline in each of the other languages. Left empty, a language uses the main ones.'),
+                    \Kestello\Cms\I18n\TranslatedPaths::SETTING => Schema::string()->max(20000)->format('paths')->optional()
+                        ->description('Addresses of content types and categories in each of the other languages, such as /es/proyectos for /projects. Left empty, a language uses the main ones.'),
                 ]),
-                'labels' => ['site_name' => 'Site name', 'site_description' => 'Tagline', 'site_url' => 'Site address', 'timezone' => 'Timezone', SiteLanguage::SETTING => 'Language'],
+                'labels' => ['site_name' => 'Site name', 'site_description' => 'Tagline', 'site_url' => 'Site address', 'timezone' => 'Timezone', SiteLanguage::SETTING => 'Language', ContentLanguages::SETTING => 'Other languages', \Kestello\Cms\I18n\SiteText::SETTING => 'Name and tagline in other languages', \Kestello\Cms\I18n\TranslatedPaths::SETTING => 'Addresses in other languages'],
                 'secrets' => [],
                 'defaults' => [
                     'site_name' => (string) $config?->get('app.name', ''),
@@ -98,6 +105,9 @@ final class SiteSettings
                     'site_url' => (string) $config?->get('app.url', ''),
                     'timezone' => (string) $config?->get('app.timezone', 'UTC'),
                     SiteLanguage::SETTING => SiteLanguage::resolve(null, (string) $config?->get('app.locale', 'en')),
+                    ContentLanguages::SETTING => implode(',', ContentLanguages::parse($config?->get('app.languages', []), SiteLanguage::resolve(null, (string) $config?->get('app.locale', 'en')))),
+                    \Kestello\Cms\I18n\SiteText::SETTING => '',
+                    \Kestello\Cms\I18n\TranslatedPaths::SETTING => '',
                 ],
             ] + $core,
             'reading' => [
@@ -162,6 +172,23 @@ final class SiteSettings
                 'defaults' => ['mail_from_address' => '', 'mail_from_name' => '', 'smtp_host' => '', 'smtp_port' => 587, 'smtp_encryption' => 'tls', 'smtp_username' => '', 'smtp_password' => ''],
                 // Password reset links travel through this server: whoever sets it can read them.
                 'capability' => 'system.manage',
+            ] + $core,
+            'emails' => [
+                'label' => 'Emails',
+                'description' => 'How the emails the site sends look: the logo at the top and the text at the foot. Colours and the font come from the theme.',
+                'schema' => Schema::object([
+                    'email_show_logo' => Schema::bool()->optional()->description('Without a logo, the site name is shown at the foot only.'),
+                    'email_logo' => Schema::int()->min(0)->format('media')->optional()
+                        ->description('Left empty, the Logo or photo from Search and sharing is used. It is shown 40 pixels tall.'),
+                    'email_logo_dark' => Schema::int()->min(0)->format('media')->optional()
+                        ->description('Shown instead of the logo when a mail app is in dark mode, such as a light version of a dark logo. Apple Mail and Outlook show it; mail apps that do not tell an email they are dark keep the logo.'),
+                    'email_footer' => Schema::string()->max(500)->format('multiline')->optional()
+                        ->description('Under the site name in every email, such as a postal address or a line about the site.'),
+                ]),
+                'labels' => ['email_show_logo' => 'Show a logo', 'email_logo' => 'Email logo', 'email_logo_dark' => 'Logo in dark mode', 'email_footer' => 'Footer text'],
+                'secrets' => [],
+                'defaults' => ['email_show_logo' => true, 'email_logo' => 0, 'email_logo_dark' => 0, 'email_footer' => ''],
+                'capability' => 'emails.manage',
             ] + $core,
             'accounts' => [
                 'label' => 'Accounts',

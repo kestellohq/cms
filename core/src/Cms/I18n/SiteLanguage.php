@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\I18n;
 
+use Kestello\Cms\Cms;
+use Kestello\Framework\Settings\Settings;
 use Kestello\Support\Translator;
 
 /**
@@ -32,6 +34,12 @@ final class SiteLanguage
         }
 
         return 'en';
+    }
+
+    /** The site's language now: the setting (Settings → General), else config app.locale, else English. */
+    public static function site(): string
+    {
+        return self::resolve((string) Settings::getInstance()->get(self::SETTING, ''), (string) (Cms::instance()?->config->get('app.locale', 'en') ?? 'en'));
     }
 
     /**

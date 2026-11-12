@@ -157,7 +157,7 @@ final class QueueFlowTest extends TestCase
     private function drain(int $max = 50): array
     {
         $worker = new Worker($this->queue, new ArrayStore(), sleep: static fn() => null);
-        $worker->run(JobQueue::QUEUES, stopWhenEmpty: true, maxJobs: $max);
+        $worker->run(JobQueue::QUEUES, stopWhenEmpty: true, maxJobs: $max, memoryMb: QueueTest::memoryMb());
 
         return $worker->counts;
     }
@@ -315,7 +315,7 @@ final class QueueFlowTest extends TestCase
             $worker = new Worker($this->queue, new ArrayStore(), sleep: static function (): void {
                 posix_kill(getmypid(), SIGTERM);
             });
-            $this->assertSame('signal', $worker->run(JobQueue::QUEUES), 'the worker stops');
+            $this->assertSame('signal', $worker->run(JobQueue::QUEUES, memoryMb: QueueTest::memoryMb()), 'the worker stops');
             $this->assertSame(1, $heard, 'and the command that started it hears the signal too');
 
             posix_kill(getmypid(), SIGTERM);

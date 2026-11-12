@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Cms\Redirects;
 
 use Closure;
+use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Framework\Core\Middleware\MiddlewareInterface;
 use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
@@ -27,11 +28,12 @@ final class RedirectMiddleware implements MiddlewareInterface
             return $response;
         }
 
+        $path = ContentLanguages::localize($request->path, ContentLanguages::current());     // as asked, with its language prefix
         try {
-            $rule = $this->redirects->resolve($request->path, (string) (parse_url($request->uri, PHP_URL_QUERY) ?? ''));
+            $rule = $this->redirects->resolve($path, (string) (parse_url($request->uri, PHP_URL_QUERY) ?? ''));
             if ($rule === null) {
-                if (!self::looksLikeAsset($request->path)) {
-                    $this->redirects->logNotFound($request->path, $request->header('Referer'));
+                if (!self::looksLikeAsset($path)) {
+                    $this->redirects->logNotFound($path, $request->header('Referer'));
                 }
                 return $response;
             }

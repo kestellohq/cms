@@ -53,5 +53,15 @@
     "ochre": { "label": "Ochre", "values": { "plate": "#8a5a00", "wall": "#ece6d8" } },
     "slate": { "label": "Slate", "values": { "plate": "#334155", "wall": "#e6e6e3", "wall-rule": "#c7c7c2" } },
     "teal": { "label": "Teal", "values": { "plate": "#0f5e63" } }
+  },
+  "email": {
+    "page": "wall",
+    "card": "enamel-white",
+    "ink": "wall-ink",
+    "muted": "wall-ink-2",
+    "line": "wall-rule",
+    "accent": "plate",
+    "accent-ink": "enamel-white",
+    "font": "font"
   }
 }

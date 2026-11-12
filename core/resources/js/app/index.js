@@ -350,7 +350,44 @@ export const Link = defineComponent({
  * plus a tiny blurred preview behind it while it loads. Attributes (class,
  * style) go on the <img>. Files without variants (animations, documents'
  * previews, no image engine) render a plain <img> of the original.
+ *
+ * `dark` is a second image for visitors whose device is set to dark, such as
+ * a screenshot of a dark admin: <KImage :media="shot" :dark="shotDark" />.
+ * It should have the same proportions, so the page does not move.
  */
+const DARK = '(prefers-color-scheme: dark)';
+
+/**
+ * The <source> elements of a KImage's <picture>, in order: the dark image's
+ * formats first (a browser takes the first source that matches), then the
+ * light image's AVIF and WebP. Its JPEG or PNG is the <img> itself.
+ *
+ * @param {object} media the image, as pages receive it
+ * @param {object|null} dark the image for dark mode, or null
+ * @param {string} size a variant size, such as "large"
+ * @param {string} sizes the sizes attribute
+ * @returns {{ key: string, attrs: object }[]}
+ */
+export function pictureSources(media, dark, size, sizes) {
+    const out = [];
+    if (dark?.url) {
+        const d = dark.sizes?.[size] ?? null;
+        if (d === null) {
+            out.push({ key: 'dark', attrs: { media: DARK, srcset: dark.url } });
+        } else {
+            for (const f of ['avif', 'webp', 'jpeg', 'png']) {
+                if (d.srcset?.[f]) out.push({ key: `dark-${f}`, attrs: { media: DARK, type: `image/${f}`, srcset: d.srcset[f], sizes } });
+            }
+        }
+    }
+    const v = media?.sizes?.[size] ?? null;
+    for (const f of ['avif', 'webp']) {
+        if (v?.srcset?.[f]) out.push({ key: f, attrs: { type: `image/${f}`, srcset: v.srcset[f], sizes } });
+    }
+
+    return out;
+}
+
 export const KImage = defineComponent({
     name: 'KImage',
     inheritAttrs: false,
@@ -360,6 +397,7 @@ export const KImage = defineComponent({
         sizes: { type: String, default: '100vw' },
         alt: { type: String, default: null },
         priority: Boolean,
+        dark: { type: Object, default: null },
     },
     setup(props, { attrs }) {
         return () => {
@@ -392,12 +430,10 @@ export const KImage = defineComponent({
                 fetchpriority: props.priority ? 'high' : undefined,
                 style: [style, attrs.style],
             });
-            if (!v) return img;
-            const sources = ['avif', 'webp']
-                .filter((f) => v.srcset?.[f])
-                .map((f) => h('source', { key: f, type: `image/${f}`, srcset: v.srcset[f], sizes: props.sizes }));
+            const sources = pictureSources(m, props.dark, props.size, props.sizes);
+            if (!v && sources.length === 0) return img;
 
-            return h('picture', { class: 'k-image' }, [...sources, img]);
+            return h('picture', { class: 'k-image' }, [...sources.map((s) => h('source', { key: s.key, ...s.attrs })), img]);
         };
     },
 });

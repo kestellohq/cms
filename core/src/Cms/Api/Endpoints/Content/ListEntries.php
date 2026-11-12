@@ -45,6 +45,7 @@ final class ListEntries extends ContentEndpoint
             'author' => Schema::int()->min(1)->optional(),
             'assignee' => Schema::string()->pattern('(me|[0-9]{1,18})')->optional()->description('"me", or a user id'),
             'parent' => Schema::int()->min(0)->optional()->description('0 = top level'),
+            'locale' => Schema::string()->max(12)->default('any')->description('One language: main (or empty) for the main one, or a code such as es. Default: any, every language'),
             'term' => Schema::int()->min(1)->optional()->description('Entries that have this term'),
             'links_to' => Schema::int()->min(1)->optional()->description('Entries that link to this entry through a relationship field'),
             'links_to_field' => Schema::string()->max(64)->pattern('[a-z][a-z0-9_]*')->optional()->description('With links_to: only through this top-level field'),
@@ -73,6 +74,9 @@ final class ListEntries extends ContentEndpoint
         if (($assignee = $request->query('assignee')) !== null) {
             $user = $assignee === 'me' ? (int) $p->userId : (int) $assignee;
             $base->whereExists(static fn(QueryBuilder $q) => $q->from('entry_assignees')->whereColumn('entry_assignees.entry_id', '=', 'entries.id')->where('entry_assignees.user_id', $user));
+        }
+        if (($locale = (string) $request->query('locale')) !== 'any') {
+            $base->where('entries.locale', $locale === 'main' ? '' : $locale);
         }
         if (($parent = $request->query('parent')) !== null) {
             $parent === 0 ? $base->whereNull('entries.parent_id') : $base->where('entries.parent_id', $parent);
@@ -128,9 +132,10 @@ final class ListEntries extends ContentEndpoint
         $ids = array_map(static fn($e) => (int) $e->getKey(), $models);
         $terms = (new \Kestello\Cms\Content\Terms())->summaries($ids);
         $assignees = \Kestello\Cms\Content\Reviews::assignees($ids);
+        $translations = \Kestello\Cms\Content\Translations::of($models);
         $items = [];
         foreach ($models as $entry) {
-            $items[] = new \Kestello\Cms\Api\Resources\EntryResource(['model' => $entry, 'type' => $type, 'can' => $entries->abilities($p, $type, $entry), 'full' => false, 'terms' => $terms[(int) $entry->getKey()] ?? [], 'assignee' => $assignees[(int) $entry->getKey()] ?? null]);
+            $items[] = new \Kestello\Cms\Api\Resources\EntryResource(['model' => $entry, 'type' => $type, 'can' => $entries->abilities($p, $type, $entry), 'full' => false, 'terms' => $terms[(int) $entry->getKey()] ?? [], 'assignee' => $assignees[(int) $entry->getKey()] ?? null, 'translations' => $translations[(int) $entry->getKey()] ?? []]);
         }
 
         return new ResourceCollection($items, [

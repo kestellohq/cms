@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kestello\Cms\Content;
 
+use Kestello\Cms\I18n\ContentLanguages;
 use Kestello\Contracts\Auth\Principal;
 use Kestello\Framework\Database\DatabaseManager;
 use Kestello\Framework\Database\QueryBuilder;
@@ -16,6 +17,10 @@ use Kestello\Support\Translator;
  *   $terms->create($cms->content->getTaxonomy('category'), ['name' => 'News'], $principal);
  *   $ids = $terms->ensure($tax, $terms->check($tax, [3, 'new tag'], $principal, $errors, 'terms.tag'));
  *
+ * A term is written in one language ('' = the main one): slugs are unique
+ * per taxonomy and language, a parent is in the same language, and
+ * translate() makes a term's translation into another.
+ *
  * Throws ContentException (invalid / forbidden / conflict).
  *
  * @api
@@ -24,14 +29,53 @@ final class Terms
 {
     public const int MAX_PER_ENTRY = 50;
 
-    /** @param array{name?: string, slug?: string, parent_id?: ?int, description?: ?string, menu_order?: int} $input */
+    /** @param array{name?: string, slug?: string, parent_id?: ?int, description?: ?string, menu_order?: int, locale?: string} $input */
     public function create(Taxonomy $tax, array $input, Principal $p): Term
     {
         if (!$p->can($tax->capability('manage'))) {
             throw ContentException::forbidden("You can't add " . strtolower($tax->plural()) . '.');
         }
+        $locale = is_string($input['locale'] ?? null) ? trim($input['locale']) : '';
+        if ($locale !== '' && !ContentLanguages::has($locale)) {
+            throw ContentException::invalid(['locale' => [Translator::get('The site isn\'t written in "{code}". Use one of its languages, or leave it empty for the main one.', ['code' => $locale])]]);
+        }
 
-        return $this->write($tax, (new Term())->forceFill(['taxonomy' => $tax->name, 'menu_order' => 0]), $input, true);
+        return $this->write($tax, (new Term())->forceFill(['taxonomy' => $tax->name, 'locale' => $locale, 'menu_order' => 0]), $input, true);
+    }
+
+    /**
+     * Make $term's translation into $locale: the same name and description,
+     * under the translation of its parent when there is one. Returns it.
+     */
+    public function translate(Taxonomy $tax, Term $term, string $locale, Principal $p): Term
+    {
+        if (!$p->can($tax->capability('manage'))) {
+            throw ContentException::forbidden("You can't add " . strtolower($tax->plural()) . '.');
+        }
+        if ($locale === $term->language()) {
+            throw ContentException::invalid(['locale' => [Translator::get('It is already in that language.')]]);
+        }
+        if ($locale !== '' && !ContentLanguages::has($locale)) {
+            throw ContentException::invalid(['locale' => [Translator::get('The site isn\'t written in "{code}". Use one of its languages, or leave it empty for the main one.', ['code' => $locale])]]);
+        }
+        if (($existing = $term->translation($locale)) !== null) {
+            throw ContentException::conflict('It already has that translation (#' . $existing->getKey() . ').');
+        }
+
+        return DatabaseManager::getConnection()->transaction(function () use ($tax, $term, $locale): Term {
+            $group = (string) ($term->translation_group ?? '');
+            if ($group === '') {
+                $group = Str::ulid();
+                QueryBuilder::table('terms')->where('id', $term->getKey())->update(['translation_group' => $group]);
+                $term->forceFill(['translation_group' => $group]);
+            }
+            $parent = $term->parent_id === null ? null : Term::query()->find($term->parent_id);
+            $parent = $parent instanceof Term ? $parent->translation($locale) : null;
+
+            return $this->write($tax, (new Term())->forceFill(['taxonomy' => $tax->name, 'locale' => $locale, 'translation_group' => $group, 'menu_order' => (int) $term->menu_order]), [
+                'name' => (string) $term->name, 'description' => $term->description, 'parent_id' => $parent?->getKey(),
+            ], true);
+        });
     }
 
     public function update(Taxonomy $tax, Term $term, array $input, Principal $p): Term
@@ -118,19 +162,20 @@ final class Terms
     }
 
     /**
-     * Ids for checked values, creating the named terms (a name or slug that
-     * already exists is reused rather than becoming "news-2").
+     * Ids for checked values, creating the named terms in $language (a name
+     * or slug that already exists there is reused rather than becoming
+     * "news-2").
      *
      * @param array{ids: list<int>, names: list<string>} $checked
      * @return list<int>
      */
-    public function ensure(Taxonomy $tax, array $checked): array
+    public function ensure(Taxonomy $tax, array $checked, string $language = ''): array
     {
         $ids = $checked['ids'];
         foreach ($checked['names'] as $name) {
-            $existing = QueryBuilder::table('terms')->where('taxonomy', $tax->name)
+            $existing = QueryBuilder::table('terms')->where('taxonomy', $tax->name)->where('locale', $language)
                 ->where(static fn(QueryBuilder $q) => $q->where('name', $name)->orWhere('slug', Str::slug($name)))->value('id');
-            $ids[] = $existing !== null ? (int) $existing : (int) $this->write($tax, (new Term())->forceFill(['taxonomy' => $tax->name, 'menu_order' => 0]), ['name' => $name], true)->getKey();
+            $ids[] = $existing !== null ? (int) $existing : (int) $this->write($tax, (new Term())->forceFill(['taxonomy' => $tax->name, 'locale' => $language, 'menu_order' => 0]), ['name' => $name], true)->getKey();
         }
 
         return array_values(array_unique($ids));
@@ -209,11 +254,11 @@ final class Terms
         return $out;
     }
 
-    /** $base, or $base-2… unique in the taxonomy. */
-    public function uniqueSlug(Taxonomy $tax, string $base, int|string|null $exceptId = null): string
+    /** $base, or $base-2… unique in the taxonomy and language. */
+    public function uniqueSlug(Taxonomy $tax, string $base, int|string|null $exceptId = null, string $language = ''): string
     {
         $base = trim(mb_substr($base, 0, 180), '-') ?: 'term';
-        $taken = QueryBuilder::table('terms')->where('taxonomy', $tax->name)
+        $taken = QueryBuilder::table('terms')->where('taxonomy', $tax->name)->where('locale', $language)
             ->where(static fn(QueryBuilder $q) => $q->where('slug', $base)->orWhereLike('slug', QueryBuilder::escapeLike($base) . '-%'))
             ->when($exceptId !== null, static fn($q) => $q->where('id', '!=', $exceptId))->pluck('slug');
         if (!in_array($base, $taken, true)) {
@@ -256,7 +301,7 @@ final class Terms
             throw ContentException::invalid($errors);
         }
         $term->forceFill([
-            'name' => $name, 'slug' => $this->uniqueSlug($tax, $base ?: 'term', $term->getKey()), 'parent_id' => $parentId,
+            'name' => $name, 'slug' => $this->uniqueSlug($tax, $base ?: 'term', $term->getKey(), $term->language()), 'parent_id' => $parentId,
             'description' => $description === '' ? null : $description,
             'menu_order' => array_key_exists('menu_order', $input) ? (int) $input['menu_order'] : (int) $term->menu_order,
         ])->save();
@@ -271,9 +316,12 @@ final class Terms
         }
         $current = $parentId;
         for ($depth = 0; $current !== null && $depth < 10; $depth++) {
-            $row = QueryBuilder::table('terms')->select('id', 'taxonomy', 'parent_id')->where('id', $current)->first();
+            $row = QueryBuilder::table('terms')->select('id', 'taxonomy', 'locale', 'parent_id')->where('id', $current)->first();
             if ($row === null || $row['taxonomy'] !== $tax->name) {
                 return 'Pick an existing ' . strtolower($tax->singular()) . '.';
+            }
+            if ($depth === 0 && (string) $row['locale'] !== $term->language()) {
+                return Translator::get('Pick one in the same language.');
             }
             if ($term->getKey() !== null && (int) $row['id'] === $term->getKey()) {
                 return 'That would put it inside itself.';
