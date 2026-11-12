@@ -44,8 +44,8 @@ final class Batches
     /** @return list<array<string, mixed>> running batches first, then the newest finished ones */
     public function recent(int $limit = 10): array
     {
-        $running = QueryBuilder::table(self::TABLE)->whereNull('finished_at')->orderByDesc('created_at')->limit($limit)->get();
-        $done = QueryBuilder::table(self::TABLE)->whereNotNull('finished_at')->orderByDesc('finished_at')->limit(max(0, $limit - count($running)))->get();
+        $running = QueryBuilder::table(self::TABLE)->whereNull('finished_at')->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get();
+        $done = QueryBuilder::table(self::TABLE)->whereNotNull('finished_at')->orderByDesc('finished_at')->orderByDesc('id')->limit(max(0, $limit - count($running)))->get();
 
         return array_map(self::present(...), [...$running, ...$done]);
     }

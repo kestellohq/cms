@@ -14,7 +14,6 @@ use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Response;
 use Kestello\Framework\Database\Connection;
 use Kestello\Framework\Database\DatabaseManager;
-use Kestello\Framework\Database\MigrationRunner;
 use Kestello\Framework\Session\DatabaseSessionStore;
 use Kestello\Framework\Session\Session;
 use Kestello\Framework\Session\SessionMetadata;
@@ -22,9 +21,10 @@ use Kestello\Framework\Testing\TestCase;
 use Kestello\Support\AppKey;
 use Kestello\Support\Hash;
 use Kestello\Tests\Support\TestCms;
+use Kestello\Tests\Support\TestDatabase;
 
 /**
- * A booted core (SQLite, all migrations, auth services) with a fake
+ * A booted core (SQLite, or KESTELLO_TEST_DATABASE: see TestDatabase; all migrations, auth services) with a fake
  * session ($_SESSION without PHP's session machinery) and captured mail.
  */
 abstract class AuthTestCase extends TestCase
@@ -44,10 +44,10 @@ abstract class AuthTestCase extends TestCase
 
     protected function setUp(): void
     {
-        $this->db = Connection::sqliteMemory();
-        DatabaseManager::setConnection($this->db);
+        // SQLite in memory, or the server database in KESTELLO_TEST_DATABASE (TestDatabase)
         \Kestello\Framework\Settings\Settings::destroy();     // its cache belongs to the previous test's database
-        (new MigrationRunner(dirname(__DIR__, 2) . '/core/database/migrations'))->migrate();
+        $this->db = TestDatabase::connection();
+        DatabaseManager::setConnection($this->db);
 
         AppKey::set(bin2hex(random_bytes(32)));
         $_SESSION = [];

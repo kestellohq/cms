@@ -41,7 +41,9 @@ final class ListNotFound extends RedirectEndpoint
         $total = (clone $q)->count();
         $perPage = (int) $request->query('per_page');
         $page = (int) $request->query('page');
+        // the id last: rows seen in the same second keep their place from page to page
         $q = $request->query('sort') === 'recent' ? $q->orderBy('last_seen_at', 'DESC') : $q->orderBy('hits', 'DESC')->orderBy('last_seen_at', 'DESC');
+        $q = $q->orderBy('id', 'DESC');
         $rows = $q->offset(($page - 1) * $perPage)->limit($perPage)->get();
 
         return Response::json(['data' => array_map(static fn(array $r) => [

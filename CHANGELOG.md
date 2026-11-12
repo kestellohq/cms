@@ -124,6 +124,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- Lists sorted by a time (the admin's finder, entry lookups, the review queues, job batches, and the not-found log under Redirects) put rows from the same second in an order that depended on the database, so on PostgreSQL the newest of two entries could come second, and the not-found log could repeat or skip a row between pages. They break ties by the row's id. A test keeps core from sorting by a time alone.
 - The list of theme templates, parts and patterns in the admin read each one from the database on its own, several times: about 190 queries for one list. It reads a theme's documents of each kind once.
 - Site Health's database tables check and `system:db-check` read the database's columns and indexes in two statements, not two per table.
 - A new site adds its scheduled tasks in one statement, not one per task.
