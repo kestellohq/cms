@@ -53,7 +53,7 @@ final class ThemeEmails
         '/<(iframe|frame|object|embed|applet)\b/i' => 'embedded frames or objects',
         '/<base\b/i' => 'a <base> tag',
         '/<meta[^>]+http-equiv/i' => 'a <meta http-equiv> tag',
-        '/<[a-z][^>]*\son[a-z]+\s*=/i' => 'event handlers (onclick=, onload=, …)',
+        '/<[a-z][^>]*[\s\/"\']on[a-z]+\s*=/i' => 'event handlers (onclick=, onload=, …)',
         '/javascript\s*:/i' => 'javascript: links',
     ];
 
@@ -87,8 +87,7 @@ final class ThemeEmails
                 $file = $theme->path(self::FOLDER . '/' . $name . '.html');
                 if (is_file($file)) {
                     $own = $name !== self::LAYOUT;
-                    $registry = $cms->container->has(EmailRegistry::class) ? $cms->container->make(EmailRegistry::class) : null;
-                    $locked = $own && $registry?->has($id) ? $registry->get($id)['locked'] : [];
+                    $locked = $own && $cms->emails->has($id) ? $cms->emails->get($id)['locked'] : [];
 
                     return self::$found[$key] = new ThemeEmail($own ? $id : null, $file, (string) file_get_contents($file), $locked);
                 }
@@ -119,8 +118,10 @@ final class ThemeEmails
             return ['it is larger than ' . (self::MAX_BYTES / 1000) . ' KB'];
         }
         $problems = [];
+        // entities decoded too, so java&#115;cript: is found as what a mail app reads
+        $decoded = html_entity_decode($html, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         foreach (self::FORBIDDEN as $pattern => $what) {
-            if (preg_match($pattern, $html) === 1) {
+            if (preg_match($pattern, $html) === 1 || ($what === 'javascript: links' && preg_match($pattern, $decoded) === 1)) {
                 $problems[] = "it has {$what}, which emails cannot carry";
             }
         }

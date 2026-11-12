@@ -105,6 +105,25 @@ final class UserAdminApiTest extends AuthTestCase
         $roles = array_column($this->json($this->api('GET', '/roles'))['data'], 'assignable', 'name');
         $this->assertFalse($roles['operator']);
         $this->assertTrue($roles['user']);
+        $editable = array_column($this->json($this->api('GET', '/roles'))['data'], 'editable', 'name');
+        $this->assertFalse($editable['operator'], 'the admin shows it as not editable');
+        $this->assertTrue($editable['user']);
+
+        // narrowing the stronger role, giving someone it, then resetting it would hand out its capabilities
+        $this->assertSame(403, $this->api('PATCH', '/roles/operator', ['capabilities' => ['read', 'admin.access']])->statusCode(), 'no narrowing a stronger role');
+        $this->assertSame(403, $this->api('DELETE', '/roles/operator')->statusCode(), 'nor resetting it');
+        $this->assertSame(['admin.access', 'read', 'settings.manage', 'system.manage'], $this->sorted($this->cms->auth->roles->capabilitiesFor('operator')));
+    }
+
+    /**
+     * @param list<string> $caps
+     * @return list<string>
+     */
+    private function sorted(array $caps): array
+    {
+        sort($caps);
+
+        return $caps;
     }
 
     public function testAdminPagesAreForBrowserSessionsOnly(): void

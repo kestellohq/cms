@@ -203,7 +203,7 @@ final class EmailRegistry
         if ($edit === null) {
             return $original;
         }
-        $errors = EmailEdit::validate($edit, $original, $this->get($id)['locked'], $data, self::media(...));
+        $errors = EmailEdit::validate($edit, $original, $this->get($id)['locked'], $data, self::media(...), sending: true);
         if ($errors !== []) {
             $first = array_key_first($errors);
             error_log("[kestello] the edit of \"{$id}\" (" . Translator::locale() . ") no longer fits the email ({$first}: {$errors[$first][0]}); it is sent as its code writes it.");

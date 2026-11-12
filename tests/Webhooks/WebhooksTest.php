@@ -111,6 +111,25 @@ final class WebhooksTest extends AuthTestCase
         $this->assertCount(1, $this->fake->sent, 'a queue no worker reads would leave it waiting for ever');
     }
 
+    public function testADeliveryWhoseJobWasLostIsQueuedAgain(): void
+    {
+        $backend = new ArrayQueue();
+        $this->cms->queue->setBackend(static fn() => $backend);
+        $this->hook(['entry.created']);
+        $this->api('POST', '/content/post/entries', ['title' => 'Stranded', 'status' => 'draft']);
+        // as on a site that queued it on the "webhooks" queue, which no worker reads since 0.1.0
+        $backend->clear();
+        $this->assertSame('pending', $this->db->table('webhook_deliveries')->value('status'));
+
+        $this->assertSame(0, $this->cms->webhooks->retryDue(), 'a pending delivery is left to its job for an hour');
+        Clock::travel(3601);
+        $this->assertSame(1, $this->cms->webhooks->retryDue());
+        $this->assertSame(0, $this->cms->webhooks->retryDue(), 'once an hour, not every minute');
+        (new Worker($this->cms->queue, new ArrayStore(), sleep: static fn() => null))->run(JobQueue::QUEUES, stopWhenEmpty: true, maxJobs: 10);
+        $this->assertCount(1, $this->fake->sent);
+        $this->assertSame('succeeded', $this->db->table('webhook_deliveries')->value('status'));
+    }
+
     public function testRetriesAndTurnsOffAfterRepeatedFailures(): void
     {
         $made = $this->hook(['entry.created']);

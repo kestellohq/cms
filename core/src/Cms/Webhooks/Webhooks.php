@@ -211,7 +211,32 @@ final class Webhooks
             $this->queue((int) $id);
         }
 
-        return count($due);
+        return count($due) + $this->requeueStranded($limit);
+    }
+
+    /**
+     * Deliveries still pending an hour after they were made: their job was lost (a queue that is no
+     * longer worked, such as the "webhooks" queue before 0.1.0). Each is queued again at most once an
+     * hour; a job that turns up late finds it claimed and does nothing.
+     */
+    private function requeueStranded(int $limit): int
+    {
+        $now = Clock::now(new \DateTimeZone('UTC'));
+        $hourAgo = $now->modify('-1 hour')->format('Y-m-d H:i:s');
+        $stranded = QueryBuilder::table('webhook_deliveries')
+            ->join('webhooks', 'webhooks.id', '=', 'webhook_deliveries.webhook_id')
+            ->where('webhook_deliveries.status', 'pending')
+            ->where('webhook_deliveries.created_at', '<', $hourAgo)
+            ->where(static fn($q) => $q->whereNull('webhook_deliveries.next_attempt_at')->orWhere('webhook_deliveries.next_attempt_at', '<', $hourAgo))
+            ->where('webhooks.active', true)
+            ->orderBy('webhook_deliveries.id')->limit($limit)
+            ->pluck('webhook_deliveries.id');
+        foreach ($stranded as $id) {
+            QueryBuilder::table('webhook_deliveries')->where('id', (int) $id)->update(['next_attempt_at' => $now->format('Y-m-d H:i:s')]);
+            $this->queue((int) $id);
+        }
+
+        return count($stranded);
     }
 
     /** Deletes deliveries older than $days. */

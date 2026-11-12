@@ -72,9 +72,11 @@ final class EmailEdit
      * @param list<string> $locked
      * @param array<string, mixed> $values the email's sample values
      * @param Closure(int): (array{url: string, width: int, height: int}|null) $media
+     * @param bool $sending checked against one send rather than the sample: a block this send
+     *        has not built (a form's admin link when its answers aren't stored) is left out, unless locked
      * @return array<string, list<string>>
      */
-    public static function validate(array $edit, MailMessage $original, array $locked, array $values, Closure $media): array
+    public static function validate(array $edit, MailMessage $original, array $locked, array $values, Closure $media, bool $sending = false): array
     {
         $errors = [];
         $known = self::placeholders($values);
@@ -123,7 +125,9 @@ final class EmailEdit
                 $name = is_string($block['name'] ?? null) ? $block['name'] : '';
                 $source = $name !== '' ? $original->block($name) : null;
                 if ($source === null) {
-                    $errors["{$at}.name"][] = Translator::get('This email has no block named “{name}”.', ['name' => $name]);
+                    if (!$sending || $name === '' || in_array($name, $locked, true)) {
+                        $errors["{$at}.name"][] = Translator::get('This email has no block named “{name}”.', ['name' => $name]);
+                    }
                     continue;
                 }
                 if (isset($kept[$name])) {

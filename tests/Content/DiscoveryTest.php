@@ -411,9 +411,10 @@ final class DiscoveryTest extends AuthTestCase
     public function testFiltersCannotSlipInScriptAddresses(): void
     {
         $this->post(['title' => 'Rye', 'slug' => 'rye']);
-        $this->cms->filters->add('seo.head', static fn(array $tags) => [...$tags, ['link', ['rel' => 'me', 'href' => 'javascript:alert(1)']], ['link', ['rel' => 'me', 'href' => 'https://mastodon.social/@ana']], ['meta', ['name' => ['x']]]]);
+        $this->cms->filters->add('seo.head', static fn(array $tags) => [...$tags, ['link', ['rel' => 'me', 'href' => 'javascript:alert(1)']], ['link', ['rel' => 'me', 'href' => 'https://mastodon.social/@ana']], ['meta', ['name' => ['x']]], ['link', ['rel' => 'icon', 'href' => '/i.png', 'onload' => 'alert(1)']]]);
         $head = $this->head('/blog/rye');
         $this->assertStringNotContainsString('javascript', $head);
+        $this->assertStringNotContainsString('onload', $head, 'no event handler, even from a filter');
         $this->assertStringContainsString('<link rel="me" href="https://mastodon.social/@ana">', $head);
     }
 

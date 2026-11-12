@@ -147,4 +147,14 @@ final class EmailEditingApiTest extends AuthTestCase
         $this->assertSame(403, $this->api('GET', '/emails')->statusCode());
         $this->assertSame(403, $this->api('PUT', '/emails/auth.password_reset', self::EDIT)->statusCode());
     }
+
+    public function testAWorkerSeesEditsSavedSinceItsLastJob(): void
+    {
+        $edits = new EmailEdits();
+        $this->assertNull($edits->find('auth.password_reset', 'en'));
+        (new EmailEdits())->save('auth.password_reset', 'en', ['subject' => 'Your new password', 'blocks' => [['type' => 'original', 'name' => 'link']]], null);
+        $this->assertNull($edits->find('auth.password_reset', 'en'), 'read once per request');
+        $edits->forget();
+        $this->assertSame('Your new password', $edits->find('auth.password_reset', 'en')['subject'] ?? null, 'and again after forget(), as the worker does between jobs');
+    }
 }

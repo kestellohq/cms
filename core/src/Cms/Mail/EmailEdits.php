@@ -24,6 +24,12 @@ final class EmailEdits
     /** @var array<string, array{subject: string, blocks: list<array<string, mixed>>, updated_at: ?string, updated_by: ?int}|null> by "email|locale", for one request */
     private array $found = [];
 
+    /** Forget what find() read, so edits saved since are used: between a worker's jobs. */
+    public function forget(): void
+    {
+        $this->found = [];
+    }
+
     /** @return array{subject: string, blocks: list<array<string, mixed>>, updated_at: ?string, updated_by: ?int}|null */
     public function find(string $email, string $locale): ?array
     {

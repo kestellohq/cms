@@ -381,7 +381,8 @@ final class Seo
             }
             $html .= '<' . $tag[0];
             foreach ($tag[1] as $name => $value) {
-                if (preg_match('/^[a-z][a-z:_-]*$/', (string) $name) !== 1 || $value === null || is_array($value) || is_object($value)) {
+                // never an event handler (onload=, onerror=), even from a filter
+                if (preg_match('/^[a-z][a-z:_-]*$/', (string) $name) !== 1 || str_starts_with((string) $name, 'on') || $value === null || is_array($value) || is_object($value)) {
                     continue;
                 }
                 if ($name === 'href' && !Html::safeUrl((string) $value, ['http', 'https'])) {

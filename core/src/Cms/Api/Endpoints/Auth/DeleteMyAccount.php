@@ -68,6 +68,8 @@ final class DeleteMyAccount extends Endpoint
             throw ApiProblem::conflict($refusal);
         }
 
+        // the language they read in, while their account is still there to say it
+        $language = \Kestello\Cms\I18n\PersonLanguage::of($user);
         // sign this browser out first, so the ending request doesn't write the session back
         Auth::getInstance()?->logout();
         AccountDeletion::delete($cms, $id, 'self', $id);
@@ -76,7 +78,7 @@ final class DeleteMyAccount extends Endpoint
         [$site] = AuthModule::site($cms);
         $mail = $cms->container->has('auth.mail') ? $cms->container->make('auth.mail') : null;
         if ($mail instanceof Closure) {
-            AccountMail::send($mail, 'auth.account_deleted', (string) $user['email'], ['site' => $site], $site, "the account-deleted email for user #{$id} could not be sent");
+            AccountMail::send($mail, 'auth.account_deleted', (string) $user['email'], ['site' => $site], $site, "the account-deleted email for user #{$id} could not be sent", $language);
         }
 
         return null;
