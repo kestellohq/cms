@@ -125,18 +125,25 @@ final class Connection
 
     // ── Statements ──────────────────────────────────────────────────
 
-    /** Prepare and run a statement with bindings. */
+    /**
+     * Prepare and run a statement with bindings. A connection the server
+     * dropped (a long-running worker, a restarted database) is opened again
+     * and the statement run once more, outside a transaction only: inside
+     * one, what the transaction did is gone with the connection.
+     */
     public function query(string $sql, array $bindings = []): PDOStatement
     {
-        $statement = $this->getPdo()->prepare($sql);
+        return $this->reconnecting(function () use ($sql, $bindings): PDOStatement {
+            $statement = $this->getPdo()->prepare($sql);
 
-        foreach (array_values($bindings) as $i => $value) {
-            $statement->bindValue($i + 1, ...self::bindable($value));
-        }
+            foreach (array_values($bindings) as $i => $value) {
+                $statement->bindValue($i + 1, ...self::bindable($value));
+            }
 
-        $statement->execute();
+            $statement->execute();
 
-        return $statement;
+            return $statement;
+        });
     }
 
     public function execute(string $sql, array $bindings = []): bool
@@ -149,7 +156,69 @@ final class Connection
     /** Run SQL without bindings (DDL). Never pass user input. */
     public function raw(string $sql): bool
     {
-        return $this->getPdo()->exec($sql) !== false;
+        return $this->reconnecting(fn(): bool => $this->getPdo()->exec($sql) !== false);
+    }
+
+    /** Close the connection; the next statement opens a new one. */
+    public function disconnect(): void
+    {
+        $this->pdo = null;
+        $this->transactions = 0;
+    }
+
+    /**
+     * Whether an error means the connection is gone (rather than the
+     * statement being wrong): MySQL's "server has gone away" and "lost
+     * connection", PostgreSQL's connection errors (SQLSTATE class 08, or the
+     * server shutting the session down), and their messages when PDO gives
+     * no code.
+     */
+    public static function lostConnection(\Throwable $e): bool
+    {
+        $info = $e instanceof PDOException ? ($e->errorInfo ?? []) : [];
+        $state = (string) ($info[0] ?? ($e instanceof PDOException ? $e->getCode() : ''));
+        $code = (int) ($info[1] ?? 0);
+        if (in_array($code, [2006, 2013, 2055, 4031], true) || str_starts_with($state, '08') || in_array($state, ['57P01', '57P02', '57P03'], true)) {
+            return true;
+        }
+
+        return preg_match('/server has gone away|lost connection|no connection to the server|server closed the connection unexpectedly|connection (?:was )?(?:closed|reset|refused)|SSL connection has been closed|Broken pipe|terminating connection|disconnected by the server/i', $e->getMessage()) === 1;
+    }
+
+    /**
+     * Whether an error is one the database asks you to retry: a deadlock or
+     * a serialization failure (SQLSTATE 40001, 40P01; MySQL 1213, and 1205,
+     * a lock wait that timed out).
+     */
+    public static function retryable(\Throwable $e): bool
+    {
+        $info = $e instanceof PDOException ? ($e->errorInfo ?? []) : [];
+        $state = (string) ($info[0] ?? ($e instanceof PDOException ? $e->getCode() : ''));
+
+        return in_array($state, ['40001', '40P01'], true) || in_array((int) ($info[1] ?? 0), [1213, 1205], true);
+    }
+
+    /**
+     * @template T
+     * @param Closure(): T $run
+     * @return T
+     */
+    private function reconnecting(Closure $run): mixed
+    {
+        try {
+            return $run();
+        } catch (PDOException $e) {
+            if (!self::lostConnection($e)) {
+                throw $e;
+            }
+            $inTransaction = $this->transactions > 0;
+            $this->disconnect();
+            if ($inTransaction) {
+                throw $e;   // the transaction's work went with the connection: the caller has to start again
+            }
+
+            return $run();
+        }
     }
 
     /** @return list<array<string, mixed>> */
@@ -176,7 +245,15 @@ final class Connection
     public function beginTransaction(): bool
     {
         if ($this->transactions === 0) {
-            $this->getPdo()->beginTransaction();
+            if ($this->driver() === 'sqlite') {
+                // IMMEDIATE takes the write lock now. A plain (deferred) BEGIN
+                // takes it at the first write, so two processes that both read
+                // first deadlock on it ("database is locked") instead of the
+                // second waiting busy_timeout for the first.
+                $this->raw('BEGIN IMMEDIATE');
+            } else {
+                $this->reconnecting(fn(): bool => $this->getPdo()->beginTransaction());
+            }
         } else {
             $this->raw('SAVEPOINT kst_' . $this->transactions);
         }
@@ -194,16 +271,16 @@ final class Connection
         if ($this->transactions === 1) {
             // MySQL commits DDL implicitly; PDO then has no transaction to commit.
             try {
-                if ($this->getPdo()->inTransaction()) {
+                if ($this->driver() === 'sqlite') {
+                    $this->getPdo()->exec('COMMIT');
+                } elseif ($this->getPdo()->inTransaction()) {
                     $this->getPdo()->commit();
                 }
             } catch (\Throwable $e) {
                 // A refused commit (deferred constraint, serialization failure)
                 // must not leave PDO inside a transaction for the rest of the process.
                 $this->transactions = 0;
-                if ($this->getPdo()->inTransaction()) {
-                    $this->getPdo()->rollBack();
-                }
+                $this->rollBackPdo();
                 throw $e;
             }
         } else {
@@ -222,9 +299,7 @@ final class Connection
 
         $this->transactions--;
         if ($this->transactions === 0) {
-            if ($this->getPdo()->inTransaction()) {
-                $this->getPdo()->rollBack();
-            }
+            $this->rollBackPdo();
         } else {
             $this->raw('ROLLBACK TO SAVEPOINT kst_' . $this->transactions);
         }
@@ -237,23 +312,55 @@ final class Connection
         return $this->transactions;
     }
 
+    /** End the outermost transaction without saving it, whichever way it was started. */
+    private function rollBackPdo(): void
+    {
+        if ($this->pdo === null) {
+            return;   // the connection is gone, and its transaction with it
+        }
+        if ($this->driver() === 'sqlite') {
+            try {
+                $this->pdo->exec('ROLLBACK');
+            } catch (PDOException) {
+                // SQLite ends the transaction itself on some errors: nothing left to roll back
+            }
+        } elseif ($this->pdo->inTransaction()) {
+            $this->pdo->rollBack();
+        }
+    }
+
     /**
+     * Run $callback in a transaction. With $attempts above 1, an outermost
+     * transaction the database refused for a deadlock or serialization
+     * failure (retryable()) runs again from the start, after a short pause.
+     * Only pass that for a callback that does nothing outside the database
+     * (no email, no files): it may run more than once.
+     *
      * @template T
      * @param Closure(self): T $callback
      * @return T
      */
-    public function transaction(Closure $callback): mixed
+    public function transaction(Closure $callback, int $attempts = 1): mixed
     {
-        $this->beginTransaction();
+        for ($attempt = 1; ; $attempt++) {
+            $outermost = $this->transactions === 0;
+            $this->beginTransaction();
 
-        try {
-            $result = $callback($this);
-            $this->commit();
+            try {
+                $result = $callback($this);
+                $this->commit();
 
-            return $result;
-        } catch (\Throwable $e) {
-            $this->rollback();
-            throw $e;
+                return $result;
+            } catch (\Throwable $e) {
+                if ($this->transactions > 0) {
+                    $this->rollback();
+                }
+                // a nested transaction's failure belongs to the outer one, which decides
+                if (!$outermost || $attempt >= $attempts || !self::retryable($e)) {
+                    throw $e;
+                }
+                usleep(random_int(10_000, 50_000) * $attempt);
+            }
         }
     }
 
