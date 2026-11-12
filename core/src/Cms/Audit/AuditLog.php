@@ -70,7 +70,7 @@ final class AuditLog
             'subject_id' => $subject !== null ? substr((string) $subject[1], 0, 100) : null,
             'ip' => $ctx['ip'] ?? null,
             'user_agent' => isset($ctx['user_agent']) ? mb_substr((string) $ctx['user_agent'], 0, 500) : null,
-            'request_id' => $ctx['request_id'] ?? null,
+            'request_id' => $ctx['request_id'] ?? \Kestello\Framework\Http\RequestId::current(),
             'owner' => $owner,
             'data' => $data === [] ? null : Json::encode(self::redact($data)),
         ];

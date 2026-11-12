@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kestello\Framework\Core;
 
 use ErrorException;
+use Kestello\Framework\Http\RequestId;
 use Throwable;
 
 /**
@@ -105,6 +106,9 @@ final class ErrorHandler
         $statusCode = $this->resolveStatusCode($exception);
         if (!headers_sent()) {
             http_response_code($statusCode);
+            if (RequestId::current() !== null) {
+                header('X-Request-Id: ' . RequestId::current());
+            }
         }
 
         // JSON response for API requests
@@ -181,9 +185,11 @@ final class ErrorHandler
 
         $this->count($owner ?? 'core', $exception::class . ': ' . $exception->getMessage());
 
+        $id = RequestId::current();
         $entry = sprintf(
-            "[%s]%s %s: %s in %s:%d\n%s\n\n",
+            "[%s]%s%s %s: %s in %s:%d\n%s\n\n",
             date('Y-m-d H:i:s'),
+            $id !== null ? " [request {$id}]" : '',
             $owner !== null && $owner !== 'core' ? " [{$owner}]" : '',
             $exception::class,
             $exception->getMessage(),
@@ -231,6 +237,9 @@ final class ErrorHandler
                 'message' => $this->debug ? $exception->getMessage() : 'Internal Server Error',
             ],
         ];
+        if (RequestId::current() !== null) {
+            $response['error']['request_id'] = RequestId::current();
+        }
 
         if ($this->debug) {
             $response['error']['exception'] = $exception::class;

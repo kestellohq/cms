@@ -154,6 +154,11 @@ final class Kernel
 
     public function handleHttp(): void
     {
+        // every answer carries it, the installer's, /up's and the maintenance page's too
+        $id = \Kestello\Framework\Http\RequestId::beginFromServer($_SERVER);
+        if (!headers_sent()) {
+            header('X-Request-Id: ' . $id);
+        }
         $app = Application::getInstance($this->paths);
         $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         $installed = InstallerController::isInstalled($this->paths);
@@ -611,7 +616,7 @@ final class Kernel
                 'actor_id' => $actor,
                 'ip' => PHP_SAPI === 'cli' ? null : TrustedProxies::clientIp((string) ($_SERVER['REMOTE_ADDR'] ?? ''), (string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? '')),
                 'user_agent' => PHP_SAPI === 'cli' ? 'cli' : (string) ($_SERVER['HTTP_USER_AGENT'] ?? ''),
-                'request_id' => null,
+                'request_id' => \Kestello\Framework\Http\RequestId::current(),
             ];
         });
         $this->bootPlatform($app, $cms);

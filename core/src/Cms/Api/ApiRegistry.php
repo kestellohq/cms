@@ -197,7 +197,7 @@ final class ApiRegistry
      */
     public function dispatch(array $entry, Request $request, array $params = []): Response
     {
-        $requestId = bin2hex(random_bytes(8));
+        $requestId = \Kestello\Framework\Http\RequestId::current() ?? \Kestello\Framework\Http\RequestId::of($request);
         $endpoint = $entry['endpoint'];
         $limit = null;
         $principal = Principal::guest();
