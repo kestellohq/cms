@@ -91,6 +91,16 @@ final class MySqlSchemaGrammar extends SchemaGrammar
         return ['SELECT DISTINCT index_name AS name FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = ? ORDER BY index_name', [$table]];
     }
 
+    public function compileAllColumns(): array
+    {
+        return ['SELECT table_name AS tbl, column_name AS name FROM information_schema.columns WHERE table_schema = DATABASE() ORDER BY table_name, ordinal_position', []];
+    }
+
+    public function compileAllIndexes(): array
+    {
+        return ['SELECT DISTINCT table_name AS tbl, index_name AS name FROM information_schema.statistics WHERE table_schema = DATABASE() ORDER BY table_name, index_name', []];
+    }
+
     public function compileTables(): array
     {
         return ["SELECT table_name AS name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE' ORDER BY table_name", []];

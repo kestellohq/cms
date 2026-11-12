@@ -160,6 +160,41 @@ final class Schema
         return array_map(static fn(array $r): string => (string) ($r['name'] ?? $r['NAME'] ?? ''), $this->connection->select($sql, $bindings));
     }
 
+    /**
+     * Every table's columns, in one statement (columns() asks for one table).
+     *
+     * @return array<string, list<string>> table => column names, in table order
+     */
+    public function allColumns(): array
+    {
+        return $this->byTable($this->connection->schemaGrammar()->compileAllColumns());
+    }
+
+    /**
+     * Every table's indexes, in one statement (indexes() asks for one table).
+     *
+     * @return array<string, list<string>> table => index names
+     */
+    public function allIndexes(): array
+    {
+        return $this->byTable($this->connection->schemaGrammar()->compileAllIndexes());
+    }
+
+    /**
+     * @param array{0: string, 1: list<mixed>} $compiled
+     * @return array<string, list<string>>
+     */
+    private function byTable(array $compiled): array
+    {
+        $out = [];
+        foreach ($this->connection->select($compiled[0], $compiled[1]) as $row) {
+            $row = array_change_key_case($row);
+            $out[(string) $row['tbl']][] = (string) $row['name'];
+        }
+
+        return $out;
+    }
+
     /** Whether a table has an index of this name (see indexes()). */
     public function hasIndex(string $table, string $name): bool
     {

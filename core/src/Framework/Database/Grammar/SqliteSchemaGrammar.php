@@ -60,6 +60,16 @@ final class SqliteSchemaGrammar extends SchemaGrammar
         return ['SELECT name FROM pragma_index_list(?) ORDER BY name', [$table]];
     }
 
+    public function compileAllColumns(): array
+    {
+        return ["SELECT m.name AS tbl, p.name AS name FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type = 'table' ORDER BY m.name, p.cid", []];
+    }
+
+    public function compileAllIndexes(): array
+    {
+        return ["SELECT m.name AS tbl, p.name AS name FROM sqlite_master m JOIN pragma_index_list(m.name) p WHERE m.type = 'table' ORDER BY m.name, p.name", []];
+    }
+
     public function compileTables(): array
     {
         // FTS5 shadow tables ("<virtual>_data" …) belong to their virtual table and are left out

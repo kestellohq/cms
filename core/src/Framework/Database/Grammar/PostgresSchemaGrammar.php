@@ -69,6 +69,16 @@ final class PostgresSchemaGrammar extends SchemaGrammar
         return ['SELECT indexname AS name FROM pg_indexes WHERE schemaname = current_schema() AND tablename = ? ORDER BY indexname', [$table]];
     }
 
+    public function compileAllColumns(): array
+    {
+        return ['SELECT table_name AS tbl, column_name AS name FROM information_schema.columns WHERE table_schema = current_schema() ORDER BY table_name, ordinal_position', []];
+    }
+
+    public function compileAllIndexes(): array
+    {
+        return ['SELECT tablename AS tbl, indexname AS name FROM pg_indexes WHERE schemaname = current_schema() ORDER BY tablename, indexname', []];
+    }
+
     public function compileTables(): array
     {
         return ["SELECT table_name AS name FROM information_schema.tables WHERE table_schema = current_schema() AND table_type = 'BASE TABLE' ORDER BY table_name", []];

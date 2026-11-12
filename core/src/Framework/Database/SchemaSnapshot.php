@@ -30,17 +30,20 @@ final class SchemaSnapshot
     public static function describe(Connection $connection): array
     {
         $schema = $connection->schema();
+        // two statements for the whole database, not two per table
+        $allColumns = $schema->allColumns();
+        $allIndexes = $schema->allIndexes();
         $tables = [];
-        foreach ($schema->tables() as $table) {
-            $table = strtolower($table);
+        foreach ($schema->tables() as $name) {
+            $table = strtolower($name);
             foreach (self::IGNORED_PREFIXES as $prefix) {
                 if (str_starts_with($table, $prefix)) {
                     continue 2;
                 }
             }
-            $columns = array_map('strtolower', $schema->columns($table));
+            $columns = array_map('strtolower', $allColumns[$name] ?? []);
             $indexes = array_values(array_filter(
-                array_map('strtolower', $schema->indexes($table)),
+                array_map('strtolower', $allIndexes[$name] ?? []),
                 static fn(string $i): bool => str_starts_with($i, 'idx_') || str_starts_with($i, 'uniq_'),
             ));
             sort($columns);

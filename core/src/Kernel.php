@@ -61,6 +61,7 @@ use Kestello\Framework\Core\Request;
 use Kestello\Framework\Core\Router;
 use Kestello\Framework\Database\Connection;
 use Kestello\Framework\Database\DatabaseManager;
+use Kestello\Framework\Database\QueryWatch;
 use Kestello\Framework\Database\Schema;
 use Kestello\Framework\Events\EventDispatcher;
 use Kestello\Framework\Events\Filters;
@@ -92,6 +93,9 @@ use Throwable;
 final class Kernel
 {
     private readonly Paths $paths;
+
+    /** The database's statements, for the slow-query and repeated-query log. */
+    private ?QueryWatch $queries = null;
 
     private function __construct(string $root, string $core)
     {
@@ -228,6 +232,8 @@ final class Kernel
         $cms->events->dispatch(new KernelBooted(console: false, recoveryMode: $recovery));
 
         $app->run();
+        // before the deferred work, whose queries are its own
+        $this->queries?->report();
         \Kestello\Cms\System\WebRunner::afterResponse($cms);
     }
 
@@ -424,7 +430,8 @@ final class Kernel
             $pending = (new UpdateJournal($this->paths->storage()))->pending();
             $safe = in_array('--safe', $argv, true) || $pending !== null || ($argv[1] ?? '') === 'update:recover';
             try {
-                $this->connectDatabase($app);
+                // a command can run for hours (a queue worker): it logs slow statements, not repeats
+                $this->connectDatabase($app, request: false);
                 $cms = $this->bootExtensions($app, recovery: $safe);
                 $cms->events->dispatch(new KernelBooted(console: true, recoveryMode: $safe));
             } catch (Throwable $e) {
@@ -849,12 +856,16 @@ final class Kernel
         return new ArrayStateStore();
     }
 
-    private function connectDatabase(Application $app): void
+    private function connectDatabase(Application $app, bool $request = true): void
     {
         $config = $app->config()->get('database');
 
         if (is_array($config) && $config !== []) {
-            DatabaseManager::setConnection(new Connection(DatabaseManager::resolveConfig($config, $this->paths->root())));
+            $connection = new Connection(DatabaseManager::resolveConfig($config, $this->paths->root()));
+            // slow statements are logged as they happen; repeated ones when the request ends (handleHttp)
+            $watch = QueryWatch::fromEnvironment(getenv());
+            $this->queries = ($request ? $watch : $watch->withoutRepeats())->watch($connection);
+            DatabaseManager::setConnection($connection);
         }
     }
 }

@@ -149,6 +149,45 @@ final class ScheduleTest extends TestCase
         $this->assertSame(['hourly', 'minutely'], $this->ran);
     }
 
+    public function testNewTasksAreAddedTogetherAndARunnerAddingThemToo(): void
+    {
+        foreach (['one', 'two', 'three'] as $name) {
+            $this->schedule->call(fn() => null, $name)->hourly();
+        }
+        $inserts = 0;
+        $raced = false;
+        $db = \Kestello\Framework\Database\DatabaseManager::getConnection();
+        $db->listen(static function (string $sql) use (&$inserts, &$raced, $db): void {
+            if (str_starts_with($sql, 'INSERT INTO') && str_contains($sql, 'scheduled_tasks')) {
+                $inserts++;
+            }
+            // another runner adds "two" between this one reading the table and adding what is missing
+            if (!$raced && str_starts_with($sql, 'SELECT') && str_contains($sql, 'scheduled_tasks')) {
+                $raced = true;
+                $db->table('scheduled_tasks')->insert(['name' => 'two', 'owner' => 'core', 'last_due_at' => 111, 'disabled' => 0, 'created_at' => 111], 'name');
+            }
+        });
+
+        $rows = $this->runner->sync(1000);
+        $this->assertSame(['one', 'three', 'two'], (function () use ($rows): array {
+            $names = array_keys($rows);
+            sort($names);
+
+            return $names;
+        })());
+        $this->assertSame(111, (int) $rows['two']['last_due_at'], "the other runner's row is kept");
+        $this->assertSame(1000, (int) $rows['one']['last_due_at']);
+        $this->assertSame(3, (int) $db->table('scheduled_tasks')->count());
+        $this->assertSame(1 + 1 + 3, $inserts, "the racer's insert, the batch that failed on it, then one by one");
+
+        // a new site: one statement for all of them
+        $db->table('scheduled_tasks')->delete();
+        $inserts = 0;
+        $this->runner->sync(2000);
+        $this->assertSame(1, $inserts);
+        $this->assertSame(3, (int) $db->table('scheduled_tasks')->count());
+    }
+
     public function testDailyTaskInItsTimezone(): void
     {
         $this->schedule->call($this->track('report'), 'report')->dailyAt('03:10')->timezone('Europe/Belgrade');

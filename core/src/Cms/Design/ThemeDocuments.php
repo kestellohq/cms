@@ -18,32 +18,57 @@ final class ThemeDocuments
     public const int KEEP = 50;
     public const array KINDS = ['styles', 'template', 'part', 'pattern'];
 
-    /** @var array<string, ?array<string, mixed>> per request */
+    /**
+     * A theme's documents of one kind, read once per request: a list of
+     * templates asks for each one's published version, draft and details.
+     *
+     * @var array<string, array<string, array<string, mixed>>> "theme|kind" => "key|status" => row
+     */
     private array $memo = [];
 
     /** @return array<string, mixed>|null the document, or null when the theme's file applies */
     public function get(string $theme, string $kind, string $key, string $status = 'published'): ?array
     {
-        $id = "{$theme}|{$kind}|{$key}|{$status}";
-        if (array_key_exists($id, $this->memo)) {
-            return $this->memo[$id];
-        }
-        $row = QueryBuilder::table('theme_documents')->where('theme', $theme)->where('kind', $kind)->where('doc_key', $key)->where('status', $status)->first();
-        $data = $row === null ? null : json_decode((string) ((array) $row)['data'], true);
+        $row = $this->rows($theme, $kind)["{$key}|{$status}"] ?? null;
+        $data = $row === null ? null : json_decode((string) $row['data'], true);
 
-        return $this->memo[$id] = is_array($data) ? $data : null;
+        return is_array($data) ? $data : null;
+    }
+
+    /**
+     * The keys that have a document of this kind, published or draft.
+     *
+     * @return list<string>
+     */
+    public function keys(string $theme, string $kind): array
+    {
+        return array_values(array_unique(array_map(static fn(array $row): string => (string) $row['doc_key'], $this->rows($theme, $kind))));
     }
 
     /** @return array{revision: int, updated_at: string, updated_by: ?int, base_hash: ?string}|null */
     public function info(string $theme, string $kind, string $key, string $status = 'published'): ?array
     {
-        $row = QueryBuilder::table('theme_documents')->where('theme', $theme)->where('kind', $kind)->where('doc_key', $key)->where('status', $status)->first();
+        $row = $this->rows($theme, $kind)["{$key}|{$status}"] ?? null;
         if ($row === null) {
             return null;
         }
-        $row = (array) $row;
 
         return ['revision' => (int) $row['revision'], 'updated_at' => (string) Date::isoUtc($row['updated_at']), 'updated_by' => $row['updated_by'] === null ? null : (int) $row['updated_by'], 'base_hash' => isset($row['base_hash']) ? (string) $row['base_hash'] : null];
+    }
+
+    /** @return array<string, array<string, mixed>> "key|status" => row */
+    private function rows(string $theme, string $kind): array
+    {
+        $id = "{$theme}|{$kind}";
+        if (!isset($this->memo[$id])) {
+            $this->memo[$id] = [];
+            foreach (QueryBuilder::table('theme_documents')->where('theme', $theme)->where('kind', $kind)->get() as $row) {
+                $row = (array) $row;
+                $this->memo[$id]["{$row['doc_key']}|{$row['status']}"] = $row;
+            }
+        }
+
+        return $this->memo[$id];
     }
 
     /** Publish (or save a draft of) a document. Returns its revision number. */
