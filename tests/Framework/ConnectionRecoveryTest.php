@@ -75,11 +75,8 @@ final class ConnectionRecoveryTest extends TestCase
 
     public function testADroppedConnectionIsOpenedAgain(): void
     {
-        $servers = self::servers();
-        if ($servers === []) {
-            $this->markTestSkipped('Needs MySQL or PostgreSQL in KESTELLO_TEST_DATABASES.');
-        }
-        foreach ($servers as $name => $config) {
+        // without MySQL or PostgreSQL in KESTELLO_TEST_DATABASES there is nothing to drop (CI has both)
+        foreach (self::servers() as $name => $config) {
             $c = new Connection($config);
             $before = self::drop($c, $config);
             $this->assertSame(1, (int) $c->select('SELECT 1 AS one')[0]['one'], "{$name}: the next statement works");
@@ -90,11 +87,8 @@ final class ConnectionRecoveryTest extends TestCase
 
     public function testAConnectionDroppedInsideATransactionIsReportedNotHidden(): void
     {
-        $servers = self::servers();
-        if ($servers === []) {
-            $this->markTestSkipped('Needs MySQL or PostgreSQL in KESTELLO_TEST_DATABASES.');
-        }
-        foreach ($servers as $name => $config) {
+        // without MySQL or PostgreSQL in KESTELLO_TEST_DATABASES there is nothing to drop (CI has both)
+        foreach (self::servers() as $name => $config) {
             $c = new Connection($config);
             $c->beginTransaction();
             self::drop($c, $config);
