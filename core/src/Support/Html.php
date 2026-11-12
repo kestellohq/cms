@@ -292,7 +292,8 @@ final class Html
         }
 
         // Relative URL: "/path", "page", "#anchor", "?q", or protocol-relative "//host" (treated as http(s)).
-        return !str_starts_with($normalized, '\\') && !str_contains($normalized, '\\\\');
+        // No backslash: browsers read /\host as //host, another site.
+        return !str_contains($normalized, '\\');
     }
 
     /** @param list<string> $schemes */

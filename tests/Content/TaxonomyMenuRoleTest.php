@@ -197,12 +197,15 @@ final class TaxonomyMenuRoleTest extends AuthTestCase
         $this->cms->auth->roles->grant('editor', 'audit.read');
         $this->assertContains('audit.read', $this->cms->auth->roles->capabilitiesFor('editor'));
 
+        $this->signIn('ana');
+        $this->ok('POST', '/roles', ['name' => 'helper', 'label' => 'Helper', 'capabilities' => ['admin.access', 'content.access']]);
         $this->db->table('users')->where('username', 'author')->update(['role' => 'reviewer']);
         $this->signIn('author'); // now a reviewer: holds roles.manage
         $this->assertSame(403, $this->api('PATCH', '/roles/reviewer', ['capabilities' => ['admin.access']])->statusCode(), 'not your own role');
-        $grab = $this->api('PATCH', '/roles/contributor', ['capabilities' => ['admin.access', 'settings.manage']]);
+        $this->assertSame(403, $this->api('PATCH', '/roles/contributor', ['capabilities' => ['admin.access']])->statusCode(), 'nor a role that can do what you cannot');
+        $grab = $this->api('PATCH', '/roles/helper', ['capabilities' => ['admin.access', 'settings.manage']]);
         $this->assertSame(422, $grab->statusCode(), "can't grant what you don't hold");
-        $this->assertSame(200, $this->api('PATCH', '/roles/contributor', ['capabilities' => ['admin.access', 'content.access', 'content.post.edit']])->statusCode());
+        $this->assertSame(200, $this->api('PATCH', '/roles/helper', ['capabilities' => ['admin.access', 'content.access', 'content.post.edit']])->statusCode());
 
         $this->signIn('ana');
         $this->assertSame(200, $this->api('DELETE', '/roles/editor')->statusCode(), 'built-in roles reset');
@@ -211,9 +214,9 @@ final class TaxonomyMenuRoleTest extends AuthTestCase
         $this->assertSame(204, $this->api('DELETE', '/roles/reviewer?reassign=contributor')->statusCode());
         $this->assertSame('contributor', $this->db->table('users')->where('username', 'author')->value('role'));
         $this->assertFalse($this->cms->auth->roles->exists('reviewer'));
-        $this->assertSame(['role.created', 'role.updated', 'role.updated', 'role.reset', 'role.deleted'], array_values(array_filter($this->auditEvents(), fn($e) => str_starts_with($e, 'role.'))));
+        $this->assertSame(['role.created', 'role.updated', 'role.created', 'role.updated', 'role.reset', 'role.deleted'], array_values(array_filter($this->auditEvents(), fn($e) => str_starts_with($e, 'role.'))));
 
-        RoleStore::forget($this->cms->auth->roles, 'contributor');
+        RoleStore::forget($this->cms->auth->roles, 'helper');
     }
 
     /** @param list<string> $keys */

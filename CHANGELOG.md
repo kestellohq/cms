@@ -116,6 +116,12 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- A theme's own file for an email (`emails/auth.password_reset.html`) is checked for the blocks the email cannot work without, such as its link. The check never had the site's emails to hand, so a theme could leave the link out of a password reset.
+- The Query block lists entries in the page's language, or the viewed entry's, instead of every language at once.
+- An edit of an email keeps working on a send that lacks one of the email's optional blocks, such as a form notification without an admin link, instead of the whole edit being dropped.
+- A queue worker that runs for a long time sees email edits and theme email files saved since its last job.
+- The email confirming a deleted account is in the person's language.
+- Webhook deliveries still pending an hour after they were made are queued again, so deliveries queued on the old `webhooks` queue by a release candidate are sent.
 - Pages are sent with `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin` beside their Content-Security-Policy, so a browser never runs a file as another type, and other sites see only the site's address, not the page and its query. A page that sets its own keeps it.
 - Webhook deliveries are queued on the `default` queue. They went to a `webhooks` queue that neither the cron task nor `queue:work` reads, so on a site with a background queue they were never sent. A test now checks that every queue core names is one the default workers read.
 - The test email, its description in Site → Emails and the error when a test send fails now name the settings tab as it is labelled, **Settings → Email** (they said "Settings → Mail"), and Email logo’s help names **Logo or photo** under **Search and sharing** (it said "Search engines").
@@ -164,6 +170,8 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Security
 
+- Someone who manages roles can no longer change or reset a role that can do what they cannot. Narrowing a stronger role, giving an account it, then resetting the role to its defaults handed that account capabilities its creator never had. The roles screen shows such roles as not editable.
+- A theme's email files are checked for event handlers written without a space (`<img/onerror=…>`) and for `javascript:` links written with entities, and `seo.head` filters can no longer add `on…` attributes. Relative links with a backslash (`/\evil.test`, which browsers read as another site) are refused in rich text and menus.
 - Signing in with a provider (GitHub, Google) creates an account only when the provider confirmed the email address, whatever the registration setting. Before, with registration open, an address the provider hadn't confirmed could start an account, so someone could sign up as an address they don't own.
 - Signing up never gives a role that may manage people, roles, security or the system, or that holds a plugin's sensitive permission: such a role is as good as administrator. **Role for new accounts** no longer offers those roles, and an account created with one set (in the config or by the `auth.default_role` filter) becomes a **User**. Until now only the administrator role itself was kept out.
 - Kestello ships the public key its official releases are signed with (`release.keys` in `core/config/release.php`), so sites apply releases from GitHub only when that key signed them.

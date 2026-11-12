@@ -84,6 +84,9 @@ final class ThemeEmailsTest extends AuthTestCase
             '<iframe src="https://x.test"></iframe>' => 'embedded frames',
             '<img src="x" onerror="go()">' => 'event handlers',
             '<a href="javascript:go()">x</a>' => 'javascript: links',
+            '<img/onerror=go() src=x>' => 'event handlers',
+            '<svg/onload=go()>' => 'event handlers',
+            '<a href="java&#115;cript:go()">x</a>' => 'javascript: links',
             '<meta http-equiv="refresh" content="0;url=https://x.test">' => 'http-equiv',
         ] as $html => $why) {
             $problems = ThemeEmails::problems($html . '{!! blocks !!}');
@@ -167,6 +170,23 @@ final class ThemeEmailsTest extends AuthTestCase
         $this->assertNull($extensions->activeTheme(), 'nothing changed');
 
         $this->assertSame('fine', $extensions->activateTheme('fine')->slug());
+    }
+
+    public function testAThemesEmailMustKeepTheBlocksTheEmailCannotWorkWithout(): void
+    {
+        $this->assertTrue($this->cms->emails->has('auth.password_reset'));
+        $locked = $this->cms->emails->get('auth.password_reset')['locked'];
+        $this->assertNotSame([], $locked, 'the reset email locks its link');
+
+        $this->theme('linkless', ['auth.password_reset' => '<p>{{ subject }}</p>']);
+        $extensions = $this->boot();
+        $error = $this->assertThrows(\RuntimeException::class, fn() => $extensions->activateTheme('linkless'));
+        $this->assertStringContainsString('emails/auth.password_reset.html: it must show the block "' . $locked[0] . '"', $error->getMessage());
+
+        // a theme that was active already: its file is found with the email's locked blocks, so it fails the check and Kestello lays the email out
+        $this->state->save(new PackageState(PackageType::Theme, 'linkless', true, '1.0.0'));
+        $this->boot();
+        $this->assertSame($locked, ThemeEmails::find('auth.password_reset')?->locked);
     }
 
     public function testPluginCheckReadsAThemesEmails(): void

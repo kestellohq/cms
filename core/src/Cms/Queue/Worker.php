@@ -73,12 +73,15 @@ final class Worker
                 if ($visibility > JobQueue::DEFAULT_TIMEOUT + 30) {
                     $this->queue->backend()->touch($reserved, $visibility);
                 }
-                // A long-running worker must see settings saved since it started (mail server, site address).
+                // A long-running worker must see settings saved since it started (mail server, site address),
+                // and the emails as they are now: edits under Site → Emails, the active theme's email files.
                 try {
                     \Kestello\Framework\Settings\Settings::getInstance()->reload();
                 } catch (\Throwable) {
                     // keeps the values it has
                 }
+                \Kestello\Cms\Cms::instance()?->emails->edits()->forget();
+                \Kestello\Cms\Mail\ThemeEmails::forget();
                 $result = $this->queue->process($reserved);
                 $this->counts[$result]++;
                 $jobs++;

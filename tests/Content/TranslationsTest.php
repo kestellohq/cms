@@ -37,7 +37,7 @@ final class TranslationsTest extends AuthTestCase
         Model::resetRegistry();
         parent::setUp();
         \Kestello\Cms\Platform\CoreDrivers::registerSearch($this->cms->drivers);     // the database engine
-        foreach ([new LanguagesModule(), new ContentModule(), new RedirectsModule(), new SiteModule(), new \Kestello\Cms\Search\SearchModule()] as $module) {
+        foreach ([new LanguagesModule(), new ContentModule(), new RedirectsModule(), new SiteModule(), new \Kestello\Cms\Search\SearchModule(), new \Kestello\Cms\Blocks\BlocksModule()] as $module) {
             $module->register($this->cms->container);
             $module->boot($this->cms);
         }
@@ -310,6 +310,26 @@ final class TranslationsTest extends AuthTestCase
         );
         $inSpanish = LanguagePrefix::run('es', '/missing', static fn() => [ContentLanguages::current(), Translator::locale(), PageLanguages::all()[1]['url']]);
         $this->assertSame(['es', 'es', '/es/missing'], $inSpanish, 'an error page renders in the address\'s language');
+    }
+
+    public function testListsOfEntriesAreInThePageLanguage(): void
+    {
+        $hello = $this->publish('post', ['title' => 'Hello']);
+        $hola = $this->inSpanish($hello, ['title' => 'Hola', 'slug' => 'hola']);
+        $titles = function (\Kestello\Cms\Blocks\BlockContext $ctx): array {
+            $tree = [['type' => 'core/query', 'props' => ['type' => 'post', 'limit' => 6], 'children' => [['type' => 'core/entry-field', 'props' => ['field' => 'title']]]]];
+            [$clean, $errors] = $this->cms->blocks->validate($tree);
+            $this->assertSame([], $errors);
+            $query = $this->cms->blocks->prepare($clean, $ctx)[0];
+
+            return array_map(static fn(array $item): string => (string) ((array) $item['children'][0]['props'])['value'], $query['children']);
+        };
+
+        $this->assertSame(['Hello'], $titles(new \Kestello\Cms\Blocks\BlockContext()));
+        $this->assertSame(['Hola'], ContentLanguages::within('es', fn() => $titles(new \Kestello\Cms\Blocks\BlockContext())), 'on /es/ pages');
+        $sobre = $this->entries->create($this->cms->content->get('page'), ['title' => 'Sobre', 'locale' => 'es', 'status' => 'published'], $this->me);
+        $this->assertSame(['Hola'], $titles(new \Kestello\Cms\Blocks\BlockContext(entry: $sobre)), "in the viewed entry's language");
+        $this->assertSame('es', $hola->language());
     }
 
     public function testSearchAndFeedsAreInThePageLanguage(): void

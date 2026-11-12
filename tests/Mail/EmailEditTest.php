@@ -157,4 +157,16 @@ final class EmailEditTest extends TestCase
         $this->assertThrows(\InvalidArgumentException::class, static fn() => MailMessage::make('S')->keep(['type' => 'script']), 'Unknown email block type "script"');
         $this->assertTrue(MailMessage::make('S')->html('<p>x</p>')->custom());
     }
+
+    public function testASendWithoutAnOptionalBlockKeepsTheEdit(): void
+    {
+        $values = ['form' => 'Contact', 'site' => 'Studio Ana', 'page' => '', 'subject' => 'New message', 'rows' => [], 'admin_url' => null];
+        $withoutLink = \Kestello\Cms\Mail\CoreEmails::formSubmission($values);
+        $edit = ['subject' => '', 'blocks' => [['type' => 'paragraph', 'text' => 'A new message.'], ['type' => 'original', 'name' => 'link']]];
+
+        $this->assertArrayHasKey('blocks.1.name', EmailEdit::validate($edit, $withoutLink, [], $values, self::media()), 'in the editor, an unknown block is a mistake');
+        $this->assertSame([], EmailEdit::validate($edit, $withoutLink, [], $values, self::media(), sending: true), 'this send has no admin link: the edit stays');
+        $this->assertSame(['paragraph'], array_column(EmailEdit::apply($edit, $withoutLink, $values, self::media())->blocks(), 'type'), 'and the link is left out');
+        $this->assertArrayHasKey('blocks.1.name', EmailEdit::validate($edit, $withoutLink, ['link'], $values, self::media(), sending: true), 'unless the email cannot work without it');
+    }
 }

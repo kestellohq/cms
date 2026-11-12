@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kestello\Cms\Extension;
 
 use Kestello\Cms\Cms;
-use Kestello\Cms\Mail\EmailRegistry;
 use Kestello\Cms\Mail\ThemeEmails;
 use Kestello\Framework\Core\Autoloader;
 use Kestello\Framework\Core\ExecutionContext;
@@ -626,7 +625,7 @@ final class ExtensionManager
             $problems[] = "parent theme \"{$theme->manifest->parent}\" is not installed";
         }
         // its email layout and templates: a broken one would change every email the site sends
-        $registry = $this->cms->container->has(EmailRegistry::class) ? $this->cms->container->make(EmailRegistry::class) : null;
+        $registry = $this->cms->emails;
         $parent = $theme->manifest->parent !== null ? ($this->themes[$theme->manifest->parent] ?? null) : null;
         array_push($problems, ...ThemeEmails::check($theme, $parent, $registry));
         if ($problems !== []) {

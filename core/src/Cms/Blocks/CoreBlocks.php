@@ -255,7 +255,8 @@ final class CoreBlocks
         }
         $limit = max(1, min(24, (int) ($p['limit'] ?? 6)));
         \Kestello\Cms\Cache\PageTags::add('list:' . $type->name);
-        $q = Entry::query()->ofType($type->name)->published()->with('author');
+        // in the language of the entry being viewed, else of the page's address
+        $q = Entry::query()->ofType($type->name)->inLanguage($ctx->entry?->language())->published()->with('author');
         match ($p['order'] ?? 'newest') {
             'oldest' => $q->orderBy('published_at')->orderBy('id'),
             'title' => $q->orderBy('title')->orderBy('id'),

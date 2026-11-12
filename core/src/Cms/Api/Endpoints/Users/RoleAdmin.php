@@ -15,6 +15,9 @@ use Kestello\Cms\Auth\Roles;
  * - You can only grant capabilities you hold yourself.
  * - You cannot change the role you hold (unless you hold "*"): a manager
  *   can't widen or lock their own access.
+ * - You can only change or reset a role whose capabilities, now and by
+ *   default, you all hold: otherwise narrowing a stronger role, giving
+ *   someone it, then resetting it would hand out what you don't have.
  * - Only declared capabilities can be granted.
  *
  * @internal
@@ -37,8 +40,18 @@ trait RoleAdmin
         if (in_array('*', $roles->capabilitiesFor($name), true) || $name === 'admin') {
             throw ApiProblem::forbidden('The administrator role always has every capability.');
         }
-        if (!self::actorIsSuper($request) && $name === self::actorRole($request)) {
+        if (self::actorIsSuper($request)) {
+            return;
+        }
+        if ($name === self::actorRole($request)) {
             throw ApiProblem::forbidden("You can't change your own role. Ask an administrator.");
+        }
+        $missing = array_values(array_filter(
+            array_unique([...$roles->capabilitiesFor($name), ...($roles->defaultsFor($name) ?? [])]),
+            static fn(string $cap): bool => !$request->principal->can($cap),
+        ));
+        if ($missing !== []) {
+            throw ApiProblem::forbidden('This role can do what you cannot (' . implode(', ', $missing) . '). Ask an administrator to change it.');
         }
     }
 
@@ -94,7 +107,8 @@ trait RoleAdmin
             'assignable' => self::actorIsSuper($request) || (!$all && array_filter($caps, static fn(string $c): bool => !$request->principal->can($c)) === []),
             'custom' => $roles->isCustom($name),
             'customized' => $roles->isCustomized($name),
-            'editable' => !$all && (self::actorIsSuper($request) || $name !== self::actorRole($request)),
+            'editable' => !$all && (self::actorIsSuper($request) || ($name !== self::actorRole($request)
+                && array_filter([...$caps, ...$defaults], static fn(string $c): bool => !$request->principal->can($c)) === [])),
             'capabilities' => $all ? ['*'] : array_values($caps),
             'defaults' => $all ? ['*'] : array_values($defaults),
             'summary' => $all ? ['Everything'] : array_values(array_map(static fn(string $c) => $labels[$c]['label'] ?? $c, $caps)),

@@ -78,6 +78,15 @@ final class PersonLanguageTest extends AuthTestCase
         $this->assertSame('en', Translator::locale(), 'the language is put back after each email');
     }
 
+    public function testTheGoodbyeIsInTheirLanguage(): void
+    {
+        $this->createUser(['role' => 'user', 'locale' => 'sr']);
+        $this->assertSame(200, $this->api('POST', '/auth/session', ['login' => 'ana', 'password' => self::PASSWORD])->statusCode());
+        $this->mail = [];
+        $this->assertSame(204, $this->api('DELETE', '/me')->statusCode());
+        $this->assertStringContainsString('<html lang="sr"', $this->mail[0]['html'] ?? '', 'read from the account before it was deleted');
+    }
+
     public function testANewAccountStartsInThePagesLanguageOnlyWhenItDiffers(): void
     {
         $this->assertSame(PersonLanguage::SITE, PersonLanguage::atSignUp(), "signing up on a page in the site's language follows the site");

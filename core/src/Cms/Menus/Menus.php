@@ -288,7 +288,8 @@ final class Menus
         if ($url === '' || strlen($url) > 2048 || preg_match('/[\x00-\x20\x7f]/', $url) === 1) {
             return false;
         }
-        if (str_starts_with($url, '#') || (str_starts_with($url, '/') && !str_starts_with($url, '//'))) {
+        // a backslash too: browsers read /\host as //host, another site
+        if (str_starts_with($url, '#') || (str_starts_with($url, '/') && !str_starts_with($url, '//') && !str_contains($url, '\\'))) {
             return true;
         }
         if (preg_match('/^(mailto|tel):[^\s]+$/i', $url) === 1) {
