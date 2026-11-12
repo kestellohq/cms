@@ -43,6 +43,12 @@ final class SchemaSnapshotTest extends TestCase
                 $diff = SchemaSnapshot::check($c, self::FILE);
                 // a difference that belongs to one database goes in SchemaSnapshotCommand::ONLY
                 $this->assertSame(['missing' => [], 'extra' => []], ['missing' => $diff['missing'], 'extra' => $diff['extra']], $c->driver());
+                // values core writes fit their columns, which SQLite never checks: the longest request ID
+                // a proxy may send (RequestId::accepted) goes in the audit log as it is
+                $longest = str_repeat('r', 128);
+                $this->assertNotNull(\Kestello\Framework\Http\RequestId::accepted($longest));
+                $c->table('audit_log')->insert(['occurred_at' => time(), 'event' => 'core.test', 'owner' => 'core', 'request_id' => $longest]);
+                $this->assertSame($longest, $c->table('audit_log')->where('event', 'core.test')->value('request_id'), $c->driver());
             } finally {
                 self::dropAll($c);
                 $previous !== null ? DatabaseManager::setConnection($previous) : DatabaseManager::reset();

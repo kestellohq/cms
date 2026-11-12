@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kestello\Framework\Core;
 
+use Kestello\Framework\Http\RequestId;
 use RuntimeException;
 
 /**
@@ -76,6 +77,18 @@ final class Application
         $this->bootstrap();
 
         $request = Request::createFromGlobals();
+        Compression::apply($request, $this->handle($request))->send();
+    }
+
+    /**
+     * The response to a request: what run() sends. Every response carries
+     * the request's ID (X-Request-Id), which its log lines and audit entries
+     * carry too (RequestId).
+     */
+    public function handle(Request $request): Response
+    {
+        // the Kernel began it before booting; a request handled on its own begins here
+        $id = RequestId::current() ?? RequestId::begin($request);
 
         try {
             $response = $this->router->dispatch($request);
@@ -88,7 +101,7 @@ final class Application
             $response = $this->failed($request, $e);
         }
 
-        Compression::apply($request, $response)->send();
+        return $response->withHeader('X-Request-Id', $id);
     }
 
     /**

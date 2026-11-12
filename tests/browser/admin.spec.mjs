@@ -74,6 +74,10 @@ test('the web installer sets up a site on SQLite', async ({ page }) => {
         const before = await page.request.get('/up');
         expect(before.status()).toBe(200);
         expect(await before.json()).toEqual({ status: 'ok', installed: false });
+        // every answer says which request it was, from the first one; a proxy's own ID is kept
+        expect(before.headers()['x-request-id']).toMatch(/^[0-9a-f]{32}$/);
+        const traced = await page.request.get('/install', { headers: { 'X-Request-Id': 'from-the-browser-test' } });
+        expect(traced.headers()['x-request-id']).toBe('from-the-browser-test');
     }
 
     const seen = watch(page);
@@ -113,6 +117,8 @@ test('the web installer sets up a site on SQLite', async ({ page }) => {
         const after = await page.request.get('/up');
         expect(after.status()).toBe(200);
         expect(await after.json()).toEqual({ status: 'ok', database: true, maintenance: false });
+        const home = await page.request.get('/', { headers: { traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01' } });
+        expect(home.headers()['x-request-id'], 'the trace ID of a traceparent').toBe('4bf92f3577b34da6a3ce929d0e0e4736');
     }
     expect(seen.problems).toEqual([]);
 });
