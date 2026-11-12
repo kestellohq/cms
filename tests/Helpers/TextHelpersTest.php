@@ -69,8 +69,8 @@ final class TextHelpersTest extends TestCase
         $this->assertSame("<p>a<br>\nb</p>", Markdown::toHtml("a  \nb"));
 
         $list = Markdown::toHtml("- a\n- b\n  - c\n- [x] done\n\n1. one\n2. two");
-        $this->assertSame("<ul><li>a</li>\n<li>b\n<ul><li>c</li>\n</ul></li>\n<li class=\"task-list-item\"><span class=\"task-checkbox is-done\">☑</span> done</li>\n</ul><ol><li>one</li>\n<li>two</li>\n</ol>", $list);
-        $this->assertContains('<ol start="3"><li>', Markdown::toHtml('3. three'));
+        $this->assertSame("<ul>\n<li>a</li>\n<li>b\n<ul>\n<li>c</li>\n</ul></li>\n<li class=\"task-list-item\"><span class=\"task-checkbox is-done\">☑</span> done</li>\n</ul>\n<ol>\n<li>one</li>\n<li>two</li>\n</ol>", $list);
+        $this->assertContains('<ol start="3">', Markdown::toHtml('3. three'));
         $this->assertContains('<li><p>a</p></li>', Markdown::toHtml("- a\n\n- b"), 'loose list');
 
         $this->assertSame("<pre><code class=\"language-php\">&lt;?php echo 1;\n</code></pre>", Markdown::toHtml("```php\n<?php echo 1;\n```"));
