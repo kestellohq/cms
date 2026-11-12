@@ -16,6 +16,7 @@
     "lint:js": "eslint . && prettier --check --log-level warn .",
     "analyse": "composer install --quiet && sh tools/php -d memory_limit=2G vendor/bin/phpstan analyse -c phpstan.dist.neon --no-progress",
     "test": "node --test \"tests/js/*.test.mjs\"",
+    "test:browser": "playwright test -c tests/browser/playwright.config.mjs",
     "test:php": "sh tools/php -d apc.enable_cli=1 bin/cms test",
     "test:php:matrix": "sh tools/test-matrix.sh",
     "i18n": "sh tools/php bin/cms i18n:extract",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
     "@vitejs/plugin-vue": "6.0.10",
     "eslint": "10.14.0",
     "eslint-plugin-vue": "10.12.0",

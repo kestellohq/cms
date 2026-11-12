@@ -6,6 +6,9 @@ node_modules/
 storage/
 dist/
 core/releases/
+# the site and failure traces the browser tests make
+tests/browser/.site/
+tests/browser/.results/
 package-lock.json
 *.md
 *.php
