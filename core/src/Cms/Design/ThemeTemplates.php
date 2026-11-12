@@ -144,9 +144,7 @@ final class ThemeTemplates
         $files = $this->files($kind);
         $keys = array_keys($files);
         if ($theme !== null) {
-            foreach (\Kestello\Framework\Database\QueryBuilder::table('theme_documents')->where('theme', $theme)->where('kind', $kind)->pluck('doc_key') as $k) {
-                $keys[] = (string) $k;
-            }
+            $keys = [...$keys, ...$this->documents->keys($theme, $kind)];
         }
         $keys = array_values(array_unique($keys));
         sort($keys);

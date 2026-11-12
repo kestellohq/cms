@@ -31,6 +31,20 @@ abstract class SchemaGrammar
     /** @return array{0: string, 1: list<mixed>} SQL returning a "name" row per index of a table, its primary key included */
     abstract public function compileIndexes(string $table): array;
 
+    /**
+     * Every table's columns in one statement: rows of tbl and name, in table order.
+     *
+     * @return array{0: string, 1: list<mixed>}
+     */
+    abstract public function compileAllColumns(): array;
+
+    /**
+     * Every table's indexes in one statement: rows of tbl and name.
+     *
+     * @return array{0: string, 1: list<mixed>}
+     */
+    abstract public function compileAllIndexes(): array;
+
     // ── Create ──────────────────────────────────────────────────────
 
     /** @return list<string> */

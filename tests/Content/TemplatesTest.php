@@ -114,6 +114,35 @@ final class TemplatesTest extends AuthTestCase
         return $this->json($r)['data'];
     }
 
+    /** The list reads a theme's documents once, however many there are (it ran 168 queries for one list). */
+    public function testTheListAsksTheDatabaseTheSameNumberOfTimesForAnyNumberOfDocuments(): void
+    {
+        $documents = $this->cms->container->make(\Kestello\Cms\Design\ThemeDocuments::class);
+        $asked = static function (\Closure $list) use (&$count): int {
+            $count = 0;
+            $list();
+
+            return $count;
+        };
+        $count = 0;
+        \Kestello\Framework\Database\DatabaseManager::getConnection()->listen(static function (string $sql) use (&$count): void {
+            if (str_contains($sql, 'theme_documents')) {
+                $count++;
+            }
+        });
+        $list = fn() => $this->assertSame(200, $this->api('GET', '/design/templates')->statusCode());
+
+        $documents->save('kid', 'template', 'site-0', ['title' => 'Site 0', 'blocks' => []], null);
+        $few = $asked($list);
+        foreach (range(1, 12) as $i) {
+            $documents->save('kid', 'template', "site-{$i}", ['title' => "Site {$i}", 'blocks' => []], null);
+            $documents->save('kid', 'part', "part-{$i}", ['title' => "Part {$i}", 'area' => 'header', 'blocks' => []], null, 'draft');
+        }
+        $many = $asked($list);
+        $this->assertSame($few, $many, "theme_documents queries for 1 document: {$few}; for 25: {$many}");
+        $this->assertTrue($many <= count(\Kestello\Cms\Design\ThemeDocuments::KINDS), "one per kind at most, not {$many}");
+    }
+
     public function testThemeFilesAreListedWithChildOverrides(): void
     {
         $data = $this->json($this->api('GET', '/design/templates'))['data'];

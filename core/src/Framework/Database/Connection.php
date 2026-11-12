@@ -37,6 +37,9 @@ final class Connection
     public const array DRIVERS = ['mysql', 'pgsql', 'sqlite'];
 
     private ?PDO $pdo = null;
+
+    /** @var list<Closure(string, float): void> */
+    private array $listeners = [];
     private ?QueryGrammar $grammar = null;
     private ?SchemaGrammar $schemaGrammar = null;
     private int $transactions = 0;
@@ -133,17 +136,24 @@ final class Connection
      */
     public function query(string $sql, array $bindings = []): PDOStatement
     {
-        return $this->reconnecting(function () use ($sql, $bindings): PDOStatement {
-            $statement = $this->getPdo()->prepare($sql);
+        $started = hrtime(true);
+        try {
+            $statement = $this->reconnecting(function () use ($sql, $bindings): PDOStatement {
+                $statement = $this->getPdo()->prepare($sql);
 
-            foreach (array_values($bindings) as $i => $value) {
-                $statement->bindValue($i + 1, ...self::bindable($value));
-            }
+                foreach (array_values($bindings) as $i => $value) {
+                    $statement->bindValue($i + 1, ...self::bindable($value));
+                }
 
-            $statement->execute();
+                $statement->execute();
 
-            return $statement;
-        });
+                return $statement;
+            });
+        } finally {
+            $this->ran($sql, $started);
+        }
+
+        return $statement;
     }
 
     public function execute(string $sql, array $bindings = []): bool
@@ -156,7 +166,41 @@ final class Connection
     /** Run SQL without bindings (DDL). Never pass user input. */
     public function raw(string $sql): bool
     {
-        return $this->reconnecting(fn(): bool => $this->getPdo()->exec($sql) !== false);
+        $started = hrtime(true);
+        try {
+            return $this->reconnecting(fn(): bool => $this->getPdo()->exec($sql) !== false);
+        } finally {
+            $this->ran($sql, $started);
+        }
+    }
+
+    /**
+     * Be told about each statement that ran, whether it worked or failed:
+     * its SQL, with placeholders and without the values, and how long it
+     * took in milliseconds. Core's
+     * QueryWatch logs slow and repeated ones; a tracing plugin can turn
+     * them into spans. A listener that throws is ignored.
+     *
+     * @param Closure(string, float): void $listener
+     */
+    public function listen(Closure $listener): void
+    {
+        $this->listeners[] = $listener;
+    }
+
+    private function ran(string $sql, int $started): void
+    {
+        if ($this->listeners === []) {
+            return;
+        }
+        $ms = (hrtime(true) - $started) / 1e6;
+        foreach ($this->listeners as $listener) {
+            try {
+                $listener($sql, $ms);
+            } catch (\Throwable) {
+                // watching a statement never fails it
+            }
+        }
     }
 
     /** Close the connection; the next statement opens a new one. */

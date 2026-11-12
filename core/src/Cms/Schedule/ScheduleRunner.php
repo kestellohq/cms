@@ -124,16 +124,30 @@ final class ScheduleRunner
         foreach (QueryBuilder::table(self::TABLE)->get() as $row) {
             $rows[(string) $row['name']] = $row;
         }
+        $new = [];
         foreach ($this->schedule->tasks() as $name => $task) {
             if (!isset($rows[$name])) {
-                $row = ['name' => $name, 'owner' => $task->owner, 'last_due_at' => $now, 'disabled' => 0, 'created_at' => $now];
+                $new[$name] = ['name' => $name, 'owner' => $task->owner, 'last_due_at' => $now, 'disabled' => 0, 'created_at' => $now];
+            }
+        }
+        if ($new === []) {
+            return $rows;
+        }
+        // a new site has all of them to add: one statement, not one per task
+        try {
+            QueryBuilder::table(self::TABLE)->insertMany(array_values($new));
+        } catch (\PDOException) {
+            // another runner added some of them meanwhile: one by one, keeping theirs
+            foreach ($new as $name => $row) {
                 try {
                     QueryBuilder::table(self::TABLE)->insert($row, 'name');
                 } catch (\PDOException) {
-                    $row = QueryBuilder::table(self::TABLE)->where('name', $name)->first() ?? $row; // another runner inserted it
+                    $new[$name] = QueryBuilder::table(self::TABLE)->where('name', $name)->first() ?? $row;
                 }
-                $rows[$name] = $row + ['last_status' => null, 'last_started_at' => null, 'last_finished_at' => null, 'last_duration_ms' => null, 'last_output' => null];
             }
+        }
+        foreach ($new as $name => $row) {
+            $rows[$name] = $row + ['last_status' => null, 'last_started_at' => null, 'last_finished_at' => null, 'last_duration_ms' => null, 'last_output' => null];
         }
 
         return $rows;
