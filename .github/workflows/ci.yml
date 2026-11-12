@@ -232,3 +232,10 @@ jobs:
 
       - name: Tests (SQLite, MySQL or MariaDB, PostgreSQL, Redis)
         run: php bin/cms test
+
+      # a test writes only to its own temporary folders: one that changed or deleted a file
+      # in the checkout (core/database/schema.json, once) would break the next run
+      - name: The tests left the checkout as it was
+        run: |
+          git status --porcelain --untracked-files=all
+          test -z "$(git status --porcelain --untracked-files=all)"

@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Kestello\Cms\Package\Update;
 
 use Kestello\Cms\Cms;
+use Kestello\Cms\Console\Database\SchemaSnapshotCommand;
 use Kestello\Cms\Extension\PackageType;
 use Kestello\Framework\Core\Request;
+use Kestello\Framework\Database\DatabaseManager;
 use Kestello\Framework\Database\MigrationRunner;
+use Kestello\Framework\Database\SchemaSnapshot;
 use Throwable;
 
 /** What a fresh boot says about a package, and whether that is healthy. */
@@ -33,8 +36,22 @@ final class UpdateProbe
         }
     }
 
-    /** @return array{owner: string, version: ?string, enabled: bool, running: bool, suspended: ?string, rejected: list<string>, pages: array<string, array{status: int, error: ?string}>} */
-    public static function report(Cms $cms, string $owner, bool $pages = true): array
+    /**
+     * What the running core's schema.json expects that the database lacks:
+     * after an update, what its migrations should have made and didn't.
+     * Empty when core has no schema.json (releases from before it existed).
+     *
+     * @return list<string>
+     */
+    public static function missingTables(Cms $cms, ?string $file = null): array
+    {
+        $file ??= SchemaSnapshotCommand::file($cms->paths);
+
+        return is_file($file) ? SchemaSnapshot::check(DatabaseManager::getConnection(), $file)['missing'] : [];
+    }
+
+    /** @return array{owner: string, version: ?string, enabled: bool, running: bool, suspended: ?string, rejected: list<string>, pages: array<string, array{status: int, error: ?string}>, tables_missing?: list<string>} */
+    public static function report(Cms $cms, string $owner, bool $pages = true, ?string $schemaFile = null): array
     {
         $ext = $cms->extensions();
         $version = null;
@@ -55,6 +72,11 @@ final class UpdateProbe
             }
         } else {
             $version = $cms->version();
+            try {
+                $tablesMissing = self::missingTables($cms, $schemaFile);
+            } catch (Throwable $e) {
+                $tablesMissing = ['the tables could not be read: ' . $e->getMessage()];
+            }
         }
 
         $results = [];
@@ -79,7 +101,18 @@ final class UpdateProbe
             'suspended' => $ext->suspensions()->reason($owner),
             'rejected' => $rejected,
             'pages' => $results,
-        ];
+        ]
+            // probe_error, not a new field: the running (older) release reads this report, and
+            // every release treats a probe_error as a failed check and switches back
+            + (isset($tablesMissing) && $tablesMissing !== [] ? ['probe_error' => self::tablesProblem($tablesMissing)] : [])
+            + (isset($tablesMissing) ? ['tables_missing' => $tablesMissing] : []);
+    }
+
+    /** @param list<string> $missing */
+    public static function tablesProblem(array $missing): string
+    {
+        return 'After its migrations the database is missing what this version uses: ' . implode(', ', array_slice($missing, 0, 5))
+            . (count($missing) > 5 ? ', and ' . (count($missing) - 5) . ' more' : '') . '.';
     }
 
     /**

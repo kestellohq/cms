@@ -17,8 +17,10 @@ use Kestello\Cms\Package\Update\CoreRelease;
 use Kestello\Cms\Package\Update\CoreUpdater;
 use Kestello\Cms\Package\Update\HealthProbe;
 use Kestello\Cms\Package\Update\UpdateChecker;
+use Kestello\Cms\Package\Update\UpdateProbe;
 use Kestello\Cms\System\Maintenance;
 use Kestello\Framework\Core\Request;
+use Kestello\Framework\Database\SchemaSnapshot;
 use Kestello\Framework\Http\Client\FakeTransport;
 use Kestello\Framework\Http\Client\HttpClient;
 use Kestello\Tests\Auth\AuthTestCase;
@@ -29,6 +31,9 @@ final class CoreUpdatesTest extends AuthTestCase
     private string $root;
     /** @var list<string> versions the probe saw */
     public array $booted = [];
+
+    /** @var array<string, list<string>> version => what its schema.json expects and the probe found missing */
+    public array $tablesMissing = [];
 
     protected function setUp(): void
     {
@@ -68,7 +73,8 @@ final class CoreUpdatesTest extends AuthTestCase
         }
 
         return ['owner' => 'core', 'version' => $version, 'enabled' => true, 'running' => true, 'suspended' => null, 'rejected' => [],
-            'plugins' => array_keys($this->cms->extensions()->activePlugins()), 'suspensions' => [], 'pages' => ['/' => ['status' => 200, 'error' => null]]];
+            'plugins' => array_keys($this->cms->extensions()->activePlugins()), 'suspensions' => [], 'pages' => ['/' => ['status' => 200, 'error' => null]],
+        ] + (isset($this->tablesMissing[$version]) ? ['probe_error' => UpdateProbe::tablesProblem($this->tablesMissing[$version])] : []);
     }
 
     private function release(string $version, bool $broken = false, string $php = '>=8.3'): string
@@ -89,11 +95,14 @@ final class CoreUpdatesTest extends AuthTestCase
     }
 
     /** @param list<array{name: string, public_key: string}> $releaseKeys */
-    private function core(string $running, array $releaseKeys = []): CoreUpdater
+    private function core(string $running, array $releaseKeys = [], ?string $schemaFile = null): CoreUpdater
     {
         $c = $this->cms->container;
 
-        return new CoreUpdater($this->cms, $c->make(Backups::class), $c->make(HealthProbe::class), $running, UpdateChecker::releaseKeys($releaseKeys));
+        // the running core here is this repository's: its own schema.json describes a real site
+        $schemaFile ??= $this->root . '/no-schema.json';
+
+        return new CoreUpdater($this->cms, $c->make(Backups::class), $c->make(HealthProbe::class), $running, UpdateChecker::releaseKeys($releaseKeys), $schemaFile);
     }
 
     private function pointer(): ?string
@@ -150,6 +159,54 @@ final class CoreUpdatesTest extends AuthTestCase
         $this->assertTrue($r['rolled_back'], json_encode($r));
         $this->assertNull($this->pointer(), 'no pointer: core/ runs directly again');
         $this->assertSame('development', $this->core('0.1.0')->status()['mode']);
+    }
+
+    public function testAnUpdateWhoseMigrationsLeaveTablesMissingRollsBack(): void
+    {
+        // the new release's schema.json expects a column its migrations did not make
+        $this->tablesMissing['0.2.0'] = ['column users.locale'];
+        $r = $this->core('0.1.0')->update($this->release('0.2.0'), ['allow_unsigned' => true]);
+
+        $this->assertFalse($r['ok']);
+        $this->assertTrue($r['rolled_back'], json_encode($r));
+        $this->assertSame(['After its migrations the database is missing what this version uses: column users.locale.'], $r['problems']);
+        $this->assertNull($this->pointer(), 'the site runs what it ran before');
+    }
+
+    public function testAnUpdateOntoTablesTheRunningVersionLacksIsRefused(): void
+    {
+        $file = $this->root . '/schema.json';
+        $tables = ['users' => ['columns' => ['id', 'nickname'], 'indexes' => []], 'nowhere' => ['columns' => ['id'], 'indexes' => []]];
+        file_put_contents($file, SchemaSnapshot::toJson($tables));
+
+        $problems = $this->core('0.1.0', schemaFile: $file)->check($this->release('0.2.0'))['problems'];
+        $this->assertSame(['The database is missing what Kestello 0.1.0 itself uses (column users.nickname, table nowhere). Updating on top of it could leave the site half-updated. Run php bin/cms migrate and php bin/cms system:db-check first.'], $problems);
+        $this->assertThrows(ContentException::class, fn() => $this->core('0.1.0', schemaFile: $file)->update($this->release('0.2.1'), ['allow_unsigned' => true]));
+        $this->assertNull($this->pointer(), 'nothing switched');
+        $this->assertSame([], $this->booted, 'nothing booted');
+
+        $this->assertSame([], $this->core('0.1.0')->check($this->release('0.2.2'))['problems'], 'a core without schema.json (older releases) is not checked');
+    }
+
+    public function testTheProbeReportsMissingTablesInAFormEveryReleaseActsOn(): void
+    {
+        $file = $this->root . '/schema.json';
+        file_put_contents($file, SchemaSnapshot::toJson(['users' => ['columns' => ['id', 'nickname'], 'indexes' => []]]));
+        $report = UpdateProbe::report($this->cms, 'core', false, $file);
+        $this->assertSame(['column users.nickname'], $report['tables_missing']);
+        // older releases run the update and read this report: they know probe_error, not tables_missing
+        $this->assertSame('After its migrations the database is missing what this version uses: column users.nickname.', $report['probe_error']);
+        $this->assertSame([$report['probe_error']], UpdateProbe::problems($report, (string) $report['version'], true));
+
+        file_put_contents($file, SchemaSnapshot::toJson(['users' => ['columns' => ['id'], 'indexes' => []]]));
+        $report = UpdateProbe::report($this->cms, 'core', false, $file);
+        $this->assertSame([], $report['tables_missing']);
+        $this->assertFalse(isset($report['probe_error']), 'nothing missing: no error');
+
+        $this->assertSame(
+            'After its migrations the database is missing what this version uses: table a, table b, table c, table d, table e, and 2 more.',
+            UpdateProbe::tablesProblem(['table a', 'table b', 'table c', 'table d', 'table e', 'table f', 'table g']),
+        );
     }
 
     public function testReleasesThatCantBeAppliedChangeNothing(): void
