@@ -16,6 +16,7 @@ export default [
             'core/releases/**',
             'tests/browser/.site/**',
             'tests/browser/.results/**',
+            'tests/browser/.update/**',
         ],
     },
     {

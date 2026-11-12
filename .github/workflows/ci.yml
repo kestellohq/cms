@@ -134,6 +134,13 @@ jobs:
       - name: Browser tests
         run: npm run test:browser
 
+      # each of the last two releases, installed from its zip, updated to this checkout
+      # with core:update, then every admin screen again: what sites on them go through
+      - name: Updates from the last two releases
+        run: npm run test:update
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
       - name: Keep the traces of a failure
         if: failure()
         uses: actions/upload-artifact@v7
