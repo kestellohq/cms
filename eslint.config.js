@@ -6,7 +6,17 @@ import globals from 'globals';
 
 export default [
     {
-        ignores: ['**/node_modules/**', '**/assets/build/**', '**/assets/vendor/**', 'storage/**', 'vendor/**', 'dist/**', 'core/releases/**'],
+        ignores: [
+            '**/node_modules/**',
+            '**/assets/build/**',
+            '**/assets/vendor/**',
+            'storage/**',
+            'vendor/**',
+            'dist/**',
+            'core/releases/**',
+            'tests/browser/.site/**',
+            'tests/browser/.results/**',
+        ],
     },
     {
         // as in .gitignore: content/ holds the local site's own plugins and themes, apart from these
@@ -21,7 +31,7 @@ export default [
     },
     {
         // build, server-side rendering, tests and tools run in Node
-        files: ['core/build/**', 'core/ssr/**', 'tests/js/**', 'tools/**', 'eslint.config.js'],
+        files: ['core/build/**', 'core/ssr/**', 'tests/js/**', 'tests/browser/**', 'tools/**', 'eslint.config.js'],
         languageOptions: { globals: { ...globals.node } },
     },
     {

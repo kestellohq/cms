@@ -170,6 +170,7 @@ A pre-release goes the same way, from `release/X.Y.Z-rc.N`. `release:prepare` th
 | `npm run lint` | Checks formatting and runs ESLint and PHPStan, without changing files. |
 | `npm run analyse` | PHPStan at level 6. Old findings are in `phpstan-baseline.neon`; new code may not add any. |
 | `npm test` | JavaScript unit tests. |
+| `npm run test:browser` | Builds a site from the install zip, installs it through the web installer in Chromium, and opens every admin screen a link leads to. Fails on any browser error or server error, naming the screen. Needs `npm run build` first, PHP 8.4 locally, and once `npx playwright install chromium`. |
 | `npm run test:php` | PHP tests on SQLite (in the app container when PHP 8.4 isn't installed locally). |
 | `npm run test:php:matrix` | PHP tests on MySQL, PostgreSQL and Redis as well, as CI runs them. |
 | `npm run i18n` | Rewrites the translation template, `core/resources/lang/kestello.pot`. |

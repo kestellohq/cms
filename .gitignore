@@ -68,3 +68,7 @@ dist/
 
 # ide:helpers --stubs output (published with each release instead)
 /kestello.stub.php
+
+# browser tests: the site they install, and traces of failures
+tests/browser/.site/
+tests/browser/.results/
