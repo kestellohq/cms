@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Kestello\Support;
 
-use DOMDocument;
-use DOMElement;
-use DOMNode;
-use DOMXPath;
+use Dom\Element;
+use Dom\HTMLDocument;
+use Dom\Node;
 use InvalidArgumentException;
 
 /**
@@ -19,7 +18,10 @@ use InvalidArgumentException;
  *   Html::sanitize($svg, 'svg')                  // for SVG uploads
  *   Html::toText($html)                          // plain text with line breaks
  *
- * The sanitizer parses with DOM, keeps only allowlisted elements and
+ * The sanitizer parses with the HTML5 algorithm browsers use (Dom\HTMLDocument),
+ * so it sees the same elements a browser will: libxml's older HTML4 parser
+ * read some markup differently, which is how sanitizer bypasses work. It
+ * keeps only allowlisted elements and
  * attributes, checks every URL's scheme, and drops dangerous elements with
  * their content (script, style, iframe, form controls…). Unknown elements are
  * unwrapped (their text kept). Plugins can add profiles with Html::profile().
@@ -172,47 +174,38 @@ final class Html
             $html = mb_convert_encoding($html, 'UTF-8', 'UTF-8');
         }
 
-        $doc = new DOMDocument('1.0', 'UTF-8');
-        $previous = libxml_use_internal_errors(true);
-        $doc->loadHTML(
-            '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><div id="kestello-root">' . $html . '</div></body></html>',
-            LIBXML_NONET | LIBXML_NOBLANKS | LIBXML_COMPACT | LIBXML_HTML_NODEFDTD,
-        );
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous);
-
-        $root = (new DOMXPath($doc))->query('//div[@id="kestello-root"]')->item(0);
-        if (!$root instanceof DOMElement) {
-            return '';
-        }
+        // parsed as the content of a <div>, the way a browser parses it where it ends up
+        $doc = HTMLDocument::createEmpty();
+        $root = $doc->createElement('div');
+        $doc->appendChild($root);
+        $root->innerHTML = $html;
 
         self::clean($root, $config);
 
-        $out = '';
-        foreach ($root->childNodes as $child) {
-            $out .= $doc->saveHTML($child);
-        }
-
-        return trim($out);
+        return trim($root->innerHTML);
     }
 
     /** @param array<string, mixed> $config */
-    private static function clean(DOMNode $node, array $config): void
+    private static function clean(Node $node, array $config): void
     {
         // Iterate over a snapshot: we remove and unwrap while walking.
         foreach (iterator_to_array($node->childNodes) as $child) {
-            if ($child->nodeType === XML_TEXT_NODE || $child->nodeType === XML_CDATA_SECTION_NODE) {
-                if ($child->nodeType === XML_CDATA_SECTION_NODE) {
-                    $child->parentNode?->replaceChild($child->ownerDocument->createTextNode($child->textContent), $child);
-                }
+            if ($child->nodeType === XML_TEXT_NODE) {
                 continue;
             }
-            if (!$child instanceof DOMElement) {
+            if (!$child instanceof Element) {
                 $node->removeChild($child); // comments, processing instructions, entities
                 continue;
             }
 
-            $tag = strtolower($child->localName ?? $child->nodeName);
+            $tag = strtolower($child->localName);
+
+            // only HTML elements are allowed: an <svg> or <math> one (by name a <style>, an <a>)
+            // follows other parsing rules, and is dropped with what it holds
+            if ($child->namespaceURI !== 'http://www.w3.org/1999/xhtml') {
+                $node->removeChild($child);
+                continue;
+            }
 
             if (in_array($tag, self::DROP_WITH_CONTENT, true) && !isset($config['elements'][$tag])) {
                 $node->removeChild($child);
@@ -234,7 +227,7 @@ final class Html
     }
 
     /** @param array<string, mixed> $config */
-    private static function cleanAttributes(DOMElement $el, string $tag, array $config): void
+    private static function cleanAttributes(Element $el, string $tag, array $config): void
     {
         $allowed = [...self::GLOBAL_ATTRIBUTES, ...$config['elements'][$tag]];
         if ($config['classes']) {
@@ -242,8 +235,8 @@ final class Html
         }
 
         foreach (iterator_to_array($el->attributes) as $attr) {
-            $name = strtolower($attr->nodeName);
-            $value = $attr->nodeValue ?? '';
+            $name = strtolower($attr->name);
+            $value = $attr->value;
 
             $keep = in_array($name, $allowed, true) && !str_starts_with($name, 'on');
             if ($keep && in_array($name, self::URL_ATTRIBUTES, true)) {
@@ -263,7 +256,7 @@ final class Html
             }
 
             if (!$keep) {
-                $el->removeAttribute($attr->nodeName);
+                $el->removeAttributeNode($attr);
             }
         }
 
