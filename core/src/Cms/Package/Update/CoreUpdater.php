@@ -41,6 +41,8 @@ final class CoreUpdater
         private readonly ?string $running = null,
         /** @var array<string, array{name: string, public_key: string}> keys of official releases (release.keys) */
         private readonly array $releaseKeys = [],
+        /** the running core's schema.json; null: core/database/schema.json */
+        private readonly ?string $schemaFile = null,
     ) {}
 
     /**
@@ -178,6 +180,19 @@ final class CoreUpdater
         }
         if (!is_writable($this->coreRoot()) || (is_dir($this->releasesDir()) && !is_writable($this->releasesDir()))) {
             $problems[] = 'The core folder is not writable by PHP, so the release cannot be put in place.';
+        }
+
+        // an update's migrations start from the tables the running version expects: if some are
+        // missing they fail halfway, or worse, run on something else. Found here, nothing changes.
+        try {
+            $missing = UpdateProbe::missingTables($this->cms, $this->schemaFile);
+        } catch (\Throwable $e) {
+            $missing = ['the tables could not be read: ' . $e->getMessage()];
+        }
+        if ($missing !== []) {
+            $problems[] = "The database is missing what Kestello {$from} itself uses (" . implode(', ', array_slice($missing, 0, 5))
+                . (count($missing) > 5 ? ', and ' . (count($missing) - 5) . ' more' : '')
+                . '). Updating on top of it could leave the site half-updated. Run php bin/cms migrate and php bin/cms system:db-check first.';
         }
 
         return [...$problems, ...$this->cms->extensions()->coreUpdateProblems($to)];
