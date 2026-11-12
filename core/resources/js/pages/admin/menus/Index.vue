@@ -61,15 +61,6 @@ const errors = ref({});
 const saving = ref(false);
 let nextKey = 1;
 
-watch(
-    () => overview.data.value?.menus,
-    (menus) => {
-        if (!menus) return;
-        if (selectedId.value === null && menus.length) open(menus[0].id);
-    },
-    { immediate: true },
-);
-
 async function open(id) {
     if (
         dirty.value &&
@@ -122,6 +113,17 @@ function toTree() {
 }
 const snapshot = () => JSON.stringify({ name: name.value, items: toTree() });
 const dirty = computed(() => selectedId.value !== null && snapshot() !== saved.value);
+
+// opens the first menu; after dirty and snapshot, which open() reads: with the list already loaded
+// (coming back to this screen) it runs as the page opens
+watch(
+    () => overview.data.value?.menus,
+    (menus) => {
+        if (!menus) return;
+        if (selectedId.value === null && menus.length) open(menus[0].id);
+    },
+    { immediate: true },
+);
 
 async function save() {
     saving.value = true;
