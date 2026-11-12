@@ -196,7 +196,7 @@ final class Reviews
 
         // sent back: their drafts whose latest review step asks for changes
         $drafts = QueryBuilder::table('entries')->where('author_id', $p->userId)->where('status', 'draft')->whereIn('type', array_keys($types))->whereNull('deleted_at')
-            ->orderByDesc('updated_at')->limit(200)->select(...$columns)->get();
+            ->orderByDesc('updated_at')->orderByDesc('id')->limit(200)->select(...$columns)->get();
         $steps = $this->latestSteps(array_map('intval', array_column($drafts, 'id')));
         foreach ($drafts as $row) {
             $step = $steps[(int) $row['id']] ?? null;
@@ -206,7 +206,7 @@ final class Reviews
         }
 
         // assigned to them
-        $assigned = QueryBuilder::table('entry_assignees')->where('user_id', $p->userId)->orderByDesc('assigned_at')->limit(200)->select('entry_id', 'assigned_at')->get();
+        $assigned = QueryBuilder::table('entry_assignees')->where('user_id', $p->userId)->orderByDesc('assigned_at')->orderByDesc('entry_id')->limit(200)->select('entry_id', 'assigned_at')->get();
         $since = array_column($assigned, 'assigned_at', 'entry_id');
         if ($since !== []) {
             $rows = QueryBuilder::table('entries')->whereIn('id', array_map('intval', array_keys($since)))->whereIn('status', Entry::UNPUBLISHED)->whereIn('type', array_keys($types))->whereNull('deleted_at')
@@ -221,7 +221,7 @@ final class Reviews
         if ($reviewable !== []) {
             $rows = QueryBuilder::table('entries')->where('status', 'pending')->whereIn('type', $reviewable)->whereNull('deleted_at')
                 ->where(static fn(QueryBuilder $q) => $q->whereNull('author_id')->orWhere('author_id', '!=', $p->userId))
-                ->orderBy('updated_at')->limit(200)->select(...$columns)->get();
+                ->orderBy('updated_at')->orderBy('id')->limit(200)->select(...$columns)->get();
             foreach ($rows as $row) {
                 $found[] = [$row, 'review', $row['updated_at']];
             }

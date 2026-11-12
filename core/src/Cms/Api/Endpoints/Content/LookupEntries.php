@@ -82,7 +82,7 @@ final class LookupEntries extends ContentEndpoint
             if (($search = trim((string) $request->query('search', ''))) !== '') {
                 $q->whereLike('title', '%' . QueryBuilder::escapeLike($search) . '%');
             }
-            $q->orderByDesc('updated_at')->limit((int) $request->query('limit'));
+            $q->orderByDesc('updated_at')->orderByDesc('id')->limit((int) $request->query('limit'));
         }
 
         return array_map(static fn(Entry $e): array => [

@@ -181,7 +181,8 @@ final class WordPressImportTest extends AuthTestCase
         $logo = (int) Media::query()->where('filename', 'not-exported.png')->value('id');
         $older = $this->entry(30)->data['body'];
         $this->assertSame(['core/text', 'core/image', 'core/image', 'core/heading', 'core/text', 'core/gallery', 'core/text', 'core/image', 'core/text'], array_column($older, 'type'));
-        $this->assertSame(['image' => $logo, 'alt' => 'Old logo', 'align' => 'center'], array_diff_key($older[7]['props'], ['scale' => 1, 'ratio' => 1, 'corners' => 1, 'lightbox' => 1]), 'an image the export did not list, fetched from the old uploads folder');
+        // keys in any order: PostgreSQL's jsonb sorts them
+        $this->assertSame(self::sorted(['image' => $logo, 'alt' => 'Old logo', 'align' => 'center']), self::sorted(array_diff_key($older[7]['props'], ['scale' => 1, 'ratio' => 1, 'corners' => 1, 'lightbox' => 1])), 'an image the export did not list, fetched from the old uploads folder');
         $this->assertStringContainsString('song.mp3', $older[6]['props']['text'], 'a file the old site lost stays a link');
 
         // old addresses redirect
@@ -445,7 +446,8 @@ final class WordPressImportTest extends AuthTestCase
         $this->assertContains($this->mediaFor(40), array_column(array_column($this->entry(41)->data['body'], 'props'), 'image'));
 
         // a file link is rewritten once: its new address is not read as an old one on a second pass
-        $song = (string) json_encode(Entry::query()->where('data', 'like', '%song%')->get()->map(static fn(Entry $e) => $e->data)->all(), JSON_UNESCAPED_SLASHES);
+        // in PHP: LIKE on a JSON column is not SQL every database takes
+        $song = (string) json_encode(array_values(array_filter(Entry::query()->get()->map(static fn(Entry $e) => $e->data)->all(), static fn($data): bool => str_contains((string) json_encode($data, JSON_UNESCAPED_SLASHES), 'song'))), JSON_UNESCAPED_SLASHES);
         $this->assertStringNotContainsString('old.example.com/uploads', $song);
         $this->assertStringNotContainsString('old.example.com/wp-content/uploads/2024/06/song.mp3', $song);
 
@@ -645,11 +647,11 @@ final class WordPressImportTest extends AuthTestCase
 
         $report = $this->import($file);
         $post = $this->entry(41);
-        $this->assertSame([
+        $this->assertSame(self::sorted([
             'title' => 'Hello from our new studio',
             'description' => 'We moved to Old Studio\'s bigger place.',
             'image' => $post->field('image'),
-        ], array_intersect_key((array) $post->field('seo'), array_flip(['title', 'description', 'image', 'canonical'])), 'a canonical address on the old site is left out');
+        ]), self::sorted(array_intersect_key((array) $post->field('seo'), array_flip(['title', 'description', 'image', 'canonical']))), 'a canonical address on the old site is left out');
         $this->assertNotNull($post->field('image'));
         $about = (array) $this->entry(50)->field('seo');
         $this->assertSame([true, 'https://medium.com/@ana/about', null], [$about['noindex'] ?? null, $about['canonical'] ?? null, $about['title'] ?? null], 'the default title template needs no search title');
@@ -658,5 +660,18 @@ final class WordPressImportTest extends AuthTestCase
 
         $again = $this->import($file);
         $this->assertSame(0, $again['counts']['entry']['updated'] ?? null, 'running it again changes nothing');
+    }
+
+    /**
+     * Keys sorted: PostgreSQL's jsonb keeps an object's keys in its own order.
+     *
+     * @param array<string, mixed> $values
+     * @return array<string, mixed>
+     */
+    private static function sorted(array $values): array
+    {
+        ksort($values);
+
+        return $values;
     }
 }

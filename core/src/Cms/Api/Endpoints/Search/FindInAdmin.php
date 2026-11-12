@@ -78,7 +78,7 @@ final class FindInAdmin extends Endpoint
         }
         $found = [];
         if ($types !== []) {
-            $query = Entry::query()->whereIn('type', array_keys($types))->whereLike('title', $pattern)->orderByDesc('updated_at')->limit(self::PER_GROUP * 3);
+            $query = Entry::query()->whereIn('type', array_keys($types))->whereLike('title', $pattern)->orderByDesc('updated_at')->orderByDesc('id')->limit(self::PER_GROUP * 3);
             foreach ($query->get()->all() as $entry) {
                 $type = $types[$entry->type];
                 if ($entries->can($p, $type, 'edit', $entry) && count($found) < self::PER_GROUP) {
