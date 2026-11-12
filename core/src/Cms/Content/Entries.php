@@ -44,7 +44,7 @@ final class Entries
 
     /** Top-level addresses the site itself answers; a top-level page can't take them (it would never be reached). */
     public const array RESERVED_PATHS = ['admin', 'api', 'assets', 'install', 'login', 'logout', 'register', 'forgot-password', 'reset-password',
-        'search', 'author', 'preview', 'system', 'storage', 'uploads', 'media', 'feed', 'sitemap.xml', 'robots.txt', 'favicon.ico', '.well-known'];
+        'search', 'author', 'preview', 'system', 'storage', 'uploads', 'media', 'feed', 'sitemap.xml', 'robots.txt', 'favicon.ico', '.well-known', 'up'];
 
     /** Columns kept in revisions. */
     public const array SNAPSHOT = ['title', 'slug', 'status', 'excerpt', 'data', 'parent_id', 'author_id', 'template', 'menu_order', 'published_at'];

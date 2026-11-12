@@ -56,6 +56,11 @@ async function adminLinks(page) {
 test.describe.configure({ mode: 'serial' });
 
 test('the web installer sets up a site on SQLite', async ({ page }) => {
+    // the health check answers before the site is installed, so a container isn't restarted mid-install
+    const before = await page.request.get('/up');
+    expect(before.status()).toBe(200);
+    expect(await before.json()).toEqual({ status: 'ok', installed: false });
+
     const seen = watch(page);
     seen.on('/install');
     await page.goto('/install');
@@ -89,6 +94,9 @@ test('the web installer sets up a site on SQLite', async ({ page }) => {
     await page.getByRole('button', { name: /install/i }).click();
     await expect(page).toHaveURL(/\/install\/complete/);
 
+    const after = await page.request.get('/up');
+    expect(after.status()).toBe(200);
+    expect(await after.json()).toEqual({ status: 'ok', database: true, maintenance: false });
     expect(seen.problems).toEqual([]);
 });
 
