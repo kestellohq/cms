@@ -123,11 +123,12 @@ final class Kernel
     private function up(Application $app, bool $installed): void
     {
         $config = $app->config()->get('database');
-        $database = $installed && is_array($config) && $config !== []
-            ? function () use ($config): void {
+        $database = null;
+        if ($installed && is_array($config) && $config !== []) {
+            $database = function () use ($config): void {
                 (new Connection(DatabaseManager::resolveConfig($config, $this->paths->root())))->select('SELECT 1');
-            }
-            : null;
+            };
+        }
         $storage = $this->paths->storage();
         $maintenance = (new \Kestello\Cms\System\Maintenance($storage))->current() !== null
             || (new UpdateJournal($storage))->pending() !== null;

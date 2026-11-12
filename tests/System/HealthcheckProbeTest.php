@@ -38,7 +38,7 @@ final class HealthcheckProbeTest extends TestCase
 
         $this->assertSame(200, kst_fcgi_status($stdout("Content-Type: application/json\r\n\r\n{\"status\":\"ok\"}") . $end), 'no Status header means 200');
         $this->assertSame(503, kst_fcgi_status($stdout("Status: 503 Service Unavailable\r\nContent-Type: application/json\r\n\r\n{}") . $end));
-        $this->assertSame(503, kst_fcgi_status($stdout("Status: 503 Service") . $stdout(" Unavailable\r\n\r\n") . $end), 'STDOUT split over records');
+        $this->assertSame(503, kst_fcgi_status($stdout('Status: 503 Service') . $stdout(" Unavailable\r\n\r\n") . $end), 'STDOUT split over records');
         $this->assertSame(200, kst_fcgi_status($stdout("X: y\r\n\r\nStatus: 500 in the body") . $end), 'only headers count');
         $this->assertSame(0, kst_fcgi_status($stdout("Status: 200 OK\r\n\r\n")), 'a response that never ended');
         $this->assertSame(0, kst_fcgi_status(''));
