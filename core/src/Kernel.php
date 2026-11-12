@@ -480,6 +480,7 @@ final class Kernel
         $console->register(new \Kestello\Cms\Console\HooksListCommand());
         $console->register(new \Kestello\Cms\Console\ApiClientCommand());
         $console->register(new \Kestello\Cms\Console\System\HealthCommand());
+        $console->register(new \Kestello\Cms\Console\Database\DbCheckCommand($this->paths));
         $console->register(new \Kestello\Cms\Console\Schedule\ScheduleToggleCommand(true));
         $console->register(new \Kestello\Cms\Console\Schedule\ScheduleToggleCommand(false));
         $console->register(new PackageCheckCommand($this->paths));
@@ -491,6 +492,7 @@ final class Kernel
         $console->register(new \Kestello\Cms\Console\Package\CoreInstallZipCommand($this->paths));
         $console->register(new \Kestello\Cms\Console\Package\CoreVerifyCommand($this->paths));
         $console->register(new \Kestello\Cms\Console\I18n\I18nExtractCommand($this->paths));
+        $console->register(new \Kestello\Cms\Console\Database\SchemaSnapshotCommand($this->paths));
         $console->register(new \Kestello\Cms\Console\Ide\IdeHelpersCommand($this->paths));
         $console->register(new Make\MakePluginCommand($this->paths));
         $console->register(new Make\MakeThemeCommand($this->paths));

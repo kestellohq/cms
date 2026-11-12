@@ -154,6 +154,9 @@ test('the site updates to this release and keeps its content', async ({ page }) 
     console.log(out.trim());
     expect(readFileSync(`${site}core/current.php`, 'utf8')).toContain(update.version);
 
+    // the updated database has every table, column and index this release expects, as a new one would
+    console.log(execFileSync('php', ['bin/cms', 'system:db-check'], { cwd: site, encoding: 'utf8', stdio: 'pipe' }).trim());
+
     const up = await page.request.get('/up');
     expect(up.status(), 'the updated site answers /up').toBe(200);
     for (const type of ['page', 'post']) {

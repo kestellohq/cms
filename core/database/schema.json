@@ -1,0 +1,859 @@
+{
+    "tables": {
+        "audit_log": {
+            "columns": [
+                "actor_id",
+                "data",
+                "event",
+                "id",
+                "ip",
+                "occurred_at",
+                "owner",
+                "request_id",
+                "subject_id",
+                "subject_type",
+                "user_agent"
+            ],
+            "indexes": [
+                "idx_audit_log_actor_id",
+                "idx_audit_log_event",
+                "idx_audit_log_occurred_at",
+                "idx_audit_log_subject_type_subject_id"
+            ]
+        },
+        "autosaves": {
+            "columns": [
+                "entry_id",
+                "id",
+                "snapshot",
+                "updated_at",
+                "user_id"
+            ],
+            "indexes": [
+                "uniq_autosaves_entry_id_user_id"
+            ]
+        },
+        "cache": {
+            "columns": [
+                "expiration",
+                "key",
+                "value"
+            ],
+            "indexes": [
+                "idx_cache_expiration"
+            ]
+        },
+        "content_models": {
+            "columns": [
+                "created_at",
+                "created_by",
+                "definition",
+                "id",
+                "kind",
+                "name",
+                "updated_at"
+            ],
+            "indexes": [
+                "uniq_content_models_kind_name"
+            ]
+        },
+        "email_changes": {
+            "columns": [
+                "created_at",
+                "email",
+                "expires_at",
+                "id",
+                "token_hash",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_email_changes_expires_at"
+            ]
+        },
+        "email_edits": {
+            "columns": [
+                "blocks",
+                "created_at",
+                "email",
+                "id",
+                "locale",
+                "subject",
+                "updated_at",
+                "updated_by"
+            ],
+            "indexes": [
+                "uniq_email_edits_email_locale"
+            ]
+        },
+        "entries": {
+            "columns": [
+                "author_id",
+                "created_at",
+                "data",
+                "deleted_at",
+                "excerpt",
+                "id",
+                "locale",
+                "menu_order",
+                "parent_id",
+                "published_at",
+                "slug",
+                "status",
+                "template",
+                "title",
+                "translation_group",
+                "type",
+                "updated_at",
+                "version"
+            ],
+            "indexes": [
+                "idx_entries_author_id",
+                "idx_entries_parent_id",
+                "idx_entries_translation_group",
+                "idx_entries_type_locale_slug",
+                "idx_entries_type_status_published_at"
+            ]
+        },
+        "entry_assignees": {
+            "columns": [
+                "assigned_at",
+                "assigned_by",
+                "entry_id",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_entry_assignees_user_id",
+                "uniq_entry_assignees_entry_id"
+            ]
+        },
+        "entry_comments": {
+            "columns": [
+                "body",
+                "created_at",
+                "entry_id",
+                "id",
+                "kind",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_entry_comments_entry_id_id"
+            ]
+        },
+        "entry_index": {
+            "columns": [
+                "entry_id",
+                "field",
+                "id",
+                "value_date",
+                "value_number",
+                "value_string"
+            ],
+            "indexes": [
+                "idx_entry_index_entry_id",
+                "idx_entry_index_field_value_date",
+                "idx_entry_index_field_value_number",
+                "idx_entry_index_field_value_string"
+            ]
+        },
+        "entry_relations": {
+            "columns": [
+                "field",
+                "source_id",
+                "target_id"
+            ],
+            "indexes": [
+                "idx_entry_relations_target_id_field"
+            ]
+        },
+        "entry_term": {
+            "columns": [
+                "entry_id",
+                "position",
+                "taxonomy",
+                "term_id"
+            ],
+            "indexes": [
+                "idx_entry_term_term_id"
+            ]
+        },
+        "failed_jobs": {
+            "columns": [
+                "attempts",
+                "exception",
+                "failed_at",
+                "id",
+                "job",
+                "owner",
+                "payload",
+                "queue",
+                "uuid"
+            ],
+            "indexes": [
+                "idx_failed_jobs_failed_at"
+            ]
+        },
+        "fleet_sites": {
+            "columns": [
+                "checked_at",
+                "created_at",
+                "error",
+                "id",
+                "name",
+                "report",
+                "token",
+                "token_last4",
+                "updated_at",
+                "url"
+            ],
+            "indexes": [
+                "uniq_fleet_sites_url"
+            ]
+        },
+        "form_submissions": {
+            "columns": [
+                "created_at",
+                "data",
+                "form_id",
+                "id",
+                "ip",
+                "page",
+                "status",
+                "updated_at",
+                "user_agent",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_form_submissions_form_id_created_at",
+                "idx_form_submissions_status"
+            ]
+        },
+        "forms": {
+            "columns": [
+                "created_at",
+                "created_by",
+                "definition",
+                "id",
+                "status",
+                "title",
+                "updated_at"
+            ],
+            "indexes": []
+        },
+        "import_items": {
+            "columns": [
+                "attempts",
+                "depth",
+                "file_key",
+                "id",
+                "import_id",
+                "kind",
+                "label",
+                "link_path",
+                "message",
+                "needs_links",
+                "payload",
+                "result",
+                "source_id",
+                "source_key",
+                "state",
+                "target_id"
+            ],
+            "indexes": [
+                "idx_import_items_import_id_file_key",
+                "idx_import_items_import_id_kind_source_key",
+                "idx_import_items_import_id_kind_state_depth",
+                "idx_import_items_import_id_link_path"
+            ]
+        },
+        "import_sources": {
+            "columns": [
+                "checksum",
+                "created_at",
+                "id",
+                "kind",
+                "site_key",
+                "source_key",
+                "target_hash",
+                "target_id",
+                "target_type",
+                "target_version",
+                "updated_at"
+            ],
+            "indexes": [
+                "idx_import_sources_kind_source_key",
+                "idx_import_sources_target_type_target_id",
+                "uniq_import_sources_site_key_kind_source_key"
+            ]
+        },
+        "imports": {
+            "columns": [
+                "created_at",
+                "error",
+                "file",
+                "finished_at",
+                "id",
+                "notes",
+                "options",
+                "phase",
+                "site_key",
+                "site_title",
+                "site_url",
+                "source",
+                "started_at",
+                "status",
+                "summary",
+                "updated_at",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_imports_status"
+            ]
+        },
+        "job_batch_jobs": {
+            "columns": [
+                "batch_id",
+                "job_uuid"
+            ],
+            "indexes": []
+        },
+        "job_batches": {
+            "columns": [
+                "cancelled_at",
+                "caught_at",
+                "created_at",
+                "failed",
+                "finished_at",
+                "id",
+                "name",
+                "options",
+                "owner",
+                "pending",
+                "total"
+            ],
+            "indexes": [
+                "idx_job_batches_created_at"
+            ]
+        },
+        "jobs": {
+            "columns": [
+                "attempts",
+                "available_at",
+                "created_at",
+                "id",
+                "payload",
+                "queue",
+                "reservation",
+                "reserved_until",
+                "unique_key"
+            ],
+            "indexes": [
+                "idx_jobs_queue_available_at"
+            ]
+        },
+        "media": {
+            "columns": [
+                "alt",
+                "caption",
+                "checksum",
+                "created_at",
+                "disk",
+                "ext",
+                "filename",
+                "height",
+                "id",
+                "kind",
+                "meta",
+                "mime",
+                "path",
+                "size",
+                "title",
+                "updated_at",
+                "uploaded_by",
+                "width"
+            ],
+            "indexes": [
+                "idx_media_checksum",
+                "idx_media_kind_created_at",
+                "idx_media_uploaded_by"
+            ]
+        },
+        "media_usage": {
+            "columns": [
+                "entry_id",
+                "field",
+                "media_id"
+            ],
+            "indexes": [
+                "idx_media_usage_entry_id"
+            ]
+        },
+        "media_variants": {
+            "columns": [
+                "created_at",
+                "format",
+                "height",
+                "id",
+                "media_id",
+                "name",
+                "path",
+                "size",
+                "updated_at",
+                "width"
+            ],
+            "indexes": [
+                "uniq_media_variants_media_id_name"
+            ]
+        },
+        "menu_locations": {
+            "columns": [
+                "locale",
+                "location",
+                "menu_id"
+            ],
+            "indexes": []
+        },
+        "menus": {
+            "columns": [
+                "created_at",
+                "id",
+                "items",
+                "name",
+                "updated_at"
+            ],
+            "indexes": []
+        },
+        "mfa_methods": {
+            "columns": [
+                "confirmed_at",
+                "created_at",
+                "id",
+                "label",
+                "last_used_at",
+                "last_used_step",
+                "secret",
+                "type",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_mfa_methods_user_id"
+            ]
+        },
+        "mfa_recovery_codes": {
+            "columns": [
+                "code_hash",
+                "id",
+                "used_at",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_mfa_recovery_codes_user_id"
+            ]
+        },
+        "migrations": {
+            "columns": [
+                "batch",
+                "id",
+                "migration",
+                "owner"
+            ],
+            "indexes": []
+        },
+        "not_found_log": {
+            "columns": [
+                "first_seen_at",
+                "hits",
+                "id",
+                "last_seen_at",
+                "path",
+                "referrer"
+            ],
+            "indexes": [
+                "idx_not_found_log_last_seen_at",
+                "uniq_not_found_log_path"
+            ]
+        },
+        "notification_preferences": {
+            "columns": [
+                "channel",
+                "enabled",
+                "type",
+                "user_id"
+            ],
+            "indexes": []
+        },
+        "notifications": {
+            "columns": [
+                "created_at",
+                "data",
+                "id",
+                "read_at",
+                "type",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_notifications_created_at",
+                "idx_notifications_user_id_read_at"
+            ]
+        },
+        "packages": {
+            "columns": [
+                "id",
+                "slug",
+                "status",
+                "type",
+                "updated_at",
+                "version"
+            ],
+            "indexes": [
+                "uniq_packages_type_slug"
+            ]
+        },
+        "password_resets": {
+            "columns": [
+                "created_at",
+                "expires_at",
+                "id",
+                "ip",
+                "token_hash",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_password_resets_user_id"
+            ]
+        },
+        "pending_registrations": {
+            "columns": [
+                "created_at",
+                "email",
+                "expires_at",
+                "id",
+                "ip",
+                "token_hash"
+            ],
+            "indexes": [
+                "idx_pending_registrations_expires_at"
+            ]
+        },
+        "personal_access_tokens": {
+            "columns": [
+                "created_at",
+                "expires_at",
+                "id",
+                "last_used_at",
+                "last_used_ip",
+                "name",
+                "scopes",
+                "token_hash",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_personal_access_tokens_user_id"
+            ]
+        },
+        "preview_links": {
+            "columns": [
+                "created_at",
+                "created_by",
+                "entry_id",
+                "expires_at",
+                "id",
+                "kind",
+                "label",
+                "last_used_at",
+                "token_hash",
+                "views"
+            ],
+            "indexes": [
+                "idx_preview_links_entry_id_kind",
+                "idx_preview_links_expires_at",
+                "uniq_preview_links_token_hash"
+            ]
+        },
+        "redirects": {
+            "columns": [
+                "created_at",
+                "entry_id",
+                "hits",
+                "id",
+                "last_hit_at",
+                "match",
+                "note",
+                "origin",
+                "source",
+                "status",
+                "target",
+                "updated_at"
+            ],
+            "indexes": [
+                "idx_redirects_entry_id",
+                "idx_redirects_match_source"
+            ]
+        },
+        "revisions": {
+            "columns": [
+                "author_id",
+                "created_at",
+                "entry_id",
+                "id",
+                "note",
+                "snapshot"
+            ],
+            "indexes": [
+                "idx_revisions_entry_id_id"
+            ]
+        },
+        "roles": {
+            "columns": [
+                "created_at",
+                "custom",
+                "description",
+                "granted",
+                "label",
+                "name",
+                "revoked",
+                "updated_at"
+            ],
+            "indexes": []
+        },
+        "scheduled_tasks": {
+            "columns": [
+                "created_at",
+                "disabled",
+                "last_due_at",
+                "last_duration_ms",
+                "last_finished_at",
+                "last_output",
+                "last_started_at",
+                "last_status",
+                "name",
+                "owner"
+            ],
+            "indexes": []
+        },
+        "search_documents": {
+            "columns": [
+                "body",
+                "collection",
+                "doc_id",
+                "id",
+                "locale",
+                "meta",
+                "published_at",
+                "tags",
+                "title",
+                "type",
+                "url"
+            ],
+            "indexes": [
+                "idx_search_documents_collection_published_at",
+                "uniq_search_documents_collection_doc_id"
+            ]
+        },
+        "search_documents_fts": {
+            "columns": [
+                "body",
+                "title"
+            ],
+            "indexes": []
+        },
+        "sessions": {
+            "columns": [
+                "created_at",
+                "id",
+                "ip",
+                "last_activity",
+                "payload",
+                "user_agent",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_sessions_last_activity",
+                "idx_sessions_user_id"
+            ]
+        },
+        "settings": {
+            "columns": [
+                "created_at",
+                "group",
+                "id",
+                "key",
+                "updated_at",
+                "value"
+            ],
+            "indexes": []
+        },
+        "terms": {
+            "columns": [
+                "created_at",
+                "description",
+                "id",
+                "locale",
+                "menu_order",
+                "name",
+                "parent_id",
+                "slug",
+                "taxonomy",
+                "translation_group",
+                "updated_at"
+            ],
+            "indexes": [
+                "idx_terms_taxonomy_parent_id",
+                "idx_terms_translation_group",
+                "uniq_terms_taxonomy_locale_slug"
+            ]
+        },
+        "theme_document_revisions": {
+            "columns": [
+                "author",
+                "created_at",
+                "data",
+                "doc_key",
+                "id",
+                "kind",
+                "note",
+                "revision",
+                "theme",
+                "updated_at"
+            ],
+            "indexes": [
+                "idx_theme_document_revisions_theme_kind_doc_key"
+            ]
+        },
+        "theme_documents": {
+            "columns": [
+                "base_hash",
+                "created_at",
+                "data",
+                "doc_key",
+                "id",
+                "kind",
+                "revision",
+                "status",
+                "theme",
+                "updated_at",
+                "updated_by"
+            ],
+            "indexes": [
+                "uniq_theme_documents_theme_kind_doc_key_status"
+            ]
+        },
+        "theme_fonts": {
+            "columns": [
+                "bytes",
+                "category",
+                "created_at",
+                "family",
+                "files",
+                "id",
+                "slug",
+                "source",
+                "updated_at"
+            ],
+            "indexes": []
+        },
+        "uploads": {
+            "columns": [
+                "chunk_size",
+                "created_at",
+                "disk",
+                "expires_at",
+                "ext",
+                "filename",
+                "id",
+                "mime",
+                "mode",
+                "path",
+                "received",
+                "size",
+                "updated_at",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_uploads_expires_at",
+                "idx_uploads_user_id"
+            ]
+        },
+        "user_identities": {
+            "columns": [
+                "created_at",
+                "email",
+                "id",
+                "last_used_at",
+                "provider",
+                "subject",
+                "user_id"
+            ],
+            "indexes": [
+                "idx_user_identities_user_id",
+                "uniq_user_identities_provider_subject"
+            ]
+        },
+        "users": {
+            "columns": [
+                "bio",
+                "created_at",
+                "email",
+                "id",
+                "is_active",
+                "last_login_at",
+                "locale",
+                "password",
+                "role",
+                "updated_at",
+                "username"
+            ],
+            "indexes": []
+        },
+        "webhook_deliveries": {
+            "columns": [
+                "attempts",
+                "created_at",
+                "delivered_at",
+                "duration_ms",
+                "error",
+                "event",
+                "event_id",
+                "id",
+                "next_attempt_at",
+                "payload",
+                "response_body",
+                "response_status",
+                "status",
+                "webhook_id"
+            ],
+            "indexes": [
+                "idx_webhook_deliveries_created_at",
+                "idx_webhook_deliveries_status_next_attempt_at",
+                "idx_webhook_deliveries_webhook_id_id"
+            ]
+        },
+        "webhooks": {
+            "columns": [
+                "active",
+                "created_at",
+                "created_by",
+                "disabled_reason",
+                "events",
+                "failure_streak",
+                "id",
+                "last_failure_at",
+                "last_success_at",
+                "name",
+                "previous_expires_at",
+                "previous_secret",
+                "secret",
+                "updated_at",
+                "url"
+            ],
+            "indexes": []
+        }
+    },
+    "only": {
+        "pgsql": [
+            "column search_documents.vector"
+        ],
+        "sqlite": [
+            "table search_documents_fts"
+        ]
+    }
+}
