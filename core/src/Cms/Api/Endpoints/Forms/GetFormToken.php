@@ -36,6 +36,11 @@ final class GetFormToken extends FormEndpoint
     {
         return [60, 60];
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Get a form token';

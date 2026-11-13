@@ -19,6 +19,11 @@ final class ResolveThemeUpdate extends TemplateEndpoint
     {
         return ApiRoute::post('/design/templates/{kind}/{key}/theme-update')->where('kind', self::KIND)->where('key', self::KEY);
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Resolve a theme update to a changed template, part or pattern';

@@ -17,6 +17,11 @@ final class RetryRecovery extends UpdatesEndpoint
     {
         return ApiRoute::post('/updates/recover');
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Try again to put back an update that stopped halfway';

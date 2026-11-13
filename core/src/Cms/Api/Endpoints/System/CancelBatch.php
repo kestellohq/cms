@@ -16,6 +16,11 @@ final class CancelBatch extends SystemEndpoint
     {
         return ApiRoute::post('/system/queue/batches/{id}/cancel')->where('id', '[0-9a-f-]{1,36}');
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Cancel a job batch';

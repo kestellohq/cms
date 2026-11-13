@@ -137,11 +137,55 @@ final class ApiTest extends TestCase
             {
                 return ($this->o['authorize'] ?? null) === null || ($this->o['authorize'])($request);
             }
+            public function response(): ?Schema
+            {
+                return $this->o['response'] ?? null;
+            }
+            public function status(): int
+            {
+                return $this->o['status'] ?? 200;
+            }
+            public function collection(): bool
+            {
+                return $this->o['collection'] ?? false;
+            }
             public function handle(ApiRequest $request): mixed
             {
                 return ($this->o['handle'] ?? fn() => ['ok' => true])($request);
             }
         };
+    }
+
+    // ── Answers are what endpoints declare ──────────────────────────
+
+    public function testInDebugModeAnAnswerMustBeWhatItsEndpointDeclares(): void
+    {
+        $shape = Schema::object(['ok' => Schema::bool()]);
+        $this->cms->api->endpoint($this->endpoint('GET', '/right', ['public' => true, 'response' => $shape]));
+        $this->cms->api->endpoint($this->endpoint('GET', '/wrong', ['public' => true, 'response' => $shape, 'handle' => fn() => ['ok' => 'yes', 'extra' => 1]]));
+        $this->cms->api->endpoint($this->endpoint('POST', '/made', ['public' => true, 'response' => $shape, 'status' => 201]));
+        $this->cms->api->endpoint($this->endpoint('POST', '/nothing', ['public' => true, 'status' => 204, 'handle' => fn() => ['ok' => true]]));
+        $this->cms->api->endpoint($this->endpoint('GET', '/undeclared', ['public' => true, 'handle' => fn() => ['anything' => 1]]));
+
+        $this->csrfValid = true;
+        $this->assertSame(200, $this->call('GET', '/api/v1/right')->statusCode());
+        $this->assertSame(201, $this->call('POST', '/api/v1/made')->statusCode(), 'status() sets the status of a created answer');
+        $wrong = $this->json($this->call('GET', '/api/v1/wrong'));
+        $this->assertSame(500, $wrong['status']);
+        $this->assertStringContainsString('answered what it does not declare: ', $wrong['detail']);
+        $this->assertStringContainsString('data.ok: ', $wrong['detail'], 'a wrong type');
+        $this->assertStringContainsString('data.extra: Unknown field.', $wrong['detail'], 'a response() describes the whole answer');
+        $this->assertStringContainsString('answered 200, but status() says 204', $this->json($this->call('POST', '/api/v1/nothing'))['detail']);
+        $this->assertSame(200, $this->call('GET', '/api/v1/undeclared')->statusCode(), 'an endpoint that declares nothing is not checked');
+    }
+
+    public function testOutsideDebugModeAnswersAreSentAsTheyAre(): void
+    {
+        $cms = TestCms::make($this->tempDir(), debug: false);
+        $cms->api->endpoint($this->endpoint('GET', '/wrong', ['public' => true, 'response' => Schema::object(['ok' => Schema::bool()]), 'handle' => fn() => ['ok' => 'yes']]));
+
+        $response = $cms->routes->dispatch(new Request('GET', '/api/v1/wrong', '/api/v1/wrong', [], [], [], [], [], []));
+        $this->assertSame([200, ['data' => ['ok' => 'yes']]], [$response->statusCode(), $this->json($response)], 'a site in production keeps working');
     }
 
     // ── Registration rules (deny by default) ────────────────────────

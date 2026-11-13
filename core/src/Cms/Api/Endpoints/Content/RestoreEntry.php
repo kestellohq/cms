@@ -24,6 +24,11 @@ final class RestoreEntry extends ContentEndpoint
     {
         return ['content:write'];
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Restore an entry from the trash';

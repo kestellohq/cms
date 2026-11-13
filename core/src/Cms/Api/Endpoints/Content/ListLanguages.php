@@ -26,6 +26,12 @@ final class ListLanguages extends ContentEndpoint
         return "List the languages the site's content is written in";
     }
 
+    /** One object, though the name starts with List. */
+    public function collection(): bool
+    {
+        return false;
+    }
+
     public function response(): ?Schema
     {
         $language = Schema::object(['code' => Schema::string(), 'name' => Schema::string()]);
@@ -38,6 +44,7 @@ final class ListLanguages extends ContentEndpoint
                 'main' => Schema::bool(),
                 'prefix' => Schema::string()->description("What its addresses start with: '' or /es"),
                 'entries' => Schema::int()->description('Entries in it, trash left out'),
+                'paths' => Schema::map(Schema::string())->description('Its own words for the types\' and taxonomies\' address prefixes, by prefix; empty for the main language'),
             ])),
             'choices' => Schema::list($language)->description('Languages that can be added, each named in its own words'),
         ]);

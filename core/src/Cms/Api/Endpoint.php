@@ -119,6 +119,30 @@ abstract class Endpoint
         return null;
     }
 
+    /**
+     * The status of a successful answer: 200, 201 when it made something,
+     * or 204 when there is nothing to return (handle() returns null). In
+     * debug mode an answer with another status is an error.
+     */
+    public function status(): int
+    {
+        return 200;
+    }
+
+    /**
+     * The problems this endpoint answers with besides the ones any endpoint
+     * can (401, 403, 422, 429): 404 when what the address names does not
+     * exist, 409 when the request conflicts with what is stored (a slug
+     * taken, an entry changed since it was opened). For OpenAPI and the
+     * TypeScript client. By default, 404 for an address with parameters.
+     *
+     * @return list<int>
+     */
+    public function problems(): array
+    {
+        return $this->route()->params() !== [] ? [404] : [];
+    }
+
     /** Whether "data" is a list. Defaults to true for classes named List…. */
     public function collection(): bool
     {

@@ -22,6 +22,11 @@ final class SwitchBackPackage extends PluginEndpoint
     {
         return ApiRoute::post('/plugins/switch-back');
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 404];
+    }
+
     public function summary(): string
     {
         return 'Switch a plugin or theme back to the version before its last update';

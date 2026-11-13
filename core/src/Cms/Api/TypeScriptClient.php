@@ -76,7 +76,8 @@ final class TypeScriptClient
         $pathParams = array_values(array_filter((array) ($op['parameters'] ?? []), static fn(array $p) => ($p['in'] ?? '') === 'path'));
         $queryParams = array_values(array_filter((array) ($op['parameters'] ?? []), static fn(array $p) => ($p['in'] ?? '') === 'query'));
         $body = $op['requestBody']['content']['application/json']['schema'] ?? null;
-        $data = $op['responses']['200']['content']['application/json']['schema']['properties']['data'] ?? [];
+        $ok = $op['responses']['200'] ?? $op['responses']['201'] ?? [];     // 201: it made something
+        $data = $ok['content']['application/json']['schema']['properties']['data'] ?? [];
 
         $types = [];
         $types[] = "export type {$Name}Data = " . self::type((array) $data, 0) . ';';
@@ -107,7 +108,9 @@ final class TypeScriptClient
         $argType = $args === [] ? null : '{ ' . implode('; ', $args) . ' }';
 
         $path = preg_replace_callback('/\{([A-Za-z0-9_]+)\}/', static fn(array $m) => '${enc(args.' . $m[1] . ')}', $op['path']);
-        $answer = "Answer<{$Name}Data>" . ($op['method'] === 'DELETE' ? ' | undefined' : '');
+        // 204: nothing comes back. Documented for any method; a removal may always answer it
+        $nothing = isset($op['responses']['204']) || $op['method'] === 'DELETE';
+        $answer = $ok === [] && $nothing ? 'undefined' : "Answer<{$Name}Data>" . ($nothing ? ' | undefined' : '');
 
         $lines = [];
         $summary = trim((string) ($op['summary'] ?? ''));

@@ -31,6 +31,11 @@ final class DeleteUser extends Endpoint
     {
         return true;
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Delete a user';

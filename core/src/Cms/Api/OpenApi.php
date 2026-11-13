@@ -145,14 +145,18 @@ final class OpenApi
             $data = ['type' => 'array', 'items' => $data];
         }
 
-        $responses = [
-            '200' => ['description' => 'OK', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['data' => $data, 'meta' => ['type' => 'object']], 'required' => ['data']]]]],
-            '422' => $problem,
-            '429' => $problem,
-        ];
-        if ($endpoint->route()->method === 'DELETE') {
-            $responses['204'] = ['description' => 'Done; nothing to return'];
+        $status = $endpoint->status();
+        $responses = $status === 204
+            ? ['204' => ['description' => 'Done; nothing to return']]
+            : [(string) $status => ['description' => $status === 201 ? 'Created' : 'OK', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['data' => $data, 'meta' => ['type' => 'object']], 'required' => ['data']]]]]];
+        if ($status !== 204 && $endpoint->route()->method === 'DELETE' && !AnswerContract::describes($endpoint)) {
+            $responses['204'] = ['description' => 'Done; nothing to return'];     // not described yet: most removals answer nothing
         }
+        foreach ($endpoint->problems() as $code) {
+            $responses[(string) $code] = $problem;
+        }
+        $responses['422'] = $problem;
+        $responses['429'] = $problem;
         if (!$endpoint->isPublic()) {
             $responses['401'] = $problem;
             $responses['403'] = $problem;

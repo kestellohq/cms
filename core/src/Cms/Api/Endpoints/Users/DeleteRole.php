@@ -36,6 +36,11 @@ final class DeleteRole extends Endpoint
     {
         return true;
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Delete a custom role, or reset a built-in one';
