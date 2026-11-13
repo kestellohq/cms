@@ -26,6 +26,11 @@ final class GetTypeScriptClient extends Endpoint
     {
         return true;
     }
+    public function produces(): ?string
+    {
+        return 'text/plain';
+    }
+
     public function summary(): string
     {
         return 'TypeScript client for the endpoints you may use';

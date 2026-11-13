@@ -27,6 +27,12 @@ final class CompleteUpload extends MediaEndpoint
     {
         return ['media:write'];
     }
+    /** 409: The upload is not complete yet. */
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Finish an upload';

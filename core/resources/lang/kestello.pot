@@ -114,6 +114,7 @@ msgid "30 days"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Redirects/CreateRedirect.php
+#: core/src/Cms/Api/Resources/RedirectResource.php
 msgid "301, 302, 307, 308 or 410"
 msgstr ""
 
@@ -9812,6 +9813,10 @@ msgstr ""
 msgid "That was quick. Please check the form and send it again."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Redirects/ImportRedirects.php
+msgid "The CSV line, counting the header as 1"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Security/GetSecurity.php
 msgid "The account, when the login named one that exists"
 msgstr ""
@@ -9834,6 +9839,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Edit.vue
 msgid "The address in {field}"
+msgstr ""
+
+#: core/src/Cms/Api/Resources/RedirectResource.php
+msgid "The address it catches: a path, or a pattern when match is regex"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/System/ReportClientError.php
@@ -9943,6 +9952,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue
 msgid "The emails the site sends you are written in it."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/RedirectResource.php
+msgid "The entry an automatic redirect belongs to"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Content/CheckEntryChecklist.php
@@ -10065,6 +10078,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
 msgid "The largest file anyone can upload, in megabytes."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/NotFoundResource.php
+msgid "The last page that linked to it; empty when none was sent"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -11833,6 +11850,10 @@ msgstr ""
 msgid "Where it is used; single-item answers only, and only entries the viewer may open"
 msgstr ""
 
+#: core/src/Cms/Api/Resources/RedirectResource.php
+msgid "Where it sends people; empty for 410"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Security/GetPackageTrust.php
 msgid "Where new versions come from"
 msgstr ""
@@ -12323,6 +12344,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content/Edit.vue
 msgid "author"
+msgstr ""
+
+#: core/src/Cms/Api/Resources/RedirectResource.php
+msgid "auto: made when an entry's address changed"
 msgstr ""
 
 #: core/resources/js/pages/admin/Dashboard.vue

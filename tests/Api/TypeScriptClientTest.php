@@ -87,6 +87,9 @@ final class TypeScriptClientTest extends TestCase
                 '/things/{id}/archive' => [
                     'post' => ['operationId' => 'archiveThing', 'parameters' => $id, 'responses' => ['204' => ['description' => 'Done; nothing to return']]],
                 ],
+                '/things/export' => [
+                    'get' => ['operationId' => 'exportThings', 'responses' => ['200' => ['content' => ['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']]]]]],
+                ],
                 '/acme/things/{id}' => [
                     'get' => ['operationId' => 'showThing', 'x-kestello-owner' => 'plugin:acme', 'parameters' => $id, 'responses' => $answer($thing)],
                 ],

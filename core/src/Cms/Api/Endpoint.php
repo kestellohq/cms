@@ -130,6 +130,16 @@ abstract class Endpoint
     }
 
     /**
+     * The media type of an answer that is a file or a document of its own
+     * (text/csv, application/zip) instead of JSON with "data": the handler
+     * returns a Response. Null for JSON.
+     */
+    public function produces(): ?string
+    {
+        return null;
+    }
+
+    /**
      * The problems this endpoint answers with besides the ones any endpoint
      * can (401, 403, 422, 429): 404 when what the address names does not
      * exist, 409 when the request conflicts with what is stored (a slug

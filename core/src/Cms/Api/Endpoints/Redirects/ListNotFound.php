@@ -6,8 +6,8 @@ namespace Kestello\Cms\Api\Endpoints\Redirects;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\NotFoundResource;
 use Kestello\Cms\Api\Schema;
-use Kestello\Framework\Core\Response;
 use Kestello\Framework\Database\QueryBuilder;
 
 /** Addresses visitors asked for that didn't exist, most-hit first. */
@@ -17,6 +17,11 @@ final class ListNotFound extends RedirectEndpoint
     {
         return ApiRoute::get('/redirects/not-found');
     }
+    public function resource(): ?string
+    {
+        return NotFoundResource::class;
+    }
+
     public function summary(): string
     {
         return 'List addresses that were not found';
@@ -46,9 +51,6 @@ final class ListNotFound extends RedirectEndpoint
         $q = $q->orderBy('id', 'DESC');
         $rows = $q->offset(($page - 1) * $perPage)->limit($perPage)->get();
 
-        return Response::json(['data' => array_map(static fn(array $r) => [
-            'id' => (int) $r['id'], 'path' => (string) $r['path'], 'referrer' => (string) $r['referrer'], 'hits' => (int) $r['hits'],
-            'first_seen_at' => \Kestello\Support\Date::isoUtc($r['first_seen_at']), 'last_seen_at' => \Kestello\Support\Date::isoUtc($r['last_seen_at']),
-        ], $rows), 'meta' => ['total' => $total, 'page' => $page, 'per_page' => $perPage, 'last_page' => max(1, (int) ceil($total / $perPage))]]);
+        return NotFoundResource::collection($rows, ['total' => $total, 'page' => $page, 'per_page' => $perPage, 'last_page' => max(1, (int) ceil($total / $perPage))]);
     }
 }

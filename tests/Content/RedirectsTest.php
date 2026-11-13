@@ -179,4 +179,34 @@ final class RedirectsTest extends AuthTestCase
         $redirects->pruneLog(3);
         $this->assertSame(3, QueryBuilder::table('not_found_log')->count());
     }
+
+    public function testRulesThroughTheApiAsTheAdminUsesThem(): void
+    {
+        $this->cms->api->extend('redirects')->field('acme_label', static fn(array $row): string => 'rule ' . $row['id']);
+
+        $made = $this->json($this->api('POST', '/redirects', ['source' => '/spring', 'target' => '/seasons/spring', 'note' => 'menu']))['data'];
+        $this->assertSame(['/spring', '/seasons/spring', 301, 'manual', 0, null], [$made['source'], $made['target'], $made['status'], $made['origin'], $made['hits'], $made['last_hit_at']]);
+        $this->assertMatchesRegularExpression('/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/', (string) $made['created_at'], 'UTC with its zone, so the admin shows the right time');
+        $this->assertSame("rule {$made['id']}", $made['acme_label'], 'plugins add fields to a redirect');
+
+        $this->goesTo('/spring');
+        $listed = $this->json($this->api('GET', '/redirects?search=spring'));
+        $this->assertSame([1, 1], [count($listed['data']), $listed['meta']['total']]);
+        $this->assertMatchesRegularExpression('/Z$/', (string) $listed['data'][0]['last_hit_at']);
+
+        $changed = $this->json($this->api('PATCH', "/redirects/{$made['id']}", ['status' => 410, 'target' => '']))['data'];
+        $this->assertSame([410, ''], [$changed['status'], $changed['target']]);
+        $this->assertSame(404, $this->api('PATCH', '/redirects/999', ['note' => 'x'])->statusCode());
+
+        $this->assertSame(204, $this->api('DELETE', "/redirects/{$made['id']}")->statusCode());
+        $this->assertSame(404, $this->api('DELETE', "/redirects/{$made['id']}")->statusCode());
+
+        $this->visit('/gone-one');
+        $this->visit('/gone-two');
+        $first = $this->json($this->api('GET', '/redirects/not-found'))['data'][0]['id'];
+        $this->assertSame(204, $this->api('DELETE', "/redirects/not-found?id={$first}")->statusCode());
+        $this->assertSame(1, QueryBuilder::table('not_found_log')->count(), 'one address cleared');
+        $this->assertSame(204, $this->api('DELETE', '/redirects/not-found')->statusCode());
+        $this->assertSame(0, QueryBuilder::table('not_found_log')->count(), 'and then all of them');
+    }
 }

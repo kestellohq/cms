@@ -15,6 +15,11 @@ final class ExportRedirects extends RedirectEndpoint
     {
         return ApiRoute::get('/redirects/export');
     }
+    public function produces(): ?string
+    {
+        return 'text/csv';
+    }
+
     public function summary(): string
     {
         return 'Export redirects as CSV';

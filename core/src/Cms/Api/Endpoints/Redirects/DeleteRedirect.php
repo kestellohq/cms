@@ -19,6 +19,11 @@ final class DeleteRedirect extends RedirectEndpoint
     {
         return ['content:write'];
     }
+    public function status(): int
+    {
+        return 204;
+    }
+
     public function summary(): string
     {
         return 'Remove a redirect';

@@ -51,7 +51,6 @@ final class AnswerContractTest extends TestCase
         'Auth\\VerifyTwoFactor',
         'Backups\\CreateBackup',
         'Backups\\DeleteBackup',
-        'Backups\\DownloadBackup',
         'Backups\\ListBackups',
         'Backups\\RestoreBackup',
         'Backups\\UpdateBackupSettings',
@@ -108,7 +107,6 @@ final class AnswerContractTest extends TestCase
         'Forms\\DeleteForm',
         'Forms\\DeleteSubmission',
         'Forms\\DownloadSubmissionFile',
-        'Forms\\ExportSubmissions',
         'Forms\\GetForm',
         'Forms\\GetFormToken',
         'Forms\\GetSubmission',
@@ -117,10 +115,8 @@ final class AnswerContractTest extends TestCase
         'Forms\\SubmitForm',
         'Forms\\UpdateForm',
         'Forms\\UpdateSubmission',
-        'GetOpenApi',
         'GetSite',
         'GetStatus',
-        'GetTypeScriptClient',
         'Imports\\CancelImport',
         'Imports\\DeleteImport',
         'Imports\\GetImport',
@@ -157,14 +153,6 @@ final class AnswerContractTest extends TestCase
         'Plugins\\SwitchBackPackage',
         'Plugins\\UpdatePackage',
         'Plugins\\UploadPackage',
-        'Redirects\\ClearNotFound',
-        'Redirects\\CreateRedirect',
-        'Redirects\\DeleteRedirect',
-        'Redirects\\ExportRedirects',
-        'Redirects\\ImportRedirects',
-        'Redirects\\ListNotFound',
-        'Redirects\\ListRedirects',
-        'Redirects\\UpdateRedirect',
         'RevokeMyToken',
         'Search\\FindInAdmin',
         'Search\\SearchSite',
@@ -199,7 +187,6 @@ final class AnswerContractTest extends TestCase
         'Themes\\AddFont',
         'Themes\\CreateTheme',
         'Themes\\DeleteTheme',
-        'Themes\\ExportTheme',
         'Themes\\ImportTheme',
         'Themes\\ListThemes',
         'Themes\\RemoveFont',
@@ -272,7 +259,21 @@ final class AnswerContractTest extends TestCase
         $this->assertSame(1, count(AnswerContract::check($endpoint, Response::json(['data' => [['id' => 1], ['id' => 'two']]]))));
         $this->assertSame(['"data" is not a list, but collection() says it is'], AnswerContract::check($endpoint, Response::json(['data' => ['id' => 1]])));
         $this->assertSame(['the answer has no "data"'], AnswerContract::check($endpoint, Response::json(['id' => 1])));
-        $this->assertSame([], AnswerContract::check($endpoint, Response::json(['type' => 'problem'], 404)), 'problems have their own shape');
+        $this->assertSame([], AnswerContract::check($endpoint, Response::json(['type' => 'problem'], 422)), 'any endpoint may answer 422; ApiProblem shapes it');
+        $this->assertSame(['answered 409, which problems() does not list'], AnswerContract::check($endpoint, Response::json(['type' => 'problem'], 409)), 'its own problems are listed');
+        $this->assertSame([], AnswerContract::check($endpoint, Response::json(['type' => 'problem'], 500)), 'server errors are not checked');
+    }
+
+    public function testAFileAnswerIsDescribedByItsMediaType(): void
+    {
+        $export = self::bare(\Kestello\Cms\Api\Endpoints\Redirects\ExportRedirects::class);
+        $this->assertTrue(AnswerContract::describes($export));
+        $csv = (new Response('source,target', 200))->withHeader('Content-Type', 'text/csv; charset=utf-8');
+        $this->assertSame([], AnswerContract::check($export, $csv));
+        $this->assertSame(['answered application/json, but produces() says text/csv'], AnswerContract::check($export, Response::json(['data' => []])));
+
+        $documented = (new \ReflectionMethod(OpenApi::class, 'responses'))->invoke(null, $export)[200]['content'];
+        $this->assertSame(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']]], $documented);
     }
 
     public function testAMapTakesAnyKeyAndChecksEachValue(): void

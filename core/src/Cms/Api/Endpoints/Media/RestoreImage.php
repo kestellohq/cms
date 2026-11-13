@@ -23,6 +23,12 @@ final class RestoreImage extends MediaEndpoint
     {
         return ['media:write'];
     }
+    /** 409: There is no original to restore. */
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Restore an edited image\'s original';

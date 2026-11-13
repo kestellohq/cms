@@ -148,7 +148,9 @@ final class OpenApi
         $status = $endpoint->status();
         $responses = $status === 204
             ? ['204' => ['description' => 'Done; nothing to return']]
-            : [(string) $status => ['description' => $status === 201 ? 'Created' : 'OK', 'content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['data' => $data, 'meta' => ['type' => 'object']], 'required' => ['data']]]]]];
+            : [(string) $status => ['description' => $status === 201 ? 'Created' : 'OK', 'content' => $endpoint->produces() !== null
+                ? [$endpoint->produces() => ['schema' => $endpoint->produces() === 'application/json' ? ['type' => 'object'] : ['type' => 'string', 'format' => 'binary']]]     // a file or a document of its own
+                : ['application/json' => ['schema' => ['type' => 'object', 'properties' => ['data' => $data, 'meta' => ['type' => 'object']], 'required' => ['data']]]]]];
         if ($status !== 204 && $endpoint->route()->method === 'DELETE' && !AnswerContract::describes($endpoint)) {
             $responses['204'] = ['description' => 'Done; nothing to return'];     // not described yet: most removals answer nothing
         }

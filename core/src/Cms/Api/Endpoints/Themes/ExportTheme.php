@@ -19,6 +19,17 @@ final class ExportTheme extends ThemeEndpoint
     {
         return ['admin'];
     }
+    public function produces(): ?string
+    {
+        return 'application/zip';
+    }
+
+    /** 409: The theme has code, so only its developer tools can package it. */
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Export a theme as a zip';

@@ -18,10 +18,10 @@ use Kestello\Framework\Core\Response;
  */
 final class AnswerContract
 {
-    /** Whether the endpoint says what it answers: a shape, or nothing (204). */
+    /** Whether the endpoint says what it answers: a shape, a file's media type, or nothing (204). */
     public static function describes(Endpoint $endpoint): bool
     {
-        return $endpoint->status() === 204 || self::schema($endpoint) !== null;
+        return $endpoint->status() === 204 || $endpoint->produces() !== null || self::schema($endpoint) !== null;
     }
 
     /** The shape of one item of "data", or null when the endpoint declares none. */
@@ -40,15 +40,23 @@ final class AnswerContract
         return Schema::object(array_map(static fn(mixed $p): Schema => $p instanceof Schema ? $p : Schema::any()->nullable(), $resource::properties()));
     }
 
+    /** Problems any endpoint may answer with, so none lists them: bad input, who may call it, and how often. */
+    public const array ANY_PROBLEM = [400, 401, 403, 405, 413, 422, 429];
+
     /**
      * What is wrong with an answer, or [] when it is what the endpoint declares.
-     * Problems (4xx, 5xx) and redirects are not checked: ApiProblem shapes them.
+     * A problem (4xx) must be one any endpoint can answer with, or listed in
+     * problems(); ApiProblem shapes it. Redirects and server errors are not
+     * checked.
      *
      * @return list<string>
      */
     public static function check(Endpoint $endpoint, Response $response): array
     {
         $status = $response->statusCode();
+        if ($status >= 400 && $status < 500) {
+            return in_array($status, [...self::ANY_PROBLEM, ...$endpoint->problems()], true) ? [] : ["answered {$status}, which problems() does not list"];
+        }
         if ($status >= 300) {
             return [];
         }
@@ -57,6 +65,10 @@ final class AnswerContract
         }
         if ($status === 204) {
             return [];
+        }
+        $type = strtolower(trim(explode(';', (string) ($response->headers()['Content-Type'] ?? ''))[0]));
+        if ($endpoint->produces() !== null) {
+            return $type === strtolower($endpoint->produces()) ? [] : ["answered {$type}, but produces() says " . $endpoint->produces()];
         }
         $schema = self::schema($endpoint);
         if ($schema === null || !str_contains(strtolower((string) ($response->headers()['Content-Type'] ?? '')), 'json')) {

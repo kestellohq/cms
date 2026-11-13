@@ -20,6 +20,11 @@ final class ClearNotFound extends RedirectEndpoint
     {
         return ['content:write'];
     }
+    public function status(): int
+    {
+        return 204;
+    }
+
     public function summary(): string
     {
         return 'Clear the not-found log';

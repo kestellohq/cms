@@ -19,6 +19,15 @@ final class ImportRedirects extends RedirectEndpoint
     {
         return ['content:write'];
     }
+    public function response(): ?Schema
+    {
+        return Schema::object([
+            'created' => Schema::int(),
+            'updated' => Schema::int(),
+            'errors' => Schema::list(Schema::object(['line' => Schema::int()->description('The CSV line, counting the header as 1'), 'message' => Schema::string()])),
+        ]);
+    }
+
     public function summary(): string
     {
         return 'Import redirects from CSV';
