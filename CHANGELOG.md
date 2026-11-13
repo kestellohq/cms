@@ -127,6 +127,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- A cache test failed now and then on a slow database: the counter it gave a 1-second lifetime could expire before it was incremented. It gets 2 seconds now.
 - Redirects' **Last used** showed the wrong time to anyone not in UTC: the API sent the time without its zone, which the browser read as local time. Redirects now send their times in ISO 8601 with the zone, as the rest of the API does.
 - The API's description left out problems six endpoints answer with: 409 from saving an entry someone else saved in between, translating an entry into a language it already has, finishing an upload that isn't complete, restoring an image with no original, and exporting a theme that has code; and 404 from the fleet console when it is off.
 - The API's description promised a list from `GET /content/languages` and `GET /emails`, which answer one object, so the TypeScript client typed them as arrays. It left out each language's `paths`, and said `POST /users` and `POST /me/tokens` answer 200 where they answer 201. The TypeScript client also typed a 201 answer as unknown.
