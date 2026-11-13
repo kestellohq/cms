@@ -4537,6 +4537,10 @@ msgstr ""
 msgid "Its condition reads a field below it; move it lower"
 msgstr ""
 
+#: core/src/Cms/Api/Resources/FormResource.php
+msgid "Its fields, wording, notifications and limits, as saved"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Themes.vue
 msgid "Its files and this site's changes to it are deleted. Export it first to keep a copy."
 msgstr ""
@@ -6294,6 +6298,10 @@ msgstr ""
 msgid "Not configured"
 msgstr ""
 
+#: core/src/Cms/Api/Resources/FormResource.php
+msgid "Not counting spam"
+msgstr ""
+
 #: core/resources/js/pages/admin/redirects/Index.vue
 msgid "Not found"
 msgstr ""
@@ -6630,6 +6638,10 @@ msgstr ""
 
 #: core/src/Cms/Forms/Forms.php
 msgid "Only http and https addresses."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/FormResource.php
+msgid "Only in the list of forms"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -8561,6 +8573,10 @@ msgstr ""
 msgid "Send it back as \"version\" when saving, to detect edits made meanwhile"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Forms/GetFormToken.php
+msgid "Send it back as _token with the form"
+msgstr ""
+
 #: core/resources/js/pages/auth/Register.vue
 msgid "Send link"
 msgstr ""
@@ -10225,6 +10241,10 @@ msgstr ""
 msgid "The page stays public but is left out of the sitemap, and search engines are asked not to list it."
 msgstr ""
 
+#: core/src/Cms/Api/Resources/SubmissionResource.php
+msgid "The path of the page it was sent from"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Styles.vue
 msgid "The preview goes back to what visitors see now."
 msgstr ""
@@ -10407,6 +10427,10 @@ msgstr ""
 msgid "The start of the answer, credentials hidden"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Forms/SubmitForm.php
+msgid "The submission, or null when the form does not keep them"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Audit.vue
 #: core/resources/js/pages/admin/system/Security.vue
 msgid "The system"
@@ -10418,6 +10442,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/webhooks/Edit.vue
 msgid "The test did not arrive."
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Forms/SubmitForm.php
+msgid "The thank-you message"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -10484,6 +10512,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
 msgid "The values are deleted from every entry. This can't be undone."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/SubmissionResource.php
+msgid "The values sent, by field name; a file field holds a list of {key, name, size, type}"
 msgstr ""
 
 #: core/resources/js/pages/admin/content-types/Edit.vue
@@ -11939,6 +11971,10 @@ msgstr ""
 msgid "Where this shows"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Forms/SubmitForm.php
+msgid "Where to send the visitor instead, if anywhere"
+msgstr ""
+
 #: core/resources/js/pages/admin/Profile.vue
 msgid "Where you are signed in"
 msgstr ""
@@ -12002,6 +12038,10 @@ msgstr ""
 
 #: core/resources/js/ui/KBlockSettings.vue
 msgid "Who sees this block"
+msgstr ""
+
+#: core/src/Cms/Api/Resources/SubmissionResource.php
+msgid "Who sent it, when signed in"
 msgstr ""
 
 #: core/resources/js/pages/admin/roles/Index.vue

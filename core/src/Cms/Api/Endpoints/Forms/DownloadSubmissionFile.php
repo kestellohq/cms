@@ -24,6 +24,11 @@ final class DownloadSubmissionFile extends FormEndpoint
         return 'Download an uploaded file';
     }
 
+    public function produces(): ?string
+    {
+        return 'application/octet-stream';
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $s = self::attempt(fn() => self::forms()->submission($request->intParam('id')));

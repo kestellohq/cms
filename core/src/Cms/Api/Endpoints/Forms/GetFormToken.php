@@ -7,6 +7,7 @@ namespace Kestello\Cms\Api\Endpoints\Forms;
 use Kestello\Cms\Api\ApiProblem;
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Schema;
 use Kestello\Framework\Core\Response;
 
 /**
@@ -44,6 +45,11 @@ final class GetFormToken extends FormEndpoint
     public function summary(): string
     {
         return 'Get a form token';
+    }
+
+    public function response(): ?Schema
+    {
+        return Schema::object(['token' => Schema::string()->description('Send it back as _token with the form')]);
     }
 
     public function handle(ApiRequest $request): mixed

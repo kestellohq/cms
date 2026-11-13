@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Forms;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\FormResource;
 use Kestello\Cms\Api\Schema;
 
 /** Change a form. Pages showing it are refreshed. */
@@ -28,6 +29,11 @@ final class UpdateForm extends FormEndpoint
         return SaveFormBody::schema();
     }
 
+    public function resource(): ?string
+    {
+        return FormResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $id = $request->intParam('id');
@@ -35,6 +41,6 @@ final class UpdateForm extends FormEndpoint
         self::purgePages($id);
         self::audit($request, 'form.updated', ['form', $id], ['title' => $form['title'], 'status' => $form['status']]);
 
-        return $form;
+        return new FormResource($form);
     }
 }

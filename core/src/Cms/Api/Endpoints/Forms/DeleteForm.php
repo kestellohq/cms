@@ -23,6 +23,11 @@ final class DeleteForm extends FormEndpoint
         return 'Delete a form';
     }
 
+    public function status(): int
+    {
+        return 204;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $id = $request->intParam('id');

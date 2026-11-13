@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Forms;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\FormResource;
 use Kestello\Cms\Forms\Forms;
 use Kestello\Contracts\Forms\Captcha;
 use Kestello\Framework\Core\Response;
@@ -22,11 +23,17 @@ final class GetForm extends FormEndpoint
         return 'Get a form';
     }
 
+    public function resource(): ?string
+    {
+        return FormResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $form = self::attempt(fn() => self::forms()->find($request->intParam('id')));
 
-        return Response::json(['data' => $form, 'meta' => self::meta()]);
+        // meta: what the form builder needs, beside the form
+        return Response::json(['data' => (new FormResource($form))->resolve($request->principal, self::cms()->api), 'meta' => self::meta()]);
     }
 
     public static function meta(): array

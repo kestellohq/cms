@@ -6,9 +6,9 @@ namespace Kestello\Cms\Api\Endpoints\Forms;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\SubmissionResource;
 use Kestello\Cms\Api\Schema;
 use Kestello\Cms\Forms\Forms;
-use Kestello\Framework\Core\Response;
 use Kestello\Framework\Database\QueryBuilder;
 
 /** A form's submissions, newest first, with search and a status filter. */
@@ -33,6 +33,11 @@ final class ListSubmissions extends FormEndpoint
         ]);
     }
 
+    public function resource(): ?string
+    {
+        return SubmissionResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $id = $request->intParam('id');
@@ -52,9 +57,9 @@ final class ListSubmissions extends FormEndpoint
             $counts[$r['status']]++;
         }
 
-        return Response::json(['data' => array_map(Forms::presentSubmission(...), $rows), 'meta' => [
+        return SubmissionResource::collection(array_map(Forms::presentSubmission(...), $rows), [
             'form' => $form, 'counts' => $counts,
             'total' => $total, 'page' => $page, 'per_page' => $perPage, 'last_page' => max(1, (int) ceil($total / $perPage)),
-        ]]);
+        ]);
     }
 }
