@@ -146,11 +146,13 @@ final class CacheTest extends TestCase
         foreach ($stores as $s) {
             $s->put('soon', 'v', 1);
             $s->put('forever', 'v');
-            $s->add('counter', 0, 1);
+            // 2 seconds: with 1, the clock can reach the expiry between add() and increment(),
+            // which then rightly starts a new counter, without a TTL
+            $s->add('counter', 0, 2);
             $s->increment('counter');
         }
 
-        sleep(2);
+        sleep(3);
 
         foreach ($stores as $name => $s) {
             $this->assertSame('gone', $s->get('soon', 'gone'), "{$name}: expired");
