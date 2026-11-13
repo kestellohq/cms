@@ -6,9 +6,8 @@ namespace Kestello\Cms\Api\Endpoints\Redirects;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\RedirectResource;
 use Kestello\Cms\Api\Schema;
-use Kestello\Cms\Redirects\Redirects;
-use Kestello\Framework\Core\Response;
 use Kestello\Framework\Database\QueryBuilder;
 
 /** Redirect rules, newest first, with search and an origin filter. */
@@ -18,6 +17,11 @@ final class ListRedirects extends RedirectEndpoint
     {
         return ApiRoute::get('/redirects');
     }
+    public function resource(): ?string
+    {
+        return RedirectResource::class;
+    }
+
     public function summary(): string
     {
         return 'List redirects';
@@ -48,8 +52,6 @@ final class ListRedirects extends RedirectEndpoint
         $page = (int) $request->query('page');
         $rows = $q->orderBy('created_at', 'DESC')->orderBy('id', 'DESC')->offset(($page - 1) * $perPage)->limit($perPage)->get();
 
-        return Response::json(['data' => array_map(Redirects::present(...), $rows), 'meta' => [
-            'total' => $total, 'page' => $page, 'per_page' => $perPage, 'last_page' => max(1, (int) ceil($total / $perPage)),
-        ]]);
+        return RedirectResource::collection($rows, ['total' => $total, 'page' => $page, 'per_page' => $perPage, 'last_page' => max(1, (int) ceil($total / $perPage))]);
     }
 }

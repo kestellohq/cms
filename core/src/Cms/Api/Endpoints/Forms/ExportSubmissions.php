@@ -16,6 +16,11 @@ final class ExportSubmissions extends FormEndpoint
     {
         return ApiRoute::get('/forms/{id}/submissions/export')->where('id', '\d{1,18}');
     }
+    public function produces(): ?string
+    {
+        return 'text/csv';
+    }
+
     public function summary(): string
     {
         return 'Export submissions as CSV';

@@ -177,6 +177,10 @@ final class ApiTest extends TestCase
         $this->assertStringContainsString('data.extra: Unknown field.', $wrong['detail'], 'a response() describes the whole answer');
         $this->assertStringContainsString('answered 200, but status() says 204', $this->json($this->call('POST', '/api/v1/nothing'))['detail']);
         $this->assertSame(200, $this->call('GET', '/api/v1/undeclared')->statusCode(), 'an endpoint that declares nothing is not checked');
+
+        $this->cms->api->endpoint($this->endpoint('GET', '/clash', ['public' => true, 'response' => $shape, 'handle' => fn() => throw \Kestello\Cms\Api\ApiProblem::conflict('taken')]));
+        $clash = $this->json($this->call('GET', '/api/v1/clash'));
+        $this->assertSame([500, 'answered 409, which problems() does not list'], [$clash['status'], substr($clash['detail'], -strlen('answered 409, which problems() does not list'))], 'a problem it does not document');
     }
 
     public function testAPluginsWrongAnswerIsLoggedNotRefused(): void

@@ -16,6 +16,12 @@ final class ListFleetSites extends FleetEndpoint
     {
         return ApiRoute::get('/fleet/sites');
     }
+    /** 404: The fleet console is off on this site. */
+    public function problems(): array
+    {
+        return [...parent::problems(), 404];
+    }
+
     public function summary(): string
     {
         return 'List the sites in the fleet';

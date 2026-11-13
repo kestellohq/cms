@@ -27,6 +27,12 @@ final class UpdateEntry extends ContentEndpoint
     {
         return ['content:write'];
     }
+    /** 409: Someone saved the entry since it was opened. */
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Update an entry';

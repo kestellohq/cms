@@ -251,15 +251,6 @@ final class ApiRegistry
             });
 
             $response = $this->render($result, $principal, $endpoint->status() === 201 ? 201 : 200);
-            if ($this->debug && AnswerContract::describes($endpoint) && ($wrong = AnswerContract::check($endpoint, $response)) !== []) {
-                // what OpenAPI and the TypeScript client promise must stay true: in debug mode, a wrong answer from
-                // core is an error; a plugin's or theme's is logged, so code written before the check keeps working
-                $message = $endpoint::class . ' answered what it does not declare: ' . implode('; ', array_slice($wrong, 0, 5));
-                if ($entry['owner'] === 'core') {
-                    throw new LogicException($message);
-                }
-                Log::write(LogLevel::WARNING, $message, [], $entry['owner']);
-            }
         } catch (ApiProblem $problem) {
             $response = $problem->toResponse();
         } catch (Throwable $e) {
@@ -269,6 +260,18 @@ final class ApiRegistry
                 $this->container->make(\Kestello\Framework\Core\ErrorHandler::class)->count($owner, $e::class . ': ' . $e->getMessage());
             }
             $response = ApiProblem::server($this->debug ? $e->getMessage() : null)->toResponse();
+        }
+
+        // what OpenAPI and the TypeScript client promise must stay true: in debug mode, a wrong answer from core
+        // is an error; a plugin's or theme's is logged, so code written before the check keeps working
+        if ($this->debug && AnswerContract::describes($endpoint) && ($wrong = AnswerContract::check($endpoint, $response)) !== []) {
+            $message = $endpoint::class . ' answered what it does not declare: ' . implode('; ', array_slice($wrong, 0, 5));
+            if ($entry['owner'] === 'core') {
+                Log::write(LogLevel::ERROR, "API {$request->method} {$request->path} failed: {$message}", [], 'core');
+                $response = ApiProblem::server($message)->toResponse();
+            } else {
+                Log::write(LogLevel::WARNING, $message, [], $entry['owner']);
+            }
         }
 
         foreach ($limit?->headers() ?? [] as $name => $value) {

@@ -16,6 +16,11 @@ final class DownloadBackup extends BackupEndpoint
     {
         return ApiRoute::get('/backups/{name}/download')->where('name', self::NAME);
     }
+    public function produces(): ?string
+    {
+        return 'application/zip';
+    }
+
     public function summary(): string
     {
         return 'Download a backup';

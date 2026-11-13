@@ -26,6 +26,12 @@ final class CreateTranslation extends ContentEndpoint
     {
         return ['content:write'];
     }
+    /** 409: The entry already has a translation in that language. */
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Start a translation of an entry';

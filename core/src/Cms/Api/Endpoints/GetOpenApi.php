@@ -22,6 +22,12 @@ final class GetOpenApi extends Endpoint
     {
         return true;
     }
+    /** The OpenAPI document itself, not {"data": …}. */
+    public function produces(): ?string
+    {
+        return 'application/json';
+    }
+
     public function summary(): string
     {
         return 'OpenAPI document';

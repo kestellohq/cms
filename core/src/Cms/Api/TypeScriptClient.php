@@ -129,6 +129,10 @@ final class TypeScriptClient
         if (isset($op['x-kestello-owner'])) {
             $lines[] = '         * From ' . $op['x-kestello-owner'] . '.';
         }
+        $file = array_values(array_diff(array_keys((array) ($ok['content'] ?? [])), ['application/json']))[0] ?? null;
+        if ($file !== null) {
+            $lines[] = '         * Answers a file (' . self::comment((string) $file) . '), not JSON: link to its address to download it.';
+        }
         $lines[] = '         */';
         $param = $argType === null ? '' : 'args' . ($required ? '' : '?') . ': ' . $argType;
         $call = "request<{$answer}>('{$op['method']}', `{$path}`" . ($queryParams !== [] ? ', args?.query' : ', undefined') . ($body !== null ? ', args.body' : '') . ')';

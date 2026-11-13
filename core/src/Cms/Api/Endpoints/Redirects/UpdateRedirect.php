@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Redirects;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\RedirectResource;
 use Kestello\Cms\Api\Schema;
 
 /** Change a redirect rule. */
@@ -19,6 +20,11 @@ final class UpdateRedirect extends RedirectEndpoint
     {
         return ['content:write'];
     }
+    public function resource(): ?string
+    {
+        return RedirectResource::class;
+    }
+
     public function summary(): string
     {
         return 'Change a redirect';
@@ -35,6 +41,6 @@ final class UpdateRedirect extends RedirectEndpoint
         $saved = self::attempt(fn() => self::redirects()->save($request->body, $id));
         self::audit($request, 'redirect.updated', $id, ['source' => $saved['source'], 'target' => $saved['target']]);
 
-        return $saved;
+        return new RedirectResource($saved);
     }
 }
