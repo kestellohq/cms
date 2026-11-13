@@ -57,10 +57,12 @@ final class TaxonomyMenuRoleTest extends AuthTestCase
 
     public function testTermsNestRenameAndDelete(): void
     {
+        $this->cms->api->extend('terms')->field('acme_colour', static fn(array $row): string => 'teal');
         $this->signIn('editor');
         $news = $this->ok('POST', '/taxonomies/category/terms', ['name' => 'News']);
         $local = $this->ok('POST', '/taxonomies/category/terms', ['name' => 'Local news', 'parent_id' => $news['id']]);
         $this->assertSame(['news', 'local-news', '/category/news'], [$news['slug'], $local['slug'], $news['path']]);
+        $this->assertSame('teal', $news['acme_colour'], 'plugins add fields to terms');
         $dupe = $this->ok('POST', '/taxonomies/category/terms', ['name' => 'News']);
         $this->assertSame('news-2', $dupe['slug']);
 
@@ -139,6 +141,12 @@ final class TaxonomyMenuRoleTest extends AuthTestCase
         ]]);
         $this->assertSame([true, false], [$menu['items'][0]['resolved']['live'], $menu['items'][0]['children'][0]['resolved']['live']], 'the editor sees drafts as hidden');
         $this->assertSame(['Page', 'Category'], [$menu['items'][0]['resolved']['type_label'], $menu['items'][0]['children'][1]['resolved']['type_label']], 'the editor says what each item is');
+
+        $this->cms->api->extend('menus')->field('acme_note', static fn(array $row): string => 'menu ' . $row['id']);
+        $read = $this->ok('GET', "/menus/{$menu['id']}");
+        $this->assertSame([$menu['items'], "menu {$menu['id']}"], [$read['items'], $read['acme_note']], 'read back as saved; plugins add fields');
+        $this->assertMatchesRegularExpression('/Z$/', (string) $this->ok('GET', '/menus')['menus'][0]['updated_at'], 'UTC with its zone');
+        $this->assertSame(404, $this->api('GET', '/menus/99999')->statusCode());
 
         $deep = ['kind' => 'url', 'url' => '/a', 'label' => 'a'];
         for ($i = 0; $i < Menus::MAX_DEPTH; $i++) {

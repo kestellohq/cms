@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Webhooks;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\WebhookResource;
 use Kestello\Cms\Api\Schema;
 
 /** Change a webhook. Turning a webhook that was turned off after failures back on starts its failure count afresh. */
@@ -15,9 +16,9 @@ final class UpdateWebhook extends WebhookEndpoint
     {
         return ApiRoute::patch('/webhooks/{id}')->where('id', '\d{1,18}');
     }
-    public function response(): ?Schema
+    public function resource(): ?string
     {
-        return self::webhookSchema();
+        return WebhookResource::class;
     }
     public function summary(): string
     {
@@ -38,6 +39,6 @@ final class UpdateWebhook extends WebhookEndpoint
         $hook = self::attempt(fn() => self::webhooks()->update($request->intParam('id'), $input));
         self::cms()->audit->record('webhook.updated', ['webhook', $hook['id']], ['changed' => array_keys($input), 'url' => $hook['url'], 'active' => $hook['active']], $request->userId());
 
-        return $hook;
+        return new WebhookResource($hook);
     }
 }

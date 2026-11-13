@@ -23,6 +23,11 @@ final class DeleteMenu extends MenuEndpoint
         return 'Delete a menu';
     }
 
+    public function status(): int
+    {
+        return 204;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $id = $request->intParam('id');

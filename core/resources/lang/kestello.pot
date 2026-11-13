@@ -21,6 +21,7 @@ msgid "\"{code}\" isn't a language code. Use one such as es, de or pt-br."
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Content/ListLanguages.php
+#: core/src/Cms/Api/Resources/MenuResource.php
 msgid "'' for the main language"
 msgstr ""
 
@@ -2902,6 +2903,10 @@ msgstr ""
 msgid "Each file is removed from the old disk once its copy is checked."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Menus/AssignMenuLocations.php
+msgid "Each location of the theme, with the id of its menu in that language, or null"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Templates.vue
 msgid "Each page gets its own copy to change freely."
 msgstr ""
@@ -3133,6 +3138,10 @@ msgstr ""
 msgid "Entries that may choose it"
 msgstr ""
 
+#: core/src/Cms/Api/Resources/TermResource.php
+msgid "Entries with it"
+msgstr ""
+
 #: core/resources/js/pages/fields/Blocks.vue
 #: core/resources/js/ui/builder/useCatalog.js
 msgid "Entry"
@@ -3221,6 +3230,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Storage.vue
 msgid "Every file is on {disk} now."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/MenuResource.php
+msgid "Every location it is in, in each language"
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -4106,12 +4119,20 @@ msgstr ""
 msgid "Home page title"
 msgstr ""
 
+#: core/src/Cms/Api/Resources/TermResource.php
+msgid "How deep it sits in a hierarchical list; 0 otherwise"
+msgstr ""
+
 #: core/resources/js/pages/admin/emails/Edit.vue
 msgid "How long the link works"
 msgstr ""
 
 #: core/src/Cms/Blocks/CoreBlocks.php
 msgid "How many"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Menus/ListMenus.php
+msgid "How many items it has at the top level"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -4528,8 +4549,24 @@ msgstr ""
 msgid "Its files, its tables and its settings are deleted. Make a backup first if you may want them back."
 msgstr ""
 
+#: core/src/Cms/Api/Resources/TermResource.php
+msgid "Its language: '' for the main one"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Menus/ListMenus.php
+msgid "Its menu in the language asked for"
+msgstr ""
+
+#: core/src/Cms/Api/Endpoints/Menus/ListMenus.php
+msgid "Its menu in the main language; only when another language was asked for"
+msgstr ""
+
 #: core/resources/js/pages/admin/appearance/Styles.vue
 msgid "Its name on Google Fonts, such as Inter or Playfair Display."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/MenuResource.php
+msgid "Its own label; without one, the linked page's"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Content/ListLanguages.php
@@ -4538,6 +4575,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Api.vue
 msgid "Its parameters, a form to try it and the code to call it appear here."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/TermResource.php
+msgid "Its public address, or null when the taxonomy has none"
 msgstr ""
 
 #: core/resources/js/pages/admin/system/Import.vue
@@ -4554,6 +4595,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/system/Fleet.vue
 msgid "Its token keeps working on that site until you revoke it there, under Your profile → Access tokens or System → Security."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/TermResource.php
+msgid "Its translations, by language"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Settings/SiteSettings.php
@@ -10031,6 +10076,10 @@ msgstr ""
 msgid "The kinds of content this site has and the fields each one holds. Types you build here work like the built-in ones: the editor, the API, search and public pages all follow them."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Menus/ListMenus.php
+msgid "The language asked for: '' for the main one"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Content/TermEndpoint.php
 msgid "The language it is written in: '' (the main one, the default) or one of the site's other languages. Fixed once created"
 msgstr ""
@@ -10377,6 +10426,10 @@ msgstr ""
 
 #: core/src/Cms/Design/ThemeStyles.php
 msgid "The theme has no such setting."
+msgstr ""
+
+#: core/src/Cms/Api/Resources/MenuResource.php
+msgid "The theme locations it is in, in the main language"
 msgstr ""
 
 #: core/resources/js/pages/admin/appearance/TemplateEdit.vue
@@ -11726,6 +11779,10 @@ msgstr ""
 msgid "What failed: a Vue lifecycle step, \"script\" or \"promise\"."
 msgstr ""
 
+#: core/src/Cms/Api/Resources/MenuResource.php
+msgid "What it links to now"
+msgstr ""
+
 #: core/resources/js/components/packages/PackageReviewModal.vue
 #: core/resources/js/pages/admin/system/AddPlugins.vue
 #: core/resources/js/pages/admin/system/Plugins.vue
@@ -11892,6 +11949,10 @@ msgstr ""
 
 #: core/src/Cms/Api/Endpoints/GetMe.php
 msgid "Whether the role should use it"
+msgstr ""
+
+#: core/src/Cms/Api/Resources/MenuResource.php
+msgid "Whether visitors see it: published, with an address"
 msgstr ""
 
 #: core/resources/js/pages/admin/redirects/Index.vue
@@ -12382,6 +12443,10 @@ msgstr ""
 msgid "core, or the plugin that sends it"
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Menus/ListMenus.php
+msgid "core, or the theme or plugin that declared it"
+msgstr ""
+
 #: core/src/Cms/Api/Endpoints/Security/GetSecurity.php
 msgid "credentials, throttled, two_factor, inactive, external, external_refused"
 msgstr ""
@@ -12404,6 +12469,10 @@ msgstr ""
 
 #: core/resources/js/pages/admin/forms/Index.vue
 msgid "emails {to}"
+msgstr ""
+
+#: core/src/Cms/Api/Resources/MenuResource.php
+msgid "entry and term: an id; archive: a content type"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Webhooks/WebhookEndpoint.php
@@ -12496,6 +12565,10 @@ msgstr ""
 
 #: core/src/Support/Date.php
 msgid "just now"
+msgstr ""
+
+#: core/src/Cms/Api/Resources/MenuResource.php
+msgid "kind url: the address"
 msgstr ""
 
 #: core/resources/js/pages/admin/Profile.vue

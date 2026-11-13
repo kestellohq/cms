@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Menus;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\MenuResource;
 use Kestello\Cms\Api\Schema;
 
 /** Create a menu. */
@@ -29,12 +30,17 @@ final class CreateMenu extends MenuEndpoint
         return Schema::object(['name' => Schema::string()->max(100), 'items' => Schema::any(262144, 16)->optional()]);
     }
 
+    public function resource(): ?string
+    {
+        return MenuResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $items = $request->body['items'] ?? [];
         $id = self::attempt(fn() => self::menus()->save(null, (string) $request->body['name'], is_array($items) ? $items : [null]));
         self::audit($request, 'menu.created', $id, ['name' => $request->body['name']]);
 
-        return self::menu($id);
+        return new MenuResource(self::menu($id));
     }
 }

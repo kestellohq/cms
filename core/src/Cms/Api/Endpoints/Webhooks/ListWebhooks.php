@@ -6,7 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Webhooks;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
-use Kestello\Cms\Api\Schema;
+use Kestello\Cms\Api\Resources\WebhookResource;
 
 /** Every webhook, with its last delivery. Secrets are never shown again after they are made. */
 final class ListWebhooks extends WebhookEndpoint
@@ -15,9 +15,9 @@ final class ListWebhooks extends WebhookEndpoint
     {
         return ApiRoute::get('/webhooks');
     }
-    public function response(): ?Schema
+    public function resource(): ?string
     {
-        return self::webhookSchema();
+        return WebhookResource::class;
     }
     public function summary(): string
     {
@@ -26,6 +26,6 @@ final class ListWebhooks extends WebhookEndpoint
 
     public function handle(ApiRequest $request): mixed
     {
-        return self::webhooks()->all();
+        return WebhookResource::collection(self::webhooks()->all());
     }
 }
