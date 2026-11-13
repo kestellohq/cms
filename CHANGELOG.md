@@ -128,6 +128,7 @@ Every change people would notice is listed here, newest first. The format follow
 
 ### Fixed
 
+- A cache test failed now and then on a slow database: the counter it gave a 1-second lifetime could expire before it was incremented. It gets 2 seconds now.
 - `GET /menus` sent each menu's `updated_at` without its zone; it is ISO 8601 with the zone now. Translating a term into a language it already has answers 409, which the API's description now says.
 - Redirects' **Last used** showed the wrong time to anyone not in UTC: the API sent the time without its zone, which the browser read as local time. Redirects now send their times in ISO 8601 with the zone, as the rest of the API does.
 - The API's description left out problems six endpoints answer with: 409 from saving an entry someone else saved in between, translating an entry into a language it already has, finishing an upload that isn't complete, restoring an image with no original, and exporting a theme that has code; and 404 from the fleet console when it is off.
