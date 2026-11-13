@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Menus;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\MenuResource;
 use Kestello\Cms\Api\Schema;
 
 /** Replace a menu's name and items (the whole tree is sent). */
@@ -29,6 +30,11 @@ final class UpdateMenu extends MenuEndpoint
         return Schema::object(['name' => Schema::string()->max(100), 'items' => Schema::any(262144, 16)]);
     }
 
+    public function resource(): ?string
+    {
+        return MenuResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $id = $request->intParam('id');
@@ -37,6 +43,6 @@ final class UpdateMenu extends MenuEndpoint
         self::attempt(fn() => self::menus()->save($id, (string) $request->body['name'], is_array($items) ? $items : [null]));
         self::audit($request, 'menu.updated', $id, ['name' => $request->body['name']]);
 
-        return self::menu($id);
+        return new MenuResource(self::menu($id));
     }
 }

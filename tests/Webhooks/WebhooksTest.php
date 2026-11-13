@@ -78,7 +78,10 @@ final class WebhooksTest extends AuthTestCase
 
         $made = $this->hook(['entry.created', 'entry.published']);
         $this->assertMatchesRegularExpression('/^whsec_/', $made['secret']);
-        $this->assertArrayNotHasKey('secret', $this->json($this->api('GET', "/webhooks/{$made['id']}"))['data'], 'shown once');
+        $this->cms->api->extend('webhooks')->field('acme_team', static fn(array $row): string => 'ops');
+        $shown = $this->json($this->api('GET', "/webhooks/{$made['id']}"))['data'];
+        $this->assertArrayNotHasKey('secret', $shown, 'shown once');
+        $this->assertSame('ops', $shown['acme_team'], 'plugins add fields to webhooks');
 
         $post = $this->json($this->api('POST', '/content/post/entries', ['title' => 'Hello', 'status' => 'published']))['data'];
         $this->assertCount(2, $this->fake->sent, 'created and published');

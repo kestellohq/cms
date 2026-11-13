@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Content;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\TermResource;
 use Kestello\Cms\Api\Schema;
 use Kestello\Cms\Content\Taxonomy;
 use Kestello\Cms\Content\Term;
@@ -37,6 +38,11 @@ final class ListTerms extends TermEndpoint
         ]);
     }
 
+    public function resource(): ?string
+    {
+        return TermResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $tax = self::taxonomy($request);
@@ -58,7 +64,7 @@ final class ListTerms extends TermEndpoint
         $translations = \Kestello\Cms\Content\Translations::ofTerms($terms);
         $rows = array_map(static fn(Term $t) => self::row($t, $tax, $counts[$t->getKey()] ?? 0, $translations[(int) $t->getKey()] ?? []), $terms);
 
-        return $tax->isHierarchical() && !$narrowed ? self::tree($rows) : array_map(static fn($r) => $r + ['depth' => 0], $rows);
+        return TermResource::collection($tax->isHierarchical() && !$narrowed ? self::tree($rows) : array_map(static fn($r) => $r + ['depth' => 0], $rows));
     }
 
     /**

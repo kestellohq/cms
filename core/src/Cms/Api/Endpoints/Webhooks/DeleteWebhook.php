@@ -20,6 +20,11 @@ final class DeleteWebhook extends WebhookEndpoint
         return 'Delete a webhook';
     }
 
+    public function status(): int
+    {
+        return 204;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $hook = self::webhooks()->find($request->intParam('id')) ?? throw ApiProblem::notFound('No such webhook.');

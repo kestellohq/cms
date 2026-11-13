@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Menus;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\MenuResource;
 
 /** One menu, each item with its target's current title, address and whether it shows on the site. */
 final class GetMenu extends MenuEndpoint
@@ -19,8 +20,13 @@ final class GetMenu extends MenuEndpoint
         return 'Get a menu';
     }
 
+    public function resource(): ?string
+    {
+        return MenuResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
-        return self::menu($request->intParam('id'));
+        return new MenuResource(self::menu($request->intParam('id')));
     }
 }

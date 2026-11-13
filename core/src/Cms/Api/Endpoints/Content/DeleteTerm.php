@@ -24,6 +24,11 @@ final class DeleteTerm extends TermEndpoint
         return 'Delete a term';
     }
 
+    public function status(): int
+    {
+        return 204;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $tax = self::taxonomy($request, manage: true);

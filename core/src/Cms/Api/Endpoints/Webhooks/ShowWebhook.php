@@ -7,7 +7,7 @@ namespace Kestello\Cms\Api\Endpoints\Webhooks;
 use Kestello\Cms\Api\ApiProblem;
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
-use Kestello\Cms\Api\Schema;
+use Kestello\Cms\Api\Resources\WebhookResource;
 
 final class ShowWebhook extends WebhookEndpoint
 {
@@ -15,9 +15,9 @@ final class ShowWebhook extends WebhookEndpoint
     {
         return ApiRoute::get('/webhooks/{id}')->where('id', '\d{1,18}');
     }
-    public function response(): ?Schema
+    public function resource(): ?string
     {
-        return self::webhookSchema();
+        return WebhookResource::class;
     }
     public function summary(): string
     {
@@ -26,6 +26,6 @@ final class ShowWebhook extends WebhookEndpoint
 
     public function handle(ApiRequest $request): mixed
     {
-        return self::webhooks()->find($request->intParam('id')) ?? throw ApiProblem::notFound('No such webhook.');
+        return new WebhookResource(self::webhooks()->find($request->intParam('id')) ?? throw ApiProblem::notFound('No such webhook.'));
     }
 }

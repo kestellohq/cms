@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Content;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\TermResource;
 use Kestello\Cms\Api\Schema;
 use Kestello\Cms\Content\Term;
 
@@ -29,11 +30,16 @@ final class CreateTerm extends TermEndpoint
         return self::termBody(create: true);
     }
 
+    public function resource(): ?string
+    {
+        return TermResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $tax = self::taxonomy($request, manage: true);
         $term = self::attempt(fn() => self::terms()->create($tax, $request->body, $request->principal));
 
-        return self::row($term, $tax, 0);
+        return new TermResource(self::row($term, $tax, 0));
     }
 }

@@ -36,6 +36,11 @@ final class AssignMenuLocations extends MenuEndpoint
         ]);
     }
 
+    public function response(): ?Schema
+    {
+        return Schema::map(Schema::int()->nullable())->description('Each location of the theme, with the id of its menu in that language, or null');
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $locale = self::locale($request->body['locale'] ?? null);
