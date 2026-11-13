@@ -42,6 +42,11 @@ final class BeginTotp extends Endpoint
     {
         return [10, 3600];
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Start authenticator-app enrollment';

@@ -21,6 +21,11 @@ final class DeleteEntry extends ContentEndpoint
     {
         return ['content:write'];
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Trash or permanently delete an entry';

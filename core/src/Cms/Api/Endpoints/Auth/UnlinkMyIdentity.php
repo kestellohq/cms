@@ -37,6 +37,11 @@ final class UnlinkMyIdentity extends Endpoint
     {
         return true;
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Disconnect a sign-in account';

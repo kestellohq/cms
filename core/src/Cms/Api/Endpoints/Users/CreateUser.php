@@ -48,6 +48,11 @@ final class CreateUser extends Endpoint
     {
         return UserResource::class;
     }
+    public function status(): int
+    {
+        return 201;
+    }
+
     public function summary(): string
     {
         return 'Create a user';

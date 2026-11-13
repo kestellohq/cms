@@ -17,6 +17,11 @@ final class UpdatePlatform extends PlatformEndpoint
     {
         return ApiRoute::put('/system/platform/{subsystem}')->where('subsystem', '[a-z][a-z0-9_-]{0,49}');
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Change driver settings';

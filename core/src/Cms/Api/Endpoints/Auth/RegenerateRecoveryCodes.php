@@ -37,6 +37,11 @@ final class RegenerateRecoveryCodes extends Endpoint
     {
         return [5, 3600];
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Generate new recovery codes';

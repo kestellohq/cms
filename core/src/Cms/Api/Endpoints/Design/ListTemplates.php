@@ -20,6 +20,11 @@ final class ListTemplates extends TemplateEndpoint
     {
         return ['content:read'];
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Templates, parts and patterns';

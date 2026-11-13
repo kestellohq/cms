@@ -29,6 +29,8 @@ final class TypeScriptClientTest extends TestCase
         $this->assertStringContainsString("showThing: (args: { id: number | string }): Promise<Answer<ShowThingData>> => request<Answer<ShowThingData>>('GET', `/things/\${enc(args.id)}`, undefined),", $ts);
         $this->assertStringContainsString("createThing: (args: { body: CreateThingBody }): Promise<Answer<CreateThingData>> => request<Answer<CreateThingData>>('POST', `/things`, undefined, args.body),", $ts);
         $this->assertStringContainsString('Promise<Answer<DeleteThingData> | undefined>', $ts, 'a delete may answer 204');
+        $this->assertStringContainsString("export type CopyThingData = {\n    id: number;", $ts, 'a 201 answer is typed like a 200 one');
+        $this->assertStringContainsString('archiveThing: (args: { id: number | string }): Promise<undefined> =>', $ts, 'an answer that is only a 204 carries nothing');
         $this->assertStringContainsString('Needs the `things.manage` capability; tokens need the scope `things:write`.', $ts);
         $this->assertStringContainsString('In a browser session, needs a recent password entry.', $ts);
         $this->assertStringContainsString('acmeShowThing: (args: { id: number | string })', $ts, 'a second operation with the same name is told apart by its owner');
@@ -78,6 +80,12 @@ final class TypeScriptClientTest extends TestCase
                 '/things/{id}' => [
                     'get' => ['operationId' => 'showThing', 'parameters' => $id, 'responses' => $answer($thing)],
                     'delete' => ['operationId' => 'deleteThing', 'parameters' => $id, 'responses' => $answer(['type' => 'object'])],
+                ],
+                '/things/{id}/copies' => [
+                    'post' => ['operationId' => 'copyThing', 'parameters' => $id, 'responses' => ['201' => $answer($thing)['200'], '404' => []]],
+                ],
+                '/things/{id}/archive' => [
+                    'post' => ['operationId' => 'archiveThing', 'parameters' => $id, 'responses' => ['204' => ['description' => 'Done; nothing to return']]],
                 ],
                 '/acme/things/{id}' => [
                     'get' => ['operationId' => 'showThing', 'x-kestello-owner' => 'plugin:acme', 'parameters' => $id, 'responses' => $answer($thing)],

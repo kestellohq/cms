@@ -22,6 +22,12 @@ final class ListEmails extends EmailEndpoint
         return 'List the emails the site sends';
     }
 
+    /** One object, though the name starts with List. */
+    public function collection(): bool
+    {
+        return false;
+    }
+
     public function response(): ?Schema
     {
         return Schema::object([

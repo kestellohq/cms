@@ -18,6 +18,11 @@ final class ResetTemplate extends TemplateEndpoint
     {
         return ApiRoute::delete('/design/templates/{kind}/{key}')->where('kind', self::KIND)->where('key', self::KEY);
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Reset or delete a template, part or pattern';

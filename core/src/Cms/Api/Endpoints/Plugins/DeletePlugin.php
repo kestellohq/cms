@@ -15,6 +15,11 @@ final class DeletePlugin extends PluginEndpoint
     {
         return ApiRoute::delete('/plugins/{slug}')->where('slug', self::SLUG);
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Delete a plugin and its data';

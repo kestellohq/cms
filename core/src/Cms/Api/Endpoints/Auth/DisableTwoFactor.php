@@ -35,6 +35,11 @@ final class DisableTwoFactor extends Endpoint
     {
         return true;
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 404];
+    }
+
     public function summary(): string
     {
         return 'Disable two-factor authentication';

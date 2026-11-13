@@ -250,7 +250,16 @@ final class ApiRegistry
                 return $endpoint->handle($apiRequest);
             });
 
-            $response = $this->render($result, $principal);
+            $response = $this->render($result, $principal, $endpoint->status() === 201 ? 201 : 200);
+            if ($this->debug && AnswerContract::describes($endpoint) && ($wrong = AnswerContract::check($endpoint, $response)) !== []) {
+                // what OpenAPI and the TypeScript client promise must stay true: in debug mode, a wrong answer from
+                // core is an error; a plugin's or theme's is logged, so code written before the check keeps working
+                $message = $endpoint::class . ' answered what it does not declare: ' . implode('; ', array_slice($wrong, 0, 5));
+                if ($entry['owner'] === 'core') {
+                    throw new LogicException($message);
+                }
+                Log::write(LogLevel::WARNING, $message, [], $entry['owner']);
+            }
         } catch (ApiProblem $problem) {
             $response = $problem->toResponse();
         } catch (Throwable $e) {
@@ -319,17 +328,18 @@ final class ApiRegistry
         return $this->limiter->hit("api|{$bucket}|{$who}", (int) $max, (int) $seconds);
     }
 
-    private function render(mixed $result, Principal $principal): Response
+    /** @param int $status 200, or 201 when the endpoint made something */
+    private function render(mixed $result, Principal $principal, int $status): Response
     {
         return match (true) {
             $result instanceof Response => $result,
             $result === null => new Response('', 204),
-            $result instanceof Resource => Response::json(['data' => $result->resolve($principal, $this)]),
+            $result instanceof Resource => Response::json(['data' => $result->resolve($principal, $this)], $status),
             $result instanceof ResourceCollection => Response::json([
                 'data' => array_map(fn(Resource $r): array => $r->resolve($principal, $this), $result->items),
                 'meta' => $result->meta === [] ? (object) [] : $result->meta,
-            ]),
-            is_array($result) => Response::json(['data' => $result]),
+            ], $status),
+            is_array($result) => Response::json(['data' => $result], $status),
             default => throw new LogicException('Endpoints must return a Resource, ResourceCollection, array, Response or null.'),
         };
     }

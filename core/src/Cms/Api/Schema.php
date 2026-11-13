@@ -79,6 +79,21 @@ final class Schema
         return $schema;
     }
 
+    /**
+     * An object whose keys are any strings and whose values all match one
+     * schema: answers keyed by an id, a code or an address. For input with
+     * free-form keys, dictionary() is stricter about the keys.
+     */
+    public static function map(Schema $values, int $maxKeys = 1000): self
+    {
+        $schema = new self('object');
+        $schema->open = true;
+        $schema->items = $values;
+        $schema->max = $maxKeys;
+
+        return $schema;
+    }
+
     public static function string(): self
     {
         return new self('string');
@@ -311,6 +326,10 @@ final class Schema
             }
             foreach ($value as $key => $v) {
                 $childPath = self::join($path, (string) $key);
+                if ($this->items !== null) {        // map()
+                    $clean[(string) $key] = $this->items->check($v, $childPath, $coerce, $errors);
+                    continue;
+                }
                 if (preg_match('/^[A-Za-z_][A-Za-z0-9_.-]{0,63}$/', (string) $key) !== 1) {
                     $errors[$childPath][] = Translator::get('Invalid key.');
                 } elseif ($v !== null && !is_scalar($v)) {
@@ -513,7 +532,7 @@ final class Schema
         $out = ['type' => $this->type];
 
         if ($this->type === 'object' && $this->open) {
-            $out['additionalProperties'] = ['type' => ['string', 'number', 'boolean', 'null']];
+            $out['additionalProperties'] = $this->items?->toOpenApi() ?? ['type' => ['string', 'number', 'boolean', 'null']];
             if ($this->max !== null) {
                 $out['maxProperties'] = $this->max;
             }

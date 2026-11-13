@@ -18,6 +18,11 @@ final class RetryFailedJobs extends SystemEndpoint
     {
         return ApiRoute::post('/system/failed-jobs/{id}/retry')->where('id', '[0-9]{1,18}|all');
     }
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
     public function summary(): string
     {
         return 'Retry failed jobs';

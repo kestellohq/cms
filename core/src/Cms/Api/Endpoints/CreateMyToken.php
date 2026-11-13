@@ -50,6 +50,11 @@ final class CreateMyToken extends Endpoint
     {
         return TokenResource::class;
     }
+    public function status(): int
+    {
+        return 201;
+    }
+
     public function summary(): string
     {
         return 'Create a personal access token';
