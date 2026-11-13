@@ -6,7 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Forms;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
-use Kestello\Framework\Core\Response;
+use Kestello\Cms\Api\Resources\FormResource;
 
 /** Every form with its submission counts. */
 final class ListForms extends FormEndpoint
@@ -20,8 +20,13 @@ final class ListForms extends FormEndpoint
         return 'List forms';
     }
 
+    public function resource(): ?string
+    {
+        return FormResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
-        return Response::json(['data' => self::forms()->all()]);
+        return FormResource::collection(self::forms()->all());
     }
 }

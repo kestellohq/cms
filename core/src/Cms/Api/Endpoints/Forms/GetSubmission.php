@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Forms;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\SubmissionResource;
 
 /** One submission. Opening a new one marks it read. */
 final class GetSubmission extends FormEndpoint
@@ -19,11 +20,16 @@ final class GetSubmission extends FormEndpoint
         return 'Get a submission';
     }
 
+    public function resource(): ?string
+    {
+        return SubmissionResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $id = $request->intParam('id');
         $s = self::attempt(fn() => self::forms()->submission($id));
 
-        return $s['status'] === 'new' ? self::forms()->setStatus($id, 'read') : $s;
+        return new SubmissionResource($s['status'] === 'new' ? self::forms()->setStatus($id, 'read') : $s);
     }
 }

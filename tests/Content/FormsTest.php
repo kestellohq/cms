@@ -296,6 +296,10 @@ final class FormsTest extends AuthTestCase
         // times in UTC with their zone: a browser reads one without as its own local time
         $this->assertMatchesRegularExpression('/^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$/', (string) $sub['created_at']);
         $this->assertMatchesRegularExpression('/^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$/', (string) $this->json($this->api('GET', '/forms'))['data'][0]['updated_at']);
+        $this->cms->api->extend('forms')->field('acme_owner', static fn(array $row): string => 'sales');
+        $this->cms->api->extend('form-submissions')->field('acme_score', static fn(array $row): int => 7);
+        $this->assertSame('sales', $this->json($this->api('GET', "/forms/{$id}"))['data']['acme_owner'], 'plugins add fields to forms, the builder\'s read too');
+        $this->assertSame([7, 7], [$this->json($this->api('GET', "/forms/{$id}/submissions"))['data'][0]['acme_score'], $this->json($this->api('GET', "/form-submissions/{$sub['id']}"))['data']['acme_score']], 'and to submissions');
         $file = $sub['data']['cv'][0];
         $this->assertSame(['my cv.png', 'image/png'], [$file['name'], $file['type']]);
         $path = $this->cms->container->make(Forms::class)->filePath($file['key']);
@@ -324,6 +328,13 @@ final class FormsTest extends AuthTestCase
         QueryBuilder::table('form_submissions')->where('id', $sub['id'])->update(['created_at' => gmdate('Y-m-d H:i:s', time() - 31 * 86400)]);
         $this->assertSame(1, $this->cms->container->make(Forms::class)->prune());
         $this->assertFileDoesNotExist($path);
+
+        // deleting one submission takes its file
+        $this->send($id, ['name' => 'Bo'], files: $upload('note.png', $png));
+        $one = $this->rows($id)[0];
+        $its = $this->cms->container->make(Forms::class)->filePath(json_decode($one['data'], true)['cv'][0]['key']);
+        $this->assertSame(204, $this->api('DELETE', "/form-submissions/{$one['id']}")->statusCode());
+        $this->assertSame([404, false], [$this->api('DELETE', "/form-submissions/{$one['id']}")->statusCode(), is_file($its)]);
 
         $this->send($id, ['name' => 'Al'], files: $upload('cv.pdf', "%PDF-1.4\n%\xe2\xe3\xcf\xd3\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n"));
         $last = $this->rows($id)[0];

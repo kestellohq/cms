@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Forms;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\SubmissionResource;
 use Kestello\Cms\Api\Schema;
 
 /** Mark a submission new, read or spam. */
@@ -28,8 +29,13 @@ final class UpdateSubmission extends FormEndpoint
         return Schema::object(['status' => Schema::enum(['new', 'read', 'spam'])]);
     }
 
+    public function resource(): ?string
+    {
+        return SubmissionResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
-        return self::attempt(fn() => self::forms()->setStatus($request->intParam('id'), (string) $request->body['status']));
+        return new SubmissionResource(self::attempt(fn() => self::forms()->setStatus($request->intParam('id'), (string) $request->body['status'])));
     }
 }

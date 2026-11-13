@@ -7,6 +7,7 @@ namespace Kestello\Cms\Api\Endpoints\Forms;
 use Kestello\Cms\Api\ApiProblem;
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Schema;
 use Kestello\Framework\Http\RateLimiter;
 
 /**
@@ -43,6 +44,21 @@ final class SubmitForm extends FormEndpoint
     public function summary(): string
     {
         return 'Send a form';
+    }
+
+    /** 409: the form is closed. */
+    public function problems(): array
+    {
+        return [...parent::problems(), 409];
+    }
+
+    public function response(): ?Schema
+    {
+        return Schema::object([
+            'id' => Schema::int()->nullable()->description('The submission, or null when the form does not keep them'),
+            'message' => Schema::string()->description('The thank-you message'),
+            'redirect' => Schema::string()->nullable()->description('Where to send the visitor instead, if anywhere'),
+        ]);
     }
 
     public function handle(ApiRequest $request): mixed

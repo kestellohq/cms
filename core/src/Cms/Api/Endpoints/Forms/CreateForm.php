@@ -6,6 +6,7 @@ namespace Kestello\Cms\Api\Endpoints\Forms;
 
 use Kestello\Cms\Api\ApiRequest;
 use Kestello\Cms\Api\ApiRoute;
+use Kestello\Cms\Api\Resources\FormResource;
 use Kestello\Cms\Api\Schema;
 
 /** Create a form. */
@@ -28,11 +29,16 @@ final class CreateForm extends FormEndpoint
         return SaveFormBody::schema();
     }
 
+    public function resource(): ?string
+    {
+        return FormResource::class;
+    }
+
     public function handle(ApiRequest $request): mixed
     {
         $form = self::attempt(fn() => self::forms()->save($request->body, null, $request->userId()));
         self::audit($request, 'form.created', ['form', $form['id']], ['title' => $form['title']]);
 
-        return $form;
+        return new FormResource($form);
     }
 }
