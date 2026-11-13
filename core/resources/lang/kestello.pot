@@ -4531,6 +4531,10 @@ msgstr ""
 msgid "Its name on Google Fonts, such as Inter or Playfair Display."
 msgstr ""
 
+#: core/src/Cms/Api/Endpoints/Content/ListLanguages.php
+msgid "Its own words for the types' and taxonomies' address prefixes, by prefix; empty for the main language"
+msgstr ""
+
 #: core/resources/js/pages/admin/system/Api.vue
 msgid "Its parameters, a form to try it and the code to call it appear here."
 msgstr ""
@@ -6444,10 +6448,6 @@ msgstr ""
 #: core/resources/js/ui/KRichText.vue
 #: core/resources/js/ui/builder/useDocument.js
 msgid "Numbered list"
-msgstr ""
-
-#: core/src/Cms/Api/OpenApi.php
-msgid "OK"
 msgstr ""
 
 #: core/src/Cms/Api/Endpoints/Security/GetSecurity.php
