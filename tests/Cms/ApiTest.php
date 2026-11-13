@@ -179,6 +179,23 @@ final class ApiTest extends TestCase
         $this->assertSame(200, $this->call('GET', '/api/v1/undeclared')->statusCode(), 'an endpoint that declares nothing is not checked');
     }
 
+    public function testAPluginsWrongAnswerIsLoggedNotRefused(): void
+    {
+        $previous = \Kestello\Framework\Log\Log::logger();
+        $folder = $this->tempDir();
+        \Kestello\Framework\Log\Log::use(new \Kestello\Framework\Log\Logger($folder));
+        try {
+            ExecutionContext::run('plugin:acme', fn() => $this->cms->api->endpoint($this->endpoint('GET', '/acme/count', ['public' => true, 'response' => Schema::object(['n' => Schema::int()]), 'handle' => fn() => ['n' => 'many']])));
+
+            $this->assertSame(200, $this->call('GET', '/api/v1/acme/count')->statusCode(), 'code written before the check keeps working');
+            $lines = array_map(static fn(string $l): array => (array) json_decode($l, true), file((string) (glob($folder . '/*.log')[0] ?? ''), FILE_IGNORE_NEW_LINES) ?: []);
+            $warning = array_values(array_filter($lines, static fn(array $l): bool => str_contains((string) ($l['message'] ?? ''), 'answered what it does not declare')))[0] ?? [];
+            $this->assertSame(['warning', 'plugin:acme'], [$warning['level'] ?? null, $warning['owner'] ?? null], 'its author sees it in the log');
+        } finally {
+            \Kestello\Framework\Log\Log::use($previous);
+        }
+    }
+
     public function testOutsideDebugModeAnswersAreSentAsTheyAre(): void
     {
         $cms = TestCms::make($this->tempDir(), debug: false);
